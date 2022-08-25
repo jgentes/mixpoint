@@ -1,0 +1,70 @@
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.body {
+  font-family: -apple-system, 'Helvetica Neue', Helvetica, 'Segoe UI', Arial,
+    sans-serif;
+}
+
+.initial-loader-wrap {
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  position: fixed;
+  z-index: 99999;
+  background-color: white;
+  transition: opacity 200ms cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.loaded .initial-loader-wrap {
+  opacity: 0;
+}
+
+.initial-loader {
+  min-width: 190px;
+  color: #212529;
+  line-height: 1.5;
+}
+
+.initial-loader__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+}
+
+.initial-loader__row + .initial-loader__row {
+  border-top: 1px solid #e2e2e2;
+}
+
+.initial-loader h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.2;
+  background: linear-gradient(
+    60deg,
+    hsl(0, 75%, 50%) 5%,
+    hsl(260, 75%, 50%) 35%,
+    hsl(200, 75%, 50%) 65%,
+    hsl(220, 75%, 50%) 95%
+  );
+  color: #fff;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke-width: thin;
+  -webkit-text-stroke-color: rgb(255 255 255 / 35%);
+}
+
+.initial-loader svg#loader-circle {
+  transform-origin: 50% 50%;
+  animation: spin 0.5s linear infinite;
+}
