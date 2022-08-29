@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MixPoint</title>
     <link rel="stylesheet" type="text/css" href="./src/index.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:slnt,wght@-10,300..700;0,300..700&family=Roboto+Mono:ital,wght@0,400..700;1,400..700&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <!-- START Loader -->
@@ -43,17 +47,17 @@
 
     <script type="module">
       ;(function () {
-        var bodyElement = document.querySelector("body")
-        bodyElement.classList.add("loading")
+        var bodyElement = document.querySelector('body')
+        bodyElement.classList.add('loading')
 
-        document.addEventListener("readystatechange", function () {
-          if (document.readyState === "complete") {
-            var bodyElement = document.querySelector("body")
-            var loaderElement = document.querySelector(".initial-loader-wrap")
-            bodyElement.classList.add("loaded")
+        document.addEventListener('readystatechange', function () {
+          if (document.readyState === 'complete') {
+            var bodyElement = document.querySelector('body')
+            var loaderElement = document.querySelector('.initial-loader-wrap')
+            bodyElement.classList.add('loaded')
             setTimeout(function () {
               bodyElement.removeChild(loaderElement)
-              bodyElement.classList.remove("loading", "loaded")
+              bodyElement.classList.remove('loading', 'loaded')
             }, 200)
           }
         })
