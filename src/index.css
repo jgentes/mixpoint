@@ -4,11 +4,6 @@
   }
 }
 
-.body {
-  font-family: -apple-system, 'Helvetica Neue', Helvetica, 'Segoe UI', Arial,
-    sans-serif;
-}
-
 .initial-loader-wrap {
   top: 0;
   left: 0;
@@ -31,14 +26,12 @@
 .initial-loader {
   min-width: 190px;
   color: #212529;
-  line-height: 1.5;
 }
 
 .initial-loader__row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem;
 }
 
 .initial-loader__row + .initial-loader__row {
@@ -47,9 +40,6 @@
 
 .initial-loader h1 {
   margin: 0;
-  font-size: 30px;
-  font-weight: 400;
-  line-height: 1.2;
   background: linear-gradient(
     60deg,
     hsl(0, 75%, 50%) 5%,

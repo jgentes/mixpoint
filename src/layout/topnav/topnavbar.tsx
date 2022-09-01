@@ -27,6 +27,7 @@ import {
 } from '@elastic/eui'
 //import { Link } from 'react-router-dom'
 import favIcon32 from '../../assets/soundwave-32px.jpg'
+import { MagnifyingGlassIcon } from '@heroicons/react/24/solid'
 
 export const TopNavbar = () => {
   const renderLogo = () => (
@@ -93,7 +94,7 @@ export const TopNavbar = () => {
       }}
       popoverButton={
         <EuiHeaderSectionItemButton aria-label="Sitewide search">
-          <EuiIcon type="search" size="m" />
+          <EuiIcon type={MagnifyingGlassIcon} size="l" />
         </EuiHeaderSectionItemButton>
       }
       emptyMessage={
@@ -127,86 +128,10 @@ export const TopNavbar = () => {
         <EuiHeaderSectionItem>{search}</EuiHeaderSectionItem>
 
         <EuiHeaderSectionItem>
-          <HeaderUserMenu />
-        </EuiHeaderSectionItem>
-
-        <EuiHeaderSectionItem>
           <HeaderAppMenu />
         </EuiHeaderSectionItem>
       </EuiHeaderSection>
     </EuiHeader>
-  )
-}
-
-const HeaderUserMenu = () => {
-  const headerUserPopoverId = useGeneratedHtmlId({
-    prefix: 'headerUserPopover',
-  })
-  const [isOpen, setIsOpen] = useState(false)
-
-  const onMenuButtonClick = () => {
-    setIsOpen(!isOpen)
-  }
-
-  const closeMenu = () => {
-    setIsOpen(false)
-  }
-
-  const button = (
-    <EuiHeaderSectionItemButton
-      aria-controls={headerUserPopoverId}
-      aria-expanded={isOpen}
-      aria-haspopup="true"
-      aria-label="Account menu"
-      onClick={onMenuButtonClick}
-    >
-      <EuiAvatar name="John Username" size="s" />
-    </EuiHeaderSectionItemButton>
-  )
-
-  return (
-    <EuiPopover
-      id={headerUserPopoverId}
-      button={button}
-      isOpen={isOpen}
-      anchorPosition="downRight"
-      closePopover={closeMenu}
-      panelPaddingSize="none"
-    >
-      <div style={{ width: 320 }}>
-        <EuiFlexGroup
-          gutterSize="m"
-          className="euiHeaderProfile"
-          responsive={false}
-        >
-          <EuiFlexItem grow={false}>
-            <EuiAvatar name="John Username" size="xl" />
-          </EuiFlexItem>
-
-          <EuiFlexItem>
-            <EuiText>
-              <p>John Username</p>
-            </EuiText>
-
-            <EuiSpacer size="m" />
-
-            <EuiFlexGroup>
-              <EuiFlexItem>
-                <EuiFlexGroup justifyContent="spaceBetween">
-                  <EuiFlexItem grow={false}>
-                    <EuiLink>Edit profile</EuiLink>
-                  </EuiFlexItem>
-
-                  <EuiFlexItem grow={false}>
-                    <EuiLink>Log out</EuiLink>
-                  </EuiFlexItem>
-                </EuiFlexGroup>
-              </EuiFlexItem>
-            </EuiFlexGroup>
-          </EuiFlexItem>
-        </EuiFlexGroup>
-      </div>
-    </EuiPopover>
   )
 }
 

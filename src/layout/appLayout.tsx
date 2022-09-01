@@ -17,7 +17,6 @@ window.onunhandledrejection = (e: PromiseRejectionEvent) =>
     icon: <WarningSign />,
   })
 */
-const layoutStyle = { width: '90%', margin: '0 auto' }
 
 const favIcons = [
   {
@@ -48,10 +47,8 @@ export const AppLayout: React.FunctionComponent = props => (
       ))}
     </Helmet>
 
-    <TopNavbar layoutStyle={layoutStyle} />
+    <TopNavbar />
 
-    <div style={{ ...layoutStyle, padding: '15px 10px' }}>
-      {/*props.children*/} Hello there
-    </div>
+    <div style={{ padding: '15px 10px' }}>{/*props.children*/} Hello there</div>
   </>
 )
