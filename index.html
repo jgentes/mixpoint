@@ -4,20 +4,75 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MixPoint</title>
-    <link rel="stylesheet" type="text/css" href="./src/index.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:slnt,wght@-10,300..700;0,300..700&family=Roboto+Mono:ital,wght@0,400..700;1,400..700&display=swap"
       rel="stylesheet"
     />
     <style>
+      @keyframes spin {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .initial-loader-wrap {
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 12px;
+        position: fixed;
+        z-index: 99999;
+        background-color: white;
+        transition: opacity 200ms cubic-bezier(0.215, 0.61, 0.355, 1);
+      }
+
+      .loaded .initial-loader-wrap {
+        opacity: 0;
+      }
+
+      .initial-loader {
+        min-width: 190px;
+        color: #212529;
+      }
+
       .initial-loader__row {
         font-family: 'Roboto Mono', Menlo, Courier, monospace;
         line-height: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
       }
+
+      .initial-loader__row + .initial-loader__row {
+        border-top: 1px solid #e2e2e2;
+      }
+
       .initial-loader h1 {
         font-feature-settings: 'calt' 1, 'kern' 1, 'liga' 1;
         font-weight: 400;
         font-size: 22px;
+        margin: 0;
+        background: linear-gradient(
+          60deg,
+          hsl(0, 75%, 50%) 5%,
+          hsl(260, 75%, 50%) 35%,
+          hsl(200, 75%, 50%) 65%,
+          hsl(220, 75%, 50%) 95%
+        );
+        color: #fff;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        -webkit-text-stroke-width: thin;
+        -webkit-text-stroke-color: rgb(255 255 255 / 35%);
+      }
+
+      .initial-loader svg#loader-circle {
+        transform-origin: 50% 50%;
+        animation: spin 0.5s linear infinite;
       }
     </style>
   </head>
