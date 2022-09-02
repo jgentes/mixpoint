@@ -113,13 +113,13 @@
 
     <script type="module">
       ;(function () {
-        var bodyElement = document.querySelector('body')
+        const bodyElement = document.querySelector('body')
         bodyElement.classList.add('loading')
 
-        document.addEventListener('readystatechange', function () {
+        document.addEventListener('readystatechange', () => {
           if (document.readyState === 'complete') {
-            var bodyElement = document.querySelector('body')
-            var loaderElement = document.querySelector('.initial-loader-wrap')
+            const bodyElement = document.querySelector('body')
+            const loaderElement = document.querySelector('.initial-loader-wrap')
             bodyElement.classList.add('loaded')
             setTimeout(function () {
               bodyElement.removeChild(loaderElement)

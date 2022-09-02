@@ -1,11 +1,5 @@
 //import AppLayout from './layout/layout'
-import {
-  EuiProvider,
-  EuiIcon,
-  EuiCode,
-  EuiText,
-  useEuiTheme,
-} from '@elastic/eui'
+import { EuiProvider, EuiThemeColorMode } from '@elastic/eui'
 import { db } from './db'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { AppLayout } from './layout/appLayout'
@@ -17,10 +11,8 @@ import '@elastic/eui/dist/eui_theme_light.css' // https://github.com/elastic/eui
 
 const App = () => {
   const colorMode = useLiveQuery(
-    (): Promise<boolean> => db.appState.get('darkMode')
+    (): Promise<EuiThemeColorMode> => db.appState.get('colorMode')
   )
-    ? 'dark'
-    : 'light'
 
   return (
     <EuiProvider colorMode={colorMode}>

@@ -1,8 +1,8 @@
 import { Helmet } from 'react-helmet'
 import { TopNavbar } from './topnav/topnavbar'
 
-import favIcon32 from '../assets/soundwave-32px.jpg'
-import favIcon16 from '../assets/soundwave-16px.jpg'
+import favIcon32 from '../assets/soundwave-32.png'
+import favIcon16 from '../assets/soundwave-16.png'
 /*
 window.onerror = msg =>
   Toaster.show({
