@@ -38,7 +38,6 @@ import {
 
 // custom
 import Layout from './components/Layout'
-import { FilesTheme } from './theme'
 import { Menu } from './components/Menu'
 import { Navigation } from './components/Navigation'
 import { DarkMode } from './components/DarkMode'
@@ -46,7 +45,7 @@ import { DarkMode } from './components/DarkMode'
 export default function Files() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   return (
-    <CssVarsProvider disableTransitionOnChange theme={FilesTheme}>
+    <CssVarsProvider disableTransitionOnChange>
       <GlobalStyles<Theme>
         styles={theme => ({
           body: {

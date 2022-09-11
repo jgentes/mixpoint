@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Helmet } from 'react-helmet'
 import { CssVarsProvider } from '@mui/joy/styles'
 import { InitialLoader } from './components/InitialLoader'
+import { theme } from './styles/theme'
 
 import favIcon32 from './assets/soundwave-32.png'
 import favIcon16 from './assets/soundwave-16.png'
@@ -40,7 +41,7 @@ const favIcons = [
 ]
 
 const App = () => (
-  <CssVarsProvider>
+  <CssVarsProvider theme={theme}>
     <Helmet>
       <meta charSet="utf-8" />
       <title>MixPoint</title>
