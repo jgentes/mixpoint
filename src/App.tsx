@@ -1,24 +1,61 @@
-//import AppLayout from './layout/layout'
-import { EuiProvider, EuiThemeColorMode } from '@elastic/eui'
-import { db } from './db'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { AppLayout } from './layout/appLayout'
+import { lazy, Suspense } from 'react'
+import { Helmet } from 'react-helmet'
+import { CssVarsProvider } from '@mui/joy/styles'
+import { InitialLoader } from './components/InitialLoader'
 
-// styles
-import './styles/icons'
-import '@elastic/eui/dist/eui_theme_dark.css' // these will go away once eui transitions entirely to emotion rather than sass
-import '@elastic/eui/dist/eui_theme_light.css' // https://github.com/elastic/eui/blob/main/wiki/consuming.md
+import favIcon32 from './assets/soundwave-32.png'
+import favIcon16 from './assets/soundwave-16.png'
 
-const App = () => {
-  const colorMode = useLiveQuery(
-    (): Promise<EuiThemeColorMode> => db.appState.get('colorMode')
-  )
+// lazy load the app & show loading indicator
+const FilesPage = lazy(() => import('./FilesApp'))
 
-  return (
-    <EuiProvider colorMode={colorMode}>
-      <AppLayout />
-    </EuiProvider>
-  )
-}
+/*
+window.onerror = msg =>
+  Toaster.show({
+    message: `Whoops! ${msg}`,
+    intent: 'danger',
+    icon: <Icon icon="warning-sign" />,
+  })
+window.onunhandledrejection = (e: PromiseRejectionEvent) =>
+  Toaster.show({
+    message: `Whoops! ${e.reason.message}`,
+    intent: 'danger',
+    icon: <WarningSign />,
+  })
+*/
+
+const favIcons = [
+  {
+    rel: 'icon',
+    type: 'image/jpg',
+    sizes: '32x32',
+    href: favIcon32,
+  },
+  {
+    rel: 'icon',
+    type: 'image/jpg',
+    sizes: '16x16',
+    href: favIcon16,
+  },
+]
+
+const App = () => (
+  <CssVarsProvider>
+    <Helmet>
+      <meta charSet="utf-8" />
+      <title>MixPoint</title>
+      <meta
+        name="description"
+        content={'MixPoint is multi-track audio editor for the modern dj'}
+      />
+      {favIcons.map((favIcon, index) => (
+        <link {...favIcon} key={index} />
+      ))}
+    </Helmet>
+    <Suspense fallback={<InitialLoader />}>
+      <FilesPage />
+    </Suspense>
+  </CssVarsProvider>
+)
 
 export default App
