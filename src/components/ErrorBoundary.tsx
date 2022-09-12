@@ -1,6 +1,7 @@
 import React from 'react'
 import { ErrorBoundary as Boundary } from 'react-error-boundary'
 import { useSnackbar } from 'notistack'
+import { InitialLoader } from './InitialLoader'
 
 export const ErrorBoundary: React.FunctionComponent<{
   children: React.ReactNode
@@ -19,14 +20,10 @@ export const ErrorBoundary: React.FunctionComponent<{
 
   return (
     <Boundary
-      FallbackComponent={({ error }) => {
-        enqueueSnackbar(error.message, { variant: 'error' })
-        return <></>
-      }}
-      onError={err => {
-        console.log('ErrorBoundary', err)
-        enqueueSnackbar(err.message, { variant: 'error' })
-      }}
+      FallbackComponent={({ error }) => (
+        <InitialLoader message="Sorry, something went wrong." />
+      )}
+      onError={err => handleError(err.message)}
     >
       {children}
     </Boundary>

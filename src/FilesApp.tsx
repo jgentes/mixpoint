@@ -2,7 +2,6 @@ import { useState } from 'react'
 import type { Theme } from '@mui/joy/styles'
 
 import { GlobalStyles } from '@mui/system'
-import { CssVarsProvider } from '@mui/joy/styles'
 
 import {
   AspectRatio,
@@ -45,7 +44,7 @@ import { DarkMode } from './components/DarkMode'
 export default function Files() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   return (
-    <CssVarsProvider disableTransitionOnChange>
+    <>
       <GlobalStyles<Theme>
         styles={theme => ({
           body: {
@@ -102,7 +101,8 @@ export default function Files() {
           </Box>
           <TextField
             size="sm"
-            placeholder="Search anything…"
+            variant="soft"
+            placeholder="Search..."
             startDecorator={<SearchRounded color="primary" />}
             endDecorator={
               <IconButton variant="outlined" size="sm" color="neutral">
@@ -116,6 +116,7 @@ export default function Files() {
               </IconButton>
             }
             sx={{
+              fontWeight: 'thin',
               flexBasis: '500px',
               display: {
                 xs: 'none',
@@ -189,7 +190,7 @@ export default function Files() {
               sx={{
                 borderRadius: 'sm',
                 gridColumn: '1/-1',
-                bgcolor: 'background.componentBg',
+                bgcolor: 'background.body',
                 display: { xs: 'none', sm: 'grid' },
                 gridTemplateColumns: '1fr 1fr 1fr 1fr',
                 '& > *': {
@@ -288,7 +289,7 @@ export default function Files() {
               sx={{
                 display: { xs: 'inherit', sm: 'none' },
                 borderRadius: 'sm',
-                bgcolor: 'background.componentBg',
+                bgcolor: 'background.body',
                 overflow: 'auto',
                 '& > *': {
                   '&:nth-of-type(n):not(:nth-last-of-type(-n+4))': {
@@ -437,7 +438,7 @@ export default function Files() {
               variant="outlined"
               sx={{
                 '--Card-radius': theme => theme.vars.radius.sm,
-                bgcolor: 'background.componentBg',
+                bgcolor: 'background.body',
                 boxShadow: 'none',
               }}
             >
@@ -521,7 +522,7 @@ export default function Files() {
               variant="outlined"
               sx={{
                 '--Card-radius': theme => theme.vars.radius.sm,
-                bgcolor: 'background.componentBg',
+                bgcolor: 'background.body',
                 boxShadow: 'none',
               }}
             >
@@ -563,7 +564,7 @@ export default function Files() {
             display: { xs: 'none', sm: 'initial' },
             borderLeft: '1px solid',
             borderColor: 'neutral.outlinedBorder',
-            bgcolor: 'background.componentBg',
+            bgcolor: 'background.surface',
           }}
         >
           <Box sx={{ p: 2, display: 'flex', alignItems: 'center' }}>
@@ -676,6 +677,6 @@ export default function Files() {
           </Box>
         </Sheet>
       </Layout.Root>
-    </CssVarsProvider>
+    </>
   )
 }

@@ -2,10 +2,11 @@ import { useColorScheme, IconButton } from '@mui/joy'
 import { useState, useEffect } from 'react'
 import { DarkModeRounded, LightModeRounded } from '@mui/icons-material'
 
+const light = new URL('../assets/light.mp3', import.meta.url)
+
 export const DarkMode: React.FunctionComponent = () => {
   const { mode, setMode } = useColorScheme()
   const [mounted, setMounted] = useState(false)
-  const light = new URL('./assets/light.mp3', import.meta.url)
 
   useEffect(() => {
     setMounted(true)

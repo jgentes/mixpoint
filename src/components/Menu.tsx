@@ -17,7 +17,7 @@ const Listbox = styled('ul')(({ theme }) => ({
   padding: '0.45rem',
   borderRadius: theme.vars.radius.sm,
   boxShadow: theme.vars.shadow.md,
-  backgroundColor: theme.vars.palette.background.componentBg,
+  backgroundColor: theme.vars.palette.background.body,
   gap: theme.spacing(1),
   display: 'flex',
   flexDirection: 'column',

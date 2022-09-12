@@ -53,15 +53,17 @@ const LoaderText = styled('p')`
   -webkit-text-stroke-color: rgb(255 255 255 / 35%);
 `
 
-export const InitialLoader: React.FunctionComponent = () => (
+export const InitialLoader: React.FunctionComponent<{ message?: string }> = ({
+  message,
+}) => (
   <LoaderWrapDiv>
     <LoaderDiv>
       <LoaderRow style={{ paddingBottom: '4px' }}>
         <LoaderText>Mixpoint</LoaderText>
-        <CircularProgress color="primary" size="18px" />
+        {message ? null : <CircularProgress color="primary" size="18px" />}
       </LoaderRow>
       <LoaderRow style={{ borderTop: '1px solid #e2e2e2' }}>
-        <LoaderSubtext>Please Wait. Loading...</LoaderSubtext>
+        <LoaderSubtext>{message || 'Please Wait. Loading...'}</LoaderSubtext>
       </LoaderRow>
     </LoaderDiv>
   </LoaderWrapDiv>

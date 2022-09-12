@@ -5,7 +5,7 @@ const Root = (props: BoxProps) => (
     {...props}
     sx={[
       {
-        bgcolor: 'background.appBody',
+        bgcolor: 'background.surface',
         display: 'grid',
         gridTemplateColumns: {
           xs: '1fr',
@@ -29,7 +29,7 @@ const Header = (props: BoxProps) => (
       {
         p: 2,
         gap: 2,
-        bgcolor: 'background.componentBg',
+        bgcolor: 'background.surface',
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -54,7 +54,7 @@ const SideNav = (props: BoxProps) => (
     sx={[
       {
         p: 2,
-        bgcolor: 'background.componentBg',
+        bgcolor: 'background.surface',
         borderRight: '1px solid',
         borderColor: 'divider',
         display: {
@@ -73,7 +73,7 @@ const SidePane = (props: BoxProps) => (
     {...props}
     sx={[
       {
-        bgcolor: 'background.componentBg',
+        bgcolor: 'background.surface',
         borderRight: '1px solid',
         borderColor: 'divider',
         display: {
@@ -123,7 +123,7 @@ const SideDrawer = ({
         height: '100%',
         p: 2,
         boxShadow: 'lg',
-        bgcolor: 'background.componentBg',
+        bgcolor: 'background.surface',
       }}
     >
       {props.children}
