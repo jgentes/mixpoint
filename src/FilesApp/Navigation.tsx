@@ -16,6 +16,7 @@ import {
   KeyboardArrowDownRounded,
   DeleteRounded,
 } from '@mui/icons-material'
+import { Link } from 'react-router-dom'
 
 export const Navigation: React.FunctionComponent = () => {
   return (
@@ -69,7 +70,9 @@ export const Navigation: React.FunctionComponent = () => {
               <ListItemDecorator sx={{ color: 'neutral.500' }}>
                 <ShareOutlined fontSize="small" />
               </ListItemDecorator>
-              <ListItemContent>Shared files</ListItemContent>
+              <ListItemContent>
+                <Link to="/tracks">Shared files</Link>
+              </ListItemContent>
             </ListItemButton>
           </ListItem>
           <ListItem>

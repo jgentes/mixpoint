@@ -36,10 +36,10 @@ import {
 } from '@mui/icons-material'
 
 // custom
-import Layout from './components/Layout'
-import { Menu } from './components/Menu'
-import { Navigation } from './components/Navigation'
-import { DarkMode } from './components/DarkMode'
+import Layout from './Layout'
+import { Menu } from './Menu'
+import { Navigation } from './Navigation'
+import { DarkMode } from '../components/DarkMode'
 
 export default function Files() {
   const [drawerOpen, setDrawerOpen] = useState(false)

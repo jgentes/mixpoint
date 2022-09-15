@@ -18,15 +18,17 @@ const favIcons = [
 ]
 
 export const AppHelmet: React.FunctionComponent = () => (
-  <Helmet>
-    <meta charSet="utf-8" />
-    <title>MixPoint</title>
-    <meta
-      name="description"
-      content={'MixPoint is multi-track audio editor for the modern dj'}
-    />
-    {favIcons.map((favIcon, index) => (
-      <link {...favIcon} key={index} />
-    ))}
-  </Helmet>
+  <>
+    <Helmet>
+      <meta charSet="utf-8" />
+      <title>MixPoint</title>
+      <meta
+        name="description"
+        content={'MixPoint is multi-track audio editor for the modern dj'}
+      />
+      {favIcons.map((favIcon, index) => (
+        <link {...favIcon} key={index} />
+      ))}
+    </Helmet>
+  </>
 )

@@ -1,5 +1,4 @@
 import { Track, TrackState, putTrack } from './db'
-import { failure } from './utils'
 import { getPermission } from './fileHandlers'
 import { guess } from 'web-audio-beat-detector'
 
@@ -83,7 +82,7 @@ const processAudio = async (track: Track): Promise<Track | undefined> => {
   try {
     ;({ offset, bpm } = await getBpm(audioBuffer))
   } catch (e) {
-    failure(undefined, `Unable to determine BPM for ${name}`)
+    throw `Unable to determine BPM for ${name}`
   }
 
   // adjust for miscalc tempo > 160bpm
@@ -97,7 +96,7 @@ const processAudio = async (track: Track): Promise<Track | undefined> => {
     duration,
     bpm: adjustedBpm,
     offset,
-    sampleRate
+    sampleRate,
   }
 
   await putTrack(updatedTrack)

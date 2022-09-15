@@ -5,9 +5,16 @@ import { InitialLoader } from './components/InitialLoader'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { SnackbarProvider } from 'notistack'
 import { theme } from './styles/theme'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 // lazy load the app & show loading indicator
-const FilesPage = lazy(() => import('./FilesApp'))
+const FilesPage = lazy(() => import('./FilesApp/FilesApp'))
+const Tracks = lazy(() => import('./routes/tracks/tracks'))
+
+const router = createBrowserRouter([
+  { path: '/', element: <FilesPage /> },
+  { path: '/tracks', element: <Tracks /> },
+])
 
 const App = () => {
   return (
@@ -16,7 +23,7 @@ const App = () => {
         <CssVarsProvider theme={theme} disableTransitionOnChange>
           <AppHelmet />
           <Suspense fallback={<InitialLoader />}>
-            <FilesPage />
+            <RouterProvider router={router} />
           </Suspense>
         </CssVarsProvider>
       </ErrorBoundary>
