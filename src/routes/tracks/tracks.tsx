@@ -4,13 +4,13 @@ import { initTrack, processAudio } from '../../audio'
 import moment from 'moment'
 import Loader from '../../layout/loader'
 import { getPermission } from '../../fileHandlers'
-import { Button, Box, Typography, TextField } from '@mui/joy'
+import { Button, Box, IconButton, Typography, TextField } from '@mui/joy'
 import { Popover, Table } from '@mui/material'
 
 import {
   Close,
   Add,
-  FilterList,
+  Height,
   Search,
   CloudUpload,
   PriorityHigh,
@@ -259,9 +259,12 @@ const Tracks = ({
     >
       {c.name}
       {c.key == 'actions' ? null : (
-        <Button
+        <IconButton
           id={`${c.key}-sort`}
           size="sm"
+          variant="plain"
+          color="primary"
+          sx={{ '--IconButton-size': '24px' }}
           onClick={e => {
             const rev = /reverse/.test(trackSort)
             const key = trackSort.split('-')[0]
@@ -276,8 +279,8 @@ const Tracks = ({
             e.stopPropagation()
           }}
         >
-          <FilterList titleAccess="Sort" />
-        </Button>
+          <Height titleAccess="Sort" fontSize="small" />
+        </IconButton>
       )}
     </th>
   ))

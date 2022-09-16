@@ -1,4 +1,4 @@
-import { Box, BoxProps, Sheet } from '@mui/joy'
+import { Box, BoxProps, Paper } from '@mui/material'
 
 const Root = (props: BoxProps) => (
   <Box
@@ -10,7 +10,7 @@ const Root = (props: BoxProps) => (
         gridTemplateColumns: {
           xs: '1fr',
           sm: 'minmax(64px, 200px) minmax(450px, 1fr)',
-          md: 'minmax(160px, 300px) minmax(300px, 500px) minmax(500px, 1fr)',
+          md: 'minmax(160px, 250px) minmax(600px, 1fr)',
         },
         gridTemplateRows: '64px 1fr',
         minHeight: '100vh',
@@ -116,7 +116,7 @@ const SideDrawer = ({
           `rgba(${theme.vars.palette.neutral.darkChannel} / 0.8)`,
       }}
     />
-    <Sheet
+    <Paper
       sx={{
         minWidth: 256,
         width: 'max-content',
@@ -127,7 +127,7 @@ const SideDrawer = ({
       }}
     >
       {props.children}
-    </Sheet>
+    </Paper>
   </Box>
 )
 

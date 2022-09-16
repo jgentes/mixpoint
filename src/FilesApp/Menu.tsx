@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { styled } from '@mui/joy/styles'
+import { styled } from '@mui/material/styles'
 import {
   MenuUnstyled,
   MenuUnstyledActions,
