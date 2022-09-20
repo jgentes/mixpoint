@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '../../test-setup'
 import '@testing-library/jest-dom/extend-expect'
-import { Tracks } from './tracks'
+import { Tracks } from './Tracks'
 
 test('Dropzone is visible', () => {
   render(<Tracks />)

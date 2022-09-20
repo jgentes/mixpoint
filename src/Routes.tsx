@@ -5,30 +5,22 @@ import { InitialLoader } from './components/InitialLoader'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { SnackbarProvider } from 'notistack'
 import { theme } from './styles/theme'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { useRoutes } from 'hookrouter'
 
 // lazy load the app & show loading indicator
 const FilesPage = lazy(() => import('./FilesApp/FilesApp'))
-const Tracks = lazy(() => import('./routes/tracks/tracks'))
 
-const router = createBrowserRouter([
-  { path: '/', element: <FilesPage /> },
-  { path: '/tracks', element: <Tracks /> },
-])
+export const Routes: React.FunctionComponent = () => {
+  const routes = useRoutes({ '/': () => <FilesPage /> })
 
-const App = () => {
   return (
     <SnackbarProvider preventDuplicate maxSnack={3}>
       <ErrorBoundary>
         <CssVarsProvider theme={theme} disableTransitionOnChange>
           <AppHelmet />
-          <Suspense fallback={<InitialLoader />}>
-            <RouterProvider router={router} />
-          </Suspense>
+          <Suspense fallback={<InitialLoader />}>{routes}</Suspense>
         </CssVarsProvider>
       </ErrorBoundary>
     </SnackbarProvider>
   )
 }
-
-export default App

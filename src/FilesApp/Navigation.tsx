@@ -2,6 +2,7 @@ import {
   Box,
   Typography,
   IconButton,
+  Link,
   List,
   ListItem,
   ListItemButton,
@@ -16,7 +17,6 @@ import {
   KeyboardArrowDownRounded,
   DeleteRounded,
 } from '@mui/icons-material'
-import { Link } from 'react-router-dom'
 
 export const Navigation: React.FunctionComponent = () => {
   return (

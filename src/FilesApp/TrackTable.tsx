@@ -1,7 +1,17 @@
-import * as React from 'react'
-import { alpha } from '@mui/material/styles'
+import { useEffect, useState, MouseEvent, ChangeEvent } from 'react'
+import { db, Track, putTrack, removeTrack, useLiveQuery } from '../db'
+import { initTrack, processAudio } from '../audio'
+import { alpha, SxProps } from '@mui/material/styles'
 import {
-  Box,
+  Card,
+  Sheet,
+  Button,
+  TextField,
+  styled,
+  Checkbox,
+  Typography,
+} from '@mui/joy'
+import {
   Collapse,
   Table,
   TableBody,
@@ -10,73 +20,46 @@ import {
   TableHead,
   TablePagination,
   TableRow,
-  TableRowProps,
   TableSortLabel,
   Toolbar,
-  Typography,
-  Paper,
-  Checkbox,
   IconButton,
   Tooltip,
 } from '@mui/material'
-
-import DeleteIcon from '@mui/icons-material/Delete'
-import FilterListIcon from '@mui/icons-material/FilterList'
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
+import moment from 'moment'
+import Loader from '../layout/loader'
+import {
+  Close,
+  Add,
+  Height,
+  Search,
+  CloudUpload,
+  PriorityHigh,
+  Delete,
+  FilterList,
+  KeyboardArrowDown,
+  KeyboardArrowUp,
+} from '@mui/icons-material'
 import { visuallyHidden } from '@mui/utils'
 
-interface Data {
-  calories: number
-  carbs: number
-  fat: number
-  name: string
-  protein: number
-  price: number
-  history: {
-    date: string
-    customerId: string
-    amount: number
-  }[]
-}
-
-function createData(
-  name: string,
-  calories: number,
-  fat: number,
-  carbs: number,
-  protein: number,
-  price: number
-) {
-  return {
-    name,
-    calories,
-    fat,
-    carbs,
-    protein,
-    price,
-    history: [
-      {
-        date: '2020-01-05',
-        customerId: '11091700',
-        amount: 3,
-      },
-      {
-        date: '2020-01-02',
-        customerId: 'Anonymous',
-        amount: 1,
-      },
-    ],
+interface TableTypes {
+  Order: 'asc' | 'desc'
+  HeadCell: {
+    disablePadding: boolean
+    id: keyof Track
+    label: string
+    numeric: boolean
+    sx?: SxProps
+    formatter: (value: any) => string
+  }
+  TableHead: {
+    numSelected: number
+    onRequestSort: (event: MouseEvent<unknown>, property: keyof Track) => void
+    onSelectAllClick: (event: ChangeEvent<HTMLInputElement>) => void
+    order: TableTypes['Order']
+    orderBy: string
+    rowCount: number
   }
 }
-
-const rows = [
-  createData('Frozen yoghurt', 159, 6.0, 24, 4.0, 3.99),
-  createData('Ice cream sandwich', 237, 9.0, 37, 4.3, 4.99),
-  createData('Eclair', 262, 16.0, 24, 6.0, 3.79),
-  createData('Cupcake', 305, 3.7, 67, 4.3, 2.5),
-  createData('Gingerbread', 356, 16.0, 49, 3.9, 1.5),
-]
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -88,10 +71,8 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   return 0
 }
 
-type Order = 'asc' | 'desc'
-
 function getComparator<Key extends keyof any>(
-  order: Order,
+  order: TableTypes['Order'],
   orderBy: Key
 ): (
   a: { [key in Key]: number | string },
@@ -102,59 +83,96 @@ function getComparator<Key extends keyof any>(
     : (a, b) => -descendingComparator(a, b, orderBy)
 }
 
-interface HeadCell {
-  disablePadding: boolean
-  id: keyof Data
-  label: string
-  numeric: boolean
-}
-
-const headCells: readonly HeadCell[] = [
+const headCells: readonly TableTypes['HeadCell'][] = [
   {
     id: 'name',
     numeric: false,
     disablePadding: true,
-    label: 'Dessert (100g serving)',
+    label: 'Track Name',
+    sx: { minWidth: '300px', width: '50%' },
+    formatter: (t: Track) => {
+      // remove suffix (ie. .mp3)
+      return (
+        <>
+          {t.name?.replace(/\.[^/.]+$/, '')}
+          {hideDropzone ? (
+            <AddToMixButton track={t} />
+          ) : (
+            <Popover open={true}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Button
+                  color="primary"
+                  style={{ marginRight: 10 }}
+                  onClick={() => addTrackToMix(t, 0)}
+                >
+                  Track 1
+                </Button>
+                <Button color="primary" onClick={() => addTrackToMix(t, 1)}>
+                  Track 2
+                </Button>
+              </div>
+              <AddToMixButton track={t} />
+            </Popover>
+          )}
+        </>
+      )
+    },
   },
   {
-    id: 'calories',
+    id: 'bpm',
     numeric: true,
     disablePadding: false,
-    label: 'Calories',
+    label: 'BPM',
+    sx: { width: '80px' },
+    formatter: (t: Track) =>
+      t.bpm?.toFixed(0) ||
+      (dirtyTracks.some(dt => dt.id == t.id) &&
+      !analyzingTracks.some(a => a.id == t.id) ? (
+        getBpmButton(t)
+      ) : (
+        <Loader style={{ margin: 0, height: '20px' }} />
+      )),
   },
   {
-    id: 'fat',
+    id: 'duration',
     numeric: true,
     disablePadding: false,
-    label: 'Fat (g)',
+    label: 'Duration',
+    sx: { width: '105px' },
+    formatter: (t: Track) =>
+      t.duration ? formatMinutes(t.duration! / 60) : null,
   },
   {
-    id: 'carbs',
+    id: 'mixes',
     numeric: true,
     disablePadding: false,
-    label: 'Carbs (g)',
+    label: 'Mixes',
+    sx: { width: '85px' },
+    formatter: (t: Track) => '',
   },
   {
-    id: 'protein',
+    id: 'sets',
     numeric: true,
     disablePadding: false,
-    label: 'Protein (g)',
+    label: 'Sets',
+    sx: { width: '85px' },
+    formatter: (t: Track) => '',
+  },
+  {
+    id: 'lastModified',
+    numeric: true,
+    disablePadding: false,
+    label: 'Updated',
+    formatter: (t: Track) => moment(t.lastModified).fromNow(),
   },
 ]
 
-interface EnhancedTableProps {
-  numSelected: number
-  onRequestSort: (
-    event: React.MouseEvent<unknown>,
-    property: keyof Data
-  ) => void
-  onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void
-  order: Order
-  orderBy: string
-  rowCount: number
-}
-
-function EnhancedTableHead(props: EnhancedTableProps) {
+function EnhancedTableHead(props: TableTypes['TableHead']) {
   const {
     onSelectAllClick,
     order,
@@ -164,22 +182,20 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     onRequestSort,
   } = props
   const createSortHandler =
-    (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
+    (property: keyof Track) => (event: MouseEvent<unknown>) => {
       onRequestSort(event, property)
     }
 
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox">
+        <TableCell>
           <Checkbox
             color="primary"
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
-            inputProps={{
-              'aria-label': 'select all desserts',
-            }}
+            title="Select all"
           />
         </TableCell>
         {headCells.map(headCell => (
@@ -188,6 +204,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             align={headCell.numeric ? 'right' : 'left'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.id ? order : false}
+            sx={headCell.sx}
           >
             <TableSortLabel
               active={orderBy === headCell.id}
@@ -196,9 +213,9 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             >
               {headCell.label}
               {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
+                <Card component="span" sx={visuallyHidden}>
                   {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </Box>
+                </Card>
               ) : null}
             </TableSortLabel>
           </TableCell>
@@ -208,11 +225,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   )
 }
 
-interface EnhancedTableToolbarProps {
-  numSelected: number
-}
-
-const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
+const EnhancedTableToolbar = (props: { numSelected: number }) => {
   const { numSelected } = props
 
   return (
@@ -230,34 +243,24 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
       }}
     >
       {numSelected > 0 ? (
-        <Typography
-          sx={{ flex: '1 1 100%' }}
-          color="inherit"
-          variant="subtitle1"
-          component="div"
-        >
+        <Typography sx={{ flex: '1 1 100%' }} component="div">
           {numSelected} selected
         </Typography>
       ) : (
-        <Typography
-          sx={{ flex: '1 1 100%' }}
-          variant="h6"
-          id="tableTitle"
-          component="div"
-        >
-          Nutrition
+        <Typography sx={{ flex: '1 1 100%' }} id="tableTitle" component="div">
+          Tracks
         </Typography>
       )}
       {numSelected > 0 ? (
         <Tooltip title="Delete">
           <IconButton>
-            <DeleteIcon />
+            <Delete />
           </IconButton>
         </Tooltip>
       ) : (
         <Tooltip title="Filter list">
           <IconButton>
-            <FilterListIcon />
+            <FilterList />
           </IconButton>
         </Tooltip>
       )}
@@ -265,80 +268,329 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   )
 }
 
-export const TrackTable = () => {
-  const [order, setOrder] = React.useState<Order>('asc')
-  const [orderBy, setOrderBy] = React.useState<keyof Data>('calories')
-  const [page, setPage] = React.useState(0)
-  const [rowsPerPage, setRowsPerPage] = React.useState(5)
-  const [selected, setSelected] = React.useState<readonly string[]>([])
+export const TrackTable = ({
+  hideDropzone,
+  trackKey,
+  openTable,
+  getPeaks,
+}: {
+  hideDropzone?: boolean
+  trackKey?: number
+  openTable: Function
+  getPeaks: Function
+}) => {
+  const [order, setOrder] = useState<TableTypes['Order']>('asc')
+  const [orderBy, setOrderBy] = useState<keyof Track>('bpm')
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(5)
+  const [selected, setSelected] = useState<readonly number[]>([])
 
-  const handleRequestSort = (
-    event: React.MouseEvent<unknown>,
-    property: keyof Data
+  const [isOver, setIsOver] = useState(false) // for dropzone
+  const [processing, setProcessing] = useState(false) // show progress if no table
+  const [analyzingTracks, setAnalyzing] = useState<Track[]>([])
+  const [dirtyTracks, setDirty] = useState<Track[]>([])
+  const [searchVal, setSearch] = useState('')
+
+  // monitor db for track updates
+  let tracks: Track[] | null = useLiveQuery(() => db.tracks.toArray()) ?? null
+  let trackSort: string =
+    useLiveQuery(() => db.appState.get('trackSort')) || 'name'
+
+  // if we see any tracks that haven't been processed, process them, or
+  // if we haven't had user activation, show button to resume processing
+  // https://html.spec.whatwg.org/multipage/interaction.html#tracking-user-activation
+  useEffect(() => setDirty(tracks?.filter(t => !t.bpm) || []), [tracks])
+
+  // queue files for processing after they are added to the DB
+  // this provides a more responsive UI experience
+  const processTracks = async (
+    handles: (FileSystemFileHandle | FileSystemDirectoryHandle)[]
   ) => {
-    const isAsc = orderBy === property && order === 'asc'
-    setOrder(isAsc ? 'desc' : 'asc')
-    setOrderBy(property)
-  }
+    let trackArray = []
 
-  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      const newSelected = rows.map(n => n.name)
-      setSelected(newSelected)
-      return
+    // show indicator if no tracks exist
+    setProcessing(true)
+
+    for await (const fileOrDirectoryHandle of handles) {
+      if (!fileOrDirectoryHandle) continue
+
+      if (fileOrDirectoryHandle?.kind === 'directory') {
+        const directoryHandle = fileOrDirectoryHandle
+        for await (const entry of directoryHandle.values()) {
+          if (entry.kind === 'file') {
+            trackArray.push(await initTrack(entry, directoryHandle))
+          }
+        }
+      } else {
+        trackArray.push(await initTrack(fileOrDirectoryHandle))
+      }
     }
-    setSelected([])
+
+    const idTracks = []
+    for (const track of trackArray) idTracks.push(await putTrack(track))
+    setProcessing(false)
+    setAnalyzing(idTracks)
+
+    for (const track of idTracks) await processAudio(track)
   }
 
-  const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
-    const selectedIndex = selected.indexOf(name)
-    let newSelected: readonly string[] = []
+  // careful wtih DataTransferItemList: https://stackoverflow.com/questions/55658851/javascript-datatransfer-items-not-persisting-through-async-calls
+  const filesDropped = async (files: DataTransferItemList) => {
+    const handleArray = []
 
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name)
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1))
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1))
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
+    for (const file of files) {
+      if (file.kind === 'file') {
+        const handle = await file.getAsFileSystemHandle()
+        if (handle) handleArray.push(handle)
+      }
+    }
+
+    setIsOver(false)
+    processTracks(handleArray)
+  }
+
+  const browseFile = async () => {
+    const files = await window
+      .showOpenFilePicker({ multiple: true })
+      .catch(e => {
+        if (e?.message?.includes('user aborted a request')) return []
+        throw e
+      })
+
+    processTracks(files)
+  }
+
+  const analyzeTrack = async (track: Track) => {
+    const ok = await getPermission(track)
+    if (ok) {
+      // if the user approves access to a folder, we can process all files in that folder :)
+      const siblingTracks = track.dirHandle
+        ? dirtyTracks.filter(t => t.dirHandle?.name == track.dirHandle!.name)
+        : [track]
+
+      setAnalyzing(siblingTracks)
+      for (const sibling of siblingTracks) {
+        await processAudio(sibling)
+        setAnalyzing(siblingTracks.filter(s => s.id !== sibling.id))
+      }
+    }
+  }
+
+  const addTrackToMix = (track: Track, trackKey: number) => {
+    getPeaks(track, trackKey)
+    openTable(false)
+  }
+
+  const createColumnDefinitions = () => {
+    const formatMinutes = (mins: number) => {
+      return moment().startOf('day').add(mins, 'minutes').format('m:ss')
+    }
+
+    const getBpmButton = (row: Track) => {
+      return (
+        <Button
+          size="sm"
+          onClick={e => {
+            e.preventDefault()
+            analyzeTrack(row)
+          }}
+        >
+          Get BPM
+        </Button>
       )
     }
 
-    setSelected(newSelected)
+    const AddToMixButton = ({ track }: { track: Track }) => (
+      <Button
+        variant="outlined"
+        size="sm"
+        onClick={() => addTrackToMix(track, trackKey)}
+      >
+        Add to Mix
+      </Button>
+    )
+
+    return [
+      {
+        key: 'name',
+        name: 'Track Name',
+        minWidth: '300px',
+        width: '50%',
+        formatter: (t: Track) => {
+          // remove suffix (ie. .mp3)
+          return (
+            <>
+              {t.name?.replace(/\.[^/.]+$/, '')}
+              <AddToMixButton track={t} />
+            </>
+          )
+        },
+      },
+      {
+        key: 'bpm',
+        name: 'BPM',
+        width: '80px',
+        formatter: (t: Track) =>
+          t.bpm?.toFixed(0) ||
+          (dirtyTracks.some(dt => dt.id == t.id) &&
+          !analyzingTracks.some(a => a.id == t.id) ? (
+            getBpmButton(t)
+          ) : (
+            <Loader style={{ margin: 0, height: '20px' }} />
+          )),
+      },
+      {
+        key: 'duration',
+        name: 'Duration',
+        width: '105px',
+        formatter: (t: Track) =>
+          t.duration ? formatMinutes(t.duration! / 60) : null,
+      },
+      {
+        key: 'mixes',
+        name: 'Mixes',
+        width: '85px',
+        formatter: (t: Track) => null,
+      },
+      {
+        key: 'sets',
+        name: 'Sets',
+        width: '75px',
+        formatter: (t: Track) => null,
+      },
+      {
+        key: 'lastModified',
+        name: 'Updated',
+        width: '140px',
+        formatter: (t: Track) => moment(t.lastModified).fromNow(),
+      },
+    ]
   }
 
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage)
+  const columnDefs = createColumnDefinitions()
+
+  const tableHeaders = columnDefs.map(c => (
+    <th
+      key={c.key}
+      style={{
+        textAlign: c.key == 'actions' ? 'center' : 'left',
+        minWidth: c.minWidth || c.width,
+        width: c.width,
+      }}
+    >
+      {c.name}
+      {c.key == 'actions' ? null : (
+        <IconButton
+          id={`${c.key}-sort`}
+          size="small"
+          color="primary"
+          onClick={e => {
+            const rev = /reverse/.test(trackSort)
+            const key = trackSort.split('-')[0]
+            const sortKey =
+              trackSort.split('-')[0] == c.key
+                ? rev
+                  ? key
+                  : `${key}-reverse`
+                : c.key
+
+            db.appState.put(sortKey, 'trackSort')
+            e.stopPropagation()
+          }}
+        >
+          <Height titleAccess="Sort" fontSize="small" />
+        </IconButton>
+      )}
+    </th>
+  ))
+
+  const sortColumns = (sortKey: string) => {
+    const rev = /reverse/.test(sortKey)
+    const key = sortKey.split('-')[0]
+
+    // ugly function that handles various sorts for strings vs numbers
+    const sortFunc = (a, b) => {
+      return key == 'name'
+        ? rev
+          ? b[key].localeCompare(a[key])
+          : a[key].localeCompare(b[key])
+        : rev
+        ? b[key] - a[key]
+        : a[key] - b[key]
+    }
+
+    tracks?.sort(sortFunc)
   }
 
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setRowsPerPage(parseInt(event.target.value, 10))
-    setPage(0)
-  }
+  sortColumns(trackSort)
+  if (searchVal && tracks)
+    tracks = tracks.filter(t =>
+      t.name?.toLowerCase().includes(searchVal.toLowerCase())
+    )
 
-  const isSelected = (name: string) => selected.indexOf(name) !== -1
+  const tableOps = {
+    sort: (event: MouseEvent<unknown>, property: keyof Track) => {
+      const isAsc = orderBy === property && order === 'asc'
+      setOrder(isAsc ? 'desc' : 'asc')
+      setOrderBy(property)
+    },
+    selectAll: (event: ChangeEvent<HTMLInputElement>) => {
+      if (event.target.checked) {
+        const newSelected = rows.map(n => n.id)
+        setSelected(newSelected)
+        return
+      }
+      setSelected([])
+    },
+    rowClick: (event: MouseEvent<unknown>, id: Track['id']) => {
+      const selectedIndex = selected.indexOf(id)
+      let newSelected: readonly string[] = []
+
+      if (selectedIndex === -1) {
+        newSelected = newSelected.concat(selected, name)
+      } else if (selectedIndex === 0) {
+        newSelected = newSelected.concat(selected.slice(1))
+      } else if (selectedIndex === selected.length - 1) {
+        newSelected = newSelected.concat(selected.slice(0, -1))
+      } else if (selectedIndex > 0) {
+        newSelected = newSelected.concat(
+          selected.slice(0, selectedIndex),
+          selected.slice(selectedIndex + 1)
+        )
+      }
+
+      setSelected(newSelected)
+    },
+    changePage: (event: unknown, newPage: number) => {
+      setPage(newPage)
+    },
+    changeRows: (event: ChangeEvent<HTMLInputElement>) => {
+      setRowsPerPage(parseInt(event.target.value, 10))
+      setPage(0)
+    },
+    isSelected: (id: Track['id']) => selected.indexOf(id) !== -1,
+  }
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0
 
   const RowState: React.FunctionComponent<{
-    row: Data
+    row: Track
     isItemSelected: boolean
     labelId: string
   }> = ({ row, isItemSelected, labelId }) => {
-    const [open, setOpen] = React.useState(false)
+    const [open, setOpen] = useState(false)
     return (
       <>
-        <TableRow hover selected={isItemSelected}>
+        <TableRow
+          hover
+          selected={isItemSelected}
+          onClick={() => setOpen(!open)}
+        >
           <TableCell
             padding="checkbox"
-            onClick={event => handleClick(event, row.name)}
+            onClick={event => tableOps.rowClick(event, labelId)}
             role="checkbox"
             aria-checked={isItemSelected}
             tabIndex={-1}
@@ -347,35 +599,42 @@ export const TrackTable = () => {
             <Checkbox
               color="primary"
               checked={isItemSelected}
-              inputProps={{
-                'aria-labelledby': labelId,
-              }}
+              onClick={event => tableOps.rowClick(event, labelId)}
+              title={labelId}
             />
           </TableCell>
-          <TableCell component="th" id={labelId} scope="row" padding="none">
+          <TableCell
+            component="th"
+            id={labelId}
+            scope="row"
+            padding="none"
+            sx={{ cursor: 'default' }}
+          >
             {row.name}
           </TableCell>
-          <TableCell align="right">{row.calories}</TableCell>
-          <TableCell align="right">{row.fat}</TableCell>
+          <TableCell align="right">{row.bpm}</TableCell>
+          <TableCell align="right">{row.duration}</TableCell>
           <TableCell align="right">
-            {row.carbs}
+            {row.mixes}
             <IconButton
               aria-label="expand row"
               size="small"
               onClick={() => setOpen(!open)}
             >
-              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+              {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
             </IconButton>
           </TableCell>
-          <TableCell align="right">{row.protein}</TableCell>
+          <TableCell align="right">{row.sets}</TableCell>
+          <TableCell align="right">{row.lastModified}</TableCell>
         </TableRow>
-        <TableRow>
-          <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+        <TableRow
+          hover
+          selected={isItemSelected}
+          onClick={() => setOpen(!open)}
+        >
+          <TableCell sx={{ pb: 0, pt: 0, border: 0 }} colSpan={6}>
             <Collapse in={open} timeout="auto" unmountOnExit>
-              <Box sx={{ margin: 1 }}>
-                <Typography variant="h6" gutterBottom component="div">
-                  History
-                </Typography>
+              <Card sx={{ margin: 1 }}>
                 <Table size="small" aria-label="purchases">
                   <TableHead>
                     <TableRow>
@@ -386,22 +645,19 @@ export const TrackTable = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {row.history.map(historyRow => (
+                    {row.history?.map(historyRow => (
                       <TableRow key={historyRow.date}>
                         <TableCell component="th" scope="row">
                           {historyRow.date}
                         </TableCell>
                         <TableCell>{historyRow.customerId}</TableCell>
                         <TableCell align="right">{historyRow.amount}</TableCell>
-                        <TableCell align="right">
-                          {Math.round(historyRow.amount * row.price * 100) /
-                            100}
-                        </TableCell>
+                        <TableCell align="right">23532</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-              </Box>
+              </Card>
             </Collapse>
           </TableCell>
         </TableRow>
@@ -409,9 +665,22 @@ export const TrackTable = () => {
     )
   }
 
+  const DropzoneDiv = styled('div')`
+    border: 2px dashed #777;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+
+    &:hover,
+    &--active {
+      border-color: #30b2e9;
+      background-color: rgba(#30b2e9, 0.1);
+    }
+  `
+
   return (
-    <Box sx={{ width: '100%' }}>
-      <Paper
+    <Card sx={{ width: '100%' }}>
+      <Sheet
         variant="outlined"
         sx={{
           width: '100%',
@@ -427,43 +696,46 @@ export const TrackTable = () => {
             sx={{ minWidth: 750 }}
             aria-labelledby="tableTitle"
             size="small"
+            padding="checkbox"
           >
             <EnhancedTableHead
               numSelected={selected.length}
               order={order}
               orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
-              onRequestSort={handleRequestSort}
-              rowCount={rows.length}
+              onSelectAllClick={tableOps.selectAll}
+              onRequestSort={tableOps.sort}
+              rowCount={tracks?.length || 0}
             />
             <TableBody>
-              {rows
-                .slice()
-                // @ts-ignore: TS complains about the type of orderBy due to history being an array
-                .sort(getComparator(order, orderBy))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  const isItemSelected = isSelected(row.name)
-                  const labelId = `enhanced-table-checkbox-${index}`
+              <>
+                {tracks?.length &&
+                  [...tracks]
+                    // @ts-ignore: TS complains about the type of orderBy due to history being an array
+                    .sort(getComparator(order, orderBy))
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((row, index) => {
+                      const isItemSelected = tableOps.isSelected(row.id)
+                      const labelId = `enhanced-table-checkbox-${index}`
 
-                  return (
-                    <RowState
-                      key={labelId}
-                      row={row}
-                      isItemSelected={isItemSelected}
-                      labelId={labelId}
-                    />
-                  )
-                })}
-              {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: 33 * emptyRows,
-                  }}
-                >
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
+                      return (
+                        <RowState
+                          key={index}
+                          row={row}
+                          isItemSelected={isItemSelected}
+                          labelId={labelId}
+                        />
+                      )
+                    })}
+                {emptyRows > 0 && (
+                  <TableRow
+                    style={{
+                      height: 33 * emptyRows,
+                    }}
+                  >
+                    <TableCell colSpan={6} />
+                  </TableRow>
+                )}
+              </>
             </TableBody>
           </Table>
         </TableContainer>
@@ -473,10 +745,97 @@ export const TrackTable = () => {
           count={rows.length}
           rowsPerPage={rowsPerPage}
           page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
+          onPageChange={tableOps.changePage}
+          onRowsPerPageChange={tableOps.changeRows}
         />
-      </Paper>
-    </Box>
+      </Sheet>
+      <hr />
+      <>
+        {/* DropZone */}
+        {hideDropzone ? null : (
+          <Sheet style={{ margin: '10px 0' }} variant="soft">
+            <DropzoneDiv
+              onClick={browseFile}
+              onDrop={e => {
+                e.preventDefault()
+                filesDropped(e.dataTransfer.items)
+              }}
+              onDragOver={e => e.preventDefault()}
+              onDragEnter={() => setIsOver(true)}
+              onDragLeave={() => setIsOver(false)}
+            >
+              <CloudUpload
+                sx={{ fontSize: 48 }}
+                className="drop"
+                style={{ marginBottom: '10px' }}
+              />
+              <Typography level="h4" className="drop">
+                Add Tracks
+              </Typography>
+              <div className="drop">
+                Drag a file or <strong>folder</strong> here or{' '}
+                <span className="text-primary">browse</span> for a file to add.
+                Folders are preferred.
+              </div>
+            </DropzoneDiv>
+          </Sheet>
+        )}
+        {!tracks || processing ? (
+          <Loader style={{ margin: '50px auto' }} />
+        ) : (
+          <>
+            {/* Table search and info bar */}
+            <Card
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: '10px',
+              }}
+            >
+              <TextField
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search"
+                value={searchVal}
+              >
+                <Search />
+              </TextField>
+              {!dirtyTracks.length ? null : (
+                <div style={{ alignSelf: 'center' }}>
+                  <PriorityHigh style={{ marginRight: '5px' }} />
+                  {`BPM needed for ${dirtyTracks.length} Track${
+                    tracks?.length === 1 ? '' : 's'
+                  }`}
+                </div>
+              )}
+              <div style={{ alignSelf: 'center' }}>
+                <Button size="sm" onClick={browseFile}>
+                  <Add />
+                  Add Track
+                </Button>
+              </div>
+            </Card>
+            {!tracks?.length ? null : (
+              <div id="trackTable">
+                {/* Track Table */}
+                <Table style={{ width: '100%', tableLayout: 'fixed' }}>
+                  <thead>
+                    <tr>{tableHeaders}</tr>
+                  </thead>
+                  <tbody>
+                    {tracks.map((t, i) => (
+                      <tr key={i}>
+                        {columnDefs.map(c => (
+                          <td key={c.key}>{c.formatter(t)}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
+            )}
+          </>
+        )}
+      </>
+    </Card>
   )
 }

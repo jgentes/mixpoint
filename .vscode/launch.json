@@ -6,10 +6,12 @@
   "configurations": [
     {
       "type": "msedge",
-      "request": "launch",
-      "name": "Launch Edge against localhost",
+      "request": "attach",
+      "port": 9222,
+      "name": "Debug MixPoint",
       "url": "http://localhost:3000",
       "webRoot": "${workspaceFolder}/src",
+      "preLaunchTask": "yarn dev",
       "smartStep": true,
       "skipFiles": [
         "<node_internals>/**/*.js",

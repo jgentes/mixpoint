@@ -5,7 +5,7 @@ import WaveformData from 'waveform-data'
 
 // from https://dexie.org/docs/Typescript
 
-class MixPointDb extends Dexie {
+class MixpointDb extends Dexie {
   tracks: Dexie.Table<Track, number>
   mixes: Dexie.Table<Mix, number>
   sets: Dexie.Table<Set, number>
@@ -14,8 +14,8 @@ class MixPointDb extends Dexie {
   setState: Dexie.Table<SetState>
   appState: Dexie.Table<any>
 
-  constructor () {
-    super('MixPointDb')
+  constructor() {
+    super('MixpointDb')
     this.version(1).stores({
       tracks: '++id, name, bpm, [name+size]',
       mixes: '++id, tracks',
@@ -23,7 +23,7 @@ class MixPointDb extends Dexie {
       trackState: 'trackKey',
       mixState: '++id',
       setState: '++id',
-      appState: ''
+      appState: '',
     })
 
     this.tracks = this.table('tracks')
@@ -37,20 +37,6 @@ class MixPointDb extends Dexie {
 }
 
 // define tables
-interface Track {
-  id: number
-  name?: string
-  fileHandle?: FileSystemFileHandle
-  dirHandle?: FileSystemDirectoryHandle
-  size?: number
-  type?: string
-  lastModified?: number
-  duration?: number
-  bpm?: number
-  sampleRate?: number
-  offset?: number
-}
-
 /* TrackState should not contain mix state */
 interface TrackState {
   trackKey?: number
@@ -61,33 +47,71 @@ interface TrackState {
   mixPoint?: number
 }
 
-interface Mix {
-  id?: number
-  trackIds: number[]
-  mixPoints: MixPoint[]
+interface Track {
+  id: number
+  name?: string
+  fileHandle?: FileSystemFileHandle
+  dirHandle?: FileSystemDirectoryHandle
+  size?: number
+  type?: string // type of file as returned from fileHandle
+  lastModified?: number
+  duration?: number
+  bpm?: number
+  sampleRate?: number
+  offset?: number // first beat as determined by getBpm
+  mixpoints: MixPoint[]
+  sets: Set['id'][]
 }
+
+// a mixpoint is a point in time where the To track begins to overlay the From track.
+// a mixpoint is not the output of two tracks mixed together.
+
+interface MixPoint {
+  timestamp: number
+  mixes: Mix['id'][]
+}
+
+// a mix is a representation of the transition between tracks
+
+interface Mix {
+  id: number
+  from: {
+    id: Track['id']
+    bpm: number
+    timestamp: number
+  }
+  to: {
+    id: Track['id']
+    bpm: number
+    timestamp: number
+  }
+  status: string // good | bad | unknown?
+  effects: {
+    timestamp: number
+    duration: number
+  }[]
+}
+
 interface MixState {
-  mixId?: number
+  mixId?: Mix['id']
   bpmSync?: boolean
 }
 
 interface Set {
   id?: number
-  mixIds: number[]
+  mixIds: Mix['id'][]
 }
 
 interface SetState {
-  setId?: number
+  setId?: Set['id']
 }
 
-interface MixPoint {
-  times: number[]
-  effects: any
-}
-
-const db = new MixPointDb()
+const db = new MixpointDb()
 
 const errHandler = (err: Error) => {
+  console.error(
+    'THIS WAS CAUGHT BY DB ERRORHANDLER, CURIOUS TO KNOW IF THIS WOULD HAVE BEEN CAUGHT IF THE .CATCH BLOCK WAS OMITTED'
+  )
   /*
   Toaster.show({
     message: `Oops, there was a problem: ${err.message}`,
@@ -111,7 +135,7 @@ const removeTrack = async (id: number): Promise<void> =>
   await db.tracks.delete(id).catch(errHandler)
 
 const addMix = async (
-  trackIds: number[],
+  trackIds: Track['id'][],
   mixPoints: MixPoint[]
 ): Promise<number> =>
   await db.mixes.add({ trackIds, mixPoints }).catch(errHandler)
@@ -122,18 +146,6 @@ const getMix = async (id: number): Promise<Mix | undefined> =>
 const removeMix = async (id: number): Promise<void> =>
   await db.mixes.delete(id).catch(errHandler)
 
-export {
-  db,
-  Track,
-  TrackState,
-  Mix,
-  MixState,
-  Set,
-  SetState,
-  putTrack,
-  removeTrack,
-  addMix,
-  getMix,
-  removeMix,
-  useLiveQuery
-}
+export type { Track, TrackState, Mix, MixState, Set, SetState }
+
+export { db, putTrack, removeTrack, addMix, getMix, removeMix, useLiveQuery }

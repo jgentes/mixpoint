@@ -21,10 +21,10 @@ export const AppHelmet: React.FunctionComponent = () => (
   <>
     <Helmet>
       <meta charSet="utf-8" />
-      <title>MixPoint</title>
+      <title>Mixpoint</title>
       <meta
         name="description"
-        content={'MixPoint is multi-track audio editor for the modern dj'}
+        content={'Mixpoint is multi-track audio editor for the modern dj'}
       />
       {favIcons.map((favIcon, index) => (
         <link {...favIcon} key={index} />

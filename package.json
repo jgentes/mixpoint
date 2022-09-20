@@ -1,12 +1,11 @@
 {
   "name": "mixpoint",
+  "version": "0.1.0",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 3000",
-    "build": "yarn tsc && vite build",
-    "preview": "vite preview"
+    "build": "yarn parcel build index.html",
+    "dev": "yarn parcel index.html --port 3000"
   },
   "dependencies": {
     "@emotion/react": "^11.10.4",
@@ -16,8 +15,14 @@
     "@mui/icons-material": "^5.10.3",
     "@mui/joy": "^5.0.0-alpha.44",
     "@mui/material": "^5.10.4",
+    "@types/hookrouter": "^2.2.5",
+    "@types/node": "^18.7.3",
+    "@types/react": "^18.0.17",
+    "@types/react-dom": "^18.0.6",
+    "@types/react-helmet": "^6.1.5",
     "dexie": "^3.2.2",
     "dexie-react-hooks": "^1.1.1",
+    "hookrouter": "^1.2.5",
     "moment": "^2.29.4",
     "notistack": "^2.0.5",
     "peaks.js": "^2.0.6",
@@ -27,18 +32,15 @@
     "react-dom": "^18.2.0",
     "react-error-boundary": "^3.1.4",
     "react-helmet": "^6.1.0",
-    "react-router-dom": "^6.4.0",
-    "utility-types": "^3.10.0",
     "waveform-data": "^4.3.0",
     "web-audio-beat-detector": "^8.1.33"
   },
   "devDependencies": {
-    "@types/node": "^18.7.3",
-    "@types/react": "^18.0.17",
-    "@types/react-dom": "^18.0.6",
-    "@types/react-helmet": "^6.1.5",
-    "@vitejs/plugin-react": "^2.1.0",
+    "parcel": "^2.7.0",
+    "process": "^0.11.10",
+    "querystring-es3": "^0.2.1",
     "typescript": "^4.8.3",
-    "vite": "^3.1.0"
+    "utility-types": "^3.10.0",
+    "url": "^0.11.0"
   }
 }
