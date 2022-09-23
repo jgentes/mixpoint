@@ -151,9 +151,7 @@ export default function Files() {
           <Navigation />
         </Layout.SideNav>
         <Layout.Main>
-          <Box>
-            <TrackTable />
-          </Box>
+          <TrackTable />
         </Layout.Main>
       </Layout.Root>
     </>

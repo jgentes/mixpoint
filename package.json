@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "yarn parcel build index.html",
-    "dev": "yarn parcel index.html --port 3000"
+    "build": "yarn parcel build src/index.html",
+    "dev": "yarn parcel src/index.html --port 3000"
   },
   "dependencies": {
     "@emotion/react": "^11.10.4",
@@ -25,6 +25,7 @@
     "hookrouter": "^1.2.5",
     "moment": "^2.29.4",
     "notistack": "^2.0.5",
+    "parcel": "^2.7.0",
     "peaks.js": "^2.0.6",
     "prop-types": "^15.8.1",
     "rc-slider": "^10.0.1",
@@ -36,11 +37,10 @@
     "web-audio-beat-detector": "^8.1.33"
   },
   "devDependencies": {
-    "parcel": "^2.7.0",
     "process": "^0.11.10",
     "querystring-es3": "^0.2.1",
     "typescript": "^4.8.3",
-    "utility-types": "^3.10.0",
-    "url": "^0.11.0"
+    "url": "^0.11.0",
+    "utility-types": "^3.10.0"
   }
 }

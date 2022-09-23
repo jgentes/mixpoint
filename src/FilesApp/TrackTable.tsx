@@ -1,4 +1,11 @@
-import { useEffect, useState, MouseEvent, ChangeEvent } from 'react'
+import {
+  useEffect,
+  useState,
+  MouseEvent,
+  ChangeEvent,
+  ReactNode,
+  ChangeEventHandler,
+} from 'react'
 import { db, Track, putTrack, removeTrack, useLiveQuery } from '../db'
 import { initTrack, processAudio } from '../audio'
 import { alpha, SxProps } from '@mui/material/styles'
@@ -24,6 +31,7 @@ import {
   Toolbar,
   IconButton,
   Tooltip,
+  TableCellProps,
 } from '@mui/material'
 import moment from 'moment'
 import Loader from '../layout/loader'
@@ -41,26 +49,6 @@ import {
 } from '@mui/icons-material'
 import { visuallyHidden } from '@mui/utils'
 
-interface TableTypes {
-  Order: 'asc' | 'desc'
-  HeadCell: {
-    disablePadding: boolean
-    id: keyof Track
-    label: string
-    numeric: boolean
-    sx?: SxProps
-    formatter: (value: any) => string
-  }
-  TableHead: {
-    numSelected: number
-    onRequestSort: (event: MouseEvent<unknown>, property: keyof Track) => void
-    onSelectAllClick: (event: ChangeEvent<HTMLInputElement>) => void
-    order: TableTypes['Order']
-    orderBy: string
-    rowCount: number
-  }
-}
-
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
     return -1
@@ -72,7 +60,7 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
 }
 
 function getComparator<Key extends keyof any>(
-  order: TableTypes['Order'],
+  order: 'asc' | 'desc',
   orderBy: Key
 ): (
   a: { [key in Key]: number | string },
@@ -81,191 +69,6 @@ function getComparator<Key extends keyof any>(
   return order === 'desc'
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy)
-}
-
-const headCells: readonly TableTypes['HeadCell'][] = [
-  {
-    id: 'name',
-    numeric: false,
-    disablePadding: true,
-    label: 'Track Name',
-    sx: { minWidth: '300px', width: '50%' },
-    formatter: (t: Track) => {
-      // remove suffix (ie. .mp3)
-      return (
-        <>
-          {t.name?.replace(/\.[^/.]+$/, '')}
-          {hideDropzone ? (
-            <AddToMixButton track={t} />
-          ) : (
-            <Popover open={true}>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <Button
-                  color="primary"
-                  style={{ marginRight: 10 }}
-                  onClick={() => addTrackToMix(t, 0)}
-                >
-                  Track 1
-                </Button>
-                <Button color="primary" onClick={() => addTrackToMix(t, 1)}>
-                  Track 2
-                </Button>
-              </div>
-              <AddToMixButton track={t} />
-            </Popover>
-          )}
-        </>
-      )
-    },
-  },
-  {
-    id: 'bpm',
-    numeric: true,
-    disablePadding: false,
-    label: 'BPM',
-    sx: { width: '80px' },
-    formatter: (t: Track) =>
-      t.bpm?.toFixed(0) ||
-      (dirtyTracks.some(dt => dt.id == t.id) &&
-      !analyzingTracks.some(a => a.id == t.id) ? (
-        getBpmButton(t)
-      ) : (
-        <Loader style={{ margin: 0, height: '20px' }} />
-      )),
-  },
-  {
-    id: 'duration',
-    numeric: true,
-    disablePadding: false,
-    label: 'Duration',
-    sx: { width: '105px' },
-    formatter: (t: Track) =>
-      t.duration ? formatMinutes(t.duration! / 60) : null,
-  },
-  {
-    id: 'mixes',
-    numeric: true,
-    disablePadding: false,
-    label: 'Mixes',
-    sx: { width: '85px' },
-    formatter: (t: Track) => '',
-  },
-  {
-    id: 'sets',
-    numeric: true,
-    disablePadding: false,
-    label: 'Sets',
-    sx: { width: '85px' },
-    formatter: (t: Track) => '',
-  },
-  {
-    id: 'lastModified',
-    numeric: true,
-    disablePadding: false,
-    label: 'Updated',
-    formatter: (t: Track) => moment(t.lastModified).fromNow(),
-  },
-]
-
-function EnhancedTableHead(props: TableTypes['TableHead']) {
-  const {
-    onSelectAllClick,
-    order,
-    orderBy,
-    numSelected,
-    rowCount,
-    onRequestSort,
-  } = props
-  const createSortHandler =
-    (property: keyof Track) => (event: MouseEvent<unknown>) => {
-      onRequestSort(event, property)
-    }
-
-  return (
-    <TableHead>
-      <TableRow>
-        <TableCell>
-          <Checkbox
-            color="primary"
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-            title="Select all"
-          />
-        </TableCell>
-        {headCells.map(headCell => (
-          <TableCell
-            key={headCell.id}
-            align={headCell.numeric ? 'right' : 'left'}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
-            sortDirection={orderBy === headCell.id ? order : false}
-            sx={headCell.sx}
-          >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id)}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Card component="span" sx={visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </Card>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  )
-}
-
-const EnhancedTableToolbar = (props: { numSelected: number }) => {
-  const { numSelected } = props
-
-  return (
-    <Toolbar
-      sx={{
-        pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
-        ...(numSelected > 0 && {
-          bgcolor: theme =>
-            alpha(
-              theme.palette.primary.main,
-              theme.palette.action.activatedOpacity
-            ),
-        }),
-      }}
-    >
-      {numSelected > 0 ? (
-        <Typography sx={{ flex: '1 1 100%' }} component="div">
-          {numSelected} selected
-        </Typography>
-      ) : (
-        <Typography sx={{ flex: '1 1 100%' }} id="tableTitle" component="div">
-          Tracks
-        </Typography>
-      )}
-      {numSelected > 0 ? (
-        <Tooltip title="Delete">
-          <IconButton>
-            <Delete />
-          </IconButton>
-        </Tooltip>
-      ) : (
-        <Tooltip title="Filter list">
-          <IconButton>
-            <FilterList />
-          </IconButton>
-        </Tooltip>
-      )}
-    </Toolbar>
-  )
 }
 
 export const TrackTable = ({
@@ -279,7 +82,7 @@ export const TrackTable = ({
   openTable: Function
   getPeaks: Function
 }) => {
-  const [order, setOrder] = useState<TableTypes['Order']>('asc')
+  const [order, setOrder] = useState<'asc' | 'desc'>('asc')
   const [orderBy, setOrderBy] = useState<keyof Track>('bpm')
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(5)
@@ -381,18 +184,25 @@ export const TrackTable = ({
     openTable(false)
   }
 
-  const createColumnDefinitions = () => {
+  const createColumnDefinitions = (): {
+    key: keyof Track
+    label: string
+    padding: TableCellProps['padding']
+    align: TableCellProps['align']
+    sx?: SxProps
+    formatter: (t: Track) => string | ReactNode
+  }[] => {
     const formatMinutes = (mins: number) => {
       return moment().startOf('day').add(mins, 'minutes').format('m:ss')
     }
 
-    const getBpmButton = (row: Track) => {
+    const getBpmButton = (t: Track) => {
       return (
         <Button
           size="sm"
           onClick={e => {
             e.preventDefault()
-            analyzeTrack(row)
+            analyzeTrack(t)
           }}
         >
           Get BPM
@@ -413,24 +223,21 @@ export const TrackTable = ({
     return [
       {
         key: 'name',
-        name: 'Track Name',
-        minWidth: '300px',
-        width: '50%',
-        formatter: (t: Track) => {
-          // remove suffix (ie. .mp3)
-          return (
-            <>
-              {t.name?.replace(/\.[^/.]+$/, '')}
-              <AddToMixButton track={t} />
-            </>
-          )
-        },
+        label: 'Track Name',
+        align: 'left',
+        padding: 'none',
+        sx: { minWidth: '300px', width: '50%' },
+        // remove suffix (ie. .mp3)
+        formatter: t =>
+          t.name?.replace(/\.[^/.]+$/, '') || 'Track name not found',
       },
       {
         key: 'bpm',
-        name: 'BPM',
-        width: '80px',
-        formatter: (t: Track) =>
+        label: 'BPM',
+        align: 'right',
+        padding: 'normal',
+        sx: { width: '80px' },
+        formatter: t =>
           t.bpm?.toFixed(0) ||
           (dirtyTracks.some(dt => dt.id == t.id) &&
           !analyzingTracks.some(a => a.id == t.id) ? (
@@ -441,33 +248,142 @@ export const TrackTable = ({
       },
       {
         key: 'duration',
-        name: 'Duration',
-        width: '105px',
-        formatter: (t: Track) =>
-          t.duration ? formatMinutes(t.duration! / 60) : null,
+        align: 'right',
+        padding: 'normal',
+        label: 'Duration',
+        sx: { width: '105px' },
+        formatter: t => (t.duration ? formatMinutes(t.duration! / 60) : null),
       },
       {
-        key: 'mixes',
-        name: 'Mixes',
-        width: '85px',
-        formatter: (t: Track) => null,
+        key: 'mixpoints',
+        align: 'right',
+        padding: 'normal',
+        label: 'Mixes',
+        sx: { width: '85px' },
+        formatter: t => '',
       },
       {
         key: 'sets',
-        name: 'Sets',
-        width: '75px',
-        formatter: (t: Track) => null,
+        align: 'right',
+        padding: 'normal',
+        label: 'Sets',
+        sx: { width: '85px' },
+        formatter: t => '',
       },
       {
         key: 'lastModified',
-        name: 'Updated',
-        width: '140px',
-        formatter: (t: Track) => moment(t.lastModified).fromNow(),
+        align: 'right',
+        padding: 'normal',
+        label: 'Updated',
+        formatter: t => moment(t.lastModified).fromNow(),
       },
     ]
   }
 
   const columnDefs = createColumnDefinitions()
+
+  const EnhancedTableHead = (props: {
+    numSelected: number
+    onRequestSort: (event: MouseEvent<unknown>, property: string) => void
+    onSelectAllClick: (event: ChangeEvent<HTMLInputElement>) => void
+    order: 'asc' | 'desc'
+    orderBy: string
+    rowCount: number
+  }) => {
+    const {
+      onSelectAllClick,
+      order,
+      orderBy,
+      numSelected,
+      rowCount,
+      onRequestSort,
+    } = props
+
+    const createSortHandler =
+      (property: string) => (event: MouseEvent<unknown>) => {
+        onRequestSort(event, property)
+      }
+
+    return (
+      <TableHead>
+        <TableRow>
+          <TableCell>
+            <Checkbox
+              color="primary"
+              indeterminate={numSelected > 0 && numSelected < rowCount}
+              checked={rowCount > 0 && numSelected === rowCount}
+              onChange={onSelectAllClick}
+              title="Select all"
+            />
+          </TableCell>
+          {columnDefs.map(column => (
+            <TableCell
+              {...column}
+              sortDirection={orderBy === column.key ? order : false}
+            >
+              <TableSortLabel
+                active={orderBy === column.key}
+                direction={orderBy === column.key ? order : 'asc'}
+                onClick={createSortHandler(column.key)}
+              >
+                {column.label}
+                {orderBy === column.key ? (
+                  <Card component="span" sx={visuallyHidden}>
+                    {order === 'desc'
+                      ? 'sorted descending'
+                      : 'sorted ascending'}
+                  </Card>
+                ) : null}
+              </TableSortLabel>
+            </TableCell>
+          ))}
+        </TableRow>
+      </TableHead>
+    )
+  }
+
+  const EnhancedTableToolbar = (props: { numSelected: number }) => {
+    const { numSelected } = props
+
+    return (
+      <Toolbar
+        sx={{
+          pl: { sm: 2 },
+          pr: { xs: 1, sm: 1 },
+          ...(numSelected > 0 && {
+            bgcolor: theme =>
+              alpha(
+                theme.palette.primary.main,
+                theme.palette.action.activatedOpacity
+              ),
+          }),
+        }}
+      >
+        {numSelected > 0 ? (
+          <Typography sx={{ flex: '1 1 100%' }} component="div">
+            {numSelected} selected
+          </Typography>
+        ) : (
+          <Typography sx={{ flex: '1 1 100%' }} id="tableTitle" component="div">
+            Tracks
+          </Typography>
+        )}
+        {numSelected > 0 ? (
+          <Tooltip title="Delete">
+            <IconButton>
+              <Delete />
+            </IconButton>
+          </Tooltip>
+        ) : (
+          <Tooltip title="Filter list">
+            <IconButton>
+              <FilterList />
+            </IconButton>
+          </Tooltip>
+        )}
+      </Toolbar>
+    )
+  }
 
   const tableHeaders = columnDefs.map(c => (
     <th
@@ -534,20 +450,20 @@ export const TrackTable = ({
       setOrder(isAsc ? 'desc' : 'asc')
       setOrderBy(property)
     },
+
     selectAll: (event: ChangeEvent<HTMLInputElement>) => {
-      if (event.target.checked) {
-        const newSelected = rows.map(n => n.id)
-        setSelected(newSelected)
-        return
-      }
-      setSelected([])
+      if (!event.target.checked) return setSelected([])
+
+      const newSelected = tracks?.map(n => n.id)
+      if (newSelected) setSelected(newSelected)
     },
+
     rowClick: (event: MouseEvent<unknown>, id: Track['id']) => {
       const selectedIndex = selected.indexOf(id)
-      let newSelected: readonly string[] = []
+      let newSelected: readonly Track['id'][] = []
 
       if (selectedIndex === -1) {
-        newSelected = newSelected.concat(selected, name)
+        newSelected = newSelected.concat(selected, id)
       } else if (selectedIndex === 0) {
         newSelected = newSelected.concat(selected.slice(1))
       } else if (selectedIndex === selected.length - 1) {
@@ -561,19 +477,22 @@ export const TrackTable = ({
 
       setSelected(newSelected)
     },
+
     changePage: (event: unknown, newPage: number) => {
       setPage(newPage)
     },
+
     changeRows: (event: ChangeEvent<HTMLInputElement>) => {
       setRowsPerPage(parseInt(event.target.value, 10))
       setPage(0)
     },
+
     isSelected: (id: Track['id']) => selected.indexOf(id) !== -1,
   }
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - (tracks?.length || 0)) : 0
 
   const RowState: React.FunctionComponent<{
     row: Track
@@ -590,7 +509,7 @@ export const TrackTable = ({
         >
           <TableCell
             padding="checkbox"
-            onClick={event => tableOps.rowClick(event, labelId)}
+            onClick={event => tableOps.rowClick(event, row.id)}
             role="checkbox"
             aria-checked={isItemSelected}
             tabIndex={-1}
@@ -599,7 +518,7 @@ export const TrackTable = ({
             <Checkbox
               color="primary"
               checked={isItemSelected}
-              onClick={event => tableOps.rowClick(event, labelId)}
+              onClick={event => tableOps.rowClick(event, row.id)}
               title={labelId}
             />
           </TableCell>
@@ -692,12 +611,7 @@ export const TrackTable = ({
       >
         <EnhancedTableToolbar numSelected={selected.length} />
         <TableContainer>
-          <Table
-            sx={{ minWidth: 750 }}
-            aria-labelledby="tableTitle"
-            size="small"
-            padding="checkbox"
-          >
+          <Table aria-labelledby="tableTitle" size="small" padding="checkbox">
             <EnhancedTableHead
               numSelected={selected.length}
               order={order}
@@ -708,7 +622,7 @@ export const TrackTable = ({
             />
             <TableBody>
               <>
-                {tracks?.length &&
+                {tracks &&
                   [...tracks]
                     // @ts-ignore: TS complains about the type of orderBy due to history being an array
                     .sort(getComparator(order, orderBy))
@@ -742,14 +656,13 @@ export const TrackTable = ({
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={rows.length}
+          count={tracks?.length || 0}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={tableOps.changePage}
           onRowsPerPageChange={tableOps.changeRows}
         />
       </Sheet>
-      <hr />
       <>
         {/* DropZone */}
         {hideDropzone ? null : (
