@@ -1,4 +1,6 @@
-node_modules
-dist
+node_modules/
+.cache/
+build/
+public/
+dist/
 *.log
-.parcel-cache/

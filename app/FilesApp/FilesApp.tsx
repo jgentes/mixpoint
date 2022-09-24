@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Theme } from '@mui/joy/styles'
-import { TrackTable } from './TrackTable'
+//import { TrackTable } from './TrackTable'
 import { GlobalStyles } from '@mui/system'
 
 import { Box, Typography, TextField, IconButton } from '@mui/joy'
@@ -19,7 +19,7 @@ import { Menu } from './Menu'
 import { Navigation } from './Navigation'
 import { DarkMode } from '../components/DarkMode'
 
-export default function Files() {
+export const FilesPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false)
   return (
     <>
@@ -150,9 +150,7 @@ export default function Files() {
         <Layout.SideNav>
           <Navigation />
         </Layout.SideNav>
-        <Layout.Main>
-          <TrackTable />
-        </Layout.Main>
+        <Layout.Main>{/* <TrackTable /> */}</Layout.Main>
       </Layout.Root>
     </>
   )

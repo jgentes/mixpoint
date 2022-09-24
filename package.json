@@ -2,10 +2,12 @@
   "name": "mixpoint",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
-    "build": "yarn parcel build src/index.html",
-    "dev": "yarn parcel src/index.html --port 3000"
+    "build": "remix build",
+    "dev": "remix dev",
+    "start": "cross-env NODE_ENV=production remix-serve ./build",
+    "build-parcel": "yarn parcel build src/index.html",
+    "dev-parcel": "yarn parcel src/index.html --port 3000"
   },
   "dependencies": {
     "@emotion/react": "^11.10.4",
@@ -15,32 +17,29 @@
     "@mui/icons-material": "^5.10.3",
     "@mui/joy": "^5.0.0-alpha.44",
     "@mui/material": "^5.10.4",
-    "@types/hookrouter": "^2.2.5",
+    "@remix-run/node": "^1.7.2",
+    "@remix-run/react": "^1.7.2",
     "@types/node": "^18.7.3",
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
     "@types/react-helmet": "^6.1.5",
+    "cross-env": "^7.0.3",
     "dexie": "^3.2.2",
     "dexie-react-hooks": "^1.1.1",
-    "hookrouter": "^1.2.5",
     "moment": "^2.29.4",
     "notistack": "^2.0.5",
-    "parcel": "^2.7.0",
     "peaks.js": "^2.0.6",
     "prop-types": "^15.8.1",
     "rc-slider": "^10.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-error-boundary": "^3.1.4",
-    "react-helmet": "^6.1.0",
     "waveform-data": "^4.3.0",
     "web-audio-beat-detector": "^8.1.33"
   },
   "devDependencies": {
-    "process": "^0.11.10",
-    "querystring-es3": "^0.2.1",
+    "@remix-run/dev": "^1.7.2",
+    "@remix-run/serve": "^1.7.2",
     "typescript": "^4.8.3",
-    "url": "^0.11.0",
     "utility-types": "^3.10.0"
   }
 }

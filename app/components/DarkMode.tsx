@@ -2,7 +2,7 @@ import { useColorScheme, IconButton } from '@mui/joy'
 import { useState, useEffect } from 'react'
 import { DarkModeRounded, LightModeRounded } from '@mui/icons-material'
 
-const light = new URL('../assets/light.mp3', import.meta.url)
+//const light = new URL('../assets/light.mp3', import.meta.url)
 
 export const DarkMode: React.FunctionComponent = () => {
   const { mode, setMode } = useColorScheme()
@@ -21,7 +21,7 @@ export const DarkMode: React.FunctionComponent = () => {
       variant="outlined"
       color="primary"
       onClick={() => {
-        new Audio(light.href).play()
+        //new Audio(light.href).play()
         if (mode === 'light') {
           setMode('dark')
         } else {

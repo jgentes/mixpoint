@@ -1,10 +1,10 @@
 import { lazy, Suspense } from 'react'
-import { AppHelmet } from './components/AppHelmet'
+import { AppHelmet } from '../app/components/AppHelmet'
 import { CssVarsProvider } from '@mui/joy/styles'
-import { InitialLoader } from './components/InitialLoader'
-import { ErrorBoundary } from './components/ErrorBoundary'
+import { InitialLoader } from '../app/components/InitialLoader'
+import { ErrorBoundary } from '../app/components/ErrorBoundary'
 import { SnackbarProvider } from 'notistack'
-import { theme } from './styles/theme'
+import { theme } from '../app/styles/theme'
 import { useRoutes } from 'hookrouter'
 
 // lazy load the app & show loading indicator
