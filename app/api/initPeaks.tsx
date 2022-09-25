@@ -1,5 +1,5 @@
 import Peaks, { PeaksOptions } from 'peaks.js'
-import { Track, db } from '../../db'
+import { Track, db } from './db'
 import { getPermission } from '../../fileHandlers'
 import WaveformData from 'waveform-data'
 
@@ -11,7 +11,7 @@ export const initPeaks = async ({
   setSliderControl,
   setAudioSrc,
   setWaveform,
-  setAnalyzing
+  setAnalyzing,
 }: {
   trackKey: number
   track: Track
@@ -38,7 +38,7 @@ export const initPeaks = async ({
   const peakOptions: PeaksOptions = {
     containers: {
       overview: document.getElementById(`overview-container_${trackKey}`),
-      zoomview: document.getElementById(`zoomview-container_${trackKey}`)
+      zoomview: document.getElementById(`zoomview-container_${trackKey}`),
     },
     mediaElement: document.getElementById(`audio_${trackKey}`)!,
     pointMarkerColor: '#1e8bc3',
@@ -47,15 +47,15 @@ export const initPeaks = async ({
     zoomWaveformColor: {
       linearGradientStart: 45,
       linearGradientEnd: 58,
-      linearGradientColorStops: ['#D8B945', '#DD9045']
+      linearGradientColorStops: ['#D8B945', '#DD9045'],
     },
     overviewWaveformColor: {
       linearGradientStart: 45,
       linearGradientEnd: 58,
-      linearGradientColorStops: ['#E2E2E2', '#CCCCCC']
+      linearGradientColorStops: ['#E2E2E2', '#CCCCCC'],
     },
     zoomLevels: [64, 128, 256, 512],
-    emitCueEvents: true // for mouse drag listener
+    emitCueEvents: true, // for mouse drag listener
   }
 
   // use waveformData to init the waveform (fast) otherwise analyze using the file handle (slow)
@@ -70,7 +70,7 @@ export const initPeaks = async ({
         {
           audio_context: audioCtx,
           audio_buffer: audioBuffer,
-          scale: 64
+          scale: 64,
         },
         (err, wave: WaveformData) => {
           if (err) throw err
@@ -81,7 +81,7 @@ export const initPeaks = async ({
             trackKey,
             trackId: track.id,
             file,
-            waveformData
+            waveformData,
           })
           resolve()
         }
@@ -139,7 +139,7 @@ export const initPeaks = async ({
 
     waveform.points.add(
       pointArray.map(time => ({
-        time
+        time,
       }))
     )
 
@@ -186,7 +186,7 @@ export const initPeaks = async ({
         marks: pointArray.reduce(
           (o: any, p: number) => ({ ...o, [p]: markFormatter(p) }),
           {}
-        )
+        ),
       })
 
     setSlider()

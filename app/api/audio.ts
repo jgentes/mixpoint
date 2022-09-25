@@ -1,4 +1,4 @@
-import { Track, TrackState, putTrack } from './db'
+import { Track, TrackState, putTrack } from '../app/api/db'
 import { getPermission } from './fileHandlers'
 import { guess } from 'web-audio-beat-detector'
 

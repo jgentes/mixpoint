@@ -1,4 +1,4 @@
-import { Track } from './db'
+import { Track } from '../app/api/db'
 
 const _getFile = async (track: Track): Promise<File | undefined> => {
   let handle = track.dirHandle || track.fileHandle

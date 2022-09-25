@@ -1,157 +1,53 @@
 import { useState } from 'react'
 import type { Theme } from '@mui/joy/styles'
 //import { TrackTable } from './TrackTable'
-import { GlobalStyles } from '@mui/system'
-
-import { Box, Typography, TextField, IconButton } from '@mui/joy'
-
-import {
-  SearchRounded,
-  GridViewRounded,
-  FindInPageRounded,
-  Menu as MenuIcon,
-  BookRounded,
-} from '@mui/icons-material'
+import { useSnackbar } from 'notistack'
+import { InitialLoader } from '../components/InitialLoader'
+import { Box } from '@mui/joy'
 
 // custom
-import Layout from './Layout'
-import { Menu } from './Menu'
-import { Navigation } from './Navigation'
-import { DarkMode } from '../components/DarkMode'
+import Layout from '../components/layout/Layout'
+import Header from '../components/layout/Header'
+
+import LeftNav from '../components/layout/LeftNav'
+
+export function ErrorBoundary({ error }: { error: Error }) {
+  console.log('errorboundary hit')
+  const { enqueueSnackbar } = useSnackbar()
+  enqueueSnackbar(error.message)
+  return <InitialLoader message={error.message} />
+}
 
 export const FilesPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false)
   return (
     <>
-      <GlobalStyles<Theme>
-        styles={theme => ({
-          body: {
-            margin: 0,
-            fontFamily: theme.vars.fontFamily.body,
-          },
-        })}
-      />
       {drawerOpen && (
         <Layout.SideDrawer onClose={() => setDrawerOpen(false)}>
-          <Navigation />
+          <LeftNav />
         </Layout.SideDrawer>
       )}
-      <Layout.Root
+      <Box
         sx={{
           ...(drawerOpen && {
             height: '100vh',
             overflow: 'hidden',
           }),
+          bgcolor: 'background.surface',
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'minmax(64px, 200px) minmax(450px, 1fr)',
+            md: 'minmax(160px, 250px) minmax(600px, 1fr)',
+          },
+          gridTemplateRows: '64px 1fr',
+          minHeight: '100vh',
         }}
       >
-        <Layout.Header>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 1.5,
-            }}
-          >
-            <IconButton
-              variant="outlined"
-              size="sm"
-              onClick={() => setDrawerOpen(true)}
-              sx={{ display: { sm: 'none' } }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <IconButton
-              size="sm"
-              variant="solid"
-              sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-            >
-              <FindInPageRounded />
-            </IconButton>
-            <Typography component="h1" fontWeight="xl">
-              Files
-            </Typography>
-          </Box>
-          <TextField
-            size="sm"
-            variant="soft"
-            placeholder="Search..."
-            startDecorator={<SearchRounded color="primary" />}
-            endDecorator={
-              <IconButton variant="outlined" size="sm" color="neutral">
-                <Typography
-                  fontWeight="lg"
-                  fontSize="sm"
-                  textColor="text.tertiary"
-                >
-                  /
-                </Typography>
-              </IconButton>
-            }
-            sx={{
-              fontWeight: 'thin',
-              flexBasis: '500px',
-              display: {
-                xs: 'none',
-                sm: 'flex',
-              },
-            }}
-          />
-          <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.5 }}>
-            <IconButton
-              size="sm"
-              variant="outlined"
-              color="primary"
-              sx={{ display: { xs: 'inline-flex', sm: 'none' } }}
-            >
-              <SearchRounded />
-            </IconButton>
-            <IconButton
-              size="sm"
-              variant="outlined"
-              color="primary"
-              component="a"
-              href="/blog/first-look-at-joy/"
-            >
-              <BookRounded />
-            </IconButton>
-            <Menu
-              id="app-selector"
-              control={
-                <IconButton
-                  size="sm"
-                  variant="outlined"
-                  color="primary"
-                  aria-label="Apps"
-                >
-                  <GridViewRounded />
-                </IconButton>
-              }
-              menus={[
-                {
-                  label: 'Email',
-                  href: '/joy-ui/getting-started/templates/email/',
-                },
-                {
-                  label: 'Team',
-                  href: '/joy-ui/getting-started/templates/team/',
-                },
-                {
-                  label: 'Files',
-                  active: true,
-                  href: '/joy-ui/getting-started/templates/files/',
-                  'aria-current': 'page',
-                },
-              ]}
-            />
-            <DarkMode />
-          </Box>
-        </Layout.Header>
-        <Layout.SideNav>
-          <Navigation />
-        </Layout.SideNav>
+        <Header />
+        <LeftNav />
         <Layout.Main>{/* <TrackTable /> */}</Layout.Main>
-      </Layout.Root>
+      </Box>
     </>
   )
 }

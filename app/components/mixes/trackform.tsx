@@ -4,12 +4,12 @@ import { AccessTime, Eject, Pause, PlayArrow, Undo } from '@mui/icons-material'
 import { Button, Card, TextField } from '@mui/joy'
 import Loader from '../../layout/loader'
 import Slider, { SliderProps } from 'rc-slider'
-import { initPeaks } from './initPeaks'
+import { initPeaks } from '../../../app/api/initPeaks'
 import { PeaksInstance } from 'peaks.js'
 import Tracks from '../tracks/Tracks'
 import WaveformData from 'waveform-data'
-import { Track, db, TrackState, useLiveQuery } from '../../db'
-import { Events } from '../../Events'
+import { Track, db, TrackState, useLiveQuery } from '../../../app/api/db'
+import { Events } from '../../../app/api/Events'
 
 const TrackForm = ({ trackKey }: { trackKey: number }) => {
   interface SliderControlProps extends SliderProps {

@@ -1,10 +1,14 @@
-import { Scripts, Outlet } from '@remix-run/react'
-import type { MetaFunction, LinksFunction } from '@remix-run/node'
+import { Outlet, Links, Meta, LiveReload, Scripts } from '@remix-run/react'
+import { InitialLoader } from './components/InitialLoader'
 
-import favIcon32 from './assets/soundwave-32.png'
-import favIcon16 from './assets/soundwave-16.png'
+// fonts!
+import '@fontsource/roboto-mono/400.css'
+import '@fontsource/public-sans/300.css'
+import '@fontsource/public-sans/400.css'
+import '@fontsource/public-sans/500.css'
+import '@fontsource/public-sans/700.css'
 
-export const meta: MetaFunction = () => {
+export const meta = () => {
   return {
     title: 'Mixpoint',
     description: 'Mixpoint is multi-track audio editor for the modern dj',
@@ -12,32 +16,61 @@ export const meta: MetaFunction = () => {
   }
 }
 
-export const links: LinksFunction = () => {
+export const links = () => {
   return [
     {
       rel: 'icon',
       type: 'image/png',
-      href: favIcon32,
+      href: '/soundwave-32.png',
       sizes: '32x32',
     },
     {
       rel: 'icon',
       type: 'image/png',
-      href: favIcon16,
+      href: '/soundwave-16.png',
       sizes: '16x16',
     },
   ]
 }
 
-const App: React.FunctionComponent = () => (
-  <html>
-    <body>
-      <div id="root">
-        <Outlet />
-      </div>
-    </body>
+const Document = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <html lang="en">
+      <head>
+        <Meta />
+        <Links />
+      </head>
+      <body style={{ margin: 0 }}>
+        {children}
+        <LiveReload />
+      </body>
+    </html>
+  )
+}
+
+export function ErrorBoundary({ error }: { error: Error }) {
+  console.error('err boundary', error)
+  return (
+    <Document>
+      <InitialLoader message={error.message} />
+    </Document>
+  )
+}
+
+export function CatchBoundary({ error }: { error: Error }) {
+  console.error('catch boundary', error)
+  return (
+    <Document>
+      <InitialLoader message={error.message} />
+    </Document>
+  )
+}
+
+const App = () => (
+  <Document>
+    <Outlet />
     <Scripts />
-  </html>
+  </Document>
 )
 
 export default App
