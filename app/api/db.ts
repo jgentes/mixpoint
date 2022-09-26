@@ -106,6 +106,11 @@ interface SetState {
   setId?: Set['id']
 }
 
+interface AppState {
+  darkMode: boolean
+  leftNavOpen: boolean
+}
+
 const db = new MixpointDb()
 
 const errHandler = (err: Error) => {
@@ -134,11 +139,11 @@ const putTrack = async (track: Track): Promise<Track> => {
 const removeTrack = async (id: number): Promise<void> =>
   await db.tracks.delete(id).catch(errHandler)
 
-const addMix = async (
-  trackIds: Track['id'][],
-  mixPoints: MixPoint[]
-): Promise<number> =>
-  await db.mixes.add({ trackIds, mixPoints }).catch(errHandler)
+// const addMix = async (
+//   trackIds: Track['id'][],
+//   mixPoints: MixPoint[]
+// ): Promise<number> =>
+//   await db.mixes.add({ trackIds, mixPoints }).catch(errHandler)
 
 const getMix = async (id: number): Promise<Mix | undefined> =>
   await db.mixes.get(id).catch(errHandler)
@@ -146,6 +151,6 @@ const getMix = async (id: number): Promise<Mix | undefined> =>
 const removeMix = async (id: number): Promise<void> =>
   await db.mixes.delete(id).catch(errHandler)
 
-export type { Track, TrackState, Mix, MixState, Set, SetState }
+export type { Track, TrackState, Mix, MixState, Set, SetState, AppState }
 
-export { db, putTrack, removeTrack, addMix, getMix, removeMix, useLiveQuery }
+export { db, putTrack, removeTrack, getMix, removeMix, useLiveQuery }

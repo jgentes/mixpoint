@@ -18,7 +18,6 @@ const LoaderWrapDiv = styled('div')`
 
 const LoaderDiv = styled('div')`
   min-width: 190px;
-  color: #212529;
 `
 
 const LoaderRow = styled('div')`
@@ -55,16 +54,18 @@ const LoaderText = styled('p')`
 
 export const InitialLoader: React.FunctionComponent<{ message?: string }> = ({
   message,
-}) => (
-  <LoaderWrapDiv>
-    <LoaderDiv>
-      <LoaderRow style={{ paddingBottom: '4px' }}>
-        <LoaderText>Mixpoint</LoaderText>
-        {message ? null : <CircularProgress color="primary" size="18px" />}
-      </LoaderRow>
-      <LoaderRow style={{ borderTop: '1px solid #e2e2e2' }}>
-        <LoaderSubtext>{message || 'Please Wait. Loading...'}</LoaderSubtext>
-      </LoaderRow>
-    </LoaderDiv>
-  </LoaderWrapDiv>
-)
+}) => {
+  return (
+    <LoaderWrapDiv>
+      <LoaderDiv>
+        <LoaderRow style={{ paddingBottom: '4px' }}>
+          <LoaderText>Mixpoint</LoaderText>
+          {message ? null : <CircularProgress color="primary" size="18px" />}
+        </LoaderRow>
+        <LoaderRow style={{ borderTop: '1px solid #e2e2e2' }}>
+          <LoaderSubtext>{message || 'Please Wait. Loading...'}</LoaderSubtext>
+        </LoaderRow>
+      </LoaderDiv>
+    </LoaderWrapDiv>
+  )
+}

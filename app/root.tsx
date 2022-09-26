@@ -41,8 +41,8 @@ const Document = ({ children }: { children: React.ReactNode }) => {
         <Links />
       </head>
       <body style={{ margin: 0 }}>
-        {children}
         <LiveReload />
+        {children}
       </body>
     </html>
   )

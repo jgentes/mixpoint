@@ -1,10 +1,11 @@
+import { ClientOnly } from 'remix-utils'
 import { useColorScheme, IconButton } from '@mui/joy'
 import { DarkModeRounded, LightModeRounded } from '@mui/icons-material'
 
 export default function DarkMode() {
   const { mode, setMode } = useColorScheme()
 
-  return (
+  const DarkModeButton = () => (
     <IconButton
       id="toggle-mode"
       size="sm"
@@ -21,5 +22,15 @@ export default function DarkMode() {
     >
       {mode === 'light' ? <DarkModeRounded /> : <LightModeRounded />}
     </IconButton>
+  )
+
+  return (
+    <ClientOnly
+      fallback={
+        <IconButton variant="outlined" color="primary" size="sm"></IconButton>
+      }
+    >
+      {() => <DarkModeButton />}
+    </ClientOnly>
   )
 }
