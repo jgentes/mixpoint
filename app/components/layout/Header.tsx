@@ -1,4 +1,5 @@
 import { Box, Typography, TextField, IconButton } from '@mui/joy'
+import { useLiveQuery, AppState, appState } from '../../api/db'
 import { Menu } from './Menu'
 import DarkMode from '../DarkMode'
 
@@ -10,6 +11,10 @@ import {
 } from '@mui/icons-material'
 
 export default function Header() {
+  const leftNavOpen: AppState['leftNavOpen'] = useLiveQuery(
+    async () => (await appState.get())?.leftNavOpen
+  )
+
   return (
     <Box
       component="header"
@@ -43,8 +48,8 @@ export default function Header() {
         <IconButton
           variant="outlined"
           size="sm"
-          title="title here"
-          onClick={() => console.error('set some state here')}
+          title={`${leftNavOpen ? 'Hide' : 'Show'} navigation`}
+          onClick={() => appState.put({ leftNavOpen: true })}
         >
           <MenuIcon />
         </IconButton>

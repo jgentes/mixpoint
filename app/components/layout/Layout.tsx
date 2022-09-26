@@ -1,4 +1,4 @@
-import { Box, BoxProps, Paper } from '@mui/material'
+import { Sheet, Box, BoxProps } from '@mui/joy'
 
 const SidePane = (props: BoxProps) => (
   <Box
@@ -28,6 +28,27 @@ const Main = (props: BoxProps) => (
   />
 )
 
+const SideNav = (props: BoxProps) => (
+  <Box
+    component="nav"
+    className="Navigation"
+    {...props}
+    sx={[
+      {
+        p: 2,
+        bgcolor: 'background.componentBg',
+        borderRight: '1px solid',
+        borderColor: 'divider',
+        display: {
+          xs: 'none',
+          sm: 'initial',
+        },
+      },
+      ...(Array.isArray(props.sx) ? props.sx : [props.sx]),
+    ]}
+  />
+)
+
 const SideDrawer = ({
   onClose,
   ...props
@@ -49,7 +70,7 @@ const SideDrawer = ({
           `rgba(${theme.vars.palette.neutral.darkChannel} / 0.8)`,
       }}
     />
-    <Paper
+    <Sheet
       sx={{
         minWidth: 256,
         width: 'max-content',
@@ -60,12 +81,13 @@ const SideDrawer = ({
       }}
     >
       {props.children}
-    </Paper>
+    </Sheet>
   </Box>
 )
 
 export default {
   SidePane,
+  SideNav,
   SideDrawer,
   Main,
 }

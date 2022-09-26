@@ -1,7 +1,7 @@
 import Dexie from 'dexie'
 import { useLiveQuery } from 'dexie-react-hooks'
 import WaveformData from 'waveform-data'
-//import { Toaster } from './layout/toaster'
+import App from '~/root'
 
 // from https://dexie.org/docs/Typescript
 
@@ -12,7 +12,7 @@ class MixpointDb extends Dexie {
   trackState: Dexie.Table<TrackState>
   mixState: Dexie.Table<MixState>
   setState: Dexie.Table<SetState>
-  appState: Dexie.Table<any>
+  appState: Dexie.Table<AppState>
 
   constructor() {
     super('MixpointDb')
@@ -20,10 +20,10 @@ class MixpointDb extends Dexie {
       tracks: '++id, name, bpm, [name+size]',
       mixes: '++id, tracks',
       sets: '++id, mixes',
-      trackState: 'trackKey',
-      mixState: '++id',
-      setState: '++id',
-      appState: '',
+      trackState: 'date',
+      mixState: 'date',
+      setState: 'date',
+      appState: 'date',
     })
 
     this.tracks = this.table('tracks')
@@ -37,15 +37,6 @@ class MixpointDb extends Dexie {
 }
 
 // define tables
-/* TrackState should not contain mix state */
-interface TrackState {
-  trackKey?: number
-  trackId?: number
-  adjustedBpm?: number
-  file?: File | undefined
-  waveformData?: WaveformData | undefined
-  mixPoint?: number
-}
 
 interface Track {
   id: number
@@ -54,7 +45,7 @@ interface Track {
   dirHandle?: FileSystemDirectoryHandle
   size?: number
   type?: string // type of file as returned from fileHandle
-  lastModified?: number
+  lastModified?: Date
   duration?: number
   bpm?: number
   sampleRate?: number
@@ -92,65 +83,128 @@ interface Mix {
   }[]
 }
 
+interface Set {
+  id: number
+  mixIds: Mix['id'][]
+}
+
+// Each row in a state table is a full representation of state at that point in time
+// This allows easy undo/redo of state changes by using timestamps (primary key)
+
+interface TrackState {
+  date?: Date
+  trackId?: Track['id']
+  adjustedBpm?: number
+  file?: File | undefined
+  waveformData?: WaveformData | undefined
+  mixPoint?: number
+}
+
 interface MixState {
+  date?: Date
   mixId?: Mix['id']
   bpmSync?: boolean
 }
 
-interface Set {
-  id?: number
-  mixIds: Mix['id'][]
-}
-
 interface SetState {
+  date?: Date
   setId?: Set['id']
 }
 
 interface AppState {
-  darkMode: boolean
-  leftNavOpen: boolean
+  date?: Date
+  darkMode?: boolean
+  leftNavOpen?: boolean
 }
 
 const db = new MixpointDb()
-
-const errHandler = (err: Error) => {
-  console.error(
-    'THIS WAS CAUGHT BY DB ERRORHANDLER, CURIOUS TO KNOW IF THIS WOULD HAVE BEEN CAUGHT IF THE .CATCH BLOCK WAS OMITTED'
-  )
-  /*
-  Toaster.show({
-    message: `Oops, there was a problem: ${err.message}`,
-    intent: 'danger'
-  })
-  */
-}
 
 const putTrack = async (track: Track): Promise<Track> => {
   // if below line changes, potentially remove [name+size] index
   const dup = await db.tracks.get({ name: track.name, size: track.size })
   if (dup && dup.bpm) return dup
 
-  track.lastModified = Date.now()
-  const id = await db.tracks.put(track).catch(errHandler)
+  track.lastModified = new Date()
+  const id = await db.tracks.put(track)
   track.id = id
   return track
 }
 
 const removeTrack = async (id: number): Promise<void> =>
-  await db.tracks.delete(id).catch(errHandler)
+  await db.tracks.delete(id)
 
 // const addMix = async (
 //   trackIds: Track['id'][],
 //   mixPoints: MixPoint[]
 // ): Promise<number> =>
-//   await db.mixes.add({ trackIds, mixPoints }).catch(errHandler)
+//   await db.mixes.add({ trackIds, mixPoints })
 
 const getMix = async (id: number): Promise<Mix | undefined> =>
-  await db.mixes.get(id).catch(errHandler)
+  await db.mixes.get(id)
 
-const removeMix = async (id: number): Promise<void> =>
-  await db.mixes.delete(id).catch(errHandler)
+const removeMix = async (id: number): Promise<void> => await db.mixes.delete(id)
 
-export type { Track, TrackState, Mix, MixState, Set, SetState, AppState }
+// ok I give up, TS forces me to be explicit here - hopefully in the future I can refactor :(
 
-export { db, putTrack, removeTrack, getMix, removeMix, useLiveQuery }
+const appState = {
+  get: async (): Promise<AppState> =>
+    (await db.appState.orderBy('date').last()) || {},
+  put: async (state: Partial<AppState>): Promise<void> =>
+    appState
+      .get()
+      .then(
+        async prevState =>
+          await db.appState.put({ ...prevState, ...state, date: new Date() })
+      ),
+}
+
+const trackState = {
+  get: async (): Promise<TrackState> =>
+    (await db.trackState.orderBy('date').last()) || {},
+  put: async (state: Partial<TrackState>): Promise<void> =>
+    trackState
+      .get()
+      .then(
+        async prevState =>
+          await db.trackState.put({ ...prevState, ...state, date: new Date() })
+      ),
+}
+
+const mixState = {
+  get: async (): Promise<MixState> =>
+    (await db.mixState.orderBy('date').last()) || {},
+  put: async (state: Partial<MixState>): Promise<void> =>
+    mixState
+      .get()
+      .then(
+        async prevState =>
+          await db.mixState.put({ ...prevState, ...state, date: new Date() })
+      ),
+}
+
+const setState = {
+  get: async (): Promise<SetState> =>
+    (await db.setState.orderBy('date').last()) || {},
+  put: async (state: Partial<SetState>): Promise<void> =>
+    setState
+      .get()
+      .then(
+        async prevState =>
+          await db.setState.put({ ...prevState, ...state, date: new Date() })
+      ),
+}
+
+export type { Track, Mix, Set, TrackState, MixState, SetState, AppState }
+
+export {
+  db,
+  putTrack,
+  removeTrack,
+  getMix,
+  removeMix,
+  useLiveQuery,
+  appState,
+  trackState,
+  mixState,
+  setState,
+}

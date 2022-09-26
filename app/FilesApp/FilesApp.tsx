@@ -1,10 +1,9 @@
-import { useState } from 'react'
 //import { TrackTable } from './TrackTable'
 import { useSnackbar } from 'notistack'
 import { InitialLoader } from '../components/InitialLoader'
 import { Box } from '@mui/joy'
+import { useLiveQuery, AppState, appState } from '../api/db'
 
-// custom
 import Layout from '../components/layout/Layout'
 import Header from '../components/layout/Header'
 
@@ -18,20 +17,19 @@ export function ErrorBoundary({ error }: { error: Error }) {
 }
 
 export const FilesPage = () => {
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  const leftNavOpen: AppState['leftNavOpen'] = useLiveQuery(
+    async () => (await appState.get())?.leftNavOpen
+  )
+
   return (
     <>
-      {drawerOpen && (
-        <Layout.SideDrawer onClose={() => setDrawerOpen(false)}>
+      {leftNavOpen && (
+        <Layout.SideDrawer onClose={() => appState.put({ leftNavOpen: false })}>
           <LeftNav />
         </Layout.SideDrawer>
       )}
       <Box
         sx={{
-          ...(drawerOpen && {
-            height: '100vh',
-            overflow: 'hidden',
-          }),
           bgcolor: 'background.surface',
           display: 'grid',
           gridTemplateColumns: {
@@ -41,10 +39,16 @@ export const FilesPage = () => {
           },
           gridTemplateRows: '64px 1fr',
           minHeight: '100vh',
+          ...(leftNavOpen && {
+            height: '100vh',
+            overflow: 'hidden',
+          }),
         }}
       >
         <Header />
-        <LeftNav />
+        <Layout.SideNav>
+          <LeftNav />
+        </Layout.SideNav>
         <Layout.Main>{/* <TrackTable /> */}</Layout.Main>
       </Box>
     </>
