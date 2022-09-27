@@ -2,13 +2,9 @@ import { Box, Typography, TextField, IconButton } from '@mui/joy'
 import { useLiveQuery, AppState, appState } from '../../api/db'
 import { Menu } from './Menu'
 import DarkMode from '../DarkMode'
+import { errorHandler } from '../../utils/notifications'
 
-import {
-  SearchRounded,
-  GridViewRounded,
-  Menu as MenuIcon,
-  BookRounded,
-} from '@mui/icons-material'
+import { SearchRounded, Settings, Menu as MenuIcon } from '@mui/icons-material'
 
 export default function Header() {
   const leftNavOpen: AppState['leftNavOpen'] = useLiveQuery(
@@ -55,7 +51,7 @@ export default function Header() {
           <MenuIcon />
         </IconButton>
         <Typography component="h1" fontWeight="xl">
-          MixPoint
+          Mixpoint
         </Typography>
       </Box>
       <TextField
@@ -92,10 +88,15 @@ export default function Header() {
           size="sm"
           variant="outlined"
           color="primary"
-          component="a"
-          href="/blog/first-look-at-joy/"
+          onClick={() => {
+            try {
+              throw new Error('here be dragons')
+            } catch (error) {
+              errorHandler(error)
+            }
+          }}
         >
-          <BookRounded />
+          <SearchRounded />
         </IconButton>
         <Menu
           id="app-selector"
@@ -106,7 +107,7 @@ export default function Header() {
               color="primary"
               aria-label="Apps"
             >
-              <GridViewRounded />
+              <Settings />
             </IconButton>
           }
           menus={[

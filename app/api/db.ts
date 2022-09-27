@@ -114,7 +114,6 @@ interface SetState {
 
 interface AppState {
   date?: Date
-  darkMode?: boolean
   leftNavOpen?: boolean
 }
 
@@ -145,7 +144,7 @@ const getMix = async (id: number): Promise<Mix | undefined> =>
 
 const removeMix = async (id: number): Promise<void> => await db.mixes.delete(id)
 
-// ok I give up, TS forces me to be explicit here - hopefully in the future I can refactor :(
+// ok I give up, TS forces me to be explicit here rather than use variable table names :(
 
 const appState = {
   get: async (): Promise<AppState> =>
@@ -195,7 +194,7 @@ const setState = {
       ),
 }
 
-// db hooks, again redundant due to TS
+// db hooks, again redundant due to TS issues with variable table names
 
 // this hook limits the number of rows in a state table
 db.trackState.hook('creating', async () => {

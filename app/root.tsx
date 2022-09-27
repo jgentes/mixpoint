@@ -1,5 +1,11 @@
 import { Outlet, Links, Meta, LiveReload, Scripts } from '@remix-run/react'
-import { InitialLoader } from './components/InitialLoader'
+import { useEffect, useState } from 'react'
+import { CssVarsProvider } from '@mui/joy/styles'
+import { theme } from './styles/theme'
+import { SnackbarProvider } from 'notistack'
+import { ClientOnly } from 'remix-utils'
+
+import InitialLoader from './components/InitialLoader'
 
 // fonts!
 import '@fontsource/roboto-mono/400.css'
@@ -8,7 +14,7 @@ import '@fontsource/public-sans/400.css'
 import '@fontsource/public-sans/500.css'
 import '@fontsource/public-sans/700.css'
 
-export const meta = () => {
+export function meta() {
   return {
     title: 'Mixpoint',
     description: 'Mixpoint is multi-track audio editor for the modern dj',
@@ -16,7 +22,7 @@ export const meta = () => {
   }
 }
 
-export const links = () => {
+export function links() {
   return [
     {
       rel: 'icon',
@@ -33,7 +39,7 @@ export const links = () => {
   ]
 }
 
-const Document = ({ children }: { children: React.ReactNode }) => {
+function Document({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
@@ -48,29 +54,37 @@ const Document = ({ children }: { children: React.ReactNode }) => {
   )
 }
 
-export function ErrorBoundary({ error }: { error: Error }) {
-  console.error('err boundary', error)
+function ThemeLoader() {
+  const [loading, setLoading] = useState(true)
+
+  // InitialLoader is used to hide the flash of unstyled content
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [])
+
   return (
-    <Document>
-      <InitialLoader message={error.message} />
-    </Document>
+    <SnackbarProvider preventDuplicate maxSnack={3}>
+      <CssVarsProvider theme={theme} disableTransitionOnChange>
+        {loading ? (
+          <ClientOnly>{() => <InitialLoader />}</ClientOnly>
+        ) : (
+          <Outlet />
+        )}
+      </CssVarsProvider>
+    </SnackbarProvider>
   )
 }
 
-export function CatchBoundary({ error }: { error: Error }) {
-  console.error('catch boundary', error)
+function App() {
   return (
     <Document>
-      <InitialLoader message={error.message} />
+      <ThemeLoader />
+      <Scripts />
     </Document>
   )
 }
-
-const App = () => (
-  <Document>
-    <Outlet />
-    <Scripts />
-  </Document>
-)
 
 export default App

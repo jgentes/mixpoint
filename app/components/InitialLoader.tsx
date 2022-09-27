@@ -52,9 +52,7 @@ const LoaderText = styled('p')`
   -webkit-text-stroke-color: rgb(255 255 255 / 35%);
 `
 
-export const InitialLoader: React.FunctionComponent<{ message?: string }> = ({
-  message,
-}) => {
+export default function InitialLoader({ message }: { message?: string }) {
   return (
     <LoaderWrapDiv>
       <LoaderDiv>

@@ -13,11 +13,7 @@ export default function DarkMode() {
       color="primary"
       onClick={() => {
         new Audio('/light.mp3').play()
-        if (mode === 'light') {
-          setMode('dark')
-        } else {
-          setMode('light')
-        }
+        setMode(mode === 'dark' ? 'light' : 'dark')
       }}
     >
       {mode === 'light' ? <DarkModeRounded /> : <LightModeRounded />}

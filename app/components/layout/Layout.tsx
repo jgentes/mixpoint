@@ -28,7 +28,7 @@ const Main = (props: BoxProps) => (
   />
 )
 
-const SideNav = (props: BoxProps) => (
+const LeftNav = (props: BoxProps) => (
   <Box
     component="nav"
     className="Navigation"
@@ -87,7 +87,7 @@ const SideDrawer = ({
 
 export default {
   SidePane,
-  SideNav,
+  LeftNav,
   SideDrawer,
   Main,
 }
