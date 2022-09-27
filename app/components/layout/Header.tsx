@@ -50,11 +50,12 @@ export default function Header() {
           size="sm"
           title={`${leftNavOpen ? 'Hide' : 'Show'} navigation`}
           onClick={() => appState.put({ leftNavOpen: true })}
+          sx={{ display: { sm: 'none' } }}
         >
           <MenuIcon />
         </IconButton>
         <Typography component="h1" fontWeight="xl">
-          Files
+          MixPoint
         </Typography>
       </Box>
       <TextField

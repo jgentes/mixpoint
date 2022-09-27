@@ -1,7 +1,8 @@
-import Dexie from 'dexie'
+import Dexie, { DBCoreRangeType } from 'dexie'
 import { useLiveQuery } from 'dexie-react-hooks'
 import WaveformData from 'waveform-data'
-import App from '~/root'
+
+const STATE_ROW_LIMIT = 100 // eventually allow the user to change this
 
 // from https://dexie.org/docs/Typescript
 
@@ -193,6 +194,41 @@ const setState = {
           await db.setState.put({ ...prevState, ...state, date: new Date() })
       ),
 }
+
+// db hooks, again redundant due to TS
+
+// this hook limits the number of rows in a state table
+db.trackState.hook('creating', async () => {
+  const count = await db.trackState.count()
+  if (count > STATE_ROW_LIMIT) {
+    const oldest = await db.trackState.orderBy('date').first()
+    if (oldest) db.trackState.delete(oldest.date)
+  }
+})
+
+db.mixState.hook('creating', async () => {
+  const count = await db.mixState.count()
+  if (count > STATE_ROW_LIMIT) {
+    const oldest = await db.mixState.orderBy('date').first()
+    if (oldest) db.mixState.delete(oldest.date)
+  }
+})
+
+db.setState.hook('creating', async () => {
+  const count = await db.setState.count()
+  if (count > STATE_ROW_LIMIT) {
+    const oldest = await db.setState.orderBy('date').first()
+    if (oldest) db.setState.delete(oldest.date)
+  }
+})
+
+db.appState.hook('creating', async () => {
+  const count = await db.appState.count()
+  if (count > STATE_ROW_LIMIT) {
+    const oldest = await db.appState.orderBy('date').first()
+    if (oldest) db.appState.delete(oldest.date)
+  }
+})
 
 export type { Track, Mix, Set, TrackState, MixState, SetState, AppState }
 
