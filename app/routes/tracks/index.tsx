@@ -417,7 +417,7 @@ export default function TrackTable({
     tracks?.sort(sortFunc)
   }
 
-  sortColumns(trackSort)
+  //sortColumns(trackSort)
   if (searchVal && tracks)
     tracks = tracks.filter(t =>
       t.name?.toLowerCase().includes(searchVal.toLowerCase())

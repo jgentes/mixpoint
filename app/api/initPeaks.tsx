@@ -78,7 +78,6 @@ export const initPeaks = async ({
           waveformData = wave.toJSON()
 
           db.trackState.put({
-            trackKey,
             trackId: track.id,
             file,
             waveformData,

@@ -58,7 +58,7 @@ function Document({ children }: { children: React.ReactNode }) {
 }
 
 function ThemeLoader() {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   // InitialLoader is used to hide the flash of unstyled content
   useEffect(() => {

@@ -23,7 +23,9 @@ export default function DarkMode() {
   return (
     <ClientOnly
       fallback={
-        <IconButton variant="outlined" color="primary" size="sm"></IconButton>
+        <IconButton variant="outlined" color="primary" size="sm">
+          <LightModeRounded />
+        </IconButton>
       }
     >
       {() => <DarkModeButton />}

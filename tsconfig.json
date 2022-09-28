@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ES2019"],
+    "lib": ["DOM", "DOM.Iterable", "ES2020"],
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
     "resolveJsonModule": true,
+    "module": "Node16",
     "moduleResolution": "node",
     "baseUrl": ".",
     "noEmit": true,
@@ -14,7 +15,7 @@
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "target": "ES2019"
+    "target": "ES2022"
   },
   "include": ["**/*.ts", "**/*.tsx", "remix.env.d.ts", "./global.d.ts"]
 }

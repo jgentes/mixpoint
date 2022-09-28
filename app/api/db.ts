@@ -1,7 +1,7 @@
 // this file initializes Dexie (indexDB), defines the schema and creates tables if needed
 // it also provides a few helper functions for interacting with the database
 
-import 'fake-indexeddb/auto' // a shim needed for SSR and testing
+//import 'fake-indexeddb/auto' // shim for indexdb needed for SSR
 import Dexie from 'dexie'
 import { useLiveQuery } from 'dexie-react-hooks'
 import WaveformData from 'waveform-data'
@@ -40,6 +40,8 @@ class MixpointDb extends Dexie {
     this.appState = this.table('appState')
   }
 }
+
+const db = new MixpointDb()
 
 // define tables
 
@@ -119,10 +121,8 @@ interface SetState {
 interface AppState {
   date?: Date
   leftNavOpen?: boolean
-  trackSort: string
+  trackSort?: string
 }
-
-const db = new MixpointDb()
 
 const putTrack = async (track: Track): Promise<Track> => {
   // if below line changes, potentially remove [name+size] index
