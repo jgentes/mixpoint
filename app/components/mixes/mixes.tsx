@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { ButtonGroup } from '@mui/material'
 import { Button, Breadcrumbs, Card } from '@mui/joy'
 import { Stop, Pause, PlayArrow, Shuffle } from '@mui/icons-material'
-import TrackForm from './trackform'
-import { Events } from '../../../app/api/Events'
-import { db, TrackState, useLiveQuery } from '../../../app/api/db'
+import TrackForm from '~/components/mixes/trackform'
+import { Events } from '~/api/Events'
+import { db, TrackState, useLiveQuery } from '~/api/db'
 export const Mixes = () => {
   const [track0, track1]: TrackState[] =
     useLiveQuery(() => db.trackState.limit(2).toArray()) || []

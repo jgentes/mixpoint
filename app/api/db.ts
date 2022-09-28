@@ -1,4 +1,8 @@
-import Dexie, { DBCoreRangeType } from 'dexie'
+// this file initializes Dexie (indexDB), defines the schema and creates tables if needed
+// it also provides a few helper functions for interacting with the database
+
+import 'fake-indexeddb/auto' // a shim needed for SSR and testing
+import Dexie from 'dexie'
 import { useLiveQuery } from 'dexie-react-hooks'
 import WaveformData from 'waveform-data'
 
@@ -115,6 +119,7 @@ interface SetState {
 interface AppState {
   date?: Date
   leftNavOpen?: boolean
+  trackSort: string
 }
 
 const db = new MixpointDb()

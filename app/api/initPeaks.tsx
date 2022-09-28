@@ -1,6 +1,6 @@
 import Peaks, { PeaksOptions } from 'peaks.js'
-import { Track, db } from './db'
-import { getPermission } from '../../fileHandlers'
+import { Track, db } from '~/api/db'
+import { getPermission } from '~/api/fileHandlers'
 import WaveformData from 'waveform-data'
 
 export const initPeaks = async ({

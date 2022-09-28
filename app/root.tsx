@@ -1,11 +1,14 @@
-import { Outlet, Links, Meta, LiveReload, Scripts } from '@remix-run/react'
+// this file establishes the root component that renders all subsequent / child routes
+// it also injects top level styling, HTML meta tags, links, and javascript for browser rendering
+import { Links, Meta, LiveReload, Scripts } from '@remix-run/react'
 import { useEffect, useState } from 'react'
 import { CssVarsProvider } from '@mui/joy/styles'
-import { theme } from './styles/theme'
+import { theme } from '~/styles/theme'
 import { SnackbarProvider } from 'notistack'
 import { ClientOnly } from 'remix-utils'
 
-import InitialLoader from './components/InitialLoader'
+import PageLayout from '~/components/PageLayout'
+import InitialLoader from '~/components/InitialLoader'
 
 // fonts!
 import '@fontsource/roboto-mono/400.css'
@@ -55,7 +58,7 @@ function Document({ children }: { children: React.ReactNode }) {
 }
 
 function ThemeLoader() {
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   // InitialLoader is used to hide the flash of unstyled content
   useEffect(() => {
@@ -71,7 +74,7 @@ function ThemeLoader() {
         {loading ? (
           <ClientOnly>{() => <InitialLoader />}</ClientOnly>
         ) : (
-          <Outlet />
+          <PageLayout />
         )}
       </CssVarsProvider>
     </SnackbarProvider>

@@ -1,14 +1,15 @@
-//import { TrackTable } from './TrackTable'
+// this file provides the layout for the application (header, left nav, main content area)
+// it also provides top level error and catch boundaries, plus notification handling
 import { useSnackbar } from 'notistack'
+import { notification } from '~/utils/notifications'
 import { Box } from '@mui/joy'
-import { useLiveQuery, AppState, appState } from '../api/db'
+import { useLiveQuery, AppState, appState } from '~/api/db'
 import { Outlet } from '@remix-run/react'
-import { notification } from '../utils/notifications'
 
-import InitialLoader from '../components/InitialLoader'
-import Layout from '../components/layout/Layout'
-import Header from '../components/layout/Header'
-import LeftNav from '../components/layout/LeftNav'
+import InitialLoader from '~/components/InitialLoader'
+import Layout from '~/components/layout/Layout'
+import Header from '~/components/layout/Header'
+import LeftNav from '~/components/layout/LeftNav'
 
 export function ErrorBoundary({ error }: { error: Error }) {
   const { enqueueSnackbar } = useSnackbar()

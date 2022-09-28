@@ -6,10 +6,12 @@ import {
   ReactNode,
   ChangeEventHandler,
 } from 'react'
-import { db, Track, putTrack, removeTrack, useLiveQuery } from '../db'
-import { initTrack, processAudio } from '../audio'
+import { getComparator } from '~/utils/tableTools'
+import { db, Track, putTrack, removeTrack, useLiveQuery } from '~/api/db'
+import { initTrack, processAudio } from '~/api/audio'
 import { alpha, SxProps } from '@mui/material/styles'
 import {
+  Box,
   Card,
   Sheet,
   Button,
@@ -34,7 +36,7 @@ import {
   TableCellProps,
 } from '@mui/material'
 import moment from 'moment'
-import Loader from '../layout/loader'
+import Loader from '~/styles/loader'
 import {
   Close,
   Add,
@@ -49,29 +51,7 @@ import {
 } from '@mui/icons-material'
 import { visuallyHidden } from '@mui/utils'
 
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1
-  }
-  return 0
-}
-
-function getComparator<Key extends keyof any>(
-  order: 'asc' | 'desc',
-  orderBy: Key
-): (
-  a: { [key in Key]: number | string },
-  b: { [key in Key]: number | string }
-) => number {
-  return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy)
-}
-
-export const TrackTable = ({
+export default function TrackTable({
   hideDropzone,
   trackKey,
   openTable,
@@ -81,7 +61,7 @@ export const TrackTable = ({
   trackKey?: number
   openTable: Function
   getPeaks: Function
-}) => {
+}) {
   const [order, setOrder] = useState<'asc' | 'desc'>('asc')
   const [orderBy, setOrderBy] = useState<keyof Track>('bpm')
   const [page, setPage] = useState(0)
@@ -96,8 +76,7 @@ export const TrackTable = ({
 
   // monitor db for track updates
   let tracks: Track[] | null = useLiveQuery(() => db.tracks.toArray()) ?? null
-  let trackSort: string =
-    useLiveQuery(() => db.appState.get('trackSort')) || 'name'
+  let trackSort = useLiveQuery(() => db.appState.get('trackSort')) || 'name'
 
   // if we see any tracks that haven't been processed, process them, or
   // if we haven't had user activation, show button to resume processing
@@ -598,7 +577,7 @@ export const TrackTable = ({
   `
 
   return (
-    <Card sx={{ width: '100%' }}>
+    <Box sx={{ width: '100%' }}>
       <Sheet
         variant="outlined"
         sx={{
@@ -698,7 +677,7 @@ export const TrackTable = ({
         ) : (
           <>
             {/* Table search and info bar */}
-            <Card
+            <Sheet
               sx={{
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -726,7 +705,7 @@ export const TrackTable = ({
                   Add Track
                 </Button>
               </div>
-            </Card>
+            </Sheet>
             {!tracks?.length ? null : (
               <div id="trackTable">
                 {/* Track Table */}
@@ -749,6 +728,6 @@ export const TrackTable = ({
           </>
         )}
       </>
-    </Card>
+    </Box>
   )
 }

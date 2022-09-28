@@ -1,8 +1,7 @@
 import { Box, Typography, TextField, IconButton } from '@mui/joy'
-import { useLiveQuery, AppState, appState } from '../../api/db'
-import { Menu } from './Menu'
-import DarkMode from '../DarkMode'
-import { errorHandler } from '../../utils/notifications'
+import { useLiveQuery, AppState, appState } from '~/api/db'
+import { Menu } from '~/components/layout/Menu'
+import DarkMode from '~/components/DarkMode'
 
 import { SearchRounded, Settings, Menu as MenuIcon } from '@mui/icons-material'
 
@@ -81,20 +80,6 @@ export default function Header() {
           variant="outlined"
           color="primary"
           sx={{ display: { xs: 'inline-flex', sm: 'none' } }}
-        >
-          <SearchRounded />
-        </IconButton>
-        <IconButton
-          size="sm"
-          variant="outlined"
-          color="primary"
-          onClick={() => {
-            try {
-              throw new Error('here be dragons')
-            } catch (error) {
-              errorHandler(error)
-            }
-          }}
         >
           <SearchRounded />
         </IconButton>

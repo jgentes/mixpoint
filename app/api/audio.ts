@@ -1,5 +1,5 @@
-import { Track, TrackState, putTrack } from '../app/api/db'
-import { getPermission } from './fileHandlers'
+import { Track, TrackState, putTrack } from '~/api/db'
+import { getPermission } from '~/api/fileHandlers'
 import { guess } from 'web-audio-beat-detector'
 
 const initTrack = async (

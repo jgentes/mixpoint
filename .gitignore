@@ -4,3 +4,4 @@ build/
 public/
 dist/
 *.log
+web-audio-beat-detector/
