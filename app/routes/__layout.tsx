@@ -3,7 +3,7 @@
 import { useSnackbar } from 'notistack'
 import { notification } from '~/utils/notifications'
 import { Box } from '@mui/joy'
-import { useLiveQuery, AppState, appState } from '~/api/db'
+import { useLiveQuery, getState, putState } from '~/api/db'
 import { Outlet } from '@remix-run/react'
 
 import InitialLoader from '~/components/InitialLoader'
@@ -25,9 +25,7 @@ export function CatchBoundary({ error }: { error: Error }) {
 
 export default function PageLayout() {
   const { enqueueSnackbar } = useSnackbar()
-  const leftNavOpen: AppState['leftNavOpen'] = useLiveQuery(
-    async () => (await appState.get())?.leftNavOpen
-  )
+  const leftNavOpen = useLiveQuery(() => getState('app')?.leftNavOpen)
 
   notification.subscribe(({ message, variant }) =>
     enqueueSnackbar(message, { variant })
@@ -36,7 +34,9 @@ export default function PageLayout() {
   return (
     <>
       {leftNavOpen && (
-        <Layout.SideDrawer onClose={() => appState.put({ leftNavOpen: false })}>
+        <Layout.SideDrawer
+          onClose={() => putState('app', { leftNavOpen: false })}
+        >
           <LeftNav />
         </Layout.SideDrawer>
       )}

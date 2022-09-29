@@ -7,7 +7,15 @@ import {
   ChangeEventHandler,
 } from 'react'
 import { getComparator } from '~/utils/tableTools'
-import { db, Track, putTrack, removeTrack, useLiveQuery } from '~/api/db'
+import {
+  db,
+  Track,
+  putTrack,
+  removeTrack,
+  useLiveQuery,
+  getState,
+  putState,
+} from '~/api/db'
 import { initTrack, processAudio } from '~/api/audio'
 import { alpha, SxProps } from '@mui/material/styles'
 import {
@@ -19,6 +27,7 @@ import {
   styled,
   Checkbox,
   Typography,
+  IconButton,
 } from '@mui/joy'
 import {
   Collapse,
@@ -31,7 +40,6 @@ import {
   TableRow,
   TableSortLabel,
   Toolbar,
-  IconButton,
   Tooltip,
   TableCellProps,
 } from '@mui/material'
@@ -48,6 +56,7 @@ import {
   FilterList,
   KeyboardArrowDown,
   KeyboardArrowUp,
+  SearchRounded,
 } from '@mui/icons-material'
 import { visuallyHidden } from '@mui/utils'
 
@@ -62,8 +71,6 @@ export default function TrackTable({
   openTable: Function
   getPeaks: Function
 }) {
-  const [order, setOrder] = useState<'asc' | 'desc'>('asc')
-  const [orderBy, setOrderBy] = useState<keyof Track>('bpm')
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(5)
   const [selected, setSelected] = useState<readonly number[]>([])
@@ -76,7 +83,8 @@ export default function TrackTable({
 
   // monitor db for track updates
   let tracks: Track[] | null = useLiveQuery(() => db.tracks.toArray()) ?? null
-  let trackSort = useLiveQuery(() => db.appState.get('trackSort')) || 'name'
+  const sortOrder = useLiveQuery(() => getState('app')?.sortOrder || 'desc')
+  const sortOrderBy = useLiveQuery(() => getState('app')?.sortOrderBy || 'name')
 
   // if we see any tracks that haven't been processed, process them, or
   // if we haven't had user activation, show button to resume processing
@@ -205,7 +213,6 @@ export default function TrackTable({
         label: 'Track Name',
         align: 'left',
         padding: 'none',
-        sx: { minWidth: '300px', width: '50%' },
         // remove suffix (ie. .mp3)
         formatter: t =>
           t.name?.replace(/\.[^/.]+$/, '') || 'Track name not found',
@@ -215,7 +222,6 @@ export default function TrackTable({
         label: 'BPM',
         align: 'right',
         padding: 'normal',
-        sx: { width: '80px' },
         formatter: t =>
           t.bpm?.toFixed(0) ||
           (dirtyTracks.some(dt => dt.id == t.id) &&
@@ -230,7 +236,6 @@ export default function TrackTable({
         align: 'right',
         padding: 'normal',
         label: 'Duration',
-        sx: { width: '105px' },
         formatter: t => (t.duration ? formatMinutes(t.duration! / 60) : null),
       },
       {
@@ -238,7 +243,6 @@ export default function TrackTable({
         align: 'right',
         padding: 'normal',
         label: 'Mixes',
-        sx: { width: '85px' },
         formatter: t => '',
       },
       {
@@ -246,7 +250,6 @@ export default function TrackTable({
         align: 'right',
         padding: 'normal',
         label: 'Sets',
-        sx: { width: '85px' },
         formatter: t => '',
       },
       {
@@ -329,6 +332,14 @@ export default function TrackTable({
         sx={{
           pl: { sm: 2 },
           pr: { xs: 1, sm: 1 },
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gridColumn: '1 / -1',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          position: 'sticky',
           ...(numSelected > 0 && {
             bgcolor: theme =>
               alpha(
@@ -339,24 +350,60 @@ export default function TrackTable({
         }}
       >
         {numSelected > 0 ? (
-          <Typography sx={{ flex: '1 1 100%' }} component="div">
-            {numSelected} selected
-          </Typography>
+          <Typography component="div">{numSelected} selected</Typography>
         ) : (
-          <Typography sx={{ flex: '1 1 100%' }} id="tableTitle" component="div">
+          <Typography id="tableTitle" component="div">
             Tracks
           </Typography>
         )}
-        {numSelected > 0 ? (
+        <TextField
+          size="sm"
+          variant="soft"
+          placeholder="Search..."
+          startDecorator={<SearchRounded color="primary" />}
+          onChange={e => setSearch(e.target.value)}
+          value={searchVal}
+          endDecorator={
+            <IconButton variant="outlined" size="sm" color="neutral">
+              <Typography
+                fontWeight="lg"
+                fontSize="sm"
+                textColor="text.tertiary"
+              >
+                /
+              </Typography>
+            </IconButton>
+          }
+          sx={{
+            fontWeight: 'thin',
+            flexBasis: '500px',
+            display: {
+              xs: 'none',
+              sm: 'flex',
+            },
+          }}
+        />
+        {numSelected == 0 ? (
+          <>
+            {!dirtyTracks.length ? null : (
+              <div style={{ alignSelf: 'center' }}>
+                <PriorityHigh style={{ marginRight: '5px' }} />
+                {`BPM needed for ${dirtyTracks.length} Track${
+                  tracks?.length === 1 ? '' : 's'
+                }`}
+              </div>
+            )}
+            <div style={{ alignSelf: 'center' }}>
+              <Button size="sm" variant="soft" onClick={browseFile}>
+                <Add />
+                Add Track
+              </Button>
+            </div>
+          </>
+        ) : (
           <Tooltip title="Delete">
             <IconButton>
               <Delete />
-            </IconButton>
-          </Tooltip>
-        ) : (
-          <Tooltip title="Filter list">
-            <IconButton>
-              <FilterList />
             </IconButton>
           </Tooltip>
         )}
@@ -364,40 +411,40 @@ export default function TrackTable({
     )
   }
 
-  // const tableHeaders = columnDefs.map(c => (
-  //   <th
-  //     key={c.key}
-  //     style={{
-  //       textAlign: c.key == 'actions' ? 'center' : 'left',
-  //       minWidth: c.minWidth || c.width,
-  //       width: c.width,
-  //     }}
-  //   >
-  //     {c.name}
-  //     {c.key == 'actions' ? null : (
-  //       <IconButton
-  //         id={`${c.key}-sort`}
-  //         size="small"
-  //         color="primary"
-  //         onClick={e => {
-  //           const rev = /reverse/.test(trackSort)
-  //           const key = trackSort.split('-')[0]
-  //           const sortKey =
-  //             trackSort.split('-')[0] == c.key
-  //               ? rev
-  //                 ? key
-  //                 : `${key}-reverse`
-  //               : c.key
+  const tableHeaders = columnDefs.map(c => (
+    <th
+      key={c.key}
+      style={{
+        textAlign: c.key == 'actions' ? 'center' : 'left',
+        minWidth: c.minWidth || c.width,
+        width: c.width,
+      }}
+    >
+      {c.name}
+      {c.key == 'actions' ? null : (
+        <IconButton
+          id={`${c.key}-sort`}
+          size="small"
+          color="primary"
+          onClick={e => {
+            const rev = /reverse/.test(trackSort)
+            const key = trackSort.split('-')[0]
+            const sortKey =
+              trackSort.split('-')[0] == c.key
+                ? rev
+                  ? key
+                  : `${key}-reverse`
+                : c.key
 
-  //           db.appState.put(sortKey, 'trackSort')
-  //           e.stopPropagation()
-  //         }}
-  //       >
-  //         <Height titleAccess="Sort" fontSize="small" />
-  //       </IconButton>
-  //     )}
-  //   </th>
-  // ))
+            db.appState.put(sortKey, 'trackSort')
+            e.stopPropagation()
+          }}
+        >
+          <Height titleAccess="Sort" fontSize="small" />
+        </IconButton>
+      )}
+    </th>
+  ))
 
   const sortColumns = (sortKey: string) => {
     const rev = /reverse/.test(sortKey)
@@ -425,9 +472,8 @@ export default function TrackTable({
 
   const tableOps = {
     sort: (event: MouseEvent<unknown>, property: keyof Track) => {
-      const isAsc = orderBy === property && order === 'asc'
-      setOrder(isAsc ? 'desc' : 'asc')
-      setOrderBy(property)
+      const isAsc = sortOrderBy === property && sortOrder === 'asc'
+      db.appState.put({ sortOrder: isAsc ? 'desc' : 'asc', sortOrderBy })
     },
 
     selectAll: (event: ChangeEvent<HTMLInputElement>) => {
@@ -501,7 +547,7 @@ export default function TrackTable({
               title={labelId}
             />
           </TableCell>
-          {/* <TableCell
+          <TableCell
             component="th"
             id={labelId}
             scope="row"
@@ -509,7 +555,7 @@ export default function TrackTable({
             sx={{ cursor: 'default' }}
           >
             {row.name}
-          </TableCell> */}
+          </TableCell>
           <TableCell align="right">{row.bpm}</TableCell>
           <TableCell align="right">{row.duration}</TableCell>
           <TableCell align="right">
@@ -523,7 +569,7 @@ export default function TrackTable({
             </IconButton>
           </TableCell>
           <TableCell align="right">{row.sets}</TableCell>
-          <TableCell align="right">{row.lastModified}</TableCell>
+          <TableCell align="right">'lastmodified'</TableCell>
         </TableRow>
         <TableRow
           hover
@@ -534,20 +580,20 @@ export default function TrackTable({
             <Collapse in={open} timeout="auto" unmountOnExit>
               <Card sx={{ margin: 1 }}>
                 <Table size="small" aria-label="purchases">
-                  {/* <TableHead>
+                  <TableHead>
                     <TableRow>
                       <TableCell>Date</TableCell>
                       <TableCell>Customer</TableCell>
                       <TableCell align="right">Amount</TableCell>
                       <TableCell align="right">Total price ($)</TableCell>
                     </TableRow>
-                  </TableHead> */}
+                  </TableHead>
                   <TableBody>
                     {row.history?.map(historyRow => (
                       <TableRow key={historyRow.date}>
-                        {/* <TableCell component="th" scope="row">
+                        <TableCell component="th" scope="row">
                           {historyRow.date}
-                        </TableCell> */}
+                        </TableCell>
                         <TableCell>{historyRow.customerId}</TableCell>
                         <TableCell align="right">{historyRow.amount}</TableCell>
                         <TableCell align="right">23532</TableCell>
@@ -577,156 +623,128 @@ export default function TrackTable({
   `
 
   return (
-    <></>
-    // <Box sx={{ width: '100%' }}>
-    //   <Sheet
-    //     variant="outlined"
-    //     sx={{
-    //       width: '100%',
-    //       mb: 2,
-    //       borderRadius: 'sm',
-    //       bgcolor: 'background.body',
-    //       overflow: 'auto',
-    //     }}
-    //   >
-    //     <EnhancedTableToolbar numSelected={selected.length} />
-    //     <TableContainer>
-    //       <Table aria-labelledby="tableTitle" size="small" padding="checkbox">
-    //         <EnhancedTableHead
-    //           numSelected={selected.length}
-    //           order={order}
-    //           orderBy={orderBy}
-    //           onSelectAllClick={tableOps.selectAll}
-    //           onRequestSort={tableOps.sort}
-    //           rowCount={tracks?.length || 0}
-    //         />
-    //         <TableBody>
-    //           <>
-    //             {tracks &&
-    //               [...tracks]
-    //                 // @ts-ignore: TS complains about the type of orderBy due to history being an array
-    //                 .sort(getComparator(order, orderBy))
-    //                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-    //                 .map((row, index) => {
-    //                   const isItemSelected = tableOps.isSelected(row.id)
-    //                   const labelId = `enhanced-table-checkbox-${index}`
+    <Box>
+      <Sheet
+        variant="outlined"
+        sx={{
+          width: '100%',
+          mb: 2,
+          borderRadius: 'sm',
+          bgcolor: 'background.body',
+          overflow: 'auto',
+        }}
+      >
+        <EnhancedTableToolbar numSelected={selected.length} />
+        <TableContainer>
+          <Table aria-labelledby="tableTitle" size="small" padding="checkbox">
+            <EnhancedTableHead
+              numSelected={selected.length}
+              order={order}
+              orderBy={orderBy}
+              onSelectAllClick={tableOps.selectAll}
+              onRequestSort={tableOps.sort}
+              rowCount={tracks?.length || 0}
+            />
+            <TableBody>
+              <>
+                {tracks &&
+                  [...tracks]
+                    // @ts-ignore: TS complains about the type of orderBy due to history being an array
+                    .sort(getComparator(order, orderBy))
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((row, index) => {
+                      const isItemSelected = tableOps.isSelected(row.id)
+                      const labelId = `enhanced-table-checkbox-${index}`
 
-    //                   return (
-    //                     <RowState
-    //                       key={index}
-    //                       row={row}
-    //                       isItemSelected={isItemSelected}
-    //                       labelId={labelId}
-    //                     />
-    //                   )
-    //                 })}
-    //             {emptyRows > 0 && (
-    //               <TableRow
-    //                 style={{
-    //                   height: 33 * emptyRows,
-    //                 }}
-    //               >
-    //                 <TableCell colSpan={6} />
-    //               </TableRow>
-    //             )}
-    //           </>
-    //         </TableBody>
-    //       </Table>
-    //     </TableContainer>
-    //     <TablePagination
-    //       rowsPerPageOptions={[5, 10, 25]}
-    //       component="div"
-    //       count={tracks?.length || 0}
-    //       rowsPerPage={rowsPerPage}
-    //       page={page}
-    //       onPageChange={tableOps.changePage}
-    //       onRowsPerPageChange={tableOps.changeRows}
-    //     />
-    //   </Sheet>
-    //   <>
-    //     {/* DropZone */}
-    //     {hideDropzone ? null : (
-    //       <Sheet style={{ margin: '10px 0' }} variant="soft">
-    //         <DropzoneDiv
-    //           onClick={browseFile}
-    //           onDrop={e => {
-    //             e.preventDefault()
-    //             filesDropped(e.dataTransfer.items)
-    //           }}
-    //           onDragOver={e => e.preventDefault()}
-    //           onDragEnter={() => setIsOver(true)}
-    //           onDragLeave={() => setIsOver(false)}
-    //         >
-    //           <CloudUpload
-    //             sx={{ fontSize: 48 }}
-    //             className="drop"
-    //             style={{ marginBottom: '10px' }}
-    //           />
-    //           <Typography level="h4" className="drop">
-    //             Add Tracks
-    //           </Typography>
-    //           <div className="drop">
-    //             Drag a file or <strong>folder</strong> here or{' '}
-    //             <span className="text-primary">browse</span> for a file to add.
-    //             Folders are preferred.
-    //           </div>
-    //         </DropzoneDiv>
-    //       </Sheet>
-    //     )}
-    //     {!tracks || processing ? (
-    //       <Loader style={{ margin: '50px auto' }} />
-    //     ) : (
-    //       <>
-    //         {/* Table search and info bar */}
-    //         <Sheet
-    //           sx={{
-    //             display: 'flex',
-    //             justifyContent: 'space-between',
-    //             padding: '10px',
-    //           }}
-    //         >
-    //           <TextField
-    //             onChange={e => setSearch(e.target.value)}
-    //             placeholder="Search"
-    //             value={searchVal}
-    //           >
-    //             <Search />
-    //           </TextField>
-    //           {!dirtyTracks.length ? null : (
-    //             <div style={{ alignSelf: 'center' }}>
-    //               <PriorityHigh style={{ marginRight: '5px' }} />
-    //               {`BPM needed for ${dirtyTracks.length} Track${
-    //                 tracks?.length === 1 ? '' : 's'
-    //               }`}
-    //             </div>
-    //           )}
-    //           <div style={{ alignSelf: 'center' }}>
-    //             <Button size="sm" onClick={browseFile}>
-    //               <Add />
-    //               Add Track
-    //             </Button>
-    //           </div>
-    //         </Sheet>
-    //         {!tracks?.length ? null : (
-    //           <div id="trackTable">
-    //             {/* Track Table */}
-    //             <Table style={{ width: '100%', tableLayout: 'fixed' }}>
-    //               <thead>{/* <tr>{tableHeaders}</tr> */}</thead>
-    //               <tbody>
-    //                 {tracks.map((t, i) => (
-    //                   <tr key={i}>
-    //                     {columnDefs.map(c => (
-    //                       <td key={c.key}>{c.formatter(t)}</td>
-    //                     ))}
-    //                   </tr>
-    //                 ))}
-    //               </tbody>
-    //             </Table>
-    //           </div>
-    //         )}
-    //       </>
-    //     )}
-    //   </>
-    // </Box>
+                      return (
+                        <RowState
+                          key={index}
+                          row={row}
+                          isItemSelected={isItemSelected}
+                          labelId={labelId}
+                        />
+                      )
+                    })}
+                {emptyRows > 0 && (
+                  <TableRow
+                    style={{
+                      height: 33 * emptyRows,
+                    }}
+                  >
+                    <TableCell colSpan={6} />
+                  </TableRow>
+                )}
+              </>
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={tracks?.length || 0}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={tableOps.changePage}
+          onRowsPerPageChange={tableOps.changeRows}
+        />
+      </Sheet>
+      <>
+        {/* DropZone */}
+        {hideDropzone ? null : (
+          <Sheet style={{ margin: '10px 0' }} variant="soft">
+            <DropzoneDiv
+              onClick={browseFile}
+              onDrop={e => {
+                e.preventDefault()
+                filesDropped(e.dataTransfer.items)
+              }}
+              onDragOver={e => e.preventDefault()}
+              onDragEnter={() => setIsOver(true)}
+              onDragLeave={() => setIsOver(false)}
+            >
+              <CloudUpload
+                sx={{ fontSize: 48 }}
+                className="drop"
+                style={{ marginBottom: '10px' }}
+              />
+              <Typography level="h4" className="drop">
+                Add Tracks
+              </Typography>
+              <div className="drop">
+                Drag a file or <strong>folder</strong> here or{' '}
+                <span className="text-primary">browse</span> for a file to add.
+                Folders are preferred.
+              </div>
+            </DropzoneDiv>
+          </Sheet>
+        )}
+        {!tracks || processing ? (
+          <Loader style={{ margin: '50px auto' }} />
+        ) : (
+          <>
+            {/* Table search and info bar */}
+            {!tracks?.length ? null : (
+              <div id="trackTable">
+                {/* Track Table */}
+                <Table style={{ width: '100%', tableLayout: 'fixed' }}>
+                  <thead>
+                    <tr>{tableHeaders}</tr>
+                  </thead>
+                  <tbody>
+                    {tracks.map((t, i) => (
+                      <tr key={i}>
+                        {columnDefs.map(c => (
+                          <td key={c.key}>{c.formatter(t)}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
+            )}
+          </>
+        )}
+      </>
+    </Box>
   )
 }

@@ -1,14 +1,12 @@
-import { Box, Typography, TextField, IconButton } from '@mui/joy'
-import { useLiveQuery, AppState, appState } from '~/api/db'
+import { Box, Typography, IconButton } from '@mui/joy'
+import { useLiveQuery, getState, putState } from '~/api/db'
 import { Menu } from '~/components/layout/Menu'
 import DarkMode from '~/components/DarkMode'
 
-import { SearchRounded, Settings, Menu as MenuIcon } from '@mui/icons-material'
+import { Settings, Menu as MenuIcon } from '@mui/icons-material'
 
 export default function Header() {
-  const leftNavOpen: AppState['leftNavOpen'] = useLiveQuery(
-    async () => (await appState.get())?.leftNavOpen
-  )
+  const leftNavOpen = useLiveQuery(() => getState('app')?.leftNavOpen)
 
   return (
     <Box
@@ -32,19 +30,12 @@ export default function Header() {
         },
       ]}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 1.5,
-        }}
-      >
+      <Box>
         <IconButton
           variant="outlined"
           size="sm"
           title={`${leftNavOpen ? 'Hide' : 'Show'} navigation`}
-          onClick={() => appState.put({ leftNavOpen: true })}
+          onClick={() => putState('app', { leftNavOpen: true })}
           sx={{ display: { sm: 'none' } }}
         >
           <MenuIcon />
@@ -53,36 +44,7 @@ export default function Header() {
           Mixpoint
         </Typography>
       </Box>
-      <TextField
-        size="sm"
-        variant="soft"
-        placeholder="Search..."
-        startDecorator={<SearchRounded color="primary" />}
-        endDecorator={
-          <IconButton variant="outlined" size="sm" color="neutral">
-            <Typography fontWeight="lg" fontSize="sm" textColor="text.tertiary">
-              /
-            </Typography>
-          </IconButton>
-        }
-        sx={{
-          fontWeight: 'thin',
-          flexBasis: '500px',
-          display: {
-            xs: 'none',
-            sm: 'flex',
-          },
-        }}
-      />
       <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.5 }}>
-        <IconButton
-          size="sm"
-          variant="outlined"
-          color="primary"
-          sx={{ display: { xs: 'inline-flex', sm: 'none' } }}
-        >
-          <SearchRounded />
-        </IconButton>
         <Menu
           id="app-selector"
           control={

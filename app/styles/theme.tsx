@@ -1,6 +1,9 @@
 // from https://mui.com/joy-ui/guides/using-joy-ui-and-material-ui-together/
 import { deepmerge } from '@mui/utils'
-import { experimental_extendTheme as extendMuiTheme } from '@mui/material/styles'
+import {
+  experimental_extendTheme as extendMuiTheme,
+  Theme,
+} from '@mui/material/styles'
 import { extendTheme as extendJoyTheme } from '@mui/joy/styles'
 
 const muiTheme = extendMuiTheme({
@@ -100,7 +103,7 @@ const joyTheme = extendJoyTheme({
         },
         background: {
           surface: '#fff',
-          body: '#fff',
+          body: '#F0F7FF',
         },
         action: {
           active: 'rgba(0, 0, 0, 0.54)',
@@ -221,4 +224,4 @@ const joyTheme = extendJoyTheme({
   },
 })
 
-export const theme = deepmerge(muiTheme, joyTheme)
+export const theme: Theme = deepmerge(muiTheme, joyTheme)

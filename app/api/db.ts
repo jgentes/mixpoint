@@ -1,10 +1,7 @@
 // this file initializes Dexie (indexDB), defines the schema and creates tables if needed
 // it also provides a few helper functions for interacting with the database
 
-//import 'fake-indexeddb/auto' // shim for indexdb needed for SSR
-//import setGlobalVars from 'indexeddbshim/src/node-UnicodeIdentifiers'
-
-import Dexie from 'dexie'
+import Dexie, { DbCoreTransactionOptions } from 'dexie'
 import { useLiveQuery } from 'dexie-react-hooks'
 import WaveformData from 'waveform-data'
 
@@ -123,7 +120,8 @@ interface SetState {
 interface AppState {
   date?: Date
   leftNavOpen?: boolean
-  trackSort?: string
+  sortOrder?: 'asc' | 'desc'
+  sortOrderBy?: keyof Track // track table order property
 }
 
 const putTrack = async (track: Track): Promise<Track> => {
@@ -151,92 +149,48 @@ const getMix = async (id: number): Promise<Mix | undefined> =>
 
 const removeMix = async (id: number): Promise<void> => await db.mixes.delete(id)
 
-// ok I give up, TS forces me to be explicit here rather than use variable table names :(
-
-const appState = {
-  get: async (): Promise<AppState> =>
-    (await db.appState.orderBy('date').last()) || {},
-  put: async (state: Partial<AppState>): Promise<void> =>
-    appState
-      .get()
-      .then(
-        async prevState =>
-          await db.appState.put({ ...prevState, ...state, date: new Date() })
-      ),
+// state getter and setter
+interface StateTypes {
+  track: TrackState
+  mix: MixState
+  set: SetState
+  app: AppState
 }
 
-const trackState = {
-  get: async (): Promise<TrackState> =>
-    (await db.trackState.orderBy('date').last()) || {},
-  put: async (state: Partial<TrackState>): Promise<void> =>
-    trackState
-      .get()
-      .then(
-        async prevState =>
-          await db.trackState.put({ ...prevState, ...state, date: new Date() })
-      ),
+// using a single-call-signature overload to help TS determine the return type
+// https://stackoverflow.com/questions/71726164/typescript-enforce-function-return-type-to-be-key-of-interface-based-on-paramete
+function getState<S extends keyof StateTypes>(key: S): StateTypes[S]
+async function getState(table: keyof StateTypes) {
+  return db[`${table}State`].orderBy('date').last()
 }
 
-const mixState = {
-  get: async (): Promise<MixState> =>
-    (await db.mixState.orderBy('date').last()) || {},
-  put: async (state: Partial<MixState>): Promise<void> =>
-    mixState
-      .get()
-      .then(
-        async prevState =>
-          await db.mixState.put({ ...prevState, ...state, date: new Date() })
-      ),
+const putState = async (
+  table: keyof StateTypes,
+  state: Partial<StateTypes[typeof table]>
+): Promise<void> => {
+  const prevState = getState(table)
+  await db[`${table}State`].put({
+    ...prevState,
+    ...state,
+    date: new Date(),
+  })
 }
 
-const setState = {
-  get: async (): Promise<SetState> =>
-    (await db.setState.orderBy('date').last()) || {},
-  put: async (state: Partial<SetState>): Promise<void> =>
-    setState
-      .get()
-      .then(
-        async prevState =>
-          await db.setState.put({ ...prevState, ...state, date: new Date() })
-      ),
+// db hooks to limit the number of rows in a state table
+const createHooks = (table: keyof StateTypes) => {
+  db[`${table}State`].hook('creating', async () => {
+    const count = await db[`${table}State`].count()
+    if (count > STATE_ROW_LIMIT) {
+      const oldest = await db[`${table}State`].orderBy('date').first()
+      if (oldest) db[`${table}State`].delete(oldest.date)
+    }
+  })
 }
 
-// db hooks, again redundant due to TS issues with variable table names
+const tables = ['track', 'mix', 'set', 'app'] as const
+tables.forEach(table => createHooks(table))
 
-// this hook limits the number of rows in a state table
-db.trackState.hook('creating', async () => {
-  const count = await db.trackState.count()
-  if (count > STATE_ROW_LIMIT) {
-    const oldest = await db.trackState.orderBy('date').first()
-    if (oldest) db.trackState.delete(oldest.date)
-  }
-})
-
-db.mixState.hook('creating', async () => {
-  const count = await db.mixState.count()
-  if (count > STATE_ROW_LIMIT) {
-    const oldest = await db.mixState.orderBy('date').first()
-    if (oldest) db.mixState.delete(oldest.date)
-  }
-})
-
-db.setState.hook('creating', async () => {
-  const count = await db.setState.count()
-  if (count > STATE_ROW_LIMIT) {
-    const oldest = await db.setState.orderBy('date').first()
-    if (oldest) db.setState.delete(oldest.date)
-  }
-})
-
-db.appState.hook('creating', async () => {
-  const count = await db.appState.count()
-  if (count > STATE_ROW_LIMIT) {
-    const oldest = await db.appState.orderBy('date').first()
-    if (oldest) db.appState.delete(oldest.date)
-  }
-})
-
-export type { Track, Mix, Set, TrackState, MixState, SetState, AppState }
+export type { Track, Mix, Set }
 
 export {
   db,
@@ -245,8 +199,6 @@ export {
   getMix,
   removeMix,
   useLiveQuery,
-  appState,
-  trackState,
-  mixState,
-  setState,
+  getState,
+  putState,
 }

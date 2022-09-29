@@ -1,15 +1,14 @@
 // this file establishes the root component that renders all subsequent / child routes
 // it also injects top level styling, HTML meta tags, links, and javascript for browser rendering
-import { Links, Meta, LiveReload, Scripts } from '@remix-run/react'
+import { Links, Meta, LiveReload, Scripts, Outlet } from '@remix-run/react'
 import { useEffect, useState } from 'react'
 import { CssVarsProvider } from '@mui/joy/styles'
 import { theme } from '~/styles/theme'
 import { SnackbarProvider } from 'notistack'
 import { ClientOnly } from 'remix-utils'
-
-import PageLayout from '~/components/PageLayout'
-import InitialLoader from '~/components/InitialLoader'
 import { LinksFunction, MetaFunction } from '@remix-run/node'
+
+import InitialLoader from '~/components/InitialLoader'
 
 export const meta: MetaFunction = () => {
   return {
@@ -72,7 +71,7 @@ const ThemeLoader = () => {
         {loading ? (
           <ClientOnly>{() => <InitialLoader />}</ClientOnly>
         ) : (
-          <PageLayout />
+          <Outlet />
         )}
       </CssVarsProvider>
     </SnackbarProvider>
@@ -83,6 +82,18 @@ const App = () => {
   return (
     <Document>
       <ThemeLoader />
+      <Scripts />
+    </Document>
+  )
+}
+
+export const ErrorBoundary = ({ error }: { error: Error }) => {
+  console.log('error bound')
+  return (
+    <Document>
+      <CssVarsProvider theme={theme} disableTransitionOnChange>
+        <InitialLoader message={error.message} />
+      </CssVarsProvider>
       <Scripts />
     </Document>
   )

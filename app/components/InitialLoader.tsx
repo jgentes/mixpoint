@@ -1,5 +1,6 @@
 import { styled } from '@mui/joy'
 import { CircularProgress } from '@mui/material'
+import { Warning } from '@mui/icons-material'
 
 const LoaderWrapDiv = styled('div')`
   top: 0;
@@ -58,7 +59,11 @@ export default function InitialLoader({ message }: { message?: string }) {
       <LoaderDiv>
         <LoaderRow style={{ paddingBottom: '4px' }}>
           <LoaderText>Mixpoint</LoaderText>
-          {message ? null : <CircularProgress color="primary" size="18px" />}
+          {message ? (
+            <Warning color="action" sx={{ pt: '4px' }} />
+          ) : (
+            <CircularProgress color="primary" size="18px" />
+          )}
         </LoaderRow>
         <LoaderRow style={{ borderTop: '1px solid #e2e2e2' }}>
           <LoaderSubtext>{message || 'Please Wait. Loading...'}</LoaderSubtext>
