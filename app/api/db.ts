@@ -2,6 +2,8 @@
 // it also provides a few helper functions for interacting with the database
 
 //import 'fake-indexeddb/auto' // shim for indexdb needed for SSR
+//import setGlobalVars from 'indexeddbshim/src/node-UnicodeIdentifiers'
+
 import Dexie from 'dexie'
 import { useLiveQuery } from 'dexie-react-hooks'
 import WaveformData from 'waveform-data'

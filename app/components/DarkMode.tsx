@@ -12,7 +12,7 @@ export default function DarkMode() {
       variant="outlined"
       color="primary"
       onClick={() => {
-        new Audio('/light.mp3').play()
+        new Audio('/media/light.mp3').play()
         setMode(mode === 'dark' ? 'light' : 'dark')
       }}
     >

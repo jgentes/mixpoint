@@ -7,15 +7,9 @@ import { theme } from '~/styles/theme'
 import { SnackbarProvider } from 'notistack'
 import { ClientOnly } from 'remix-utils'
 
+import fonts from '~/styles/fonts.css'
 import PageLayout from '~/components/PageLayout'
 import InitialLoader from '~/components/InitialLoader'
-
-// fonts!
-import '@fontsource/roboto-mono/400.css'
-import '@fontsource/public-sans/300.css'
-import '@fontsource/public-sans/400.css'
-import '@fontsource/public-sans/500.css'
-import '@fontsource/public-sans/700.css'
 
 export function meta() {
   return {
@@ -30,14 +24,18 @@ export function links() {
     {
       rel: 'icon',
       type: 'image/png',
-      href: '/soundwave-32.png',
+      href: '/media/soundwave-32.png',
       sizes: '32x32',
     },
     {
       rel: 'icon',
       type: 'image/png',
-      href: '/soundwave-16.png',
+      href: '/media/soundwave-16.png',
       sizes: '16x16',
+    },
+    {
+      rel: 'stylesheet',
+      href: fonts,
     },
   ]
 }

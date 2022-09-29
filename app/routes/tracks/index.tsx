@@ -364,40 +364,40 @@ export default function TrackTable({
     )
   }
 
-  const tableHeaders = columnDefs.map(c => (
-    <th
-      key={c.key}
-      style={{
-        textAlign: c.key == 'actions' ? 'center' : 'left',
-        minWidth: c.minWidth || c.width,
-        width: c.width,
-      }}
-    >
-      {c.name}
-      {c.key == 'actions' ? null : (
-        <IconButton
-          id={`${c.key}-sort`}
-          size="small"
-          color="primary"
-          onClick={e => {
-            const rev = /reverse/.test(trackSort)
-            const key = trackSort.split('-')[0]
-            const sortKey =
-              trackSort.split('-')[0] == c.key
-                ? rev
-                  ? key
-                  : `${key}-reverse`
-                : c.key
+  // const tableHeaders = columnDefs.map(c => (
+  //   <th
+  //     key={c.key}
+  //     style={{
+  //       textAlign: c.key == 'actions' ? 'center' : 'left',
+  //       minWidth: c.minWidth || c.width,
+  //       width: c.width,
+  //     }}
+  //   >
+  //     {c.name}
+  //     {c.key == 'actions' ? null : (
+  //       <IconButton
+  //         id={`${c.key}-sort`}
+  //         size="small"
+  //         color="primary"
+  //         onClick={e => {
+  //           const rev = /reverse/.test(trackSort)
+  //           const key = trackSort.split('-')[0]
+  //           const sortKey =
+  //             trackSort.split('-')[0] == c.key
+  //               ? rev
+  //                 ? key
+  //                 : `${key}-reverse`
+  //               : c.key
 
-            db.appState.put(sortKey, 'trackSort')
-            e.stopPropagation()
-          }}
-        >
-          <Height titleAccess="Sort" fontSize="small" />
-        </IconButton>
-      )}
-    </th>
-  ))
+  //           db.appState.put(sortKey, 'trackSort')
+  //           e.stopPropagation()
+  //         }}
+  //       >
+  //         <Height titleAccess="Sort" fontSize="small" />
+  //       </IconButton>
+  //     )}
+  //   </th>
+  // ))
 
   const sortColumns = (sortKey: string) => {
     const rev = /reverse/.test(sortKey)
@@ -501,7 +501,7 @@ export default function TrackTable({
               title={labelId}
             />
           </TableCell>
-          <TableCell
+          {/* <TableCell
             component="th"
             id={labelId}
             scope="row"
@@ -509,7 +509,7 @@ export default function TrackTable({
             sx={{ cursor: 'default' }}
           >
             {row.name}
-          </TableCell>
+          </TableCell> */}
           <TableCell align="right">{row.bpm}</TableCell>
           <TableCell align="right">{row.duration}</TableCell>
           <TableCell align="right">
@@ -534,20 +534,20 @@ export default function TrackTable({
             <Collapse in={open} timeout="auto" unmountOnExit>
               <Card sx={{ margin: 1 }}>
                 <Table size="small" aria-label="purchases">
-                  <TableHead>
+                  {/* <TableHead>
                     <TableRow>
                       <TableCell>Date</TableCell>
                       <TableCell>Customer</TableCell>
                       <TableCell align="right">Amount</TableCell>
                       <TableCell align="right">Total price ($)</TableCell>
                     </TableRow>
-                  </TableHead>
+                  </TableHead> */}
                   <TableBody>
                     {row.history?.map(historyRow => (
                       <TableRow key={historyRow.date}>
-                        <TableCell component="th" scope="row">
+                        {/* <TableCell component="th" scope="row">
                           {historyRow.date}
-                        </TableCell>
+                        </TableCell> */}
                         <TableCell>{historyRow.customerId}</TableCell>
                         <TableCell align="right">{historyRow.amount}</TableCell>
                         <TableCell align="right">23532</TableCell>
@@ -710,9 +710,7 @@ export default function TrackTable({
               <div id="trackTable">
                 {/* Track Table */}
                 <Table style={{ width: '100%', tableLayout: 'fixed' }}>
-                  <thead>
-                    <tr>{tableHeaders}</tr>
-                  </thead>
+                  <thead>{/* <tr>{tableHeaders}</tr> */}</thead>
                   <tbody>
                     {tracks.map((t, i) => (
                       <tr key={i}>

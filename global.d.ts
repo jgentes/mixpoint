@@ -1,10 +1,13 @@
 // from https://mui.com/joy-ui/guides/using-joy-ui-and-material-ui-together/
 import type {} from '@mui/material/themeCssVarsAugmentation'
+import { CssVarsThemeOptions } from '@mui/joy'
 import {
   experimental_extendTheme as extendMuiTheme,
+  CommonColors,
   PaletteColor,
   TypeText,
   TypeAction,
+  TypeBackground,
   Overlays,
   PaletteColorChannel,
   PaletteAlert,
@@ -24,7 +27,7 @@ import {
   PaletteTextChannel,
   PaletteTooltip,
   Shadows,
-  zIndex,
+  ZIndex,
 } from '@mui/material/styles'
 import { Theme as JoyTheme } from '@mui/joy/styles'
 
