@@ -35,11 +35,7 @@ export const links: LinksFunction = () => {
     },
     {
       rel: 'stylesheet',
-      href: 'http://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400&display=swap',
-    },
-    {
-      rel: 'stylesheet',
-      href: 'http://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;700&display=swap',
+      href: 'http://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400&family=Public+Sans:wght@300;400;500;700&display=swap',
     },
   ]
 }
