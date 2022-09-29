@@ -9,6 +9,7 @@ import { ClientOnly } from 'remix-utils'
 import { LinksFunction, MetaFunction } from '@remix-run/node'
 
 import InitialLoader from '~/components/InitialLoader'
+import PageLayout from './routes/__layout'
 
 export const meta: MetaFunction = () => {
   return {
@@ -71,7 +72,7 @@ const ThemeLoader = () => {
         {loading ? (
           <ClientOnly>{() => <InitialLoader />}</ClientOnly>
         ) : (
-          <Outlet />
+          <PageLayout />
         )}
       </CssVarsProvider>
     </SnackbarProvider>
