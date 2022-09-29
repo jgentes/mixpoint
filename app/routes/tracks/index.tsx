@@ -577,155 +577,156 @@ export default function TrackTable({
   `
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Sheet
-        variant="outlined"
-        sx={{
-          width: '100%',
-          mb: 2,
-          borderRadius: 'sm',
-          bgcolor: 'background.body',
-          overflow: 'auto',
-        }}
-      >
-        <EnhancedTableToolbar numSelected={selected.length} />
-        <TableContainer>
-          <Table aria-labelledby="tableTitle" size="small" padding="checkbox">
-            <EnhancedTableHead
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
-              onSelectAllClick={tableOps.selectAll}
-              onRequestSort={tableOps.sort}
-              rowCount={tracks?.length || 0}
-            />
-            <TableBody>
-              <>
-                {tracks &&
-                  [...tracks]
-                    // @ts-ignore: TS complains about the type of orderBy due to history being an array
-                    .sort(getComparator(order, orderBy))
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((row, index) => {
-                      const isItemSelected = tableOps.isSelected(row.id)
-                      const labelId = `enhanced-table-checkbox-${index}`
+    <></>
+    // <Box sx={{ width: '100%' }}>
+    //   <Sheet
+    //     variant="outlined"
+    //     sx={{
+    //       width: '100%',
+    //       mb: 2,
+    //       borderRadius: 'sm',
+    //       bgcolor: 'background.body',
+    //       overflow: 'auto',
+    //     }}
+    //   >
+    //     <EnhancedTableToolbar numSelected={selected.length} />
+    //     <TableContainer>
+    //       <Table aria-labelledby="tableTitle" size="small" padding="checkbox">
+    //         <EnhancedTableHead
+    //           numSelected={selected.length}
+    //           order={order}
+    //           orderBy={orderBy}
+    //           onSelectAllClick={tableOps.selectAll}
+    //           onRequestSort={tableOps.sort}
+    //           rowCount={tracks?.length || 0}
+    //         />
+    //         <TableBody>
+    //           <>
+    //             {tracks &&
+    //               [...tracks]
+    //                 // @ts-ignore: TS complains about the type of orderBy due to history being an array
+    //                 .sort(getComparator(order, orderBy))
+    //                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+    //                 .map((row, index) => {
+    //                   const isItemSelected = tableOps.isSelected(row.id)
+    //                   const labelId = `enhanced-table-checkbox-${index}`
 
-                      return (
-                        <RowState
-                          key={index}
-                          row={row}
-                          isItemSelected={isItemSelected}
-                          labelId={labelId}
-                        />
-                      )
-                    })}
-                {emptyRows > 0 && (
-                  <TableRow
-                    style={{
-                      height: 33 * emptyRows,
-                    }}
-                  >
-                    <TableCell colSpan={6} />
-                  </TableRow>
-                )}
-              </>
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={tracks?.length || 0}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={tableOps.changePage}
-          onRowsPerPageChange={tableOps.changeRows}
-        />
-      </Sheet>
-      <>
-        {/* DropZone */}
-        {hideDropzone ? null : (
-          <Sheet style={{ margin: '10px 0' }} variant="soft">
-            <DropzoneDiv
-              onClick={browseFile}
-              onDrop={e => {
-                e.preventDefault()
-                filesDropped(e.dataTransfer.items)
-              }}
-              onDragOver={e => e.preventDefault()}
-              onDragEnter={() => setIsOver(true)}
-              onDragLeave={() => setIsOver(false)}
-            >
-              <CloudUpload
-                sx={{ fontSize: 48 }}
-                className="drop"
-                style={{ marginBottom: '10px' }}
-              />
-              <Typography level="h4" className="drop">
-                Add Tracks
-              </Typography>
-              <div className="drop">
-                Drag a file or <strong>folder</strong> here or{' '}
-                <span className="text-primary">browse</span> for a file to add.
-                Folders are preferred.
-              </div>
-            </DropzoneDiv>
-          </Sheet>
-        )}
-        {!tracks || processing ? (
-          <Loader style={{ margin: '50px auto' }} />
-        ) : (
-          <>
-            {/* Table search and info bar */}
-            <Sheet
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                padding: '10px',
-              }}
-            >
-              <TextField
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search"
-                value={searchVal}
-              >
-                <Search />
-              </TextField>
-              {!dirtyTracks.length ? null : (
-                <div style={{ alignSelf: 'center' }}>
-                  <PriorityHigh style={{ marginRight: '5px' }} />
-                  {`BPM needed for ${dirtyTracks.length} Track${
-                    tracks?.length === 1 ? '' : 's'
-                  }`}
-                </div>
-              )}
-              <div style={{ alignSelf: 'center' }}>
-                <Button size="sm" onClick={browseFile}>
-                  <Add />
-                  Add Track
-                </Button>
-              </div>
-            </Sheet>
-            {!tracks?.length ? null : (
-              <div id="trackTable">
-                {/* Track Table */}
-                <Table style={{ width: '100%', tableLayout: 'fixed' }}>
-                  <thead>{/* <tr>{tableHeaders}</tr> */}</thead>
-                  <tbody>
-                    {tracks.map((t, i) => (
-                      <tr key={i}>
-                        {columnDefs.map(c => (
-                          <td key={c.key}>{c.formatter(t)}</td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-            )}
-          </>
-        )}
-      </>
-    </Box>
+    //                   return (
+    //                     <RowState
+    //                       key={index}
+    //                       row={row}
+    //                       isItemSelected={isItemSelected}
+    //                       labelId={labelId}
+    //                     />
+    //                   )
+    //                 })}
+    //             {emptyRows > 0 && (
+    //               <TableRow
+    //                 style={{
+    //                   height: 33 * emptyRows,
+    //                 }}
+    //               >
+    //                 <TableCell colSpan={6} />
+    //               </TableRow>
+    //             )}
+    //           </>
+    //         </TableBody>
+    //       </Table>
+    //     </TableContainer>
+    //     <TablePagination
+    //       rowsPerPageOptions={[5, 10, 25]}
+    //       component="div"
+    //       count={tracks?.length || 0}
+    //       rowsPerPage={rowsPerPage}
+    //       page={page}
+    //       onPageChange={tableOps.changePage}
+    //       onRowsPerPageChange={tableOps.changeRows}
+    //     />
+    //   </Sheet>
+    //   <>
+    //     {/* DropZone */}
+    //     {hideDropzone ? null : (
+    //       <Sheet style={{ margin: '10px 0' }} variant="soft">
+    //         <DropzoneDiv
+    //           onClick={browseFile}
+    //           onDrop={e => {
+    //             e.preventDefault()
+    //             filesDropped(e.dataTransfer.items)
+    //           }}
+    //           onDragOver={e => e.preventDefault()}
+    //           onDragEnter={() => setIsOver(true)}
+    //           onDragLeave={() => setIsOver(false)}
+    //         >
+    //           <CloudUpload
+    //             sx={{ fontSize: 48 }}
+    //             className="drop"
+    //             style={{ marginBottom: '10px' }}
+    //           />
+    //           <Typography level="h4" className="drop">
+    //             Add Tracks
+    //           </Typography>
+    //           <div className="drop">
+    //             Drag a file or <strong>folder</strong> here or{' '}
+    //             <span className="text-primary">browse</span> for a file to add.
+    //             Folders are preferred.
+    //           </div>
+    //         </DropzoneDiv>
+    //       </Sheet>
+    //     )}
+    //     {!tracks || processing ? (
+    //       <Loader style={{ margin: '50px auto' }} />
+    //     ) : (
+    //       <>
+    //         {/* Table search and info bar */}
+    //         <Sheet
+    //           sx={{
+    //             display: 'flex',
+    //             justifyContent: 'space-between',
+    //             padding: '10px',
+    //           }}
+    //         >
+    //           <TextField
+    //             onChange={e => setSearch(e.target.value)}
+    //             placeholder="Search"
+    //             value={searchVal}
+    //           >
+    //             <Search />
+    //           </TextField>
+    //           {!dirtyTracks.length ? null : (
+    //             <div style={{ alignSelf: 'center' }}>
+    //               <PriorityHigh style={{ marginRight: '5px' }} />
+    //               {`BPM needed for ${dirtyTracks.length} Track${
+    //                 tracks?.length === 1 ? '' : 's'
+    //               }`}
+    //             </div>
+    //           )}
+    //           <div style={{ alignSelf: 'center' }}>
+    //             <Button size="sm" onClick={browseFile}>
+    //               <Add />
+    //               Add Track
+    //             </Button>
+    //           </div>
+    //         </Sheet>
+    //         {!tracks?.length ? null : (
+    //           <div id="trackTable">
+    //             {/* Track Table */}
+    //             <Table style={{ width: '100%', tableLayout: 'fixed' }}>
+    //               <thead>{/* <tr>{tableHeaders}</tr> */}</thead>
+    //               <tbody>
+    //                 {tracks.map((t, i) => (
+    //                   <tr key={i}>
+    //                     {columnDefs.map(c => (
+    //                       <td key={c.key}>{c.formatter(t)}</td>
+    //                     ))}
+    //                   </tr>
+    //                 ))}
+    //               </tbody>
+    //             </Table>
+    //           </div>
+    //         )}
+    //       </>
+    //     )}
+    //   </>
+    // </Box>
   )
 }

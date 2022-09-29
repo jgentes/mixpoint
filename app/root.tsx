@@ -7,11 +7,11 @@ import { theme } from '~/styles/theme'
 import { SnackbarProvider } from 'notistack'
 import { ClientOnly } from 'remix-utils'
 
-import fonts from '~/styles/fonts.css'
 import PageLayout from '~/components/PageLayout'
 import InitialLoader from '~/components/InitialLoader'
+import { LinksFunction, MetaFunction } from '@remix-run/node'
 
-export function meta() {
+export const meta: MetaFunction = () => {
   return {
     title: 'Mixpoint',
     description: 'Mixpoint is multi-track audio editor for the modern dj',
@@ -19,7 +19,7 @@ export function meta() {
   }
 }
 
-export function links() {
+export const links: LinksFunction = () => {
   return [
     {
       rel: 'icon',
@@ -35,12 +35,16 @@ export function links() {
     },
     {
       rel: 'stylesheet',
-      href: fonts,
+      href: 'http://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400&display=swap',
+    },
+    {
+      rel: 'stylesheet',
+      href: 'http://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;700&display=swap',
     },
   ]
 }
 
-function Document({ children }: { children: React.ReactNode }) {
+const Document = ({ children }: { children: React.ReactNode }) => {
   return (
     <html lang="en">
       <head>
@@ -55,7 +59,7 @@ function Document({ children }: { children: React.ReactNode }) {
   )
 }
 
-function ThemeLoader() {
+const ThemeLoader = () => {
   const [loading, setLoading] = useState(true)
 
   // InitialLoader is used to hide the flash of unstyled content
@@ -79,7 +83,7 @@ function ThemeLoader() {
   )
 }
 
-function App() {
+const App = () => {
   return (
     <Document>
       <ThemeLoader />
