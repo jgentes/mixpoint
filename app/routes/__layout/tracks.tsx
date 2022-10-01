@@ -15,6 +15,7 @@ import {
   useLiveQuery,
   getState,
   putState,
+  AppState,
 } from '~/api/db'
 import { initTrack, processAudio } from '~/api/audio'
 import { alpha, SxProps } from '@mui/material/styles'
@@ -59,6 +60,7 @@ import {
   SearchRounded,
 } from '@mui/icons-material'
 import { visuallyHidden } from '@mui/utils'
+import Dropzone from '~/components/Dropzone'
 
 export default function TrackTable({
   hideDropzone,
@@ -75,7 +77,6 @@ export default function TrackTable({
   const [rowsPerPage, setRowsPerPage] = useState(5)
   const [selected, setSelected] = useState<readonly number[]>([])
 
-  const [isOver, setIsOver] = useState(false) // for dropzone
   const [processing, setProcessing] = useState(false) // show progress if no table
   const [analyzingTracks, setAnalyzing] = useState<Track[]>([])
   const [dirtyTracks, setDirty] = useState<Track[]>([])
@@ -124,21 +125,6 @@ export default function TrackTable({
     for (const track of idTracks) await processAudio(track)
   }
 
-  // careful wtih DataTransferItemList: https://stackoverflow.com/questions/55658851/javascript-datatransfer-items-not-persisting-through-async-calls
-  const filesDropped = async (files: DataTransferItemList) => {
-    const handleArray = []
-
-    for (const file of files) {
-      if (file.kind === 'file') {
-        const handle = await file.getAsFileSystemHandle()
-        if (handle) handleArray.push(handle)
-      }
-    }
-
-    setIsOver(false)
-    processTracks(handleArray)
-  }
-
   const browseFile = async () => {
     const files = await window
       .showOpenFilePicker({ multiple: true })
@@ -172,7 +158,7 @@ export default function TrackTable({
   }
 
   const createColumnDefinitions = (): {
-    key: keyof Track
+    dbKey: keyof Track
     label: string
     padding: TableCellProps['padding']
     align: TableCellProps['align']
@@ -209,8 +195,8 @@ export default function TrackTable({
 
     return [
       {
-        key: 'name',
-        label: 'Track Name',
+        dbKey: 'name',
+        label: 'Track name',
         align: 'left',
         padding: 'none',
         // remove suffix (ie. .mp3)
@@ -218,7 +204,7 @@ export default function TrackTable({
           t.name?.replace(/\.[^/.]+$/, '') || 'Track name not found',
       },
       {
-        key: 'bpm',
+        dbKey: 'bpm',
         label: 'BPM',
         align: 'right',
         padding: 'normal',
@@ -232,28 +218,28 @@ export default function TrackTable({
           )),
       },
       {
-        key: 'duration',
+        dbKey: 'duration',
         align: 'right',
         padding: 'normal',
         label: 'Duration',
         formatter: t => (t.duration ? formatMinutes(t.duration! / 60) : null),
       },
       {
-        key: 'mixpoints',
+        dbKey: 'mixpoints',
         align: 'right',
         padding: 'normal',
         label: 'Mixes',
         formatter: t => '',
       },
       {
-        key: 'sets',
+        dbKey: 'sets',
         align: 'right',
         padding: 'normal',
         label: 'Sets',
         formatter: t => '',
       },
       {
-        key: 'lastModified',
+        dbKey: 'lastModified',
         align: 'right',
         padding: 'normal',
         label: 'Updated',
@@ -266,23 +252,23 @@ export default function TrackTable({
 
   const EnhancedTableHead = (props: {
     numSelected: number
-    onRequestSort: (event: MouseEvent<unknown>, property: string) => void
+    onRequestSort: (event: MouseEvent<unknown>, property: keyof Track) => void
     onSelectAllClick: (event: ChangeEvent<HTMLInputElement>) => void
-    order: 'asc' | 'desc'
-    orderBy: string
+    sortOrder: AppState['sortOrder']
+    sortOrderBy: AppState['sortOrderBy']
     rowCount: number
   }) => {
     const {
       onSelectAllClick,
-      order,
-      orderBy,
+      sortOrder,
+      sortOrderBy,
       numSelected,
       rowCount,
       onRequestSort,
     } = props
 
     const createSortHandler =
-      (property: string) => (event: MouseEvent<unknown>) => {
+      (property: keyof Track) => (event: MouseEvent<unknown>) => {
         onRequestSort(event, property)
       }
 
@@ -301,17 +287,17 @@ export default function TrackTable({
           {columnDefs.map(column => (
             <TableCell
               {...column}
-              sortDirection={orderBy === column.key ? order : false}
+              sortDirection={sortOrderBy === column.key ? sortOrder : false}
             >
               <TableSortLabel
-                active={orderBy === column.key}
-                direction={orderBy === column.key ? order : 'asc'}
+                active={sortOrderBy === column.key}
+                direction={sortOrderBy === column.key ? sortOrder : 'asc'}
                 onClick={createSortHandler(column.key)}
               >
                 {column.label}
-                {orderBy === column.key ? (
+                {sortOrderBy === column.key ? (
                   <Card component="span" sx={visuallyHidden}>
-                    {order === 'desc'
+                    {sortOrder === 'desc'
                       ? 'sorted descending'
                       : 'sorted ascending'}
                   </Card>
@@ -331,7 +317,7 @@ export default function TrackTable({
       <Toolbar
         sx={{
           pl: { sm: 2 },
-          pr: { xs: 1, sm: 1 },
+          pr: { xs: 1, sm: 2 },
           display: 'flex',
           flexDirection: 'row',
           justifyContent: 'space-between',
@@ -377,6 +363,7 @@ export default function TrackTable({
           sx={{
             fontWeight: 'thin',
             flexBasis: '500px',
+            mx: 2,
             display: {
               xs: 'none',
               sm: 'flex',
@@ -411,60 +398,6 @@ export default function TrackTable({
     )
   }
 
-  const tableHeaders = columnDefs.map(c => (
-    <th
-      key={c.key}
-      style={{
-        textAlign: c.key == 'actions' ? 'center' : 'left',
-        minWidth: c.minWidth || c.width,
-        width: c.width,
-      }}
-    >
-      {c.name}
-      {c.key == 'actions' ? null : (
-        <IconButton
-          id={`${c.key}-sort`}
-          size="small"
-          color="primary"
-          onClick={e => {
-            const rev = /reverse/.test(trackSort)
-            const key = trackSort.split('-')[0]
-            const sortKey =
-              trackSort.split('-')[0] == c.key
-                ? rev
-                  ? key
-                  : `${key}-reverse`
-                : c.key
-
-            db.appState.put(sortKey, 'trackSort')
-            e.stopPropagation()
-          }}
-        >
-          <Height titleAccess="Sort" fontSize="small" />
-        </IconButton>
-      )}
-    </th>
-  ))
-
-  const sortColumns = (sortKey: string) => {
-    const rev = /reverse/.test(sortKey)
-    const key = sortKey.split('-')[0]
-
-    // ugly function that handles various sorts for strings vs numbers
-    const sortFunc = (a, b) => {
-      return key == 'name'
-        ? rev
-          ? b[key].localeCompare(a[key])
-          : a[key].localeCompare(b[key])
-        : rev
-        ? b[key] - a[key]
-        : a[key] - b[key]
-    }
-
-    tracks?.sort(sortFunc)
-  }
-
-  //sortColumns(trackSort)
   if (searchVal && tracks)
     tracks = tracks.filter(t =>
       t.name?.toLowerCase().includes(searchVal.toLowerCase())
@@ -547,30 +480,24 @@ export default function TrackTable({
               title={labelId}
             />
           </TableCell>
-          <TableCell
-            component="th"
-            id={labelId}
-            scope="row"
-            padding="none"
-            sx={{ cursor: 'default' }}
-          >
-            {row.name}
-          </TableCell>
-          <TableCell align="right">{row.bpm}</TableCell>
-          <TableCell align="right">{row.duration}</TableCell>
-          <TableCell align="right">
-            {row.mixes}
-            <IconButton
+          {columnDefs.map((column, i) => (
+            <TableCell
+              key={i}
+              id={`${row.id}`}
+              sx={{ cursor: 'default' }}
+              {...column}
+            >
+              {column.formatter(row)}
+            </TableCell>
+          ))}
+        </TableRow>
+        {/* <IconButton
               aria-label="expand row"
               size="small"
               onClick={() => setOpen(!open)}
             >
               {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-            </IconButton>
-          </TableCell>
-          <TableCell align="right">{row.sets}</TableCell>
-          <TableCell align="right">'lastmodified'</TableCell>
-        </TableRow>
+            </IconButton> */}
         <TableRow
           hover
           selected={isItemSelected}
@@ -609,21 +536,10 @@ export default function TrackTable({
     )
   }
 
-  const DropzoneDiv = styled('div')`
-    border: 2px dashed #777;
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-
-    &:hover,
-    &--active {
-      border-color: #30b2e9;
-      background-color: rgba(#30b2e9, 0.1);
-    }
-  `
-
   return (
     <Box>
+      {/* DropZone */}
+      {hideDropzone ? null : <Dropzone onClick={browseFile} />}
       <Sheet
         variant="outlined"
         sx={{
@@ -639,18 +555,20 @@ export default function TrackTable({
           <Table aria-labelledby="tableTitle" size="small" padding="checkbox">
             <EnhancedTableHead
               numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
+              sortOrder={sortOrder}
+              sortOrderBy={sortOrderBy}
               onSelectAllClick={tableOps.selectAll}
               onRequestSort={tableOps.sort}
               rowCount={tracks?.length || 0}
             />
             <TableBody>
               <>
-                {tracks &&
+                {!tracks || processing ? (
+                  <Loader style={{ margin: '50px auto' }} />
+                ) : (
                   [...tracks]
                     // @ts-ignore: TS complains about the type of orderBy due to history being an array
-                    .sort(getComparator(order, orderBy))
+                    .sort(getComparator(sortOrder, sortOrderBy))
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row, index) => {
                       const isItemSelected = tableOps.isSelected(row.id)
@@ -664,7 +582,8 @@ export default function TrackTable({
                           labelId={labelId}
                         />
                       )
-                    })}
+                    })
+                )}
                 {emptyRows > 0 && (
                   <TableRow
                     style={{
@@ -688,63 +607,6 @@ export default function TrackTable({
           onRowsPerPageChange={tableOps.changeRows}
         />
       </Sheet>
-      <>
-        {/* DropZone */}
-        {hideDropzone ? null : (
-          <Sheet style={{ margin: '10px 0' }} variant="soft">
-            <DropzoneDiv
-              onClick={browseFile}
-              onDrop={e => {
-                e.preventDefault()
-                filesDropped(e.dataTransfer.items)
-              }}
-              onDragOver={e => e.preventDefault()}
-              onDragEnter={() => setIsOver(true)}
-              onDragLeave={() => setIsOver(false)}
-            >
-              <CloudUpload
-                sx={{ fontSize: 48 }}
-                className="drop"
-                style={{ marginBottom: '10px' }}
-              />
-              <Typography level="h4" className="drop">
-                Add Tracks
-              </Typography>
-              <div className="drop">
-                Drag a file or <strong>folder</strong> here or{' '}
-                <span className="text-primary">browse</span> for a file to add.
-                Folders are preferred.
-              </div>
-            </DropzoneDiv>
-          </Sheet>
-        )}
-        {!tracks || processing ? (
-          <Loader style={{ margin: '50px auto' }} />
-        ) : (
-          <>
-            {/* Table search and info bar */}
-            {!tracks?.length ? null : (
-              <div id="trackTable">
-                {/* Track Table */}
-                <Table style={{ width: '100%', tableLayout: 'fixed' }}>
-                  <thead>
-                    <tr>{tableHeaders}</tr>
-                  </thead>
-                  <tbody>
-                    {tracks.map((t, i) => (
-                      <tr key={i}>
-                        {columnDefs.map(c => (
-                          <td key={c.key}>{c.formatter(t)}</td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-            )}
-          </>
-        )}
-      </>
     </Box>
   )
 }

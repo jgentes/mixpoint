@@ -1,8 +1,58 @@
 import { Sheet, Box, BoxProps } from '@mui/joy'
+import { useLiveQuery, getState, putState } from '~/api/db'
 
+const Root = (props: BoxProps) => {
+  const leftNavOpen = useLiveQuery(() => getState('app')?.leftNavOpen)
+  return (
+    <Box
+      {...props}
+      sx={{
+        bgcolor: 'background.surface',
+        display: 'grid',
+        gridTemplateColumns: {
+          xs: '1fr',
+          sm: 'minmax(64px, 200px) minmax(450px, 1fr)',
+          md: 'minmax(160px, 250px) minmax(600px, 1fr)',
+        },
+        gridTemplateRows: '64px 1fr',
+        minHeight: '100vh',
+        ...(leftNavOpen && {
+          height: '100vh',
+          overflow: 'hidden',
+        }),
+      }}
+    />
+  )
+}
+
+const Header = (props: BoxProps) => (
+  <Box
+    component="header"
+    {...props}
+    sx={[
+      {
+        p: 2,
+        gap: 2,
+        bgcolor: 'background.surface',
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gridColumn: '1 / -1',
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1100,
+      },
+      ...(Array.isArray(props.sx) ? props.sx : [props.sx]),
+    ]}
+  />
+)
+
+// not currently used
 const SidePane = (props: BoxProps) => (
   <Box
-    className="Inbox"
     {...props}
     sx={[
       {
@@ -19,19 +69,17 @@ const SidePane = (props: BoxProps) => (
   />
 )
 
-const Main = (props: BoxProps) => (
+const MainContent = (props: BoxProps) => (
   <Box
     component="main"
-    className="Main"
     {...props}
-    sx={[{ p: 2 }, ...(Array.isArray(props.sx) ? props.sx : [props.sx])]}
+    sx={[{ p: 3 }, ...(Array.isArray(props.sx) ? props.sx : [props.sx])]}
   />
 )
 
 const LeftNav = (props: BoxProps) => (
   <Box
     component="nav"
-    className="Navigation"
     {...props}
     sx={[
       {
@@ -49,10 +97,10 @@ const LeftNav = (props: BoxProps) => (
   />
 )
 
-const SideDrawer = ({
+const MobileNav = ({
   onClose,
   ...props
-}: BoxProps & { onClose: React.MouseEventHandler<HTMLDivElement> }) => (
+}: BoxProps & { onClose?: React.MouseEventHandler<HTMLDivElement> }) => (
   <Box
     {...props}
     sx={[
@@ -62,7 +110,7 @@ const SideDrawer = ({
   >
     <Box
       role="button"
-      onClick={onClose}
+      onClick={() => putState('app', { leftNavOpen: false })}
       sx={{
         position: 'absolute',
         inset: 0,
@@ -86,8 +134,10 @@ const SideDrawer = ({
 )
 
 export default {
+  Root,
   SidePane,
   LeftNav,
-  SideDrawer,
-  Main,
+  MobileNav,
+  MainContent,
+  Header,
 }

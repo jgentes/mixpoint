@@ -190,7 +190,7 @@ const createHooks = (table: keyof StateTypes) => {
 const tables = ['track', 'mix', 'set', 'app'] as const
 tables.forEach(table => createHooks(table))
 
-export type { Track, Mix, Set }
+export type { Track, Mix, Set, AppState }
 
 export {
   db,

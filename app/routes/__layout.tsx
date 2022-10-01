@@ -2,8 +2,7 @@
 // it also provides top level error and catch boundaries, plus notification handling
 import { useSnackbar } from 'notistack'
 import { notification } from '~/utils/notifications'
-import { Box } from '@mui/joy'
-import { useLiveQuery, getState, putState } from '~/api/db'
+import { useLiveQuery, getState } from '~/api/db'
 import { Outlet } from '@remix-run/react'
 
 import InitialLoader from '~/components/InitialLoader'
@@ -34,37 +33,21 @@ export default function PageLayout() {
   return (
     <>
       {leftNavOpen && (
-        <Layout.SideDrawer
-          onClose={() => putState('app', { leftNavOpen: false })}
-        >
+        <Layout.MobileNav>
           <LeftNav />
-        </Layout.SideDrawer>
+        </Layout.MobileNav>
       )}
-      <Box
-        sx={{
-          bgcolor: 'background.surface',
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            sm: 'minmax(64px, 200px) minmax(450px, 1fr)',
-            md: 'minmax(160px, 250px) minmax(600px, 1fr)',
-          },
-          gridTemplateRows: '64px 1fr',
-          minHeight: '100vh',
-          ...(leftNavOpen && {
-            height: '100vh',
-            overflow: 'hidden',
-          }),
-        }}
-      >
-        <Header />
+      <Layout.Root>
+        <Layout.Header>
+          <Header />
+        </Layout.Header>
         <Layout.LeftNav>
           <LeftNav />
         </Layout.LeftNav>
-        <Layout.Main>
+        <Layout.MainContent>
           <Outlet />
-        </Layout.Main>
-      </Box>
+        </Layout.MainContent>
+      </Layout.Root>
     </>
   )
 }

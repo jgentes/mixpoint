@@ -1,6 +1,8 @@
-import { Box, Typography, IconButton } from '@mui/joy'
+import { Box, IconButton } from '@mui/joy'
 import { useLiveQuery, getState, putState } from '~/api/db'
 import { Menu } from '~/components/layout/Menu'
+
+import Logo from '~/components/MixpointLogo'
 import DarkMode from '~/components/DarkMode'
 
 import { Settings, Menu as MenuIcon } from '@mui/icons-material'
@@ -9,27 +11,7 @@ export default function Header() {
   const leftNavOpen = useLiveQuery(() => getState('app')?.leftNavOpen)
 
   return (
-    <Box
-      component="header"
-      className="Header"
-      sx={[
-        {
-          p: 2,
-          gap: 2,
-          bgcolor: 'background.surface',
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gridColumn: '1 / -1',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          position: 'sticky',
-          top: 0,
-          zIndex: 1100,
-        },
-      ]}
-    >
+    <>
       <Box>
         <IconButton
           variant="outlined"
@@ -40,9 +22,7 @@ export default function Header() {
         >
           <MenuIcon />
         </IconButton>
-        <Typography component="h1" fontWeight="xl">
-          Mixpoint
-        </Typography>
+        <Logo />
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.5 }}>
         <Menu
@@ -76,6 +56,6 @@ export default function Header() {
         />
         <DarkMode />
       </Box>
-    </Box>
+    </>
   )
 }
