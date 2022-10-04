@@ -6,18 +6,31 @@ import { processTracks } from '~/api/audio'
 export default function ({ onClick }: { onClick: () => Promise<void> }) {
   const [dragOver, setDragOver] = useState(false)
 
-  // careful wtih DataTransferItemList: https://stackoverflow.com/questions/55658851/javascript-datatransfer-items-not-persisting-through-async-calls
   const itemsDropped = async (items: DataTransferItemList) => {
     const handleArray: (FileSystemFileHandle | FileSystemDirectoryHandle)[] = []
+    const itemQueue = []
 
     for (const fileOrDirectory of items) {
+      const entry = fileOrDirectory.webkitGetAsEntry()
+
       if (fileOrDirectory.kind === 'file') {
-        const handle = (await fileOrDirectory.getAsFileSystemHandle()) as
-          | FileSystemFileHandle
-          | FileSystemDirectoryHandle
-        if (handle) handleArray.push(handle)
+        itemQueue.push(
+          fileOrDirectory
+            .getAsFileSystemHandle()
+            .then(
+              handle =>
+                handle &&
+                handleArray.push(
+                  handle as FileSystemFileHandle | FileSystemDirectoryHandle
+                )
+            )
+        )
       }
     }
+
+    // Must use a promise queue with DataTransferItemList
+    // https://stackoverflow.com/q/55658851/1058302
+    await Promise.all(itemQueue)
 
     setDragOver(false)
     processTracks(handleArray)

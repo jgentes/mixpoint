@@ -1,12 +1,16 @@
-import { Track } from '~/api/db'
-import { TableCellProps } from '@mui/material'
-import { ReactNode } from 'react'
-import { SxProps } from '@mui/material/styles'
-import { useSuperState } from '@superstate/react'
-import { dirtyTracks } from '~/routes/__boundary/tracks'
 import { Button } from '@mui/joy'
+import { TableCellProps } from '@mui/material'
+import { SxProps } from '@mui/material/styles'
 import moment from 'moment'
-import { analyzeTrack, addTrackToMix } from '~/api/audio'
+import { ReactNode } from 'react'
+import {
+  addTrackToMix,
+  analyzeTrack,
+  analyzingState,
+  dirtyTrackState,
+} from '~/api/audio'
+import { Track } from '~/api/db'
+import TrackLoader from '~/components/TrackLoader'
 
 export const createColumnDefinitions = (): {
   dbKey: keyof Track
@@ -16,8 +20,6 @@ export const createColumnDefinitions = (): {
   sx?: SxProps
   formatter: (t: Track) => string | ReactNode
 }[] => {
-  useSuperState(dirtyTracks)
-
   const formatMinutes = (mins: number) => {
     return moment().startOf('day').add(mins, 'minutes').format('m:ss')
   }
@@ -59,34 +61,35 @@ export const createColumnDefinitions = (): {
     {
       dbKey: 'bpm',
       label: 'BPM',
-      align: 'right',
+      align: 'left',
       padding: 'normal',
-      formatter: t =>
-        t.bpm?.toFixed(0) ||
-        (dirtyTracks.now().some(dt => dt.id == t.id) &&
-        !analyzingState.now().some(a => a.id == t.id) ? (
-          getBpmButton(t)
-        ) : (
-          <Loader style={{ margin: 0, height: '20px' }} />
-        )),
+      formatter: t => t.bpm?.toFixed(0) || null,
     },
     {
       dbKey: 'duration',
-      align: 'right',
+      align: 'left',
       padding: 'normal',
       label: 'Duration',
-      formatter: t => (t.duration ? formatMinutes(t.duration! / 60) : null),
+      formatter: t =>
+        t.duration ? (
+          formatMinutes(t.duration! / 60)
+        ) : dirtyTrackState.now().some(dt => dt.id == t.id) &&
+          !analyzingState.now().some(a => a.id == t.id) ? (
+          getBpmButton(t)
+        ) : (
+          <TrackLoader style={{ margin: 0, height: '15px' }} />
+        ),
     },
     {
       dbKey: 'mixpoints',
-      align: 'right',
+      align: 'left',
       padding: 'normal',
       label: 'Mixes',
       formatter: t => '',
     },
     {
       dbKey: 'sets',
-      align: 'right',
+      align: 'left',
       padding: 'normal',
       label: 'Sets',
       formatter: t => '',
@@ -96,6 +99,7 @@ export const createColumnDefinitions = (): {
       align: 'right',
       padding: 'normal',
       label: 'Updated',
+      sx: { whiteSpace: 'nowrap' },
       formatter: t => moment(t.lastModified).fromNow(),
     },
   ]

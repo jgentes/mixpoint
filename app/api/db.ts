@@ -120,7 +120,7 @@ interface SetState {
 interface AppState {
   date?: Date
   leftNavOpen?: boolean
-  sortOrder?: 'asc' | 'desc'
+  sortDirection?: 'asc' | 'desc'
   sortOrderBy?: keyof Track // track table order property
 }
 

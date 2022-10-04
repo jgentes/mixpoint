@@ -3,7 +3,7 @@ import { Track, db } from '~/api/db'
 import { getPermission } from '~/api/fileHandlers'
 import WaveformData from 'waveform-data'
 
-export const initPeaks = async ({
+export async function initPeaks({
   trackKey,
   track,
   file,
@@ -21,7 +21,7 @@ export const initPeaks = async ({
   setAudioSrc: Function
   setWaveform: Function
   setAnalyzing: Function
-}) => {
+}) {
   if (!track) throw Error('No track to initialize')
   setAnalyzing(true)
 

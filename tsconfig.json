@@ -2,7 +2,6 @@
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2020"],
     "isolatedModules": true,
-    "esModuleInterop": true,
     "jsx": "react-jsx",
     "resolveJsonModule": true,
     "module": "NodeNext",
@@ -17,7 +16,8 @@
     "strict": true,
     "target": "ESNext",
     "noImplicitAny": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "esModuleInterop": true
   },
   "include": ["**/*.ts", "**/*.tsx", "remix.env.d.ts", "./global.d.ts"]
 }

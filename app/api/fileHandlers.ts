@@ -1,29 +1,18 @@
 import { Track } from '~/api/db'
 import { processTracks } from './audio'
-import { superstate } from '@superstate/core'
-
-const processingState = superstate<boolean>(false)
-const analyzingState = superstate<Track[]>([])
 
 const _getFile = async (track: Track): Promise<File | null> => {
   let handle = track.dirHandle || track.fileHandle
   if (!handle) return null
 
   let file = null,
-    perms
+    perms = await handle.queryPermission()
 
-  perms = await handle.queryPermission()
-
-  const getFileHandle = async (
-    fileOrDirHandle: FileSystemDirectoryHandle | FileSystemFileHandle
-  ) => {
-    if (fileOrDirHandle.kind == 'directory' && track.name) {
-      return await fileOrDirHandle.getFileHandle(track.name)
+  if (perms === 'granted' && track.name) {
+    if (handle.kind == 'directory') {
+      handle = await handle.getFileHandle(track.name)
     }
-  }
 
-  if (perms === 'granted') {
-    handle = await getFileHandle(handle)
     if (handle) file = await handle.getFile()
   }
 
@@ -61,4 +50,4 @@ const browseFile = async () => {
   processTracks(files)
 }
 
-export { getPermission, browseFile, processingState, analyzingState }
+export { getPermission, browseFile }
