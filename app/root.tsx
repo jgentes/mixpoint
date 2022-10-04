@@ -4,11 +4,16 @@ import { Links, Meta, LiveReload, Scripts, Outlet } from '@remix-run/react'
 import { useEffect, useState } from 'react'
 import { CssVarsProvider } from '@mui/joy/styles'
 import { theme } from '~/styles/theme'
-import { SnackbarProvider } from 'notistack'
+import { notificationState } from '~/utils/notifications'
+import { SnackbarProvider, useSnackbar } from 'notistack'
+import { useLiveQuery, getState } from '~/api/db'
 import { ClientOnly } from 'remix-utils'
 import { LinksFunction, MetaFunction } from '@remix-run/node'
 
 import InitialLoader from '~/components/InitialLoader'
+import Layout from '~/components/layout/Layout'
+import Header from '~/components/layout/Header'
+import LeftNav from '~/components/layout/LeftNav'
 
 export const meta: MetaFunction = () => {
   return {
@@ -54,6 +59,36 @@ const Document = ({ children }: { children: React.ReactNode }) => {
   )
 }
 
+const PageLayout = () => {
+  const { enqueueSnackbar } = useSnackbar()
+  const leftNavOpen = useLiveQuery(() => getState('app')?.leftNavOpen)
+
+  notificationState.subscribe(({ message, variant }) =>
+    enqueueSnackbar(message, { variant })
+  )
+
+  return (
+    <>
+      {leftNavOpen && (
+        <Layout.MobileNav>
+          <LeftNav />
+        </Layout.MobileNav>
+      )}
+      <Layout.Root>
+        <Layout.Header>
+          <Header />
+        </Layout.Header>
+        <Layout.LeftNav>
+          <LeftNav />
+        </Layout.LeftNav>
+        <Layout.MainContent>
+          <Outlet />
+        </Layout.MainContent>
+      </Layout.Root>
+    </>
+  )
+}
+
 const ThemeLoader = () => {
   const [loading, setLoading] = useState(true)
 
@@ -71,7 +106,7 @@ const ThemeLoader = () => {
         {loading ? (
           <ClientOnly>{() => <InitialLoader />}</ClientOnly>
         ) : (
-          <Outlet />
+          <PageLayout />
         )}
       </CssVarsProvider>
     </SnackbarProvider>

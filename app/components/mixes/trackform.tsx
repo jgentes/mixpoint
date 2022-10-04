@@ -4,10 +4,8 @@ import { AccessTime, Eject, Pause, PlayArrow, Undo } from '@mui/icons-material'
 import { Button, Card, TextField } from '@mui/joy'
 import Loader from 'pages/styles/loader'
 import Slider, { SliderProps } from 'rc-slider'
-import { initPeaks } from '~/api/initPeaks'
 import { PeaksInstance } from 'peaks.js'
 import Tracks from '~/components/tracks/Tracks'
-import WaveformData from 'waveform-data'
 import { Track, db, TrackState, useLiveQuery } from '~/api/db'
 import { Events } from '~/api/Events'
 
@@ -98,24 +96,6 @@ const TrackForm = ({ trackKey }: { trackKey: number }) => {
         adjustedBpm: Number(bpm.toFixed(1)),
       }
     )
-  }
-
-  const getPeaks = async (
-    track: Track,
-    trackKey: number,
-    file?: File,
-    waveformData?: WaveformData
-  ) => {
-    return await initPeaks({
-      trackKey,
-      track,
-      file,
-      waveformData,
-      setSliderControl,
-      setAudioSrc,
-      setWaveform,
-      setAnalyzing,
-    })
   }
 
   const selectTime = async (time: number) => {
@@ -319,12 +299,7 @@ const TrackForm = ({ trackKey }: { trackKey: number }) => {
       onClose={() => openTable(false)}
       style={{ width: '80%' }}
     >
-      <Tracks
-        trackKey={trackKey}
-        hideDropzone={true}
-        openTable={openTable}
-        getPeaks={getPeaks}
-      />
+      <Tracks trackKey={trackKey} hideDropzone={true} openTable={openTable} />
     </Dialog>
   )
 

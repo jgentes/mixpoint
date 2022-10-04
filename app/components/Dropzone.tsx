@@ -1,25 +1,26 @@
 import { CloudUpload } from '@mui/icons-material'
 import { Box, Sheet, Typography } from '@mui/joy'
 import { useState } from 'react'
+import { processTracks } from '~/api/audio'
 
 export default function ({ onClick }: { onClick: () => Promise<void> }) {
   const [dragOver, setDragOver] = useState(false)
 
   // careful wtih DataTransferItemList: https://stackoverflow.com/questions/55658851/javascript-datatransfer-items-not-persisting-through-async-calls
-  const filesDropped = async (files: DataTransferItemList) => {
-    const handleArray = []
+  const itemsDropped = async (items: DataTransferItemList) => {
+    const handleArray: (FileSystemFileHandle | FileSystemDirectoryHandle)[] = []
 
-    for (const file of files) {
-      if (file.kind === 'file') {
-        console.log('get handle')
-        const handle = await file.getAsFileSystemHandle()
-        console.log('got handle', handle)
+    for (const fileOrDirectory of items) {
+      if (fileOrDirectory.kind === 'file') {
+        const handle = (await fileOrDirectory.getAsFileSystemHandle()) as
+          | FileSystemFileHandle
+          | FileSystemDirectoryHandle
         if (handle) handleArray.push(handle)
       }
     }
 
     setDragOver(false)
-    //processTracks(handleArray)
+    processTracks(handleArray)
   }
 
   return (
@@ -45,7 +46,7 @@ export default function ({ onClick }: { onClick: () => Promise<void> }) {
         onClick={onClick}
         onDrop={e => {
           e.preventDefault()
-          filesDropped(e.dataTransfer.items)
+          itemsDropped(e.dataTransfer.items)
         }}
         onDragOver={e => {
           e.stopPropagation()

@@ -5,7 +5,7 @@
     "esModuleInterop": true,
     "jsx": "react-jsx",
     "resolveJsonModule": true,
-    "module": "Node16",
+    "module": "NodeNext",
     "moduleResolution": "node",
     "baseUrl": ".",
     "noEmit": true,
@@ -15,7 +15,7 @@
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "target": "ES2022",
+    "target": "ESNext",
     "noImplicitAny": true,
     "strictNullChecks": true
   },

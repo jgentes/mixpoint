@@ -23,6 +23,7 @@
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
     "@types/react-helmet": "^6.1.5",
+    "@types/wicg-file-system-access": "^2020.9.5",
     "cross-env": "^7.0.3",
     "dexie": "^3.2.2",
     "dexie-react-hooks": "^1.1.1",

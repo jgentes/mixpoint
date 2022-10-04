@@ -45,7 +45,7 @@ const db = new MixpointDb()
 // define tables
 
 interface Track {
-  id: number
+  id?: number
   name?: string
   fileHandle?: FileSystemFileHandle
   dirHandle?: FileSystemDirectoryHandle
@@ -56,8 +56,8 @@ interface Track {
   bpm?: number
   sampleRate?: number
   offset?: number // first beat as determined by getBpm
-  mixpoints: MixPoint[]
-  sets: Set['id'][]
+  mixpoints?: MixPoint[]
+  sets?: Set['id'][]
 }
 
 // a mixpoint is a point in time where the To track begins to overlay the From track.
@@ -124,9 +124,10 @@ interface AppState {
   sortOrderBy?: keyof Track // track table order property
 }
 
-const putTrack = async (track: Track): Promise<Track> => {
+const putTrack = async (track: Partial<Track>): Promise<Track> => {
   // if below line changes, potentially remove [name+size] index
   const dup = await db.tracks.get({ name: track.name, size: track.size })
+  // if we found the track in the database already, return it
   if (dup && dup.bpm) return dup
 
   track.lastModified = new Date()
@@ -190,7 +191,7 @@ const createHooks = (table: keyof StateTypes) => {
 const tables = ['track', 'mix', 'set', 'app'] as const
 tables.forEach(table => createHooks(table))
 
-export type { Track, Mix, Set, AppState }
+export type { Track, Mix, Set, TrackState, MixState, SetState, AppState }
 
 export {
   db,

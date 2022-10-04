@@ -20,6 +20,7 @@ const LoaderWrapDiv = styled('div')`
 
 const LoaderDiv = styled('div')`
   min-width: 190px;
+  max-width: 30%;
 `
 
 const LoaderRow = styled('div')`

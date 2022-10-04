@@ -1,31 +1,13 @@
-import {
-  useEffect,
-  useState,
-  MouseEvent,
-  ChangeEvent,
-  ReactNode,
-  ChangeEventHandler,
-} from 'react'
+import { useEffect, useState, MouseEvent, ChangeEvent } from 'react'
 import { getComparator } from '~/utils/tableTools'
-import {
-  db,
-  Track,
-  putTrack,
-  removeTrack,
-  useLiveQuery,
-  getState,
-  putState,
-  AppState,
-} from '~/api/db'
-import { initTrack, processAudio } from '~/api/audio'
-import { alpha, SxProps } from '@mui/material/styles'
+import { db, Track, useLiveQuery, getState, AppState } from '~/api/db'
+import { alpha } from '@mui/material/styles'
 import {
   Box,
   Card,
   Sheet,
   Button,
   TextField,
-  styled,
   Checkbox,
   Typography,
   IconButton,
@@ -42,211 +24,47 @@ import {
   TableSortLabel,
   Toolbar,
   Tooltip,
-  TableCellProps,
 } from '@mui/material'
-import moment from 'moment'
 import Loader from '~/styles/loader'
-import {
-  Close,
-  Add,
-  Height,
-  Search,
-  CloudUpload,
-  PriorityHigh,
-  Delete,
-  FilterList,
-  KeyboardArrowDown,
-  KeyboardArrowUp,
-  SearchRounded,
-} from '@mui/icons-material'
+import { Add, PriorityHigh, Delete, SearchRounded } from '@mui/icons-material'
 import { visuallyHidden } from '@mui/utils'
 import Dropzone from '~/components/Dropzone'
+import { browseFile, processingState, analyzingState } from '~/api/fileHandlers'
+import { superstate } from '@superstate/core'
+import { useSuperState } from '@superstate/react'
+import { createColumnDefinitions } from '~/components/tracks/columns'
+
+// Dirty tracks are tracks that have not been analyzed
+export const dirtyTracks = superstate<Track[]>([])
 
 export default function TrackTable({
   hideDropzone,
   trackKey,
-  openTable,
-  getPeaks,
 }: {
   hideDropzone?: boolean
   trackKey?: number
-  openTable: Function
-  getPeaks: Function
 }) {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(5)
   const [selected, setSelected] = useState<readonly number[]>([])
-
-  const [processing, setProcessing] = useState(false) // show progress if no table
-  const [analyzingTracks, setAnalyzing] = useState<Track[]>([])
-  const [dirtyTracks, setDirty] = useState<Track[]>([])
   const [searchVal, setSearch] = useState('')
+
+  // show loader while processing tracks
+  useSuperState(analyzingState)
+  useSuperState(processingState)
 
   // monitor db for track updates
   let tracks: Track[] | null = useLiveQuery(() => db.tracks.toArray()) ?? null
+
   const sortOrder = useLiveQuery(() => getState('app')?.sortOrder || 'desc')
   const sortOrderBy = useLiveQuery(() => getState('app')?.sortOrderBy || 'name')
 
   // if we see any tracks that haven't been processed, process them, or
   // if we haven't had user activation, show button to resume processing
   // https://html.spec.whatwg.org/multipage/interaction.html#tracking-user-activation
-  useEffect(() => setDirty(tracks?.filter(t => !t.bpm) || []), [tracks])
-
-  // queue files for processing after they are added to the DB
-  // this provides a more responsive UI experience
-  const processTracks = async (
-    handles: (FileSystemFileHandle | FileSystemDirectoryHandle)[]
-  ) => {
-    let trackArray = []
-
-    // show indicator if no tracks exist
-    setProcessing(true)
-
-    for await (const fileOrDirectoryHandle of handles) {
-      if (!fileOrDirectoryHandle) continue
-
-      if (fileOrDirectoryHandle?.kind === 'directory') {
-        const directoryHandle = fileOrDirectoryHandle
-        for await (const entry of directoryHandle.values()) {
-          if (entry.kind === 'file') {
-            trackArray.push(await initTrack(entry, directoryHandle))
-          }
-        }
-      } else {
-        trackArray.push(await initTrack(fileOrDirectoryHandle))
-      }
-    }
-
-    const idTracks = []
-    for (const track of trackArray) idTracks.push(await putTrack(track))
-    setProcessing(false)
-    setAnalyzing(idTracks)
-
-    for (const track of idTracks) await processAudio(track)
-  }
-
-  const browseFile = async () => {
-    const files = await window
-      .showOpenFilePicker({ multiple: true })
-      .catch(e => {
-        if (e?.message?.includes('user aborted a request')) return []
-        throw e
-      })
-
-    processTracks(files)
-  }
-
-  const analyzeTrack = async (track: Track) => {
-    const ok = await getPermission(track)
-    if (ok) {
-      // if the user approves access to a folder, we can process all files in that folder :)
-      const siblingTracks = track.dirHandle
-        ? dirtyTracks.filter(t => t.dirHandle?.name == track.dirHandle!.name)
-        : [track]
-
-      setAnalyzing(siblingTracks)
-      for (const sibling of siblingTracks) {
-        await processAudio(sibling)
-        setAnalyzing(siblingTracks.filter(s => s.id !== sibling.id))
-      }
-    }
-  }
-
-  const addTrackToMix = (track: Track, trackKey: number) => {
-    getPeaks(track, trackKey)
-    openTable(false)
-  }
-
-  const createColumnDefinitions = (): {
-    dbKey: keyof Track
-    label: string
-    padding: TableCellProps['padding']
-    align: TableCellProps['align']
-    sx?: SxProps
-    formatter: (t: Track) => string | ReactNode
-  }[] => {
-    const formatMinutes = (mins: number) => {
-      return moment().startOf('day').add(mins, 'minutes').format('m:ss')
-    }
-
-    const getBpmButton = (t: Track) => {
-      return (
-        <Button
-          size="sm"
-          onClick={e => {
-            e.preventDefault()
-            analyzeTrack(t)
-          }}
-        >
-          Get BPM
-        </Button>
-      )
-    }
-
-    const AddToMixButton = ({ track }: { track: Track }) => (
-      <Button
-        variant="outlined"
-        size="sm"
-        onClick={() => addTrackToMix(track, trackKey)}
-      >
-        Add to Mix
-      </Button>
-    )
-
-    return [
-      {
-        dbKey: 'name',
-        label: 'Track name',
-        align: 'left',
-        padding: 'none',
-        // remove suffix (ie. .mp3)
-        formatter: t =>
-          t.name?.replace(/\.[^/.]+$/, '') || 'Track name not found',
-      },
-      {
-        dbKey: 'bpm',
-        label: 'BPM',
-        align: 'right',
-        padding: 'normal',
-        formatter: t =>
-          t.bpm?.toFixed(0) ||
-          (dirtyTracks.some(dt => dt.id == t.id) &&
-          !analyzingTracks.some(a => a.id == t.id) ? (
-            getBpmButton(t)
-          ) : (
-            <Loader style={{ margin: 0, height: '20px' }} />
-          )),
-      },
-      {
-        dbKey: 'duration',
-        align: 'right',
-        padding: 'normal',
-        label: 'Duration',
-        formatter: t => (t.duration ? formatMinutes(t.duration! / 60) : null),
-      },
-      {
-        dbKey: 'mixpoints',
-        align: 'right',
-        padding: 'normal',
-        label: 'Mixes',
-        formatter: t => '',
-      },
-      {
-        dbKey: 'sets',
-        align: 'right',
-        padding: 'normal',
-        label: 'Sets',
-        formatter: t => '',
-      },
-      {
-        dbKey: 'lastModified',
-        align: 'right',
-        padding: 'normal',
-        label: 'Updated',
-        formatter: t => moment(t.lastModified).fromNow(),
-      },
-    ]
-  }
+  useEffect(() => {
+    dirtyTracks.set(tracks?.filter(t => !t.bpm) || [])
+  }, [tracks])
 
   const columnDefs = createColumnDefinitions()
 
@@ -284,18 +102,20 @@ export default function TrackTable({
               title="Select all"
             />
           </TableCell>
-          {columnDefs.map(column => (
+          {columnDefs.map((column, i) => (
             <TableCell
-              {...column}
-              sortDirection={sortOrderBy === column.key ? sortOrder : false}
+              key={i}
+              align={column.align}
+              padding={column.padding}
+              sortDirection={sortOrderBy === column.dbKey ? sortOrder : false}
             >
               <TableSortLabel
-                active={sortOrderBy === column.key}
-                direction={sortOrderBy === column.key ? sortOrder : 'asc'}
-                onClick={createSortHandler(column.key)}
+                active={sortOrderBy === column.dbKey}
+                direction={sortOrderBy === column.dbKey ? sortOrder : 'asc'}
+                onClick={createSortHandler(column.dbKey)}
               >
                 {column.label}
-                {sortOrderBy === column.key ? (
+                {sortOrderBy === column.dbKey ? (
                   <Card component="span" sx={visuallyHidden}>
                     {sortOrder === 'desc'
                       ? 'sorted descending'
@@ -453,14 +273,15 @@ export default function TrackTable({
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - (tracks?.length || 0)) : 0
 
   const RowState: React.FunctionComponent<{
+    key: number
     row: Track
     isItemSelected: boolean
-    labelId: string
-  }> = ({ row, isItemSelected, labelId }) => {
+  }> = ({ key, row, isItemSelected }) => {
     const [open, setOpen] = useState(false)
     return (
       <>
         <TableRow
+          key={key}
           hover
           selected={isItemSelected}
           onClick={() => setOpen(!open)}
@@ -477,15 +298,16 @@ export default function TrackTable({
               color="primary"
               checked={isItemSelected}
               onClick={event => tableOps.rowClick(event, row.id)}
-              title={labelId}
+              title={row.name}
             />
           </TableCell>
           {columnDefs.map((column, i) => (
             <TableCell
               key={i}
-              id={`${row.id}`}
+              id={`${column.dbKey}-${row.id}`}
               sx={{ cursor: 'default' }}
-              {...column}
+              align={column.align}
+              padding={column.padding}
             >
               {column.formatter(row)}
             </TableCell>
@@ -563,23 +385,26 @@ export default function TrackTable({
             />
             <TableBody>
               <>
-                {!tracks || processing ? (
-                  <Loader style={{ margin: '50px auto' }} />
+                {!tracks || processingState ? (
+                  <TableRow>
+                    <TableCell>
+                      <Loader style={{ margin: '50px auto' }} />
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   [...tracks]
                     // @ts-ignore: TS complains about the type of orderBy due to history being an array
                     .sort(getComparator(sortOrder, sortOrderBy))
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row, index) => {
+                      // row.id is the track/mix/set id
                       const isItemSelected = tableOps.isSelected(row.id)
-                      const labelId = `enhanced-table-checkbox-${index}`
 
                       return (
                         <RowState
                           key={index}
                           row={row}
                           isItemSelected={isItemSelected}
-                          labelId={labelId}
                         />
                       )
                     })
