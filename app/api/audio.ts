@@ -56,6 +56,10 @@ async function getTracksRecursively(
   ) => {
     if (fileOrDirectoryHandle.kind === 'file') {
       const { name, size, type } = await fileOrDirectoryHandle.getFile()
+
+      if (!type || !type.startsWith('audio'))
+        return errorHandler(`${name} is not an audio file.`)
+
       if (name)
         trackArray.push({
           name,
