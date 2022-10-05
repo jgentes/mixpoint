@@ -2,6 +2,7 @@ import Peaks, { PeaksOptions } from 'peaks.js'
 import { Track, db } from '~/api/db'
 import { getPermission } from '~/api/fileHandlers'
 import WaveformData from 'waveform-data'
+import { errorHandler } from '~/utils/notifications'
 
 export async function initPeaks({
   trackKey,
@@ -15,20 +16,20 @@ export async function initPeaks({
 }: {
   trackKey: number
   track: Track
-  file: File | undefined
+  file: File | null
   waveformData: WaveformData | undefined
   setSliderControl: Function
   setAudioSrc: Function
   setWaveform: Function
   setAnalyzing: Function
-}) {
-  if (!track) throw Error('No track to initialize')
+}): Promise<void> {
+  if (!track) throw errorHandler('No track to initialize')
   setAnalyzing(true)
 
   const track1 = trackKey % 2
 
   file = file || (await getPermission(track))
-  if (!file) throw Error('Problem reaching file')
+  if (!file) return
 
   // update the <audio> ref, this allows play/pause controls
   // note this must come before the mediaElement is queried in peakOptions
@@ -73,8 +74,9 @@ export async function initPeaks({
           scale: 64,
         },
         (err, wave: WaveformData) => {
-          if (err) throw err
-          // @ts-ignore
+          if (err)
+            throw errorHandler('There was a problem analyzing the audio.')
+
           waveformData = wave.toJSON()
 
           db.trackState.put({
@@ -88,15 +90,15 @@ export async function initPeaks({
     )
   }
 
-  if (!waveformData) throw Error('Waveform data is missing')
+  if (!waveformData) throw errorHandler('Waveform data is missing.')
 
   // @ts-ignore
   peakOptions.waveformData = { json: waveformData }
 
   Peaks.init(peakOptions, async (err, waveform) => {
-    if (err) throw Error(err.message)
+    if (err) errorHandler(err)
     if (!waveform)
-      throw Error('Unable to display waveform data for some reason..')
+      errorHandler('Unable to display waveform data for some reason..')
 
     setWaveform(waveform)
 
@@ -143,7 +145,7 @@ export async function initPeaks({
     )
 
     if (!peakOptions.containers.overview)
-      throw Error('Overview container not found')
+      throw errorHandler('Overview container not found.')
 
     waveform.views.createOverview(peakOptions.containers.overview)
 

@@ -3,6 +3,7 @@ import WaveformData from 'waveform-data'
 import { guess } from 'web-audio-beat-detector'
 import { putState, putTrack, Track, TrackState } from '~/api/db'
 import { getPermission } from '~/api/fileHandlers'
+import { errorHandler } from '~/utils/notifications'
 
 // Dirty tracks are tracks that have not been analyzed
 const dirtyTrackState = superstate<Track[]>([])
@@ -112,7 +113,10 @@ const getAudioDetails = async (tracks: Track[]): Promise<Track[]> => {
   analyzingState.set(tracks)
 
   for (const track of tracks) {
-    if (!track.fileHandle) throw Error(`Please try adding ${track.name} again.`)
+    if (!track.fileHandle) {
+      errorHandler(`Please try adding ${track.name} again.`)
+      continue
+    }
 
     const file = await getPermission(track)
     if (!file) return updatedTracks // this would be due to denial of permission (ie. clicked cancel)
@@ -129,7 +133,8 @@ const getAudioDetails = async (tracks: Track[]): Promise<Track[]> => {
     try {
       ;({ offset, bpm } = await getBpm(audioBuffer))
     } catch (e) {
-      throw `Unable to determine BPM for ${name}`
+      errorHandler(`Unable to determine BPM for ${name}`)
+      continue
     }
 
     // adjust for miscalc tempo > 160bpm

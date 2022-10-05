@@ -1,4 +1,5 @@
 import { Track } from '~/api/db'
+import { errorHandler } from '~/utils/notifications'
 import { processTracks } from './audio'
 
 const _getFile = async (track: Track): Promise<File | null> => {
@@ -30,24 +31,27 @@ const getPermission = async (track: Track): Promise<File | null> => {
   let file = await _getFile(track)
   if (file) return file
 
-  // note: this will throw "DOMException: User activation is required
-  // to request permissions" if user hasn't interacted with the page yet
   const handle = track.dirHandle || track.fileHandle
-  // @ts-ignore - getFile() is experimental according to MDN
-  await handle?.requestPermission()
+
+  try {
+    // note: this will throw "DOMException: User activation is required
+    // to request permissions" if user hasn't interacted with the page yet
+    await handle?.requestPermission()
+  } catch (e) {
+    errorHandler('Permission to file or folder was not granted.')
+  }
 
   return await _getFile(track)
 }
 
 const browseFile = async () => {
-  const files: FileSystemFileHandle[] = await window
+  const files: FileSystemFileHandle[] | never[] | undefined = await window
     .showOpenFilePicker({ multiple: true })
     .catch(e => {
       if (e?.message?.includes('user aborted a request')) return []
-      throw e
     })
 
-  processTracks(files)
+  if (files) processTracks(files)
 }
 
 export { getPermission, browseFile }

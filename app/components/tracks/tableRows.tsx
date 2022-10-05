@@ -36,26 +36,16 @@ export default function TableRows({
 
   return (
     <>
-      <TableRow
-        key={key}
-        hover
-        selected={isItemSelected}
-        onClick={() => setOpen(!open)}
-      >
+      <TableRow key={key} hover selected={isItemSelected}>
         <TableCell
-          padding="checkbox"
+          padding="none"
           onClick={event => tableOps.rowClick(event, row.id)}
           role="checkbox"
           aria-checked={isItemSelected}
           tabIndex={-1}
-          sx={{ cursor: 'pointer' }}
+          sx={{ cursor: 'pointer', padding: '7px 12px 0 16px' }}
         >
-          <Checkbox
-            color="primary"
-            checked={isItemSelected}
-            onClick={event => tableOps.rowClick(event, row.id)}
-            title={row.name}
-          />
+          <Checkbox color="primary" checked={isItemSelected} title={row.name} />
         </TableCell>
         {columnDefs.map((column, i) => (
           <TableCell
@@ -64,6 +54,7 @@ export default function TableRows({
             sx={{ ...column.sx, cursor: 'default' }}
             align={column.align}
             padding={column.padding}
+            onClick={() => setOpen(!open)}
           >
             {column.formatter(row)}
           </TableCell>

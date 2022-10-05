@@ -7,7 +7,9 @@ export type Notification = {
   variant?: 'success' | 'error' | 'warning' | 'info'
 }
 
-export function errorHandler(error: any) {
+export function errorHandler(error: Error | string) {
+  if (typeof error == 'string') error = Error(error)
+
   notificationState.set({
     message: error.message,
     variant: 'error',

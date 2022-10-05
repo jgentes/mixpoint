@@ -6,6 +6,7 @@ import {
   rowsPerPageState,
   selectedState,
 } from '~/routes/__boundary/tracks'
+import { errorHandler } from '~/utils/notifications'
 
 export const tableOps = {
   search: (tracks: Track[]) =>
@@ -31,7 +32,7 @@ export const tableOps = {
   },
 
   rowClick: (event: MouseEvent<unknown>, id: Track['id']) => {
-    if (!id) throw new Error('There was a problem selecting the row')
+    if (!id) throw errorHandler('There was a problem selecting the row')
 
     const selectedIndex = selectedState.now().indexOf(id)
     let newSelected: readonly Track['id'][] = []
