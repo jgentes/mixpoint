@@ -122,13 +122,13 @@ const EnhancedTableHead = (props: {
   onRequestSort: (event: MouseEvent<unknown>, property: keyof Track) => void
   onSelectAllClick: (event: ChangeEvent<HTMLInputElement>) => void
   sortDirection: AppState['sortDirection']
-  sortOrderBy: AppState['sortOrderBy']
+  sortColumn: AppState['sortColumn']
   rowCount: number
 }) => {
   const {
     onSelectAllClick,
     sortDirection,
-    sortOrderBy,
+    sortColumn,
     numSelected,
     rowCount,
     onRequestSort,
@@ -159,16 +159,19 @@ const EnhancedTableHead = (props: {
             key={i}
             align={column.align}
             padding={column.padding}
-            sx={{ ...column.sx }}
-            sortDirection={sortOrderBy === column.dbKey ? sortDirection : false}
+            sx={{
+              ...column.sx,
+              padding: column.align == 'center' ? '6px 0 0 28px' : '',
+            }}
+            sortDirection={sortColumn === column.dbKey ? sortDirection : false}
           >
             <TableSortLabel
-              active={sortOrderBy === column.dbKey}
-              direction={sortOrderBy === column.dbKey ? sortDirection : 'asc'}
+              active={sortColumn === column.dbKey}
+              direction={sortColumn === column.dbKey ? sortDirection : 'asc'}
               onClick={createSort(column.dbKey)}
             >
               {column.label}
-              {sortOrderBy === column.dbKey ? (
+              {sortColumn === column.dbKey ? (
                 <Card component="span" sx={visuallyHidden}>
                   {sortDirection === 'desc'
                     ? 'sorted descending'

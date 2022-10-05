@@ -1,7 +1,7 @@
 // this file initializes Dexie (indexDB), defines the schema and creates tables if needed
 // it also provides a few helper functions for interacting with the database
 
-import Dexie, { DbCoreTransactionOptions } from 'dexie'
+import Dexie from 'dexie'
 import { useLiveQuery } from 'dexie-react-hooks'
 import WaveformData from 'waveform-data'
 
@@ -121,7 +121,7 @@ interface AppState {
   date?: Date
   leftNavOpen?: boolean
   sortDirection?: 'asc' | 'desc'
-  sortOrderBy?: keyof Track // track table order property
+  sortColumn?: keyof Track // track table order property
 }
 
 const putTrack = async (track: Partial<Track>): Promise<Track> => {
@@ -158,18 +158,21 @@ interface StateTypes {
   app: AppState
 }
 
-// using a single-call-signature overload to help TS determine the return type
-// https://stackoverflow.com/questions/71726164/typescript-enforce-function-return-type-to-be-key-of-interface-based-on-paramete
-function getState<S extends keyof StateTypes>(key: S): StateTypes[S]
-async function getState(table: keyof StateTypes) {
-  return db[`${table}State`].orderBy('date').last()
+// use a single-call-signature overload to help TS determine the return type
+// https://stackoverflow.com/a/71726295/1058302
+// function getState<S extends keyof StateTypes>(key: S): StateTypes[S]
+async function getState(table: keyof StateTypes, key?: string) {
+  const state = await db[`${table}State`].orderBy('date').last()
+  // @ts-ignore - no easy TS fix for this as it doesn't know whether the key is
+  // valid for different tables
+  return key ? state[key] : state
 }
 
 const putState = async (
   table: keyof StateTypes,
   state: Partial<StateTypes[typeof table]>
 ): Promise<void> => {
-  const prevState = getState(table)
+  const prevState = await getState(table)
   await db[`${table}State`].put({
     ...prevState,
     ...state,
@@ -192,7 +195,6 @@ const tables = ['track', 'mix', 'set', 'app'] as const
 tables.forEach(table => createHooks(table))
 
 export type { Track, Mix, Set, TrackState, MixState, SetState, AppState }
-
 export {
   db,
   putTrack,

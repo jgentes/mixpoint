@@ -14,13 +14,16 @@ export const tableOps = {
       t.name?.toLowerCase().includes(`${searchState.now()}`.toLowerCase())
     ),
 
-  sort: (event: MouseEvent<unknown>, property: keyof Track) => {
-    const sortOrderBy = getState('app')?.sortOrderBy || 'name'
-    const sortDirection = getState('app')?.sortDirection || 'desc'
+  sort: async (event: MouseEvent<unknown>, property: keyof Track) => {
+    const sortColumn = (await getState('app', 'sortColumn')) || 'lastModified'
+    const sortDirection = (await getState('app', 'sortDirection')) || 'desc'
 
-    const isAsc = sortOrderBy === property && sortDirection === 'asc'
+    const isAsc = sortColumn === property && sortDirection === 'asc'
 
-    putState('app', { sortDirection: isAsc ? 'desc' : 'asc', sortOrderBy })
+    putState('app', {
+      sortDirection: isAsc ? 'desc' : 'asc',
+      sortColumn: property,
+    })
   },
 
   selectAll: async (event: ChangeEvent<HTMLInputElement>) => {

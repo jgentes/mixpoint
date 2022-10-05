@@ -61,15 +61,15 @@ export const createColumnDefinitions = (): {
     {
       dbKey: 'bpm',
       label: 'BPM',
-      align: 'left',
+      align: 'center',
       padding: 'normal',
       formatter: t => t.bpm?.toFixed(0) || null,
     },
     {
       dbKey: 'duration',
-      align: 'left',
-      padding: 'normal',
       label: 'Duration',
+      align: 'center',
+      padding: 'normal',
       formatter: t =>
         t.duration ? (
           formatMinutes(t.duration! / 60)
@@ -77,28 +77,28 @@ export const createColumnDefinitions = (): {
           !analyzingState.now().some(a => a.id == t.id) ? (
           getBpmButton(t)
         ) : (
-          <TrackLoader style={{ margin: 0, height: '15px' }} />
+          <TrackLoader style={{ margin: 'auto', height: '15px' }} />
         ),
     },
     {
       dbKey: 'mixpoints',
-      align: 'left',
-      padding: 'normal',
       label: 'Mixes',
+      align: 'center',
+      padding: 'normal',
       formatter: t => '',
     },
     {
       dbKey: 'sets',
-      align: 'left',
-      padding: 'normal',
       label: 'Sets',
+      align: 'center',
+      padding: 'normal',
       formatter: t => '',
     },
     {
       dbKey: 'lastModified',
+      label: 'Updated',
       align: 'right',
       padding: 'normal',
-      label: 'Updated',
       sx: { whiteSpace: 'nowrap' },
       formatter: t => moment(t.lastModified).fromNow(),
     },

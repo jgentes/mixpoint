@@ -61,7 +61,7 @@ const Document = ({ children }: { children: React.ReactNode }) => {
 
 const PageLayout = () => {
   const { enqueueSnackbar } = useSnackbar()
-  const leftNavOpen = useLiveQuery(() => getState('app')?.leftNavOpen)
+  const leftNavOpen = useLiveQuery(() => getState('app', 'leftNavOpen'))
 
   notificationState.subscribe(({ message, variant }) =>
     enqueueSnackbar(message, { variant })

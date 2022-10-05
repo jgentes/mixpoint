@@ -43,7 +43,7 @@ async function getTracksRecursively(
   processingState.set(true)
 
   // Change sort order to lastModified so new tracks are visible at the top
-  await putState('app', { sortOrderBy: 'lastModified', sortDirection: 'desc' })
+  await putState('app', { sortColumn: 'lastModified', sortDirection: 'desc' })
 
   // Queue files for processing after they are added to the DB
   // this provides a more responsive UI experience.

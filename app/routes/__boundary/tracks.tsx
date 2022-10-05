@@ -44,8 +44,9 @@ export default function TrackTable() {
 
   // Recover sort state from database
   const sortDirection =
-    useLiveQuery(() => getState('app')?.sortDirection) || 'desc'
-  const sortOrderBy = useLiveQuery(() => getState('app')?.sortOrderBy) || 'name'
+    useLiveQuery(() => getState('app', 'sortDirection')) || 'desc'
+  const sortColumn =
+    useLiveQuery(() => getState('app', 'sortColumn')) || 'lastModified'
 
   // If there are tracks that haven't been processed, process them, or
   // if we haven't had user activation, show button to resume processing
@@ -87,43 +88,41 @@ export default function TrackTable() {
             <EnhancedTableHead
               numSelected={selectedState.now().length}
               sortDirection={sortDirection}
-              sortOrderBy={sortOrderBy}
+              sortColumn={sortColumn}
               onSelectAllClick={tableOps.selectAll}
               onRequestSort={tableOps.sort}
               rowCount={tracks?.length || 0}
             />
-            <TableBody>
-              <>
-                {!tracks || processingState.now() ? (
-                  <TableRow>
-                    <TableCell>
-                      <TrackLoader style={{ margin: '50px auto' }} />
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  [...tracks]
-                    .sort(
-                      // @ts-ignore can't figure this one out
-                      tableOps.getComparator(sortDirection, sortOrderBy)
-                    )
-                    .slice(
-                      pageState.now() * rowsPerPageState.now(),
-                      pageState.now() * rowsPerPageState.now() +
-                        rowsPerPageState.now()
-                    )
-                    .map((row, index) => {
-                      // row.id is the track/mix/set id
-                      const isItemSelected = tableOps.isSelected(row.id)
+            {!tracks || processingState.now() ? (
+              <TableRow>
+                <TableCell>
+                  <TrackLoader style={{ margin: '50px auto' }} />
+                </TableCell>
+              </TableRow>
+            ) : (
+              <TableBody>
+                {[...tracks]
+                  .sort(
+                    // @ts-ignore can't figure this one out
+                    tableOps.getComparator(sortDirection, sortColumn)
+                  )
+                  .slice(
+                    pageState.now() * rowsPerPageState.now(),
+                    pageState.now() * rowsPerPageState.now() +
+                      rowsPerPageState.now()
+                  )
+                  .map((row, index) => {
+                    // row.id is the track/mix/set id
+                    const isItemSelected = tableOps.isSelected(row.id)
 
-                      return (
-                        <TableRows
-                          key={index}
-                          row={row}
-                          isItemSelected={isItemSelected}
-                        />
-                      )
-                    })
-                )}
+                    return (
+                      <TableRows
+                        key={index}
+                        row={row}
+                        isItemSelected={isItemSelected}
+                      />
+                    )
+                  })}
                 {emptyRows > 0 && (
                   <TableRow
                     style={{
@@ -133,8 +132,8 @@ export default function TrackTable() {
                     <TableCell colSpan={6} />
                   </TableRow>
                 )}
-              </>
-            </TableBody>
+              </TableBody>
+            )}
           </Table>
         </TableContainer>
         <TablePagination

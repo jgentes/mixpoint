@@ -14,7 +14,6 @@ const delay = keyframes`
   }
 `
 const LoaderWrapper = styled('div')`
-  margin: 5em auto 1em;
   width: 60px;
   height: 25px;
   text-align: center;

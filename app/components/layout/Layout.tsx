@@ -2,7 +2,7 @@ import { Sheet, Box, BoxProps } from '@mui/joy'
 import { useLiveQuery, getState, putState } from '~/api/db'
 
 const Root = (props: BoxProps) => {
-  const leftNavOpen = useLiveQuery(() => getState('app')?.leftNavOpen)
+  const leftNavOpen = useLiveQuery(() => getState('app', 'leftNavOpen'))
   return (
     <Box
       {...props}
