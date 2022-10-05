@@ -1,20 +1,23 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "useDefineForClassFields": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "allowJs": false,
-    "skipLibCheck": true,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "resolveJsonModule": true,
+    "lib": ["DOM", "DOM.Iterable", "ES2020"],
     "isolatedModules": true,
+    "jsx": "react-jsx",
+    "resolveJsonModule": true,
+    "module": "NodeNext",
+    "moduleResolution": "node",
+    "baseUrl": ".",
     "noEmit": true,
-    "jsx": "react-jsx"
+    "paths": {
+      "~/*": ["./app/*"]
+    },
+    "allowJs": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "target": "ESNext",
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "esModuleInterop": true
   },
-  "include": ["src", "./global.d.ts"]
+  "include": ["**/*.ts", "**/*.tsx", "remix.env.d.ts", "./global.d.ts"]
 }
