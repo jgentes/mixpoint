@@ -9,7 +9,6 @@ import {
 } from '@mui/material'
 import { superstate } from '@superstate/core'
 import { useSuperState } from '@superstate/react'
-import { useEffect } from 'react'
 import { processingState } from '~/api/audio'
 import { db, getState, Track, useLiveQuery } from '~/api/db'
 import TrackLoader from '~/components/TrackLoader'
@@ -46,11 +45,6 @@ export default function TrackTable() {
   const sortColumn =
     useLiveQuery(() => getState('app', 'sortColumn')) || 'lastModified'
 
-  // Apply search
-  useEffect(() => {
-    if (searchState.now() && tracks?.length) tableOps.search(tracks)
-  }, [tracks, searchState.now()])
-
   // Avoid a layout jump when reaching the last page with empty rows
   const emptyRows =
     pageState.now() > 0
@@ -59,6 +53,9 @@ export default function TrackTable() {
           (1 + pageState.now()) * rowsPerPageState.now() - (tracks?.length || 0)
         )
       : 0
+
+  // Apply search
+  if (searchState.now() && tracks?.length) tracks = tableOps.search(tracks)
 
   return (
     <Sheet
@@ -109,7 +106,7 @@ export default function TrackTable() {
             {emptyRows > 0 && (
               <TableRow
                 style={{
-                  height: 33 * emptyRows,
+                  height: 37 * emptyRows,
                 }}
               >
                 <TableCell colSpan={7} />

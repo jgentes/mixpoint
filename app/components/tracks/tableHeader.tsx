@@ -70,9 +70,11 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
       openState={openAnalyzeModal}
       setOpenState={setOpenAnalyzeModal}
       headerText={'Are you sure?'}
-      bodyText={`This will analyze all remaining ${dirtyTracks.length} tracks.`}
+      bodyText={`This will analyze ${dirtyTracks.length} track${
+        dirtyTracks.length > 1 ? 's' : ''
+      }.`}
       confirmColor="success"
-      confirmText={`Go for it`}
+      confirmText={`Analyze track${dirtyTracks.length > 1 ? 's' : ''}`}
       clickHandler={() => {
         setOpenAnalyzeModal(false)
         analyzeTracks(dirtyTracks)

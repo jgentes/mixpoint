@@ -124,19 +124,25 @@ interface AppState {
   sortColumn?: keyof Track // track table order property
 }
 
-const putTrack = async (track: Partial<Track>): Promise<Track> => {
-  // if this is a new file, check for existing track with same name and size
-  if (!track.id) {
-    // if below line changes, potentially remove [name+size] index
-    const dup = await db.tracks.get({ name: track.name, size: track.size })
-    // if we found the track in the database already, set the primary key
-    if (dup) track = { ...dup, ...track }
+const putTracks = async (tracks: Partial<Track[]>): Promise<void> => {
+  const bulkPut: Track[] = []
+
+  for (let track of tracks) {
+    if (!track) continue
+
+    // if this is a new file, check for existing track with same name and size
+    if (!track.id) {
+      // if below line changes, potentially remove [name+size] index
+      const dup = await db.tracks.get({ name: track.name, size: track.size })
+      // if we found the track in the database already, set the primary key
+      if (dup) track = { ...dup, ...track }
+    }
+
+    track.lastModified = new Date()
+    bulkPut.push(track)
   }
 
-  track.lastModified = new Date()
-  const id = await db.tracks.put(track)
-  track.id = id
-  return track
+  await db.tracks.bulkPut(bulkPut)
 }
 
 const removeTracks = async (ids: number[]): Promise<void> =>
@@ -204,7 +210,7 @@ tables.forEach(table => createHooks(table))
 export type { Track, Mix, Set, TrackState, MixState, SetState, AppState }
 export {
   db,
-  putTrack,
+  putTracks,
   removeTracks,
   getDirtyTracks,
   getMix,

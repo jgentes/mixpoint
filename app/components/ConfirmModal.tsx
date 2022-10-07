@@ -40,12 +40,12 @@ export default function ConfirmModal({
           component="h2"
           level="inherit"
           fontSize="1.25em"
-          mb="0.25em"
+          sx={{ display: 'flex', alignItems: 'normal' }}
           startDecorator={<WarningRounded />}
         >
           {headerText}
         </Typography>
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: 1 }} />
         <Typography
           id="alert-dialog-modal-description"
           textColor="text.tertiary"

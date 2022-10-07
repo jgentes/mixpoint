@@ -26,11 +26,10 @@ export default function TableRows({
   const [open, setOpen] = useState(false)
   useSuperState(analyzingState)
 
-  // A bit of a hack since fn components don't have this.forceUpdate
-  // This is being done to refresh the 'Updated' column every minute
+  // This is being done to refresh the 'Updated' column periodically
   const [, updateState] = useState({})
   useEffect(() => {
-    const interval = setInterval(() => updateState({}), 60000)
+    const interval = setInterval(() => updateState({}), 30000)
     return () => clearInterval(interval)
   }, [])
 
@@ -56,6 +55,7 @@ export default function TableRows({
             id={`${column.dbKey}-${row.id}`}
             sx={{
               minHeight: '38px',
+              lineHeight: 'normal',
               cursor:
                 row[column.dbKey] || !column.onClick ? 'default' : 'pointer',
               ...column.sx,

@@ -1,9 +1,10 @@
 import { superstate } from '@superstate/core'
 import WaveformData from 'waveform-data'
 import { guess } from 'web-audio-beat-detector'
-import { putState, putTrack, Track, TrackState } from '~/api/db'
+import { putState, putTracks, Track, TrackState } from '~/api/db'
 import { getPermission } from '~/api/fileHandlers'
 import { errorHandler } from '~/utils/notifications'
+
 const analyzingState = superstate<Track[]>([])
 const processingState = superstate<boolean>(false)
 
@@ -18,8 +19,7 @@ const processTracks = async (
   handles: (FileSystemFileHandle | FileSystemDirectoryHandle)[]
 ) => {
   const trackArray = await getTracksRecursively(handles)
-  const tracks = await addTracksToDb(trackArray)
-  return await analyzeTracks(tracks)
+  return await analyzeTracks(trackArray)
 }
 
 async function getTracksRecursively(
@@ -71,21 +71,13 @@ async function getTracksRecursively(
   return trackArray
 }
 
-const addTracksToDb = async (
-  trackArray: Partial<Track>[]
-): Promise<Track[]> => {
-  // Set analyzing state now to avoid tracks appearing with 'analyze' button
-  analyzingState.set(trackArray)
-
-  const tracksWithIds = []
-  for (const track of trackArray) tracksWithIds.push(await putTrack(track))
-
-  return tracksWithIds
-}
-
-// One-off analysis of a track from clicking the 'analyze' button
 const analyzeTracks = async (tracks: Track[]): Promise<void> => {
+  // Set analyzing state now to avoid tracks appearing with 'analyze' button
   analyzingState.set(prev => [...prev, ...tracks])
+
+  // Add tracks to the database
+  await putTracks(tracks)
+
   let sorted
 
   for (const track of tracks) {
