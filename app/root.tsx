@@ -1,18 +1,17 @@
 // this file establishes the root component that renders all subsequent / child routes
 // it also injects top level styling, HTML meta tags, links, and javascript for browser rendering
-import { Links, Meta, LiveReload, Scripts, Outlet } from '@remix-run/react'
-import { useEffect, useState } from 'react'
 import { CssVarsProvider } from '@mui/joy/styles'
-import { theme } from '~/styles/theme'
-import { notificationState } from '~/utils/notifications'
-import { SnackbarProvider, useSnackbar } from 'notistack'
-import { useLiveQuery, getState } from '~/api/db'
-import { ClientOnly } from 'remix-utils'
 import { LinksFunction, MetaFunction } from '@remix-run/node'
+import { Links, LiveReload, Meta, Outlet, Scripts } from '@remix-run/react'
+import { SnackbarProvider } from 'notistack'
+import { useEffect, useState } from 'react'
+import { ClientOnly } from 'remix-utils'
+import { getState, useLiveQuery } from '~/api/db'
+import { theme } from '~/styles/theme'
 
 import InitialLoader from '~/components/InitialLoader'
-import Layout from '~/components/layout/Layout'
 import Header from '~/components/layout/Header'
+import Layout from '~/components/layout/Layout'
 import LeftNav from '~/components/layout/LeftNav'
 
 export const meta: MetaFunction = () => {
@@ -60,12 +59,7 @@ const Document = ({ children }: { children: React.ReactNode }) => {
 }
 
 const PageLayout = () => {
-  const { enqueueSnackbar } = useSnackbar()
   const leftNavOpen = useLiveQuery(() => getState('app', 'leftNavOpen'))
-
-  notificationState.subscribe(({ message, variant }) =>
-    enqueueSnackbar(message, { variant })
-  )
 
   return (
     <>

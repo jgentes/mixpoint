@@ -4,16 +4,14 @@ import { guess } from 'web-audio-beat-detector'
 import { putState, putTrack, Track, TrackState } from '~/api/db'
 import { getPermission } from '~/api/fileHandlers'
 import { errorHandler } from '~/utils/notifications'
-
-// Dirty tracks are tracks that have not been analyzed
-const dirtyTrackState = superstate<Track[]>([])
 const analyzingState = superstate<Track[]>([])
 const processingState = superstate<boolean>(false)
 
 // Only load initPeaks in the browser
 let initPeaks: typeof import('~/api/initPeaks').initPeaks
-if (typeof document !== 'undefined')
+if (typeof document !== 'undefined') {
   import('~/api/initPeaks').then(m => (initPeaks = m.initPeaks))
+}
 
 // This is the main track processing workflow when files are added to the app
 const processTracks = async (
@@ -21,18 +19,8 @@ const processTracks = async (
 ) => {
   const trackArray = await getTracksRecursively(handles)
   const tracks = await addTracksToDb(trackArray)
-  return await getAudioDetails(tracks)
+  return await analyzeTracks(tracks)
 }
-
-const getAudioBuffer = async (file: File): Promise<AudioBuffer> => {
-  const arrayBuffer = await file.arrayBuffer()
-  const audioCtx = new window.AudioContext()
-  return await audioCtx.decodeAudioData(arrayBuffer)
-}
-
-const getBpm = async (
-  buffer: AudioBuffer
-): Promise<{ offset: number; bpm: number }> => await guess(buffer)
 
 async function getTracksRecursively(
   handles: (FileSystemFileHandle | FileSystemDirectoryHandle)[]
@@ -86,81 +74,92 @@ async function getTracksRecursively(
 const addTracksToDb = async (
   trackArray: Partial<Track>[]
 ): Promise<Track[]> => {
-  const tracksWithIds = []
+  // Set analyzing state now to avoid tracks appearing with 'analyze' button
+  analyzingState.set(trackArray)
 
+  const tracksWithIds = []
   for (const track of trackArray) tracksWithIds.push(await putTrack(track))
+
   return tracksWithIds
 }
 
-const analyzeTrack = async (track: Track) => {
-  const ok = await getPermission(track)
+// One-off analysis of a track from clicking the 'analyze' button
+const analyzeTracks = async (tracks: Track[]): Promise<void> => {
+  analyzingState.set(prev => [...prev, ...tracks])
+  let sorted
 
-  if (ok) {
-    // if the user approves access to a folder, we can process all files in that folder :)
-    const siblingTracks = track.dirHandle
-      ? dirtyTrackState
-          .now()
-          .filter(t => t.dirHandle?.name == track.dirHandle?.name)
-      : [track]
-
-    analyzingState.set(siblingTracks)
-    for (const sibling of siblingTracks) {
-      await getAudioDetails([sibling])
-      analyzingState.set(siblingTracks.filter(s => s.id !== sibling.id))
+  for (const track of tracks) {
+    const file = await getPermission(track)
+    if (!file) {
+      analyzingState.set([])
+      throw errorHandler('Permission to the file or folder was denied.') // this would be due to denial of permission (ie. clicked cancel)
     }
+
+    if (!sorted) {
+      // Change sort order to lastModified so new tracks are visible at the top
+      await putState('app', {
+        sortColumn: 'lastModified',
+        sortDirection: 'desc',
+      })
+      sorted = true
+    }
+
+    await getAudioDetails(file)
+    analyzingState.set(prev => prev.filter(t => t.id !== track.id))
   }
 }
 
-const getAudioDetails = async (tracks: Track[]): Promise<Track[]> => {
-  const updatedTracks: Track[] = []
+const getBpm = async (
+  file: File
+): Promise<{
+  offset: number
+  bpm: number
+  duration: number
+  sampleRate: number
+}> => {
+  let audioCtx = new AudioContext()
+  let arrayBuffer: ArrayBuffer = await file.arrayBuffer()
 
-  analyzingState.set(tracks)
+  let audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
 
-  for (const track of tracks) {
-    if (!track.fileHandle) {
-      errorHandler(`Please try adding ${track.name} again.`)
-      continue
-    }
+  audioCtx.close()
 
-    const file = await getPermission(track)
-    if (!file) return updatedTracks // this would be due to denial of permission (ie. clicked cancel)
+  let { duration, sampleRate } = audioBuffer
+  let offset = 0,
+    bpm = 1
 
-    const { name, size, type } = file
-
-    const audioBuffer = await getAudioBuffer(file)
-
-    const { duration, sampleRate } = audioBuffer
-
-    let offset = 0,
-      bpm = 1
-
-    try {
-      ;({ offset, bpm } = await getBpm(audioBuffer))
-    } catch (e) {
-      errorHandler(`Unable to determine BPM for ${name}`)
-      continue
-    }
-
-    // adjust for miscalc tempo > 160bpm
-    const adjustedBpm = bpm > 160 ? bpm / 2 : bpm
-
-    const updatedTrack = {
-      ...track,
-      name,
-      size,
-      type,
-      duration,
-      bpm: adjustedBpm,
-      offset,
-      sampleRate,
-    }
-
-    await putTrack(updatedTrack)
-    updatedTracks.push(updatedTrack)
-    analyzingState.set(tracks.filter(t => t.id !== updatedTrack.id))
+  try {
+    ;({ offset, bpm } = await guess(audioBuffer))
+  } catch (e) {
+    errorHandler(`Unable to determine BPM for ${file.name}`)
   }
 
-  return updatedTracks
+  return {
+    offset,
+    bpm,
+    duration,
+    sampleRate,
+  }
+}
+
+const getAudioDetails = async (file: File): Promise<void> => {
+  const { name, size, type } = file
+  const { offset, bpm, duration, sampleRate } = await getBpm(file)
+
+  // adjust for miscalc tempo > 160bpm
+  const adjustedBpm = bpm > 160 ? bpm / 2 : bpm
+
+  const updatedTrack = {
+    name,
+    size,
+    type,
+    duration,
+    bpm: adjustedBpm,
+    offset,
+    sampleRate,
+  }
+
+  await putTrack(updatedTrack)
 }
 
 const createMix = async (trackStateArray: TrackState[]) => {
@@ -233,13 +232,11 @@ const getPeaks = async (
 }
 
 export {
-  getAudioBuffer,
   processTracks,
   getBpm,
   createMix,
-  analyzeTrack,
+  analyzeTracks,
   addTrackToMix,
-  dirtyTrackState,
   analyzingState,
   processingState,
 }

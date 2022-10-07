@@ -1,8 +1,9 @@
 // this file provides the layout for the application (header, left nav, main content area)
 // it also provides top level error and catch boundaries, plus notification handling
+import { Outlet } from '@remix-run/react'
+import { useEffect } from 'react'
 import { useSnackbar, VariantType } from 'notistack'
 import { notificationState } from '~/utils/notifications'
-import { Outlet } from '@remix-run/react'
 
 import InitialLoader from '~/components/InitialLoader'
 
@@ -20,9 +21,13 @@ export const CatchBoundary = ({ error }: { error: Error }) =>
 export default function Boundary() {
   const { enqueueSnackbar } = useSnackbar()
 
-  notificationState.subscribe(({ message, variant }) =>
-    enqueueSnackbar(message, { variant })
-  )
+  useEffect(() => {
+    const unsubscribe = notificationState.subscribe(({ message, variant }) =>
+      enqueueSnackbar(message, { variant })
+    )
+
+    return () => unsubscribe()
+  })
 
   return <Outlet />
 }

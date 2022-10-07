@@ -1,23 +1,14 @@
+import { Add, Delete, SearchRounded } from '@mui/icons-material'
 import {
-  Add,
-  Delete,
-  PriorityHigh,
-  SearchRounded,
-  WarningRounded,
-} from '@mui/icons-material'
-import {
-  Box,
   Button,
   Card,
   Checkbox,
   IconButton,
-  Modal,
-  ModalDialog,
+  Link,
   TextField,
   Typography,
 } from '@mui/joy'
 import {
-  Divider,
   TableCell,
   TableHead,
   TableRow,
@@ -29,10 +20,18 @@ import { visuallyHidden } from '@mui/utils'
 import { superstate } from '@superstate/core'
 import { useSuperState } from '@superstate/react'
 import { ChangeEvent, MouseEvent, useMemo, useState } from 'react'
-import { dirtyTrackState } from '~/api/audio'
-import { AppState, removeTrack, Track } from '~/api/db'
+import { analyzeTracks } from '~/api/audio'
+import {
+  AppState,
+  db,
+  getDirtyTracks,
+  removeTracks,
+  Track,
+  useLiveQuery,
+} from '~/api/db'
 import { browseFile } from '~/api/fileHandlers'
 import { selectedState } from '~/routes/__boundary/tracks'
+import ConfirmModal from '../ConfirmModal'
 import { createColumnDefinitions } from './tableColumns'
 
 // Broadcast search query
@@ -41,11 +40,45 @@ const searchState = superstate<string | number>('')
 // Toolbar is on top of the table, includes search, info, and button bar
 const EnhancedTableToolbar = (props: { numSelected: number }) => {
   useSuperState(searchState)
-  useSuperState(dirtyTrackState)
 
   const [openRemoveModal, setOpenRemoveModal] = useState(false)
+  const [openAnalyzeModal, setOpenAnalyzeModal] = useState(false)
 
   const { numSelected } = props
+
+  const trackCount = useLiveQuery(() => db.tracks.count())
+  const dirtyTracks = useLiveQuery(() => getDirtyTracks()) ?? []
+
+  const RemoveTracksModal = () => (
+    <ConfirmModal
+      openState={openRemoveModal}
+      setOpenState={setOpenRemoveModal}
+      headerText={'Are you sure?'}
+      bodyText={`Removing tracks here will not delete them from your computer.`}
+      confirmColor="danger"
+      confirmText={`Remove ${numSelected} track${numSelected > 1 ? 's' : ''}`}
+      clickHandler={async () => {
+        setOpenRemoveModal(false)
+        await removeTracks(selectedState.now())
+        selectedState.set([])
+      }}
+    />
+  )
+
+  const AnalyzeDirtyModal = () => (
+    <ConfirmModal
+      openState={openAnalyzeModal}
+      setOpenState={setOpenAnalyzeModal}
+      headerText={'Are you sure?'}
+      bodyText={`This will analyze all remaining ${dirtyTracks.length} tracks.`}
+      confirmColor="success"
+      confirmText={`Go for it`}
+      clickHandler={() => {
+        setOpenAnalyzeModal(false)
+        analyzeTracks(dirtyTracks)
+      }}
+    />
+  )
 
   return (
     <Toolbar
@@ -73,7 +106,18 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
         <Typography component="div">{numSelected} selected</Typography>
       ) : (
         <Typography id="tableTitle" component="div">
-          Tracks
+          {trackCount} Track{trackCount == 1 ? '' : 's'}
+          {!dirtyTracks.length ? null : (
+            <Link
+              onClick={() => setOpenAnalyzeModal(true)}
+              variant="plain"
+              level="body3"
+              underline="none"
+              sx={{ p: '2px 6px', ml: 1 }}
+            >
+              {dirtyTracks.length} to analyze
+            </Link>
+          )}
         </Typography>
       )}
       <TextField
@@ -101,22 +145,12 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
         }}
       />
       {numSelected == 0 ? (
-        <>
-          {!dirtyTrackState.now().length ? null : (
-            <div style={{ alignSelf: 'center' }}>
-              <PriorityHigh style={{ marginRight: '5px' }} />
-              {`BPM needed for ${dirtyTrackState.now().length} Track${
-                dirtyTrackState.now().length === 1 ? '' : 's'
-              }`}
-            </div>
-          )}
-          <div style={{ alignSelf: 'center' }}>
-            <Button size="sm" variant="soft" onClick={browseFile}>
-              <Add />
-              Add Track
-            </Button>
-          </div>
-        </>
+        <div style={{ alignSelf: 'center' }}>
+          <Button size="sm" variant="soft" onClick={browseFile}>
+            <Add />
+            Add Track
+          </Button>
+        </div>
       ) : (
         <>
           <IconButton
@@ -128,59 +162,11 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
           >
             <Delete />
           </IconButton>
-          <Modal
-            aria-labelledby="alert-dialog-modal-title"
-            aria-describedby="alert-dialog-modal-description"
-            open={openRemoveModal}
-            sx={{ alignItems: 'normal' }}
-            onClose={() => setOpenRemoveModal(false)}
-          >
-            <ModalDialog variant="outlined" role="alertdialog">
-              <Typography
-                id="alert-dialog-modal-title"
-                component="h2"
-                level="inherit"
-                fontSize="1.25em"
-                mb="0.25em"
-                startDecorator={<WarningRounded />}
-              >
-                Are you sure?
-              </Typography>
-              <Divider sx={{ my: 2 }} />
-              <Typography
-                id="alert-dialog-modal-description"
-                textColor="text.tertiary"
-                mb={3}
-              >
-                Removing them here <b>will not</b> delete them from your
-                computer.
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                <Button
-                  variant="plain"
-                  color="neutral"
-                  onClick={() => setOpenRemoveModal(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="solid"
-                  color="danger"
-                  onClick={async () => {
-                    setOpenRemoveModal(false)
-                    for (const track of selectedState.now()) {
-                      await removeTrack(track)
-                    }
-                    selectedState.set([])
-                  }}
-                >
-                  Remove {numSelected} track{numSelected > 1 ? 's' : ''}
-                </Button>
-              </Box>
-            </ModalDialog>
-          </Modal>
+          <RemoveTracksModal />
         </>
       )}
+
+      <AnalyzeDirtyModal />
     </Toolbar>
   )
 }
@@ -228,6 +214,7 @@ const EnhancedTableHead = (props: {
             key={i}
             align={column.align}
             padding={column.padding}
+            width={column.width}
             sx={{
               ...column.sx,
               padding: column.align == 'center' ? '6px 0 0 28px' : '',

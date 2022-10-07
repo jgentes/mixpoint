@@ -7,7 +7,9 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
+import { useSuperState } from '@superstate/react'
 import { useEffect, useMemo, useState } from 'react'
+import { analyzingState } from '~/api/audio'
 import { Track } from '~/api/db'
 import { tableOps } from '~/utils/tableOps'
 import { createColumnDefinitions } from './tableColumns'
@@ -22,6 +24,7 @@ export default function TableRows({
   isItemSelected: boolean
 }) {
   const [open, setOpen] = useState(false)
+  useSuperState(analyzingState)
 
   // A bit of a hack since fn components don't have this.forceUpdate
   // This is being done to refresh the 'Updated' column every minute
@@ -51,10 +54,20 @@ export default function TableRows({
           <TableCell
             key={i}
             id={`${column.dbKey}-${row.id}`}
-            sx={{ ...column.sx, cursor: 'default' }}
+            sx={{
+              minHeight: '38px',
+              cursor:
+                row[column.dbKey] || !column.onClick ? 'default' : 'pointer',
+              ...column.sx,
+            }}
             align={column.align}
             padding={column.padding}
-            onClick={() => setOpen(!open)}
+            width={column.width}
+            onClick={() =>
+              row[column.dbKey] || !column.onClick
+                ? setOpen(!open)
+                : column.onClick(row)
+            }
           >
             {column.formatter(row)}
           </TableCell>

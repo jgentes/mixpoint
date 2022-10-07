@@ -125,10 +125,13 @@ interface AppState {
 }
 
 const putTrack = async (track: Partial<Track>): Promise<Track> => {
-  // if below line changes, potentially remove [name+size] index
-  const dup = await db.tracks.get({ name: track.name, size: track.size })
-  // if we found the track in the database already, return it
-  if (dup && dup.bpm) return dup
+  // if this is a new file, check for existing track with same name and size
+  if (!track.id) {
+    // if below line changes, potentially remove [name+size] index
+    const dup = await db.tracks.get({ name: track.name, size: track.size })
+    // if we found the track in the database already, set the primary key
+    if (dup) track = { ...dup, ...track }
+  }
 
   track.lastModified = new Date()
   const id = await db.tracks.put(track)
@@ -136,14 +139,18 @@ const putTrack = async (track: Partial<Track>): Promise<Track> => {
   return track
 }
 
-const removeTrack = async (id: number): Promise<void> =>
-  await db.tracks.delete(id)
+const removeTracks = async (ids: number[]): Promise<void> =>
+  await db.tracks.bulkDelete(ids)
 
 // const addMix = async (
 //   trackIds: Track['id'][],
 //   mixPoints: MixPoint[]
 // ): Promise<number> =>
 //   await db.mixes.add({ trackIds, mixPoints })
+
+// Dirty tracks need analysis to determine bpm and duration
+const getDirtyTracks = async (): Promise<Track[]> =>
+  await db.tracks.filter(t => !t.bpm).toArray()
 
 const getMix = async (id: number): Promise<Mix | undefined> =>
   await db.mixes.get(id)
@@ -198,7 +205,8 @@ export type { Track, Mix, Set, TrackState, MixState, SetState, AppState }
 export {
   db,
   putTrack,
-  removeTrack,
+  removeTracks,
+  getDirtyTracks,
   getMix,
   removeMix,
   useLiveQuery,

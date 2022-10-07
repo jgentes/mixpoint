@@ -1,4 +1,4 @@
-import { Box, Sheet } from '@mui/joy'
+import { Sheet } from '@mui/joy'
 import {
   Table,
   TableBody,
@@ -10,10 +10,8 @@ import {
 import { superstate } from '@superstate/core'
 import { useSuperState } from '@superstate/react'
 import { useEffect } from 'react'
-import { dirtyTrackState, processingState } from '~/api/audio'
+import { processingState } from '~/api/audio'
 import { db, getState, Track, useLiveQuery } from '~/api/db'
-import { browseFile } from '~/api/fileHandlers'
-import Dropzone from '~/components/Dropzone'
 import TrackLoader from '~/components/TrackLoader'
 import {
   EnhancedTableHead,
@@ -48,13 +46,6 @@ export default function TrackTable() {
   const sortColumn =
     useLiveQuery(() => getState('app', 'sortColumn')) || 'lastModified'
 
-  // If there are tracks that haven't been processed, process them, or
-  // if we haven't had user activation, show button to resume processing
-  // https://html.spec.whatwg.org/multipage/interaction.html#tracking-user-activation
-  useEffect(() => {
-    dirtyTrackState.set(tracks?.filter(t => !t.bpm) || [])
-  }, [tracks])
-
   // Apply search
   useEffect(() => {
     if (searchState.now() && tracks?.length) tableOps.search(tracks)
@@ -70,82 +61,75 @@ export default function TrackTable() {
       : 0
 
   return (
-    <Box>
-      <Dropzone onClick={browseFile} />
-      <Sheet
-        variant="outlined"
-        sx={{
-          width: '100%',
-          mb: 2,
-          borderRadius: 'sm',
-          bgcolor: 'background.body',
-          overflow: 'auto',
-        }}
-      >
-        <EnhancedTableToolbar numSelected={selectedState.now().length} />
-        <TableContainer>
-          <Table aria-labelledby="tableTitle" size="small" padding="checkbox">
-            <EnhancedTableHead
-              numSelected={selectedState.now().length}
-              sortDirection={sortDirection}
-              sortColumn={sortColumn}
-              onSelectAllClick={tableOps.selectAll}
-              onRequestSort={tableOps.sort}
-              rowCount={tracks?.length || 0}
-            />
-            {!tracks || processingState.now() ? (
-              <TableRow>
-                <TableCell>
-                  <TrackLoader style={{ margin: '50px auto' }} />
-                </TableCell>
-              </TableRow>
-            ) : (
-              <TableBody>
-                {[...tracks]
-                  .sort(
-                    // @ts-ignore can't figure this one out
-                    tableOps.getComparator(sortDirection, sortColumn)
-                  )
-                  .slice(
-                    pageState.now() * rowsPerPageState.now(),
-                    pageState.now() * rowsPerPageState.now() +
-                      rowsPerPageState.now()
-                  )
-                  .map((row, index) => {
-                    // row.id is the track/mix/set id
-                    const isItemSelected = tableOps.isSelected(row.id)
+    <Sheet
+      variant="outlined"
+      sx={{
+        width: '100%',
+        mb: 2,
+        borderRadius: 'sm',
+        bgcolor: 'background.body',
+        overflow: 'auto',
+      }}
+    >
+      <EnhancedTableToolbar numSelected={selectedState.now().length} />
+      <TableContainer>
+        <Table aria-labelledby="tableTitle" size="small" padding="checkbox">
+          <EnhancedTableHead
+            numSelected={selectedState.now().length}
+            sortDirection={sortDirection}
+            sortColumn={sortColumn}
+            onSelectAllClick={tableOps.selectAll}
+            onRequestSort={tableOps.sort}
+            rowCount={tracks?.length || 0}
+          />
+          <TableBody>
+            {tracks &&
+              [...tracks]
+                .sort(
+                  // @ts-ignore can't figure this one out
+                  tableOps.getComparator(sortDirection, sortColumn)
+                )
+                .slice(
+                  pageState.now() * rowsPerPageState.now(),
+                  pageState.now() * rowsPerPageState.now() +
+                    rowsPerPageState.now()
+                )
+                .map((row, index) => {
+                  // row.id is the track/mix/set id
+                  const isItemSelected = tableOps.isSelected(row.id)
 
-                    return (
-                      <TableRows
-                        key={index}
-                        row={row}
-                        isItemSelected={isItemSelected}
-                      />
-                    )
-                  })}
-                {emptyRows > 0 && (
-                  <TableRow
-                    style={{
-                      height: 33 * emptyRows,
-                    }}
-                  >
-                    <TableCell colSpan={6} />
-                  </TableRow>
-                )}
-              </TableBody>
+                  return (
+                    <TableRows
+                      key={index}
+                      row={row}
+                      isItemSelected={isItemSelected}
+                    />
+                  )
+                })}
+            {emptyRows > 0 && (
+              <TableRow
+                style={{
+                  height: 33 * emptyRows,
+                }}
+              >
+                <TableCell colSpan={7} />
+              </TableRow>
             )}
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={tracks?.length || 0}
-          rowsPerPage={rowsPerPageState.now()}
-          page={pageState.now()}
-          onPageChange={tableOps.changePage}
-          onRowsPerPageChange={tableOps.changeRows}
-        />
-      </Sheet>
-    </Box>
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {!tracks?.length && processingState.now() && (
+        <TrackLoader style={{ margin: '50px auto' }} />
+      )}
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={tracks?.length || 0}
+        rowsPerPage={rowsPerPageState.now()}
+        page={pageState.now()}
+        onPageChange={tableOps.changePage}
+        onRowsPerPageChange={tableOps.changeRows}
+      />
+    </Sheet>
   )
 }
