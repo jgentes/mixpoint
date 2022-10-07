@@ -124,8 +124,8 @@ interface AppState {
   sortColumn?: keyof Track // track table order property
 }
 
-const putTracks = async (tracks: Partial<Track[]>): Promise<void> => {
-  const bulkPut: Track[] = []
+const putTracks = async (tracks: Partial<Track[]>): Promise<Track[]> => {
+  const bulkTracks: Track[] = []
 
   for (let track of tracks) {
     if (!track) continue
@@ -139,10 +139,14 @@ const putTracks = async (tracks: Partial<Track[]>): Promise<void> => {
     }
 
     track.lastModified = new Date()
-    bulkPut.push(track)
+
+    // push into bulk array if it's not already there
+    if (!bulkTracks.some(t => t.name == track?.name && t.size == track?.size))
+      bulkTracks.push(track)
   }
 
-  await db.tracks.bulkPut(bulkPut)
+  const updatedTracks = await db.tracks.bulkPut(bulkTracks, { allKeys: true })
+  return (await db.tracks.bulkGet(updatedTracks)) as Track[]
 }
 
 const removeTracks = async (ids: number[]): Promise<void> =>

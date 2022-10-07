@@ -1,3 +1,4 @@
+import moment from 'moment'
 import { ChangeEvent, MouseEvent } from 'react'
 import { db, getState, putState, Track } from '~/api/db'
 import { searchState } from '~/components/tracks/tableHeader'
@@ -9,10 +10,19 @@ import {
 import { errorHandler } from '~/utils/notifications'
 
 export const tableOps = {
-  search: (tracks: Track[]) =>
-    tracks.filter(t =>
-      t.name?.toLowerCase().includes(`${searchState.now()}`.toLowerCase())
-    ),
+  search: (tracks: Track[]) => {
+    // set page to 0, otherwise the search results may not be visible
+    pageState.set(0)
+    return tracks.filter(
+      t =>
+        t.name?.toLowerCase().includes(`${searchState.now()}`.toLowerCase()) ||
+        t.bpm?.toString().includes(`${searchState.now()}`) ||
+        tableOps
+          .formatMinutes(t.duration! / 60)
+          .toString()
+          .includes(`${searchState.now()}`)
+    )
+  },
 
   sort: async (event: MouseEvent<unknown>, property: keyof Track) => {
     const sortColumn = (await getState('app', 'sortColumn')) || 'lastModified'
@@ -88,5 +98,9 @@ export const tableOps = {
     return order === 'desc'
       ? (a, b) => tableOps.descendingComparator(a, b, orderBy)
       : (a, b) => -tableOps.descendingComparator(a, b, orderBy)
+  },
+
+  formatMinutes: (mins: number) => {
+    return moment().startOf('day').add(mins, 'minutes').format('m:ss')
   },
 }

@@ -3,6 +3,7 @@ import WaveformData from 'waveform-data'
 import { guess } from 'web-audio-beat-detector'
 import { putState, putTracks, Track, TrackState } from '~/api/db'
 import { getPermission } from '~/api/fileHandlers'
+import { pageState } from '~/routes/__boundary/tracks'
 import { errorHandler } from '~/utils/notifications'
 
 const analyzingState = superstate<Track[]>([])
@@ -19,9 +20,12 @@ const processTracks = async (
   handles: (FileSystemFileHandle | FileSystemDirectoryHandle)[]
 ) => {
   const trackArray = await getTracksRecursively(handles)
-  return await analyzeTracks(trackArray)
+  await analyzeTracks(trackArray)
 }
 
+// The function iterates through file handles and collects the
+// information needed to add them to the database, then hands off
+// the array of track id's returned from the db for analysis.
 async function getTracksRecursively(
   handles: (FileSystemFileHandle | FileSystemDirectoryHandle)[]
 ): Promise<Partial<Track>[]> {
@@ -33,11 +37,6 @@ async function getTracksRecursively(
   // Change sort order to lastModified so new tracks are visible at the top
   await putState('app', { sortColumn: 'lastModified', sortDirection: 'desc' })
 
-  // Queue files for processing after they are added to the DB
-  // this provides a more responsive UI experience.
-  // The function iterates through file handles and collects the
-  // information needed to add them to the database, then hands off
-  // the array of track id's returned from the db for analysis.
   const filesToTracks = async (
     fileOrDirectoryHandle: FileSystemFileHandle | FileSystemDirectoryHandle,
     dirHandle?: FileSystemDirectoryHandle
@@ -67,16 +66,15 @@ async function getTracksRecursively(
     await filesToTracks(fileOrDirectoryHandle)
   }
 
+  // Ensure we have id's for our tracks, add them to the DB with updated lastModified dates
+  const updatedTracks = await putTracks(trackArray)
   processingState.set(false)
-  return trackArray
+  return updatedTracks
 }
 
 const analyzeTracks = async (tracks: Track[]): Promise<void> => {
   // Set analyzing state now to avoid tracks appearing with 'analyze' button
   analyzingState.set(prev => [...prev, ...tracks])
-
-  // Add tracks to the database
-  await putTracks(tracks)
 
   let sorted
 
@@ -93,6 +91,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<void> => {
         sortColumn: 'lastModified',
         sortDirection: 'desc',
       })
+      pageState.set(0)
       sorted = true
     }
 
@@ -114,8 +113,6 @@ const getBpm = async (
 
   let audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
 
-  audioCtx.close()
-
   let { duration, sampleRate } = audioBuffer
   let offset = 0,
     bpm = 1
@@ -125,6 +122,9 @@ const getBpm = async (
   } catch (e) {
     errorHandler(`Unable to determine BPM for ${file.name}`)
   }
+
+  // Release context for garbage collection? Not sure if this helps
+  audioCtx.close()
 
   return {
     offset,
@@ -151,7 +151,7 @@ const getAudioDetails = async (file: File): Promise<void> => {
     sampleRate,
   }
 
-  await putTrack(updatedTrack)
+  await putTracks([updatedTrack])
 }
 
 const createMix = async (trackStateArray: TrackState[]) => {

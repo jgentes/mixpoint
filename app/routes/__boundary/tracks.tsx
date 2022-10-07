@@ -97,7 +97,7 @@ export default function TrackTable() {
 
                   return (
                     <TableRows
-                      key={index}
+                      rowKey={index}
                       row={row}
                       isItemSelected={isItemSelected}
                     />

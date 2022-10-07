@@ -1,4 +1,4 @@
-import { Add, Delete, SearchRounded } from '@mui/icons-material'
+import { Add, Clear, Delete, SearchRounded } from '@mui/icons-material'
 import {
   Button,
   Card,
@@ -130,11 +130,16 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
         onChange={e => searchState.set(e.target.value)}
         value={searchState.now()}
         endDecorator={
-          <IconButton variant="outlined" size="sm" color="neutral">
-            <Typography fontWeight="lg" fontSize="sm" textColor="text.tertiary">
-              /
-            </Typography>
-          </IconButton>
+          !searchState.now() ? null : (
+            <IconButton
+              variant="outlined"
+              size="sm"
+              color="neutral"
+              onClick={() => searchState.set('')}
+            >
+              <Clear />
+            </IconButton>
+          )
         }
         sx={{
           fontWeight: 'thin',

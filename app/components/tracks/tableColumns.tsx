@@ -7,6 +7,7 @@ import { ReactNode } from 'react'
 import { addTrackToMix, analyzeTracks, analyzingState } from '~/api/audio'
 import { Track } from '~/api/db'
 import TrackLoader from '~/components/TrackLoader'
+import { tableOps } from '~/utils/tableOps'
 
 export const createColumnDefinitions = (): {
   dbKey: keyof Track
@@ -18,10 +19,6 @@ export const createColumnDefinitions = (): {
   onClick?: (t: Track) => void
   formatter: (t: Track) => string | ReactNode
 }[] => {
-  const formatMinutes = (mins: number) => {
-    return moment().startOf('day').add(mins, 'minutes').format('m:ss')
-  }
-
   const analyzeButton = (t: Track) => (
     <Chip variant="outlined" startDecorator={<GraphicEq />} size="sm">
       Analyze
@@ -73,7 +70,7 @@ export const createColumnDefinitions = (): {
       align: 'center',
       padding: 'normal',
       width: '10%',
-      formatter: t => t.duration && formatMinutes(t.duration! / 60),
+      formatter: t => t.duration && tableOps.formatMinutes(t.duration! / 60),
     },
     {
       dbKey: 'mixpoints',

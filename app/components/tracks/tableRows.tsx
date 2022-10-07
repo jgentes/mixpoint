@@ -15,11 +15,11 @@ import { tableOps } from '~/utils/tableOps'
 import { createColumnDefinitions } from './tableColumns'
 
 export default function TableRows({
-  key,
+  rowKey,
   row,
   isItemSelected,
 }: {
-  key: number
+  rowKey: number
   row: Track
   isItemSelected: boolean
 }) {
@@ -38,7 +38,7 @@ export default function TableRows({
 
   return (
     <>
-      <TableRow key={key} hover selected={isItemSelected}>
+      <TableRow key={rowKey} hover selected={isItemSelected}>
         <TableCell
           padding="none"
           onClick={event => tableOps.rowClick(event, row.id)}
