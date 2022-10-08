@@ -1,10 +1,10 @@
 // from https://mui.com/joy-ui/guides/using-joy-ui-and-material-ui-together/
-import { deepmerge } from '@mui/utils'
+import { extendTheme as extendJoyTheme } from '@mui/joy/styles'
 import {
   experimental_extendTheme as extendMuiTheme,
   Theme,
 } from '@mui/material/styles'
-import { extendTheme as extendJoyTheme } from '@mui/joy/styles'
+import { deepmerge } from '@mui/utils'
 
 const muiTheme = extendMuiTheme({
   // This is required to point to `var(--joy-*)` because we are using `CssVarsProvider` from Joy UI.

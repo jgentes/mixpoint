@@ -18,7 +18,7 @@ const Header = () => {
           size="sm"
           title={`${leftNavOpen ? 'Hide' : 'Show'} navigation`}
           onClick={() => putState('app', { leftNavOpen: true })}
-          sx={{ display: { sm: 'none' } }}
+          sx={{ display: { sm: 'none' }, mr: 1.5 }}
         >
           <MenuIcon />
         </IconButton>

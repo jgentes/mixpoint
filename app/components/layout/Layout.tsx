@@ -1,5 +1,5 @@
-import { Sheet, Box, BoxProps } from '@mui/joy'
-import { useLiveQuery, getState, putState } from '~/api/db'
+import { Box, BoxProps, Sheet } from '@mui/joy'
+import { getState, putState, useLiveQuery } from '~/api/db'
 
 const Root = (props: BoxProps) => {
   const leftNavOpen = useLiveQuery(() => getState('app', 'leftNavOpen'))
@@ -12,7 +12,6 @@ const Root = (props: BoxProps) => {
         gridTemplateColumns: {
           xs: '1fr',
           sm: 'minmax(64px, 200px) minmax(450px, 1fr)',
-          md: 'minmax(160px, 250px) minmax(600px, 1fr)',
         },
         gridTemplateRows: '64px 1fr',
         minHeight: '100vh',

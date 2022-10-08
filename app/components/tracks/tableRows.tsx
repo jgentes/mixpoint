@@ -7,6 +7,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
+import { superstate } from '@superstate/core'
 import { useSuperState } from '@superstate/react'
 import { useEffect, useMemo, useState } from 'react'
 import { analyzingState } from '~/api/audio'
@@ -14,14 +15,17 @@ import { Track } from '~/api/db'
 import { tableOps } from '~/utils/tableOps'
 import { createColumnDefinitions } from './tableColumns'
 
-export default function TableRows({
+const showButtonState = superstate<number | null>(null)
+
+const TableRows = ({
   row,
   isItemSelected,
 }: {
   row: Track
   isItemSelected: boolean
-}) {
+}) => {
   const [open, setOpen] = useState(false)
+
   useSuperState(analyzingState)
 
   // This is being done to refresh the 'Updated' column periodically
@@ -36,7 +40,12 @@ export default function TableRows({
 
   return (
     <>
-      <TableRow hover selected={isItemSelected}>
+      <TableRow
+        hover
+        selected={isItemSelected}
+        onMouseEnter={() => row.id && showButtonState.set(row.id)}
+        onMouseLeave={() => showButtonState.set(null)}
+      >
         <TableCell
           padding="none"
           onClick={event => tableOps.rowClick(event, row.id)}
@@ -52,8 +61,6 @@ export default function TableRows({
             key={i}
             id={`${column.dbKey}-${row.id}`}
             sx={{
-              minHeight: '38px',
-              lineHeight: 'normal',
               cursor:
                 row[column.dbKey] || !column.onClick ? 'default' : 'pointer',
               ...column.sx,
@@ -111,3 +118,5 @@ export default function TableRows({
     </>
   )
 }
+
+export { TableRows as default, showButtonState }

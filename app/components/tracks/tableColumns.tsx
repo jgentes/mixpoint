@@ -1,12 +1,13 @@
 import { GraphicEq } from '@mui/icons-material'
-import { Chip } from '@mui/joy'
+import { Box, Chip } from '@mui/joy'
 import { TableCellProps } from '@mui/material'
 import { SxProps } from '@mui/material/styles'
+import { useSuperState } from '@superstate/react'
 import moment from 'moment'
-import { ReactNode } from 'react'
 import { addTrackToMix, analyzeTracks, analyzingState } from '~/api/audio'
 import { Track } from '~/api/db'
 import TrackLoader from '~/components/TrackLoader'
+import { showButtonState } from '~/components/tracks/tableRows'
 import { tableOps } from '~/utils/tableOps'
 
 const createColumnDefinitions = (): {
@@ -17,7 +18,7 @@ const createColumnDefinitions = (): {
   width: TableCellProps['width']
   sx?: SxProps
   onClick?: (t: Track) => void
-  formatter: (t: Track) => string | ReactNode
+  formatter: (t: Track) => string | React.ReactNode
 }[] => {
   const analyzeButton = (t: Track) => (
     <Chip variant="outlined" startDecorator={<GraphicEq />} size="sm">
@@ -25,16 +26,28 @@ const createColumnDefinitions = (): {
     </Chip>
   )
 
-  const AddToMixButton = ({ track }: { track: Track }) => (
-    <Chip
-      variant="outlined"
-      startDecorator={<GraphicEq />}
-      size="sm"
-      onClick={() => addTrackToMix(track, trackKey)}
-    >
-      Add to Mix
-    </Chip>
-  )
+  const AddToMixButton = ({ track }: { track: Track }) => {
+    useSuperState(showButtonState)
+    const hoverId = showButtonState.now()
+
+    return hoverId == null
+      ? null
+      : hoverId == track.id && (
+          <Chip
+            variant="outlined"
+            startDecorator={<GraphicEq />}
+            size="sm"
+            sx={{
+              maxHeight: '30px',
+              alignSelf: 'center',
+              float: 'right',
+            }}
+            onClick={() => addTrackToMix(track)}
+          >
+            Add to Mix
+          </Chip>
+        )
+  }
 
   return [
     {
@@ -44,8 +57,12 @@ const createColumnDefinitions = (): {
       padding: 'none',
       width: '60%',
       // remove suffix (ie. .mp3)
-      formatter: t =>
-        t.name?.replace(/\.[^/.]+$/, '') || 'Track name not found',
+      formatter: t => (
+        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          {t.name?.replace(/\.[^/.]+$/, '') || 'Track name not found'}
+          <AddToMixButton track={t} />
+        </Box>
+      ),
     },
     {
       dbKey: 'bpm',
