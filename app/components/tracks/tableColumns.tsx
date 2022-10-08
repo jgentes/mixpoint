@@ -38,9 +38,8 @@ const createColumnDefinitions = (): {
             startDecorator={<GraphicEq />}
             size="sm"
             sx={{
-              maxHeight: '30px',
+              maxHeight: '30px', // <-- row height export please?
               alignSelf: 'center',
-              float: 'right',
             }}
             onClick={() => addTrackToMix(track)}
           >
