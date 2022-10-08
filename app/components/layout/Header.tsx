@@ -7,7 +7,7 @@ import DarkMode from '~/components/DarkMode'
 
 import { Settings, Menu as MenuIcon } from '@mui/icons-material'
 
-export default function Header() {
+const Header = () => {
   const leftNavOpen = useLiveQuery(() => getState('app', 'leftNavOpen'))
 
   return (
@@ -59,3 +59,5 @@ export default function Header() {
     </>
   )
 }
+
+export default Header

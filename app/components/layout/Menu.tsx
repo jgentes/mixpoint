@@ -51,7 +51,7 @@ const MenuItem = styled(MenuItemUnstyled, {
   [theme.focus.selector]: theme.focus.default,
 }))
 
-export const Menu = ({
+const Menu = ({
   control,
   menus,
   id,
@@ -128,3 +128,5 @@ export const Menu = ({
     </React.Fragment>
   )
 }
+
+export default Menu

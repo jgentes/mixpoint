@@ -19,7 +19,7 @@ import {
 
 import Dropzone from '~/components/Dropzone'
 
-export default function LeftNav() {
+const LeftNav = () => {
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <List size="sm" sx={{ '--List-item-radius': '8px' }}>
@@ -194,3 +194,5 @@ export default function LeftNav() {
     </Box>
   )
 }
+
+export default LeftNav
