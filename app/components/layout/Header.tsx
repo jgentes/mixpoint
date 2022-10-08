@@ -1,11 +1,11 @@
 import { Box, IconButton } from '@mui/joy'
-import { useLiveQuery, getState, putState } from '~/api/db'
-import { Menu } from '~/components/layout/Menu'
+import { getState, putState, useLiveQuery } from '~/api/db'
+import Menu from '~/components/layout/Menu'
 
-import Logo from '~/components/MixpointLogo'
 import DarkMode from '~/components/DarkMode'
+import Logo from '~/components/MixpointLogo'
 
-import { Settings, Menu as MenuIcon } from '@mui/icons-material'
+import { Menu as MenuIcon, Settings } from '@mui/icons-material'
 
 const Header = () => {
   const leftNavOpen = useLiveQuery(() => getState('app', 'leftNavOpen'))

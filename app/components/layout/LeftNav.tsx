@@ -64,7 +64,7 @@ const LeftNav = () => {
                 <ListItemDecorator sx={{ color: 'inherit' }}>
                   <FolderOpen fontSize="small" />
                 </ListItemDecorator>
-                <ListItemContent>My files</ListItemContent>
+                <ListItemContent>All Tracks</ListItemContent>
               </ListItemButton>
             </ListItem>
             <ListItem>
