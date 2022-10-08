@@ -118,7 +118,7 @@ const TrackTable = () => {
 
                   return (
                     <TableRows
-                      rowKey={index}
+                      key={index}
                       row={row}
                       isItemSelected={isItemSelected}
                     />

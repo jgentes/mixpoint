@@ -26,14 +26,8 @@ const links: LinksFunction = () => [
   {
     rel: 'icon',
     type: 'image/png',
-    href: '/media/soundwave-32.png',
+    href: '/media/innerjoin32.png',
     sizes: '32x32',
-  },
-  {
-    rel: 'icon',
-    type: 'image/png',
-    href: '/media/soundwave-16.png',
-    sizes: '16x16',
   },
   {
     rel: 'stylesheet',

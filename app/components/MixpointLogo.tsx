@@ -1,11 +1,12 @@
 import { styled } from '@mui/joy'
 
-const LogoText = styled('p')`
+const LogoText = styled('span')`
   font-family: 'Public Sans', Menlo, Courier, monospace;
   font-feature-settings: 'calt' 1, 'kern' 1, 'liga' 1;
   font-weight: 400;
   font-size: 22px;
   margin: 0;
+  display: 'inline-block';
   background: linear-gradient(
     60deg,
     hsl(0, 75%, 50%) 5%,

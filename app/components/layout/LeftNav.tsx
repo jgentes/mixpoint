@@ -11,10 +11,10 @@ import {
 
 // Icons import
 import {
-  DeleteRounded,
   FolderOpen,
+  JoinInner,
   KeyboardArrowDownRounded,
-  ShareOutlined,
+  ListAlt,
 } from '@mui/icons-material'
 
 import Dropzone from '~/components/Dropzone'
@@ -62,27 +62,31 @@ const LeftNav = () => {
             <ListItem>
               <ListItemButton variant="soft" color="primary">
                 <ListItemDecorator sx={{ color: 'inherit' }}>
-                  <FolderOpen fontSize="small" />
+                  <FolderOpen sx={{ fontSize: '22px' }} />
                 </ListItemDecorator>
-                <ListItemContent>All Tracks</ListItemContent>
+                <ListItemContent>Tracks</ListItemContent>
               </ListItemButton>
             </ListItem>
             <ListItem>
               <ListItemButton>
                 <ListItemDecorator sx={{ color: 'neutral.500' }}>
-                  <ShareOutlined fontSize="small" />
+                  <JoinInner
+                    sx={{
+                      fontSize: '22px',
+                    }}
+                  />
                 </ListItemDecorator>
                 <ListItemContent>
-                  <ListItemContent>Shared files</ListItemContent>
+                  <ListItemContent>Mixes</ListItemContent>
                 </ListItemContent>
               </ListItemButton>
             </ListItem>
             <ListItem>
               <ListItemButton>
                 <ListItemDecorator sx={{ color: 'neutral.500' }}>
-                  <DeleteRounded fontSize="small" />
+                  <ListAlt sx={{ fontSize: '22px' }} />
                 </ListItemDecorator>
-                <ListItemContent>Trash</ListItemContent>
+                <ListItemContent>Sets</ListItemContent>
               </ListItemButton>
             </ListItem>
           </List>
