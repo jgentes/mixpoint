@@ -9,8 +9,10 @@ import {
 } from '@mui/material'
 import { superstate } from '@superstate/core'
 import { useSuperState } from '@superstate/react'
+import { useState } from 'react'
 import { processingState } from '~/api/audio'
 import { db, getState, Track, useLiveQuery } from '~/api/db'
+import { itemsDropped } from '~/components/Dropzone'
 import TrackLoader from '~/components/TrackLoader'
 import {
   EnhancedTableHead,
@@ -20,11 +22,11 @@ import {
 import TableRows from '~/components/tracks/tableRows'
 import { tableOps } from '~/utils/tableOps'
 
-export const pageState = superstate(0)
-export const rowsPerPageState = superstate(10)
-export const selectedState = superstate<number[]>([])
+const pageState = superstate(0)
+const rowsPerPageState = superstate(10)
+const selectedState = superstate<number[]>([])
 
-export default function TrackTable() {
+const TrackTable = () => {
   // Re-render when table selection or search changes
   useSuperState(pageState)
   useSuperState(rowsPerPageState)
@@ -45,6 +47,9 @@ export default function TrackTable() {
   const sortColumn =
     useLiveQuery(() => getState('app', 'sortColumn')) || 'lastModified'
 
+  // Allow drag & drop files / folders into the table
+  const [dragOver, setDragOver] = useState(false)
+
   // Avoid a layout jump when reaching the last page with empty rows
   const emptyRows =
     pageState.now() > 0
@@ -60,13 +65,29 @@ export default function TrackTable() {
   return (
     <Sheet
       variant="outlined"
+      id="track-table"
       sx={{
         width: '100%',
         mb: 2,
         borderRadius: 'sm',
         bgcolor: 'background.body',
         overflow: 'auto',
+
+        borderColor: dragOver ? '#30b2e9' : undefined,
+        backgroundColor: dragOver ? 'rgba(48, 178, 233, 0.1)' : undefined,
       }}
+      onDrop={e => {
+        e.preventDefault()
+        itemsDropped(e.dataTransfer.items)
+        setDragOver(false)
+      }}
+      onDragOver={e => {
+        e.stopPropagation()
+        e.preventDefault()
+        setDragOver(true)
+      }}
+      onDragEnter={() => setDragOver(true)}
+      onDragLeave={() => setDragOver(false)}
     >
       <EnhancedTableToolbar numSelected={selectedState.now().length} />
       <TableContainer>
@@ -130,3 +151,5 @@ export default function TrackTable() {
     </Sheet>
   )
 }
+
+export { TrackTable as default, pageState, rowsPerPageState, selectedState }

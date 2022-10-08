@@ -9,7 +9,7 @@ import {
 } from '~/routes/__boundary/tracks'
 import { errorHandler } from '~/utils/notifications'
 
-export const tableOps = {
+const tableOps = {
   search: (tracks: Track[]) => {
     // set page to 0, otherwise the search results may not be visible
     pageState.set(0)
@@ -104,3 +104,5 @@ export const tableOps = {
     return moment().startOf('day').add(mins, 'minutes').format('m:ss')
   },
 }
+
+export { tableOps }

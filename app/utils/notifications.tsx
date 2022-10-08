@@ -1,13 +1,13 @@
 import { superstate } from '@superstate/core'
 
-export const notificationState = superstate<Notification>({})
+const notificationState = superstate<Notification>({})
 
-export type Notification = {
+type Notification = {
   message?: string
   variant?: 'success' | 'error' | 'warning' | 'info'
 }
 
-export function errorHandler(error: Error | string) {
+const errorHandler = (error: Error | string) => {
   if (typeof error == 'string') error = Error(error)
 
   notificationState.set({
@@ -15,3 +15,6 @@ export function errorHandler(error: Error | string) {
     variant: 'error',
   })
 }
+
+export type { Notification }
+export { errorHandler, notificationState }

@@ -5,7 +5,7 @@ type Props = {
 }
 
 // for keyboard shortcuts
-export function useGlobalDOMEvents(props: Props) {
+const useGlobalDOMEvents = (props: Props) => {
   useEffect(() => {
     for (let [key, func] of Object.entries(props)) {
       window.addEventListener(key, func, false)
@@ -31,3 +31,5 @@ export function useGlobalDOMEvents(props: Props) {
 
 //   [...]
 // }
+
+export { useGlobalDOMEvents }

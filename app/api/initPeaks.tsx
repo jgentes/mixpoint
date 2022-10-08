@@ -1,10 +1,10 @@
 import Peaks, { PeaksOptions } from 'peaks.js'
-import { Track, db } from '~/api/db'
-import { getPermission } from '~/api/fileHandlers'
 import WaveformData from 'waveform-data'
+import { db, Track } from '~/api/db'
+import { getPermission } from '~/api/fileHandlers'
 import { errorHandler } from '~/utils/notifications'
 
-export async function initPeaks({
+const initPeaks = async ({
   trackKey,
   track,
   file,
@@ -22,7 +22,7 @@ export async function initPeaks({
   setAudioSrc: Function
   setWaveform: Function
   setAnalyzing: Function
-}): Promise<void> {
+}): Promise<void> => {
   if (!track) throw errorHandler('No track to initialize')
   setAnalyzing(true)
 
@@ -205,3 +205,5 @@ export async function initPeaks({
     setAnalyzing(false)
   })
 }
+
+export { initPeaks }

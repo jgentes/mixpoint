@@ -2,7 +2,7 @@ import { ClientOnly } from 'remix-utils'
 import { useColorScheme, IconButton } from '@mui/joy'
 import { DarkModeRounded, LightModeRounded } from '@mui/icons-material'
 
-export default function DarkMode() {
+const DarkMode = () => {
   const { mode, setMode } = useColorScheme()
 
   const DarkModeButton = () => (
@@ -32,3 +32,5 @@ export default function DarkMode() {
     </ClientOnly>
   )
 }
+
+export default DarkMode

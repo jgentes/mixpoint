@@ -1,39 +1,37 @@
 import { CloudUpload } from '@mui/icons-material'
-import { Box, BoxProps, Sheet, Typography } from '@mui/joy'
+import { BoxProps, Sheet, Typography } from '@mui/joy'
 import { useState } from 'react'
 import { processTracks } from '~/api/audio'
 import { browseFile } from '~/api/fileHandlers'
 
-export default function (props: BoxProps) {
-  const [dragOver, setDragOver] = useState(false)
+const itemsDropped = async (items: DataTransferItemList) => {
+  const handleArray: (FileSystemFileHandle | FileSystemDirectoryHandle)[] = []
+  const itemQueue = []
 
-  const itemsDropped = async (items: DataTransferItemList) => {
-    const handleArray: (FileSystemFileHandle | FileSystemDirectoryHandle)[] = []
-    const itemQueue = []
-
-    for (const fileOrDirectory of items) {
-      if (fileOrDirectory.kind === 'file') {
-        itemQueue.push(
-          fileOrDirectory
-            .getAsFileSystemHandle()
-            .then(
-              handle =>
-                handle &&
-                handleArray.push(
-                  handle as FileSystemFileHandle | FileSystemDirectoryHandle
-                )
-            )
-        )
-      }
+  for (const fileOrDirectory of items) {
+    if (fileOrDirectory.kind === 'file') {
+      itemQueue.push(
+        fileOrDirectory
+          .getAsFileSystemHandle()
+          .then(
+            handle =>
+              handle &&
+              handleArray.push(
+                handle as FileSystemFileHandle | FileSystemDirectoryHandle
+              )
+          )
+      )
     }
-
-    // Must use a promise queue with DataTransferItemList
-    // https://stackoverflow.com/q/55658851/1058302
-    await Promise.all(itemQueue)
-
-    setDragOver(false)
-    processTracks(handleArray)
   }
+
+  // Must use a promise queue with DataTransferItemList
+  // https://stackoverflow.com/q/55658851/1058302
+  await Promise.all(itemQueue)
+  processTracks(handleArray)
+}
+
+const Dropzone = (props: BoxProps) => {
+  const [dragOver, setDragOver] = useState(false)
 
   return (
     <Sheet
@@ -55,29 +53,29 @@ export default function (props: BoxProps) {
         },
         ...props.sx,
       }}
+      onClick={browseFile}
+      onDrop={e => {
+        e.preventDefault()
+        itemsDropped(e.dataTransfer.items)
+        setDragOver(false)
+      }}
+      onDragOver={e => {
+        e.stopPropagation()
+        e.preventDefault()
+        setDragOver(true)
+      }}
+      onDragEnter={() => setDragOver(true)}
+      onDragLeave={() => setDragOver(false)}
     >
-      <Box
-        onClick={browseFile}
-        onDrop={e => {
-          e.preventDefault()
-          itemsDropped(e.dataTransfer.items)
-        }}
-        onDragOver={e => {
-          e.stopPropagation()
-          e.preventDefault()
-          setDragOver(true)
-        }}
-        onDragEnter={() => setDragOver(true)}
-        onDragLeave={() => setDragOver(false)}
-      >
-        <CloudUpload sx={{ fontSize: 38 }} className="drop" />
-        <Typography level="body1" className="drop">
-          <b>Add Tracks</b>
-        </Typography>
-        <Typography className="drop" level="body2">
-          Drag a <strong>folder</strong> or files here.
-        </Typography>
-      </Box>
+      <CloudUpload sx={{ fontSize: 38 }} className="drop" />
+      <Typography level="body1" className="drop">
+        <b>Add Tracks</b>
+      </Typography>
+      <Typography className="drop" level="body2">
+        Drag a <strong>folder</strong> or files here.
+      </Typography>
     </Sheet>
   )
 }
+
+export { Dropzone as default, itemsDropped }

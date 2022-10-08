@@ -1,6 +1,6 @@
+import { Warning } from '@mui/icons-material'
 import { styled } from '@mui/joy'
 import { CircularProgress } from '@mui/material'
-import { Warning } from '@mui/icons-material'
 import Logo from '~/components/MixpointLogo'
 
 const LoaderWrapDiv = styled('div')`
@@ -35,22 +35,22 @@ const LoaderSubtext = styled('span')(({ theme }) => ({
   color: theme.palette.text.primary,
 }))
 
-export default function InitialLoader({ message }: { message?: string }) {
-  return (
-    <LoaderWrapDiv>
-      <LoaderDiv>
-        <LoaderRow style={{ paddingBottom: '4px' }}>
-          <Logo />
-          {message ? (
-            <Warning color="action" sx={{ pt: '4px' }} />
-          ) : (
-            <CircularProgress color="primary" size="18px" />
-          )}
-        </LoaderRow>
-        <LoaderRow style={{ borderTop: '1px solid #e2e2e2' }}>
-          <LoaderSubtext>{message || 'Please Wait. Loading...'}</LoaderSubtext>
-        </LoaderRow>
-      </LoaderDiv>
-    </LoaderWrapDiv>
-  )
-}
+const InitialLoader = ({ message }: { message?: string }) => (
+  <LoaderWrapDiv>
+    <LoaderDiv>
+      <LoaderRow style={{ paddingBottom: '4px' }}>
+        <Logo />
+        {message ? (
+          <Warning color="action" sx={{ pt: '4px' }} />
+        ) : (
+          <CircularProgress color="primary" size="18px" />
+        )}
+      </LoaderRow>
+      <LoaderRow style={{ borderTop: '1px solid #e2e2e2' }}>
+        <LoaderSubtext>{message || 'Please Wait. Loading...'}</LoaderSubtext>
+      </LoaderRow>
+    </LoaderDiv>
+  </LoaderWrapDiv>
+)
+
+export default InitialLoader

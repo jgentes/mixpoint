@@ -21,6 +21,6 @@ const LogoText = styled('p')`
   -webkit-text-stroke-color: rgb(255 255 255 / 35%);
 `
 
-export default function () {
-  return <LogoText>Mixpoint</LogoText>
-}
+const MixpointLogo = () => <LogoText>Mixpoint</LogoText>
+
+export default MixpointLogo

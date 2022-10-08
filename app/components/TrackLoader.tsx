@@ -60,17 +60,15 @@ const LoaderDiv = styled('div')`
 const TrackLoader = (props: {
   className?: string
   style?: Record<string, unknown>
-}): JSX.Element => {
-  return (
-    <LoaderWrapper style={props.style} className={`loader ${props.className}`}>
-      <LoaderDiv className="bar1"></LoaderDiv>
-      <LoaderDiv className="bar2"></LoaderDiv>
-      <LoaderDiv className="bar3"></LoaderDiv>
-      <LoaderDiv className="bar4"></LoaderDiv>
-      <LoaderDiv className="bar5"></LoaderDiv>
-      <LoaderDiv className="bar6"></LoaderDiv>
-    </LoaderWrapper>
-  )
-}
+}): JSX.Element => (
+  <LoaderWrapper style={props.style} className={`loader ${props.className}`}>
+    <LoaderDiv className="bar1"></LoaderDiv>
+    <LoaderDiv className="bar2"></LoaderDiv>
+    <LoaderDiv className="bar3"></LoaderDiv>
+    <LoaderDiv className="bar4"></LoaderDiv>
+    <LoaderDiv className="bar5"></LoaderDiv>
+    <LoaderDiv className="bar6"></LoaderDiv>
+  </LoaderWrapper>
+)
 
 export default TrackLoader

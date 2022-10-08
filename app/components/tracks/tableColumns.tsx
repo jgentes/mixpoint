@@ -9,7 +9,7 @@ import { Track } from '~/api/db'
 import TrackLoader from '~/components/TrackLoader'
 import { tableOps } from '~/utils/tableOps'
 
-export const createColumnDefinitions = (): {
+const createColumnDefinitions = (): {
   dbKey: keyof Track
   label: string
   padding: TableCellProps['padding']
@@ -99,3 +99,5 @@ export const createColumnDefinitions = (): {
     },
   ]
 }
+
+export { createColumnDefinitions }

@@ -1,4 +1,4 @@
-export const Events = {
+const Events = {
   on(event: string, callback: Function) {
     window.addEventListener(event, (e: CustomEventInit) => callback(e.detail))
   },
@@ -9,3 +9,5 @@ export const Events = {
     window.removeEventListener(event, callback)
   },
 }
+
+export default Events

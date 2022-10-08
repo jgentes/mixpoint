@@ -84,13 +84,13 @@ export default function TableRows({
         <TableCell sx={{ pb: 0, pt: 0, border: 0 }} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Card sx={{ margin: 1 }}>
-              <Table size="small" aria-label="purchases">
+              <Table size="small" aria-label="mixes">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Date</TableCell>
-                    <TableCell>Customer</TableCell>
-                    <TableCell align="right">Amount</TableCell>
-                    <TableCell align="right">Total price ($)</TableCell>
+                    <TableCell>Mixes</TableCell>
+                    <TableCell>From Track</TableCell>
+                    <TableCell align="right">To Track</TableCell>
+                    <TableCell align="right">Duration</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
