@@ -16,10 +16,14 @@ import {
   KeyboardArrowDownRounded,
   ListAlt,
 } from '@mui/icons-material'
+import { NavLink, useMatches } from '@remix-run/react'
 
 import Dropzone from '~/components/Dropzone'
 
 const LeftNav = () => {
+  const path = useMatches()
+  const pathname = path[path.length - 1].pathname
+
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <List size="sm" sx={{ '--List-item-radius': '8px' }}>
@@ -59,36 +63,51 @@ const LeftNav = () => {
               '& .JoyListItemButton-root': { p: '8px' },
             }}
           >
-            <ListItem>
-              <ListItemButton variant="soft" color="primary">
-                <ListItemDecorator sx={{ color: 'inherit' }}>
-                  <FolderOpen sx={{ fontSize: '22px' }} />
-                </ListItemDecorator>
-                <ListItemContent>Tracks</ListItemContent>
-              </ListItemButton>
-            </ListItem>
-            <ListItem>
-              <ListItemButton>
-                <ListItemDecorator sx={{ color: 'neutral.500' }}>
-                  <JoinInner
-                    sx={{
-                      fontSize: '22px',
-                    }}
-                  />
-                </ListItemDecorator>
-                <ListItemContent>
-                  <ListItemContent>Mixes</ListItemContent>
-                </ListItemContent>
-              </ListItemButton>
-            </ListItem>
-            <ListItem>
-              <ListItemButton>
-                <ListItemDecorator sx={{ color: 'neutral.500' }}>
-                  <ListAlt sx={{ fontSize: '22px' }} />
-                </ListItemDecorator>
-                <ListItemContent>Sets</ListItemContent>
-              </ListItemButton>
-            </ListItem>
+            <NavLink to="tracks" style={{ textDecoration: 'none' }}>
+              <ListItem>
+                <ListItemButton
+                  variant={pathname == '/tracks' ? 'soft' : undefined}
+                  color={pathname == '/tracks' ? 'primary' : undefined}
+                >
+                  <ListItemDecorator sx={{ color: 'inherit' }}>
+                    <FolderOpen sx={{ fontSize: '22px' }} />
+                  </ListItemDecorator>
+                  <ListItemContent>Tracks</ListItemContent>
+                </ListItemButton>
+              </ListItem>
+            </NavLink>
+            <NavLink to="mixes" style={{ textDecoration: 'none' }}>
+              <ListItem>
+                <ListItemButton
+                  variant={pathname == '/mixes' ? 'soft' : undefined}
+                  color={pathname == '/mixes' ? 'primary' : undefined}
+                >
+                  <ListItemDecorator sx={{ color: 'neutral.500' }}>
+                    <JoinInner
+                      sx={{
+                        fontSize: '22px',
+                      }}
+                    />
+                  </ListItemDecorator>
+                  <ListItemContent>
+                    <ListItemContent>Mixes</ListItemContent>
+                  </ListItemContent>
+                </ListItemButton>
+              </ListItem>
+            </NavLink>
+            <NavLink to="sets" style={{ textDecoration: 'none' }}>
+              <ListItem>
+                <ListItemButton
+                  variant={pathname == '/sets' ? 'soft' : undefined}
+                  color={pathname == '/sets' ? 'primary' : undefined}
+                >
+                  <ListItemDecorator sx={{ color: 'neutral.500' }}>
+                    <ListAlt sx={{ fontSize: '22px' }} />
+                  </ListItemDecorator>
+                  <ListItemContent>Sets</ListItemContent>
+                </ListItemButton>
+              </ListItem>
+            </NavLink>
           </List>
         </ListItem>
         <ListItem nested>
