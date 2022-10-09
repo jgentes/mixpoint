@@ -45,6 +45,7 @@ const TableRows = ({
         selected={isItemSelected}
         onMouseEnter={() => row.id && showButtonState.set(row.id)}
         onMouseLeave={() => showButtonState.set(null)}
+        sx={{ zIndex: 0 }}
       >
         <TableCell
           padding="none"
@@ -61,17 +62,12 @@ const TableRows = ({
             key={i}
             id={`${column.dbKey}-${row.id}`}
             sx={{
-              cursor:
-                row[column.dbKey] || !column.onClick ? 'default' : 'pointer',
+              cursor: 'default',
               ...column.sx,
             }}
             align={column.align}
             padding={column.padding}
             width={column.width}
-            onClick={() =>
-              // use the onClick if defined, otherwise open the try for mixes/sets
-              (column.onClick && column.onClick(row)) || setOpen(!open)
-            }
           >
             {column.formatter(row)}
           </TableCell>

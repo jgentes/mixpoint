@@ -1,0 +1,9 @@
+/* For table buttons (ie. AddToMix) */
+tr:hover .visibleOnHover {
+  visibility: visible;
+  z-index: 100000;
+}
+
+.visibleOnHover {
+  visibility: hidden;
+}

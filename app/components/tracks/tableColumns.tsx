@@ -1,14 +1,11 @@
-import { Check, GraphicEq } from '@mui/icons-material'
+import { Add, Check, GraphicEq } from '@mui/icons-material'
 import { Box, Chip } from '@mui/joy'
 import { TableCellProps } from '@mui/material'
 import { SxProps } from '@mui/material/styles'
-import { useSuperState } from '@superstate/react'
-import { kMaxLength } from 'buffer'
 import moment from 'moment'
-import { addTrackToMix, analyzeTracks, analyzingState } from '~/api/audio'
-import { getState, Track, useLiveQuery } from '~/api/db'
+import { analyzeTracks, analyzingState } from '~/api/audio'
+import { addToMix, getState, Track, useLiveQuery } from '~/api/db'
 import TrackLoader from '~/components/TrackLoader'
-import { showButtonState } from '~/components/tracks/tableRows'
 import { tableOps } from '~/utils/tableOps'
 
 const createColumnDefinitions = (): {
@@ -22,32 +19,35 @@ const createColumnDefinitions = (): {
   formatter: (t: Track) => string | React.ReactNode
 }[] => {
   const analyzeButton = (t: Track) => (
-    <Chip variant="outlined" startDecorator={<GraphicEq />} size="sm">
+    <Chip
+      variant="outlined"
+      startDecorator={<GraphicEq />}
+      size="sm"
+      onClick={t => analyzeTracks([t])}
+    >
       Analyze
     </Chip>
   )
 
   const AddToMixButton = ({ track }: { track: Track }) => {
-    console.log('add to mix hit!')
-    useSuperState(showButtonState)
-    const hoverId = showButtonState.now()
-
-    const { from, to } = useLiveQuery(() => getState('mix')) || {}
-    const isInMix = from?.id === track.id || to?.id === track.id
-
-    return hoverId == null || hoverId !== track.id ? null : (
+    const { from, to, queue } = useLiveQuery(() => getState('mix')) || {}
+    const isInMix =
+      from?.id === track.id || to?.id === track.id || queue?.includes(track.id)
+    return (
       <Chip
         variant="outlined"
-        startDecorator={isInMix ? <Check /> : <GraphicEq />}
+        className="visibleOnHover"
+        startDecorator={isInMix ? <Check /> : <Add />}
         disabled={isInMix}
+        color={isInMix ? 'success' : 'primary'}
         size="sm"
         sx={{
           maxHeight: '30px',
           alignSelf: 'center',
         }}
-        onClick={() => addTrackToMix(track)}
+        onClick={() => addToMix(track.id)}
       >
-        Add to Mix
+        {`Add${isInMix ? 'ed' : ' to Mix'}`}
       </Chip>
     )
   }
@@ -59,13 +59,11 @@ const createColumnDefinitions = (): {
       align: 'left',
       padding: 'none',
       width: '60%',
-      onClick: t => {
-        console.log(t)
-      },
-      // remove suffix (ie. .mp3)
       formatter: t => (
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          {t.name?.replace(/\.[^/.]+$/, '') || 'Track name not found'}
+          <div onClick={event => tableOps.rowClick(event, t.id)}>
+            {t.name?.replace(/\.[^/.]+$/, '') || 'Track name not found'}
+          </div>
           <AddToMixButton track={t} />
         </Box>
       ),
@@ -76,7 +74,6 @@ const createColumnDefinitions = (): {
       align: 'center',
       padding: 'normal',
       width: '10%',
-      onClick: t => analyzeTracks([t]),
       formatter: t =>
         t.bpm?.toFixed(0) ||
         (!analyzingState

@@ -218,10 +218,6 @@ const createMix = async (trackStateArray: TrackState[]) => {
   return finalMix
 }
 
-const addTrackToMix = (track: Track, trackKey: number) => {
-  getPeaks(track, trackKey)
-}
-
 const getPeaks = async (
   track: Track,
   trackKey: number,
@@ -246,7 +242,6 @@ export {
   getPeaks,
   createMix,
   analyzeTracks,
-  addTrackToMix,
   analyzingState,
   processingState,
 }

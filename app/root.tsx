@@ -5,15 +5,16 @@ import { LinksFunction, MetaFunction } from '@remix-run/node'
 import { Links, LiveReload, Meta, Outlet, Scripts } from '@remix-run/react'
 import { SnackbarProvider } from 'notistack'
 import { useEffect, useState } from 'react'
-import { ClientOnly } from 'remix-utils'
+import { ClientOnly, stylesheet } from 'remix-utils'
 import { getState, useLiveQuery } from '~/api/db'
-import { theme } from '~/styles/theme'
-
 import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import Header from '~/components/layout/Header'
 import Layout from '~/components/layout/Layout'
 import LeftNav from '~/components/layout/LeftNav'
+
+import { theme } from '~/styles/theme'
+import globalStyles from '~/styles/globalStyles.css'
 
 const meta: MetaFunction = () => {
   return {
@@ -33,6 +34,10 @@ const links: LinksFunction = () => [
   {
     rel: 'stylesheet',
     href: 'http://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400&family=Public+Sans:wght@300;400;500;700&display=swap',
+  },
+  {
+    rel: 'stylesheet',
+    href: globalStyles,
   },
 ]
 

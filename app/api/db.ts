@@ -196,8 +196,8 @@ interface StateTypes {
 async function getState(
   table: keyof StateTypes,
   key?: string
-): Promise<Partial<MixState & TrackState & SetState & AppState>> {
-  const state = await db[`${table}State`].orderBy('date').last()
+): Promise<Partial<MixState>> {
+  const state = (await db[`${table}State`].orderBy('date').last()) || {}
   // @ts-ignore - no easy TS fix for this as it doesn't know whether the key is
   // valid for different tables
   return key ? state[key] : state
