@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
-import { ButtonGroup, Dialog } from '@mui/material'
 import { AccessTime, Eject, Pause, PlayArrow, Undo } from '@mui/icons-material'
-import { Button, Card, TextField } from '@mui/joy'
-import Loader from 'pages/styles/loader'
-import Slider, { SliderProps } from 'rc-slider'
+import { Button, Card, TextField, Typography } from '@mui/joy'
+import { ButtonGroup } from '@mui/material'
 import { PeaksInstance } from 'peaks.js'
-import Tracks from '~/components/tracks/Tracks'
-import { Track, db, TrackState, useLiveQuery } from '~/api/db'
+import Slider, { SliderProps } from 'rc-slider'
+import { useEffect, useRef, useState } from 'react'
+import { getPeaks } from '~/api/audio'
+import { db, Track, TrackState, useLiveQuery } from '~/api/db'
 import { Events } from '~/api/Events'
+import Loader from '~/components/TrackLoader'
 
 const TrackForm = ({ trackKey }: { trackKey: number }) => {
   interface SliderControlProps extends SliderProps {
@@ -27,8 +27,7 @@ const TrackForm = ({ trackKey }: { trackKey: number }) => {
 
   const track1 = trackKey == 0
   const zoomView = waveform?.views.getView('zoomview')
-  const trackState: TrackState =
-    useLiveQuery(() => db.trackState.get({ trackKey })) || {}
+  const trackState: TrackState = {}
   const { trackId, mixPoint } = trackState
 
   const audioEffect = (detail: { tracks: number[]; effect: string }) => {
@@ -232,8 +231,8 @@ const TrackForm = ({ trackKey }: { trackKey: number }) => {
           <Eject titleAccess="Load Track" />
         </Button>
 
-        <Typeography
-          variant="h5"
+        <Typography
+          level="h5"
           style={{
             display: 'inline',
             verticalAlign: track1 ? 'text-bottom' : 'middle',
@@ -242,7 +241,7 @@ const TrackForm = ({ trackKey }: { trackKey: number }) => {
           {analyzing
             ? 'Loading..'
             : track?.name?.replace(/\.[^/.]+$/, '') || 'No Track Loaded..'}
-        </Typeography>
+        </Typography>
       </div>
       {bpmControl}
     </div>
@@ -293,16 +292,6 @@ const TrackForm = ({ trackKey }: { trackKey: number }) => {
 
   const loader = analyzing ? <Loader style={{ margin: '15px 0' }} /> : null
 
-  const TracksDialog = () => (
-    <Dialog
-      open={tableState}
-      onClose={() => openTable(false)}
-      style={{ width: '80%' }}
-    >
-      <Tracks trackKey={trackKey} hideDropzone={true} openTable={openTable} />
-    </Dialog>
-  )
-
   return (
     <>
       <div style={{ display: 'flex', margin: '15px 0' }}>
@@ -339,7 +328,6 @@ const TrackForm = ({ trackKey }: { trackKey: number }) => {
           </div>
         </Card>
       </div>
-      <TracksDialog />
     </>
   )
 }

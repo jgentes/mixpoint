@@ -41,7 +41,7 @@ const TrackTable = () => {
   // Monitor db for track updates
   let tracks: Track[] | null = useLiveQuery(() => db.tracks.toArray()) ?? null
 
-  // Recover sort state from database
+  // Retrieve sort state from database
   const sortDirection =
     useLiveQuery(() => getState('app', 'sortDirection')) || 'desc'
   const sortColumn =

@@ -1,7 +1,7 @@
 import { superstate } from '@superstate/core'
 import WaveformData from 'waveform-data'
 import { guess } from 'web-audio-beat-detector'
-import { putState, putTracks, Track, TrackState } from '~/api/db'
+import { getState, putState, putTracks, Track, TrackState } from '~/api/db'
 import { getPermission } from '~/api/fileHandlers'
 
 import { confirmModalState } from '~/components/ConfirmModal'
@@ -220,7 +220,6 @@ const createMix = async (trackStateArray: TrackState[]) => {
 
 const addTrackToMix = (track: Track, trackKey: number) => {
   getPeaks(track, trackKey)
-  openTable(false)
 }
 
 const getPeaks = async (
@@ -244,6 +243,7 @@ const getPeaks = async (
 export {
   processTracks,
   getBpm,
+  getPeaks,
   createMix,
   analyzeTracks,
   addTrackToMix,

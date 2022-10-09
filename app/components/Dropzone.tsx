@@ -1,4 +1,4 @@
-import { CloudUpload } from '@mui/icons-material'
+import { DriveFolderUpload } from '@mui/icons-material'
 import { BoxProps, Sheet, Typography } from '@mui/joy'
 import { useState } from 'react'
 import { processTracks } from '~/api/audio'
@@ -67,12 +67,12 @@ const Dropzone = (props: BoxProps) => {
       onDragEnter={() => setDragOver(true)}
       onDragLeave={() => setDragOver(false)}
     >
-      <CloudUpload sx={{ fontSize: 38 }} className="drop" />
+      <DriveFolderUpload sx={{ fontSize: 38 }} className="drop" />
       <Typography level="body1" className="drop">
         <b>Add Tracks</b>
       </Typography>
       <Typography className="drop" level="body2">
-        Drag a <strong>folder</strong> or files here.
+        Drag or click here
       </Typography>
     </Sheet>
   )

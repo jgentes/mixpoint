@@ -1,6 +1,5 @@
 import { Warning } from '@mui/icons-material'
-import { styled } from '@mui/joy'
-import { CircularProgress } from '@mui/material'
+import { CircularProgress, styled } from '@mui/joy'
 import Logo from '~/components/MixpointLogo'
 
 const LoaderWrapDiv = styled('div')`
@@ -43,7 +42,7 @@ const InitialLoader = ({ message }: { message?: string }) => (
         {message ? (
           <Warning color="action" sx={{ pt: '4px' }} />
         ) : (
-          <CircularProgress color="primary" size="18px" />
+          <CircularProgress color="primary" size="sm" variant="soft" />
         )}
       </LoaderRow>
       <LoaderRow style={{ borderTop: '1px solid #e2e2e2' }}>

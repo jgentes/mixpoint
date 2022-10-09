@@ -42,7 +42,7 @@ class MixpointDb extends Dexie {
 
 const db = new MixpointDb()
 
-// define tables
+// Core data models (tracks, mixes, sets)
 
 interface Track {
   id?: number
@@ -94,22 +94,34 @@ interface Set {
   mixIds: Mix['id'][]
 }
 
+// State tables
+
 // Each row in a state table is a full representation of state at that point in time
 // This allows easy undo/redo of state changes by using timestamps (primary key)
+// State tables are limited to STATE_ROW_LIMIT rows (arbitrarily 100)
 
 interface TrackState {
   date?: Date
   trackId?: Track['id']
   adjustedBpm?: number
-  file?: File | undefined
+  file?: File | undefined // not a fileHandle?
   waveformData?: WaveformData | undefined
   mixPoint?: number
 }
 
 interface MixState {
   date?: Date
-  mixId?: Mix['id']
-  bpmSync?: boolean
+  from: {
+    id: Track['id']
+    bpm?: number
+    timestamp?: number
+  }
+  to: {
+    id: Track['id']
+    bpm?: number
+    timestamp?: number
+  }
+  queue: Track['id'][] // backlog of tracks to consider for mix
 }
 
 interface SetState {
@@ -123,6 +135,8 @@ interface AppState {
   sortDirection?: 'asc' | 'desc'
   sortColumn?: keyof Track // track table order property
 }
+
+// Database helpers
 
 const putTracks = async (tracks: Partial<Track[]>): Promise<Track[]> => {
   const bulkTracks: Track[] = []
@@ -175,10 +189,14 @@ interface StateTypes {
   app: AppState
 }
 
+// todo: fix this when typescript improves
 // use a single-call-signature overload to help TS determine the return type
 // https://stackoverflow.com/a/71726295/1058302
 // function getState<S extends keyof StateTypes>(key: S): StateTypes[S]
-async function getState(table: keyof StateTypes, key?: string) {
+async function getState(
+  table: keyof StateTypes,
+  key?: string
+): Promise<Partial<MixState & TrackState & SetState & AppState>> {
   const state = await db[`${table}State`].orderBy('date').last()
   // @ts-ignore - no easy TS fix for this as it doesn't know whether the key is
   // valid for different tables
@@ -190,11 +208,25 @@ const putState = async (
   state: Partial<StateTypes[typeof table]>
 ): Promise<void> => {
   const prevState = await getState(table)
+
+  // @ts-ignore - no easy TS fix for this as it doesn't know whether the key is
+  // valid for different tables
   await db[`${table}State`].put({
     ...prevState,
     ...state,
     date: new Date(),
   })
+}
+
+const addToMix = async (trackId: Track['id']) => {
+  let { from, to, queue } = await getState('mix')
+
+  // order of operations: from -> to -> queue
+  if (!from) from = { id: trackId }
+  else if (!to) to = { id: trackId }
+  else queue = [...(queue || []), ...[trackId]]
+
+  await putState('mix', { from, to, queue })
 }
 
 // db hooks to limit the number of rows in a state table
@@ -219,6 +251,7 @@ export {
   getDirtyTracks,
   getMix,
   removeMix,
+  addToMix,
   useLiveQuery,
   getState,
   putState,

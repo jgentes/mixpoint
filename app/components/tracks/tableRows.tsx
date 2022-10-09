@@ -69,9 +69,8 @@ const TableRows = ({
             padding={column.padding}
             width={column.width}
             onClick={() =>
-              row[column.dbKey] || !column.onClick
-                ? setOpen(!open)
-                : column.onClick(row)
+              // use the onClick if defined, otherwise open the try for mixes/sets
+              (column.onClick && column.onClick(row)) || setOpen(!open)
             }
           >
             {column.formatter(row)}
@@ -85,7 +84,7 @@ const TableRows = ({
           >
             {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
           </IconButton> */}
-      <TableRow hover selected={isItemSelected} onClick={() => setOpen(!open)}>
+      <TableRow hover selected={isItemSelected}>
         <TableCell sx={{ pb: 0, pt: 0, border: 0 }} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Card sx={{ margin: 1 }}>

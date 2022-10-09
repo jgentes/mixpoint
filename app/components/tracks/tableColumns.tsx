@@ -1,11 +1,12 @@
-import { GraphicEq } from '@mui/icons-material'
+import { Check, GraphicEq } from '@mui/icons-material'
 import { Box, Chip } from '@mui/joy'
 import { TableCellProps } from '@mui/material'
 import { SxProps } from '@mui/material/styles'
 import { useSuperState } from '@superstate/react'
+import { kMaxLength } from 'buffer'
 import moment from 'moment'
 import { addTrackToMix, analyzeTracks, analyzingState } from '~/api/audio'
-import { Track } from '~/api/db'
+import { getState, Track, useLiveQuery } from '~/api/db'
 import TrackLoader from '~/components/TrackLoader'
 import { showButtonState } from '~/components/tracks/tableRows'
 import { tableOps } from '~/utils/tableOps'
@@ -27,16 +28,21 @@ const createColumnDefinitions = (): {
   )
 
   const AddToMixButton = ({ track }: { track: Track }) => {
+    console.log('add to mix hit!')
     useSuperState(showButtonState)
     const hoverId = showButtonState.now()
+
+    const { from, to } = useLiveQuery(() => getState('mix')) || {}
+    const isInMix = from?.id === track.id || to?.id === track.id
 
     return hoverId == null || hoverId !== track.id ? null : (
       <Chip
         variant="outlined"
-        startDecorator={<GraphicEq />}
+        startDecorator={isInMix ? <Check /> : <GraphicEq />}
+        disabled={isInMix}
         size="sm"
         sx={{
-          maxHeight: '30px', // <-- row height export please?
+          maxHeight: '30px',
           alignSelf: 'center',
         }}
         onClick={() => addTrackToMix(track)}
@@ -53,6 +59,9 @@ const createColumnDefinitions = (): {
       align: 'left',
       padding: 'none',
       width: '60%',
+      onClick: t => {
+        console.log(t)
+      },
       // remove suffix (ie. .mp3)
       formatter: t => (
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
