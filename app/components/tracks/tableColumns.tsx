@@ -30,22 +30,20 @@ const createColumnDefinitions = (): {
     useSuperState(showButtonState)
     const hoverId = showButtonState.now()
 
-    return hoverId == null
-      ? null
-      : hoverId == track.id && (
-          <Chip
-            variant="outlined"
-            startDecorator={<GraphicEq />}
-            size="sm"
-            sx={{
-              maxHeight: '30px', // <-- row height export please?
-              alignSelf: 'center',
-            }}
-            onClick={() => addTrackToMix(track)}
-          >
-            Add to Mix
-          </Chip>
-        )
+    return hoverId == null || hoverId !== track.id ? null : (
+      <Chip
+        variant="outlined"
+        startDecorator={<GraphicEq />}
+        size="sm"
+        sx={{
+          maxHeight: '30px', // <-- row height export please?
+          alignSelf: 'center',
+        }}
+        onClick={() => addTrackToMix(track)}
+      >
+        Add to Mix
+      </Chip>
+    )
   }
 
   return [

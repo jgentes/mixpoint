@@ -30,9 +30,9 @@ import {
   useLiveQuery,
 } from '~/api/db'
 import { browseFile } from '~/api/fileHandlers'
+import { confirmModalState } from '~/components/ConfirmModal'
+import { createColumnDefinitions } from '~/components/tracks/tableColumns'
 import { selectedState } from '~/routes/__boundary/tracks'
-import ConfirmModal from '../ConfirmModal'
-import { createColumnDefinitions } from './tableColumns'
 
 // Broadcast search query
 const searchState = superstate<string | number>('')
@@ -41,46 +41,36 @@ const searchState = superstate<string | number>('')
 const EnhancedTableToolbar = (props: { numSelected: number }) => {
   useSuperState(searchState)
 
-  const [openRemoveModal, setOpenRemoveModal] = useState(false)
-  const [openAnalyzeModal, setOpenAnalyzeModal] = useState(false)
-
   const { numSelected } = props
 
   const trackCount = useLiveQuery(() => db.tracks.count())
   const dirtyTracks = useLiveQuery(() => getDirtyTracks()) ?? []
 
-  const RemoveTracksModal = () => (
-    <ConfirmModal
-      openState={openRemoveModal}
-      setOpenState={setOpenRemoveModal}
-      headerText={'Are you sure?'}
-      bodyText={`Removing tracks here will not delete them from your computer.`}
-      confirmColor="danger"
-      confirmText={`Remove ${numSelected} track${numSelected > 1 ? 's' : ''}`}
-      clickHandler={async () => {
-        setOpenRemoveModal(false)
+  const showRemoveTracksModal = () =>
+    confirmModalState.set({
+      openState: true,
+      bodyText: `Removing tracks here will not delete them from your computer.`,
+      confirmText: `Remove ${numSelected} track${numSelected > 1 ? 's' : ''}`,
+      onConfirm: async () => {
+        confirmModalState.set({ openState: false })
         await removeTracks(selectedState.now())
         selectedState.set([])
-      }}
-    />
-  )
+      },
+    })
 
-  const AnalyzeDirtyModal = () => (
-    <ConfirmModal
-      openState={openAnalyzeModal}
-      setOpenState={setOpenAnalyzeModal}
-      headerText={'Are you sure?'}
-      bodyText={`This will analyze ${dirtyTracks.length} track${
+  const showAnalyzeDirtyModal = () =>
+    confirmModalState.set({
+      openState: true,
+      bodyText: `This will analyze ${dirtyTracks.length} track${
         dirtyTracks.length > 1 ? 's' : ''
-      }.`}
-      confirmColor="success"
-      confirmText={`Analyze track${dirtyTracks.length > 1 ? 's' : ''}`}
-      clickHandler={() => {
-        setOpenAnalyzeModal(false)
+      }.`,
+      confirmColor: 'success',
+      confirmText: `Analyze track${dirtyTracks.length > 1 ? 's' : ''}`,
+      onConfirm: async () => {
+        confirmModalState.set({ openState: false })
         analyzeTracks(dirtyTracks)
-      }}
-    />
-  )
+      },
+    })
 
   return (
     <Toolbar
@@ -111,7 +101,7 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
           {trackCount} Track{trackCount == 1 ? '' : 's'}
           {!dirtyTracks.length ? null : (
             <Link
-              onClick={() => setOpenAnalyzeModal(true)}
+              onClick={() => showAnalyzeDirtyModal()}
               variant="plain"
               level="body3"
               underline="none"
@@ -165,15 +155,12 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
             title="Remove tracks"
             size="sm"
             color="neutral"
-            onClick={() => setOpenRemoveModal(true)}
+            onClick={() => showRemoveTracksModal()}
           >
             <Delete />
           </IconButton>
-          <RemoveTracksModal />
         </>
       )}
-
-      <AnalyzeDirtyModal />
     </Toolbar>
   )
 }

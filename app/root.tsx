@@ -9,6 +9,7 @@ import { ClientOnly } from 'remix-utils'
 import { getState, useLiveQuery } from '~/api/db'
 import { theme } from '~/styles/theme'
 
+import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import Header from '~/components/layout/Header'
 import Layout from '~/components/layout/Layout'
@@ -90,7 +91,10 @@ const ThemeLoader = () => {
         {loading ? (
           <ClientOnly>{() => <InitialLoader />}</ClientOnly>
         ) : (
-          <PageLayout />
+          <>
+            <PageLayout />
+            <ConfirmModal />
+          </>
         )}
       </CssVarsProvider>
     </SnackbarProvider>

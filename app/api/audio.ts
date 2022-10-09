@@ -3,6 +3,8 @@ import WaveformData from 'waveform-data'
 import { guess } from 'web-audio-beat-detector'
 import { putState, putTracks, Track, TrackState } from '~/api/db'
 import { getPermission } from '~/api/fileHandlers'
+
+import { confirmModalState } from '~/components/ConfirmModal'
 import { pageState } from '~/routes/__boundary/tracks'
 import { errorHandler } from '~/utils/notifications'
 
@@ -66,10 +68,34 @@ async function getTracksRecursively(
     await filesToTracks(fileOrDirectoryHandle)
   }
 
-  // Ensure we have id's for our tracks, add them to the DB with updated lastModified dates
-  const updatedTracks = await putTracks(trackArray)
-  processingState.set(false)
-  return updatedTracks
+  const addTracksToDb = async () => {
+    // Ensure we have id's for our tracks, add them to the DB with updated lastModified dates
+    const updatedTracks = await putTracks(trackArray)
+    processingState.set(false)
+    return updatedTracks
+  }
+
+  // Warn user if large number of tracks are added, this is due to memory leak in web audio api
+  if (trackArray.length > 100) {
+    confirmModalState.set({
+      openState: true,
+      headerText: 'More than 100 tracks added',
+      bodyText:
+        'Analyzing audio is memory intensive. If your browser runs out of memory, just refresh the page to release memory and resume analyzing tracks.',
+      confirmText: 'Continue',
+      confirmColor: 'success',
+      onConfirm: async () => {
+        confirmModalState.set({ openState: false })
+        const updatedTracks = await addTracksToDb()
+        await analyzeTracks(updatedTracks)
+      },
+      onCancel: () => {
+        confirmModalState.set({ openState: false })
+        processingState.set(false)
+      },
+    })
+    return []
+  } else return addTracksToDb()
 }
 
 const analyzeTracks = async (tracks: Track[]): Promise<void> => {
@@ -95,7 +121,23 @@ const analyzeTracks = async (tracks: Track[]): Promise<void> => {
       sorted = true
     }
 
-    await getAudioDetails(file)
+    const { name, size, type } = file
+    const { offset, bpm, duration, sampleRate } = await getBpm(file)
+
+    // adjust for miscalc tempo > 160bpm
+    const adjustedBpm = bpm > 160 ? bpm / 2 : bpm
+
+    const updatedTrack = {
+      name,
+      size,
+      type,
+      duration,
+      bpm: adjustedBpm,
+      offset,
+      sampleRate,
+    }
+
+    await putTracks([updatedTrack])
     analyzingState.set(prev => prev.filter(t => t.id !== track.id))
   }
 }
@@ -108,12 +150,11 @@ const getBpm = async (
   duration: number
   sampleRate: number
 }> => {
-  let audioCtx = new AudioContext()
-  let arrayBuffer: ArrayBuffer = await file.arrayBuffer()
+  const audioCtx = new AudioContext()
+  const arrayBuffer = await file.arrayBuffer()
+  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
 
-  let audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
-
-  let { duration, sampleRate } = audioBuffer
+  const { duration, sampleRate } = audioBuffer
   let offset = 0,
     bpm = 1
 
@@ -123,35 +164,12 @@ const getBpm = async (
     errorHandler(`Unable to determine BPM for ${file.name}`)
   }
 
-  // Release context for garbage collection? Not sure if this helps
-  audioCtx.close()
-
   return {
     offset,
     bpm,
     duration,
     sampleRate,
   }
-}
-
-const getAudioDetails = async (file: File): Promise<void> => {
-  const { name, size, type } = file
-  const { offset, bpm, duration, sampleRate } = await getBpm(file)
-
-  // adjust for miscalc tempo > 160bpm
-  const adjustedBpm = bpm > 160 ? bpm / 2 : bpm
-
-  const updatedTrack = {
-    name,
-    size,
-    type,
-    duration,
-    bpm: adjustedBpm,
-    offset,
-    sampleRate,
-  }
-
-  await putTracks([updatedTrack])
 }
 
 const createMix = async (trackStateArray: TrackState[]) => {
