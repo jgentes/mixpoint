@@ -32,7 +32,9 @@ const createColumnDefinitions = (): {
   const AddToMixButton = ({ track }: { track: Track }) => {
     const { from, to, queue } = useLiveQuery(() => getState('mix')) || {}
     const isInMix =
-      from?.id === track.id || to?.id === track.id || queue?.includes(track.id)
+      from?.id === track.id ||
+      to?.id === track.id ||
+      queue?.some(t => t.id === track.id)
     return (
       <Chip
         variant="outlined"
@@ -45,7 +47,7 @@ const createColumnDefinitions = (): {
           maxHeight: '30px',
           alignSelf: 'center',
         }}
-        onClick={() => addToMix(track.id)}
+        onClick={() => addToMix(track)}
       >
         {`Add${isInMix ? 'ed' : ' to Mix'}`}
       </Chip>

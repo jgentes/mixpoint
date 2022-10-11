@@ -1,2 +1,2 @@
-import Tracks from '~/routes/__boundary/tracks'
-export default Tracks
+import { redirect } from '@remix-run/node'
+export const loader = () => redirect('/tracks')

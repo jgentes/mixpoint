@@ -1,63 +1,31 @@
 import Peaks, { PeaksOptions } from 'peaks.js'
 import WaveformData from 'waveform-data'
-import { db, Track } from '~/api/db'
-import { getPermission } from '~/api/fileHandlers'
+import { Track, TrackState } from '~/api/db'
 import { errorHandler } from '~/utils/notifications'
 
 const initPeaks = async ({
-  trackKey,
   track,
   file,
+  isFromTrack,
   waveformData,
   setSliderControl,
   setAudioSrc,
   setWaveform,
   setAnalyzing,
 }: {
-  trackKey: number
   track: Track
-  file: File | null
-  waveformData: WaveformData | undefined
+  file: TrackState['file']
+  isFromTrack?: boolean
+  waveformData: TrackState['waveformData']
   setSliderControl: Function
   setAudioSrc: Function
   setWaveform: Function
   setAnalyzing: Function
 }): Promise<void> => {
-  if (!track) throw errorHandler('No track to initialize')
+  if (!track?.id) throw errorHandler('No track to initialize.')
+  if (!file) throw errorHandler(`Please try adding ${track.name} again.`)
+
   setAnalyzing(true)
-
-  const track1 = trackKey % 2
-
-  file = file || (await getPermission(track))
-  if (!file) return
-
-  // update the <audio> ref, this allows play/pause controls
-  // note this must come before the mediaElement is queried in peakOptions
-  const url = window.URL.createObjectURL(file)
-  setAudioSrc(url)
-
-  const peakOptions: PeaksOptions = {
-    containers: {
-      overview: document.getElementById(`overview-container_${trackKey}`),
-      zoomview: document.getElementById(`zoomview-container_${trackKey}`),
-    },
-    mediaElement: document.getElementById(`audio_${trackKey}`)!,
-    pointMarkerColor: '#1e8bc3',
-    overviewHighlightColor: '#1e8bc3',
-    overviewHighlightOffset: 5,
-    zoomWaveformColor: {
-      linearGradientStart: 45,
-      linearGradientEnd: 58,
-      linearGradientColorStops: ['#D8B945', '#DD9045'],
-    },
-    overviewWaveformColor: {
-      linearGradientStart: 45,
-      linearGradientEnd: 58,
-      linearGradientColorStops: ['#E2E2E2', '#CCCCCC'],
-    },
-    zoomLevels: [64, 128, 256, 512],
-    emitCueEvents: true, // for mouse drag listener
-  }
 
   // use waveformData to init the waveform (fast) otherwise analyze using the file handle (slow)
 
@@ -79,11 +47,11 @@ const initPeaks = async ({
 
           waveformData = wave.toJSON()
 
-          db.trackState.put({
-            trackId: track.id,
-            file,
-            waveformData,
-          })
+          // db.trackState.put({
+          //   trackId: track.id,
+          //   file,
+          //   waveformData,
+          // })
           resolve()
         }
       )
@@ -91,6 +59,34 @@ const initPeaks = async ({
   }
 
   if (!waveformData) throw errorHandler('Waveform data is missing.')
+
+  // update the <audio> ref, this allows play/pause controls
+  // note this must come before the mediaElement is queried in peakOptions
+  const url = window.URL.createObjectURL(file)
+  setAudioSrc(url)
+
+  const peakOptions: PeaksOptions = {
+    containers: {
+      overview: document.getElementById(`overview-container_${track.id}`),
+      zoomview: document.getElementById(`zoomview-container_${track.id}`),
+    },
+    mediaElement: document.getElementById(`audio_${track.id}`)!,
+    pointMarkerColor: '#1e8bc3',
+    overviewHighlightColor: '#1e8bc3',
+    overviewHighlightOffset: 5,
+    zoomWaveformColor: {
+      linearGradientStart: 45,
+      linearGradientEnd: 58,
+      linearGradientColorStops: ['#D8B945', '#DD9045'],
+    },
+    overviewWaveformColor: {
+      linearGradientStart: 45,
+      linearGradientEnd: 58,
+      linearGradientColorStops: ['#E2E2E2', '#CCCCCC'],
+    },
+    zoomLevels: [64, 128, 256, 512],
+    emitCueEvents: true, // for mouse drag listener
+  }
 
   // @ts-ignore
   peakOptions.waveformData = { json: waveformData }
@@ -152,13 +148,13 @@ const initPeaks = async ({
     const timeFormat = (secs: number) =>
       new Date(secs * 1000).toISOString().substr(15, 6)
     const markFormatter = (point: number) =>
-      track1 ? (
+      !isFromTrack ? (
         <div style={{ marginTop: '-35px' }}>{timeFormat(point)}</div>
       ) : (
         timeFormat(point)
       )
 
-    const slider = document.querySelector(`#slider_${trackKey}`)
+    const slider = document.querySelector(`#slider_${track.id}`)
 
     const updateScroll = (start: number) => {
       // @ts-ignore
@@ -201,7 +197,6 @@ const initPeaks = async ({
     editable: true
   })
 */
-
     setAnalyzing(false)
   })
 }

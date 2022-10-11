@@ -4,6 +4,7 @@
 import Dexie from 'dexie'
 import { useLiveQuery } from 'dexie-react-hooks'
 import WaveformData from 'waveform-data'
+import { getPermission } from '~/api/fileHandlers'
 
 const STATE_ROW_LIMIT = 100 // eventually allow the user to change this
 
@@ -13,7 +14,6 @@ class MixpointDb extends Dexie {
   tracks: Dexie.Table<Track, number>
   mixes: Dexie.Table<Mix, number>
   sets: Dexie.Table<Set, number>
-  trackState: Dexie.Table<TrackState>
   mixState: Dexie.Table<MixState>
   setState: Dexie.Table<SetState>
   appState: Dexie.Table<AppState>
@@ -24,7 +24,6 @@ class MixpointDb extends Dexie {
       tracks: '++id, name, bpm, [name+size]',
       mixes: '++id, tracks',
       sets: '++id, mixes',
-      trackState: 'date',
       mixState: 'date',
       setState: 'date',
       appState: 'date',
@@ -33,7 +32,6 @@ class MixpointDb extends Dexie {
     this.tracks = this.table('tracks')
     this.mixes = this.table('mixes')
     this.sets = this.table('sets')
-    this.trackState = this.table('trackState')
     this.mixState = this.table('mixState')
     this.setState = this.table('setState')
     this.appState = this.table('appState')
@@ -55,7 +53,7 @@ interface Track {
   duration?: number
   bpm?: number
   sampleRate?: number
-  offset?: number // first beat as determined by getBpm
+  offset?: number // first beat as determined by bpm analysis
   mixpoints?: MixPoint[]
   sets?: Set['id'][]
 }
@@ -72,16 +70,8 @@ interface MixPoint {
 
 interface Mix {
   id: number
-  from: {
-    id: Track['id']
-    bpm: number
-    timestamp: number
-  }
-  to: {
-    id: Track['id']
-    bpm: number
-    timestamp: number
-  }
+  from: TrackState
+  to: TrackState
   status: string // good | bad | unknown?
   effects: {
     timestamp: number
@@ -100,28 +90,20 @@ interface Set {
 // This allows easy undo/redo of state changes by using timestamps (primary key)
 // State tables are limited to STATE_ROW_LIMIT rows (arbitrarily 100)
 
+// TrackState is not a table. Track states are contained in MixState
 interface TrackState {
-  date?: Date
-  trackId?: Track['id']
-  adjustedBpm?: number
-  file?: File | undefined // not a fileHandle?
+  id?: Track['id']
+  adjustedBpm?: Track['bpm']
+  file?: File // this is to allow access on page refresh without prompting user for fileHandle permission
   waveformData?: WaveformData | undefined
   mixPoint?: number
 }
 
 interface MixState {
   date?: Date
-  from: {
-    id: Track['id']
-    bpm?: number
-    timestamp?: number
-  }
-  to: {
-    id: Track['id']
-    bpm?: number
-    timestamp?: number
-  }
-  queue: Track['id'][] // backlog of tracks to consider for mix
+  from: TrackState
+  to: TrackState
+  queue: TrackState[] // backlog of tracks to consider for mix
 }
 
 interface SetState {
@@ -183,7 +165,6 @@ const removeMix = async (id: number): Promise<void> => await db.mixes.delete(id)
 
 // state getter and setter
 interface StateTypes {
-  track: TrackState
   mix: MixState
   set: SetState
   app: AppState
@@ -218,13 +199,17 @@ const putState = async (
   })
 }
 
-const addToMix = async (trackId: Track['id']) => {
+const addToMix = async (track: Track) => {
   let { from, to, queue } = await getState('mix')
 
+  const file = await getPermission(track)
+  if (!file) return
+
   // order of operations: from -> to -> queue
-  if (!from) from = { id: trackId }
-  else if (!to) to = { id: trackId }
-  else queue = [...(queue || []), ...[trackId]]
+  const state = { id: track.id, file }
+  if (!from) from = state
+  else if (!to) to = state
+  else queue = [...(queue || []), ...[state]]
 
   await putState('mix', { from, to, queue })
 }
@@ -240,7 +225,7 @@ const createHooks = (table: keyof StateTypes) => {
   })
 }
 
-const tables = ['track', 'mix', 'set', 'app'] as const
+const tables = ['mix', 'set', 'app'] as const
 tables.forEach(table => createHooks(table))
 
 export type { Track, Mix, Set, TrackState, MixState, SetState, AppState }

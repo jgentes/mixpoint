@@ -5,7 +5,7 @@ import { processTracks } from './audio'
 const _getFile = async (track: Track): Promise<File | null> => {
   let handle = track.dirHandle || track.fileHandle
   if (!handle) return null
-  //  debugger
+
   let file = null,
     perms = await handle.queryPermission()
 
@@ -28,6 +28,7 @@ const _getFile = async (track: Track): Promise<File | null> => {
 const getPermission = async (track: Track): Promise<File | null> => {
   // first check perms
   // directory handle is preferred over file handle
+
   let file = await _getFile(track)
   if (file) return file
 

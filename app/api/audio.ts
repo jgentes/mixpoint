@@ -1,5 +1,4 @@
 import { superstate } from '@superstate/core'
-import WaveformData from 'waveform-data'
 import { guess } from 'web-audio-beat-detector'
 import { getState, putState, putTracks, Track, TrackState } from '~/api/db'
 import { getPermission } from '~/api/fileHandlers'
@@ -10,12 +9,6 @@ import { errorHandler } from '~/utils/notifications'
 
 const analyzingState = superstate<Track[]>([])
 const processingState = superstate<boolean>(false)
-
-// Only load initPeaks in the browser
-let initPeaks: typeof import('~/api/initPeaks').initPeaks
-if (typeof document !== 'undefined') {
-  import('~/api/initPeaks').then(m => (initPeaks = m.initPeaks))
-}
 
 // This is the main track processing workflow when files are added to the app
 const processTracks = async (
@@ -103,14 +96,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<void> => {
   analyzingState.set(prev => [...prev, ...tracks])
 
   let sorted
-
   for (const track of tracks) {
-    const file = await getPermission(track)
-    if (!file) {
-      analyzingState.set([])
-      throw errorHandler('Permission to the file or folder was denied.') // this would be due to denial of permission (ie. clicked cancel)
-    }
-
     if (!sorted) {
       // Change sort order to lastModified so new tracks are visible at the top
       await putState('app', {
@@ -121,8 +107,8 @@ const analyzeTracks = async (tracks: Track[]): Promise<void> => {
       sorted = true
     }
 
-    const { name, size, type } = file
-    const { offset, bpm, duration, sampleRate } = await getBpm(file)
+    const { name, size, type, offset, bpm, duration, sampleRate } =
+      await getAudioDetails(track)
 
     // adjust for miscalc tempo > 160bpm
     const adjustedBpm = bpm > 160 ? bpm / 2 : bpm
@@ -142,18 +128,28 @@ const analyzeTracks = async (tracks: Track[]): Promise<void> => {
   }
 }
 
-const getBpm = async (
-  file: File
+const getAudioDetails = async (
+  track: Track
 ): Promise<{
+  name: string
+  size: number
+  type: string
   offset: number
   bpm: number
   duration: number
   sampleRate: number
 }> => {
+  const file = await getPermission(track)
+  if (!file) {
+    analyzingState.set([])
+    throw errorHandler('Permission to the file or folder was denied.') // this would be due to denial of permission (ie. clicked cancel)
+  }
+
   const audioCtx = new AudioContext()
   const arrayBuffer = await file.arrayBuffer()
   const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
 
+  const { name, size, type } = file
   const { duration, sampleRate } = audioBuffer
   let offset = 0,
     bpm = 1
@@ -161,10 +157,13 @@ const getBpm = async (
   try {
     ;({ offset, bpm } = await guess(audioBuffer))
   } catch (e) {
-    errorHandler(`Unable to determine BPM for ${file.name}`)
+    errorHandler(`Unable to determine BPM for ${name}`)
   }
 
   return {
+    name,
+    size,
+    type,
     offset,
     bpm,
     duration,
@@ -218,27 +217,9 @@ const createMix = async (trackStateArray: TrackState[]) => {
   return finalMix
 }
 
-const getPeaks = async (
-  track: Track,
-  trackKey: number,
-  file?: File,
-  waveformData?: WaveformData
-) => {
-  return await initPeaks({
-    trackKey,
-    track,
-    file,
-    waveformData,
-    setSliderControl,
-    setAudioSrc,
-    setWaveform,
-    setAnalyzing,
-  })
-}
-
 export {
   processTracks,
-  getBpm,
+  getAudioDetails,
   getPeaks,
   createMix,
   analyzeTracks,
