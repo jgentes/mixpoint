@@ -1,6 +1,6 @@
 import Peaks, { PeaksOptions } from 'peaks.js'
 import WaveformData from 'waveform-data'
-import { Track, TrackState } from '~/api/db'
+import { putTrackState, Track, TrackState } from '~/api/db'
 import { errorHandler } from '~/utils/notifications'
 
 const initPeaks = async ({
@@ -15,8 +15,8 @@ const initPeaks = async ({
 }: {
   track: Track
   file: TrackState['file']
-  isFromTrack?: boolean
-  waveformData: TrackState['waveformData']
+  isFromTrack: boolean
+  waveformData?: TrackState['waveformData']
   setSliderControl: Function
   setAudioSrc: Function
   setWaveform: Function
@@ -47,11 +47,7 @@ const initPeaks = async ({
 
           waveformData = wave.toJSON()
 
-          // db.trackState.put({
-          //   trackId: track.id,
-          //   file,
-          //   waveformData,
-          // })
+          putTrackState(isFromTrack, { waveformData })
           resolve()
         }
       )

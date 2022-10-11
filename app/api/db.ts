@@ -101,9 +101,9 @@ interface TrackState {
 
 interface MixState {
   date?: Date
-  from: TrackState
-  to: TrackState
-  queue: TrackState[] // backlog of tracks to consider for mix
+  from?: TrackState
+  to?: TrackState
+  queue?: TrackState[] // backlog of tracks to consider for mix
 }
 
 interface SetState {
@@ -190,11 +190,24 @@ const putState = async (
 ): Promise<void> => {
   const prevState = await getState(table)
 
-  // @ts-ignore - no easy TS fix for this as it doesn't know whether the key is
-  // valid for different tables
   await db[`${table}State`].put({
     ...prevState,
     ...state,
+    date: new Date(),
+  })
+}
+
+const putTrackState = async (
+  isFromTrack: boolean,
+  state: TrackState
+): Promise<void> => {
+  const prevState = await getState('mix')
+  const prevTrack = prevState[isFromTrack ? 'from' : 'to'] || {}
+  const newState = { ...prevTrack, ...state }
+
+  await db.mixState.put({
+    ...prevState,
+    ...{ [isFromTrack ? 'from' : 'to']: newState },
     date: new Date(),
   })
 }
@@ -240,4 +253,5 @@ export {
   useLiveQuery,
   getState,
   putState,
+  putTrackState,
 }

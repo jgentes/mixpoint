@@ -82,7 +82,7 @@ const LeftNav = () => {
                   variant={pathname == '/mixes' ? 'soft' : undefined}
                   color={pathname == '/mixes' ? 'primary' : undefined}
                 >
-                  <ListItemDecorator sx={{ color: 'neutral.500' }}>
+                  <ListItemDecorator sx={{ color: 'inherit' }}>
                     <JoinInner
                       sx={{
                         fontSize: '22px',
@@ -101,7 +101,7 @@ const LeftNav = () => {
                   variant={pathname == '/sets' ? 'soft' : undefined}
                   color={pathname == '/sets' ? 'primary' : undefined}
                 >
-                  <ListItemDecorator sx={{ color: 'neutral.500' }}>
+                  <ListItemDecorator sx={{ color: 'inherit' }}>
                     <ListAlt sx={{ fontSize: '22px' }} />
                   </ListItemDecorator>
                   <ListItemContent>Sets</ListItemContent>

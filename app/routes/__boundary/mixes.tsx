@@ -1,5 +1,5 @@
 import { Pause, PlayArrow, Shuffle, Stop } from '@mui/icons-material'
-import { Button, Card } from '@mui/joy'
+import { Box, Button, Card } from '@mui/joy'
 import { ButtonGroup } from '@mui/material'
 import { useState } from 'react'
 import { getState, MixState, useLiveQuery } from '~/api/db'
@@ -69,10 +69,9 @@ const Mixes: React.FunctionComponent = () => {
 
   return (
     <div className="mb-5">
-      {fromState?.id && <TrackForm trackState={fromState} isFromTrack={true} />}
-      <div style={{ display: 'flex', margin: '15px 0' }}>
-        <Card style={{ flex: '0 0 250px' }}>{mixPointControl}</Card>
-        <Card style={{ flex: 'auto', marginLeft: '15px', overflow: 'hidden' }}>
+      <div style={{ display: 'flex' }}>
+        <Box style={{ flex: '0 0 250px' }}>{mixPointControl}</Box>
+        <Box style={{ flex: 'auto', overflow: 'hidden' }}>
           {fromState?.id && (
             <div
               id={`overview-container_${fromState.id}`}
@@ -85,10 +84,11 @@ const Mixes: React.FunctionComponent = () => {
               style={{ height: '40px' }}
             />
           )}
-        </Card>
+        </Box>
       </div>
 
-      {toState?.id && <TrackForm trackState={toState} />}
+      {fromState?.id && <TrackForm trackState={fromState} isFromTrack={true} />}
+      {toState?.id && <TrackForm trackState={toState} isFromTrack={false} />}
     </div>
   )
 }

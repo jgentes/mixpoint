@@ -1,22 +1,21 @@
-import { AccessTime, Eject, Pause, PlayArrow, Undo } from '@mui/icons-material'
-import { Button, Card, TextField, Typography } from '@mui/joy'
-import { ButtonGroup } from '@mui/material'
+import {
+  AccessTime,
+  Eject,
+  Pause,
+  PlayArrow,
+  Replay,
+  SettingsBackupRestore,
+  Stop,
+} from '@mui/icons-material'
+import { Button, Card, Link, TextField, Typography } from '@mui/joy'
+import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
 import { PeaksInstance } from 'peaks.js'
 import Slider, { SliderProps } from 'rc-slider'
 import { useEffect, useRef, useState } from 'react'
-import {
-  db,
-  getState,
-  MixState,
-  putState,
-  Track,
-  TrackState,
-  useLiveQuery,
-} from '~/api/db'
+import { db, putTrackState, Track, TrackState } from '~/api/db'
 import { Events } from '~/api/Events'
 
 import Loader from '~/components/TrackLoader'
-import { errorHandler } from '~/utils/notifications'
 
 // Only load initPeaks in the browser
 let initPeaks: typeof import('~/api/initPeaks').initPeaks
@@ -33,7 +32,7 @@ const TrackForm = ({
   isFromTrack,
 }: {
   trackState: TrackState
-  isFromTrack?: boolean
+  isFromTrack: boolean
 }) => {
   const [sliderControl, setSliderControl] = useState<SliderControlProps>()
   const [playing, setPlaying] = useState(false)
@@ -52,14 +51,15 @@ const TrackForm = ({
 
   useEffect(() => {
     const getWaveform = async () => {
-      // build waveform if needed
+      // build waveform
       const track = await db.tracks.get(id)
       setTrack(track)
-      if (track && !waveform) {
+      if (track) {
         initPeaks({
           track,
           file,
           isFromTrack,
+          waveformData: trackState.waveformData,
           setAnalyzing,
           setWaveform,
           setAudioSrc,
@@ -115,9 +115,7 @@ const TrackForm = ({
     updatePlaybackRate(bpm)
 
     // store custom bpm value in trackstate
-    putState('mix', {
-      [isFromTrack ? 'from' : 'to']: { adjustedBpm: Number(bpm.toFixed(1)) },
-    })
+    putTrackState(isFromTrack, { adjustedBpm: Number(bpm.toFixed(1)) })
   }
 
   const selectTime = async (time: number) => {
@@ -152,58 +150,66 @@ const TrackForm = ({
 
   const bpmDiff = adjustedBpm && adjustedBpm !== track?.bpm?.toFixed(1)
 
-  const bpmControl = (
-    <div
-      style={{
-        display: 'inline-flex',
-        flexBasis: bpmDiff ? '136px' : '100px',
-        flexShrink: 0,
-      }}
+  const ResetBpmLink = () => (
+    <Link
+      component="button"
+      underline="none"
+      onClick={() => adjustBpm(track?.bpm || 1)}
+      color="neutral"
+      level="body2"
+      disabled={!bpmDiff}
+      title="Reset BPM"
     >
-      <TextField
-        disabled={!track?.bpm}
-        onChange={val => {
-          console.log('changeval:', val)
-          if (val) {
-            if (bpmTimer) window.clearTimeout(bpmTimer)
-            const debounce = window.setTimeout(() => adjustBpm(val), 1000)
-            setBpmTimer(debounce)
-          }
-        }}
-        value={adjustedBpm || track?.bpm?.toFixed(1) || 0}
-        id={`bpmInput_${id}`}
-        variant="solid"
-      />
-      <Button
-        color="primary"
-        disabled={!bpmDiff}
-        onClick={() => adjustBpm(track?.bpm || 1)}
-        id={`bpmButton_${id}`}
-      >
-        {bpmDiff ? 'Reset ' : ''}BPM
-      </Button>
-    </div>
+      {bpmDiff ? <Replay sx={{ mr: 0.5 }} /> : ''}BPM
+    </Link>
+  )
+
+  const bpmControl = (
+    <TextField
+      disabled={!track?.bpm}
+      size="sm"
+      onChange={val => {
+        console.log('changeval:', val)
+        if (val) {
+          if (bpmTimer) window.clearTimeout(bpmTimer)
+          const debounce = window.setTimeout(() => adjustBpm(val), 1000)
+          setBpmTimer(debounce)
+        }
+      }}
+      value={adjustedBpm || track?.bpm?.toFixed(1) || 0}
+      id={`bpmInput_${id}`}
+      variant="soft"
+      endDecorator={<ResetBpmLink />}
+    />
   )
 
   const playerControl = !track?.name ? null : (
-    <>
+    <Box
+      sx={{
+        display: 'flex',
+        '& > *': {
+          m: 1,
+        },
+      }}
+    >
       <ButtonGroup
-        variant="contained"
+        size="small"
+        variant="outlined"
         style={{
           visibility: analyzing ? 'hidden' : 'visible',
         }}
       >
-        <Button
+        <ButtonGroupButton
           onClick={() => {
             Events.dispatch('audio', { effect: 'stop', tracks: [id] })
           }}
           id={`stopButton_${id}`}
         >
+          <Stop />
           Stop
-          <Undo />
-        </Button>
+        </ButtonGroupButton>
 
-        <Button
+        <ButtonGroupButton
           onClick={() => {
             Events.dispatch('audio', {
               effect: playing ? 'pause' : 'play',
@@ -212,14 +218,14 @@ const TrackForm = ({
           }}
           id={`playButton_${id}`}
         >
-          {playing ? 'Pause' : 'Play'}
           {playing ? <Pause /> : <PlayArrow />}
-        </Button>
+          {playing ? 'Pause' : 'Play'}
+        </ButtonGroupButton>
       </ButtonGroup>
-      <TextField size="lg" value={timeFormat(mixPoint || 0)}>
+      <TextField size="sm" variant="soft" value={timeFormat(mixPoint || 0)}>
         <AccessTime />
       </TextField>
-    </>
+    </Box>
   )
 
   const trackHeader = (
@@ -310,37 +316,34 @@ const TrackForm = ({
 
   return (
     <>
-      <div style={{ display: 'flex', margin: '15px 0' }}>
-        <Card style={{ flex: '0 0 250px' }}>{playerControl}</Card>
-        <Card
-          style={{
-            flex: 'auto',
-            marginLeft: '15px',
-            overflow: 'hidden',
-          }}
-        >
-          <div>
-            {isFromTrack && trackHeader}
-            <>{!isFromTrack && track?.name && slider}</>
-            <div id={`peaks-container_${id}`}>
-              {isFromTrack ? (
-                <>
-                  {loader}
-                  {zoomview}
-                </>
-              ) : (
-                <>
-                  {zoomview}
-                  {loader}
-                </>
-              )}
-            </div>
-            <>{isFromTrack && track?.name && slider}</>
-            {!isFromTrack && trackHeader}
-            <audio id={`audio_${id}`} src={audioSrc} ref={audioElement} />
+      <Box style={{ flex: '0 0 250px' }}>{playerControl}</Box>
+      <Box
+        style={{
+          flex: 'auto',
+          overflow: 'hidden',
+        }}
+      >
+        <div>
+          {isFromTrack && trackHeader}
+          <>{!isFromTrack && track?.name && slider}</>
+          <div id={`peaks-container_${id}`}>
+            {isFromTrack ? (
+              <>
+                {loader}
+                {zoomview}
+              </>
+            ) : (
+              <>
+                {zoomview}
+                {loader}
+              </>
+            )}
           </div>
-        </Card>
-      </div>
+          <>{isFromTrack && track?.name && slider}</>
+          {!isFromTrack && trackHeader}
+          <audio id={`audio_${id}`} src={audioSrc} ref={audioElement} />
+        </div>
+      </Box>
     </>
   )
 }
