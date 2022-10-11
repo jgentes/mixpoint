@@ -1,4 +1,4 @@
-MixPoint solves a problem that many "bedroom" or "basement" DJ's face - there are only two different types of products available on the market today:
+MixPoint solves a common problem that many "desktop" DJ's face - there are only two different types of products available on the market today:
 
 1. DJ apps (VirtualDJ, etc) - these all replicate the 2 turntable scenario, which is great for mixing 2 tracks together in real time. This is appropriate for live performances, but not ideal if you want to take the time to perfect mixes and crate a longer, flawless set.
 
