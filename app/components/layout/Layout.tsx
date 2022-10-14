@@ -2,6 +2,18 @@ import { Box, BoxProps, Sheet } from '@mui/joy'
 import { getState, putState, useLiveQuery } from '~/api/db'
 
 const Root = (props: BoxProps) => {
+  return (
+    <Box
+      {...props}
+      sx={{
+        bgcolor: 'background.surface',
+        minHeight: '100vh',
+      }}
+    />
+  )
+}
+
+const Tracks = (props: BoxProps) => {
   const leftNavOpen = useLiveQuery(() => getState('app', 'leftNavOpen'))
   return (
     <Box
@@ -14,7 +26,6 @@ const Root = (props: BoxProps) => {
           sm: 'minmax(64px, 200px) minmax(450px, 1fr)',
         },
         gridTemplateRows: '64px 1fr',
-        minHeight: '100vh',
         ...(leftNavOpen && {
           height: '100vh',
           overflow: 'hidden',
@@ -83,7 +94,6 @@ const LeftNav = (props: BoxProps) => (
     sx={[
       {
         p: 2,
-        bgcolor: 'background.componentBg',
         borderRight: '1px solid',
         borderColor: 'divider',
         display: {
@@ -139,4 +149,5 @@ export default {
   MobileNav,
   MainContent,
   Header,
+  Tracks,
 }

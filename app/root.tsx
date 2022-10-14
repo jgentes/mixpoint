@@ -5,16 +5,16 @@ import { LinksFunction, MetaFunction } from '@remix-run/node'
 import { Links, LiveReload, Meta, Outlet, Scripts } from '@remix-run/react'
 import { SnackbarProvider } from 'notistack'
 import { useEffect, useState } from 'react'
-import { ClientOnly, stylesheet } from 'remix-utils'
+import { ClientOnly } from 'remix-utils'
 import { getState, useLiveQuery } from '~/api/db'
 import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import Header from '~/components/layout/Header'
 import Layout from '~/components/layout/Layout'
 import LeftNav from '~/components/layout/LeftNav'
-
-import { theme } from '~/styles/theme'
+import TrackDrawer from '~/components/TrackDrawer'
 import globalStyles from '~/styles/globalStyles.css'
+import { theme } from '~/styles/theme'
 
 const meta: MetaFunction = () => {
   return {
@@ -68,12 +68,8 @@ const PageLayout = () => {
         <Layout.Header>
           <Header />
         </Layout.Header>
-        <Layout.LeftNav>
-          <LeftNav />
-        </Layout.LeftNav>
-        <Layout.MainContent>
-          <Outlet />
-        </Layout.MainContent>
+        <Outlet />
+        <TrackDrawer />
       </Layout.Root>
     </>
   )

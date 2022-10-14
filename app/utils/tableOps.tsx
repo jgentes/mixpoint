@@ -10,20 +10,6 @@ import {
 import { errorHandler } from '~/utils/notifications'
 
 const tableOps = {
-  search: (tracks: Track[]) => {
-    // set page to 0, otherwise the search results may not be visible
-    pageState.set(0)
-    return tracks.filter(
-      t =>
-        t.name?.toLowerCase().includes(`${searchState.now()}`.toLowerCase()) ||
-        t.bpm?.toString().includes(`${searchState.now()}`) ||
-        tableOps
-          .formatMinutes(t.duration! / 60)
-          .toString()
-          .includes(`${searchState.now()}`)
-    )
-  },
-
   sort: async (event: MouseEvent<unknown>, property: keyof Track) => {
     const sortColumn = (await getState('app', 'sortColumn')) || 'lastModified'
     const sortDirection = (await getState('app', 'sortDirection')) || 'desc'

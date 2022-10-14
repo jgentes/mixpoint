@@ -4,17 +4,17 @@ import {
   Pause,
   PlayArrow,
   Replay,
-  SettingsBackupRestore,
   Stop,
 } from '@mui/icons-material'
-import { Button, Card, Link, TextField, Typography } from '@mui/joy'
+import { Button, Link, TextField, Typography } from '@mui/joy'
 import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
+import Grid from '@mui/material/Unstable_Grid2'
 import { PeaksInstance } from 'peaks.js'
 import Slider, { SliderProps } from 'rc-slider'
 import { useEffect, useRef, useState } from 'react'
 import { db, putTrackState, Track, TrackState } from '~/api/db'
 import { Events } from '~/api/Events'
-
+import { openDrawerState } from '~/components/TrackDrawer'
 import Loader from '~/components/TrackLoader'
 
 // Only load initPeaks in the browser
@@ -39,7 +39,6 @@ const TrackForm = ({
   const [analyzing, setAnalyzing] = useState(false)
   const [waveform, setWaveform] = useState<PeaksInstance>()
   const [audioSrc, setAudioSrc] = useState('')
-  const [tableState, openTable] = useState(false)
   const [bpmTimer, setBpmTimer] = useState<number>()
   const [track, setTrack] = useState<Track | undefined>()
 
@@ -50,12 +49,13 @@ const TrackForm = ({
     zoomView = waveform?.views.getView('zoomview')
 
   useEffect(() => {
+    let peaks: PeaksInstance
     const getWaveform = async () => {
       // build waveform
       const track = await db.tracks.get(id)
       setTrack(track)
       if (track) {
-        initPeaks({
+        peaks = await initPeaks({
           track,
           file,
           isFromTrack,
@@ -74,7 +74,10 @@ const TrackForm = ({
     Events.on('audio', audioEffect)
 
     // listener cleanup
-    return () => Events.remove('audio', audioEffect)
+    return () => {
+      Events.remove('audio', audioEffect)
+      peaks?.destroy()
+    }
   }, [id, isFromTrack])
 
   zoomView = waveform?.views.getView('zoomview')
@@ -99,8 +102,6 @@ const TrackForm = ({
         zoomView?.enableAutoScroll(true)
     }
   }
-
-  console.log(`${isFromTrack ? 'FROM:' : 'TO:'} `, { trackState, track })
 
   const updatePlaybackRate = (bpm: number) => {
     // update play speed to new bpm
@@ -143,7 +144,7 @@ const TrackForm = ({
   }
 
   const timeFormat = (secs: number) =>
-    new Date(secs * 1000).toISOString().substr(15, 6)
+    new Date(secs * 1000).toISOString().substring(15, 19)
 
   const adjustedBpm =
     trackState.adjustedBpm && Number(trackState.adjustedBpm).toFixed(1)
@@ -246,7 +247,8 @@ const TrackForm = ({
       >
         <Button
           size="sm"
-          onClick={() => openTable(true)}
+          variant="outlined"
+          onClick={() => openDrawerState.set(true)}
           id={`loadButton_${id}`}
           style={{ marginRight: '8px' }}
         >
@@ -315,37 +317,54 @@ const TrackForm = ({
   const loader = analyzing ? <Loader style={{ margin: '15px 0' }} /> : null
 
   return (
-    <>
-      <Box style={{ flex: '0 0 250px' }}>{playerControl}</Box>
-      <Box
-        style={{
-          flex: 'auto',
-          overflow: 'hidden',
-        }}
-      >
-        <div>
-          {isFromTrack && trackHeader}
-          <>{!isFromTrack && track?.name && slider}</>
-          <div id={`peaks-container_${id}`}>
-            {isFromTrack ? (
-              <>
-                {loader}
-                {zoomview}
-              </>
-            ) : (
-              <>
-                {zoomview}
-                {loader}
-              </>
-            )}
-          </div>
-          <>{isFromTrack && track?.name && slider}</>
-          {!isFromTrack && trackHeader}
-          <audio id={`audio_${id}`} src={audioSrc} ref={audioElement} />
-        </div>
-      </Box>
-    </>
+    <Grid container spacing={2}>
+      <Grid xs={4} id={`peaks-container_${id}`}>
+        {zoomview}
+        {slider}
+      </Grid>
+      <Grid xs={8}>
+        <div id={`overview-container_${id}`} style={{ height: '40px' }} />
+      </Grid>
+      <audio id={`audio_${id}`} src={audioSrc} ref={audioElement} />
+    </Grid>
   )
 }
 
 export default TrackForm
+
+{
+  /* <Grid container spacing={2}>
+      <Grid xs={4}>
+      {zoomview}
+        {playerControl}
+        <Box
+          sx={{
+            flex: 'auto',
+            overflow: 'hidden',
+          }}
+        >
+          <div>
+            {isFromTrack && trackHeader}
+            <>{!isFromTrack && track?.name && slider}</>
+            <div id={`peaks-container_${id}`}>
+              {isFromTrack ? (
+                <>
+                  {loader}
+                  {zoomview}
+                </>
+              ) : (
+                <>
+                  {zoomview}
+                  {loader}
+                </>
+              )}
+            </div>
+            <>{isFromTrack && track?.name && slider}</>
+            {!isFromTrack && trackHeader}
+            <audio id={`audio_${id}`} src={audioSrc} ref={audioElement} />
+          </div>
+        </Box>
+      </Box>
+      <div id={`overview-container_${id}`} style={{ height: '40px' }} />
+    </Grid> */
+}

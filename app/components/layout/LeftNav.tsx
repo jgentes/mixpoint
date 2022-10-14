@@ -9,7 +9,6 @@ import {
   Typography,
 } from '@mui/joy'
 
-// Icons import
 import {
   FolderOpen,
   JoinInner,
@@ -63,7 +62,7 @@ const LeftNav = () => {
               '& .JoyListItemButton-root': { p: '8px' },
             }}
           >
-            <NavLink to="tracks" style={{ textDecoration: 'none' }}>
+            <NavLink to="/tracks" style={{ textDecoration: 'none' }}>
               <ListItem>
                 <ListItemButton
                   variant={pathname == '/tracks' ? 'soft' : undefined}
@@ -76,7 +75,7 @@ const LeftNav = () => {
                 </ListItemButton>
               </ListItem>
             </NavLink>
-            <NavLink to="mixes" style={{ textDecoration: 'none' }}>
+            <NavLink to="/mixes" style={{ textDecoration: 'none' }}>
               <ListItem>
                 <ListItemButton
                   variant={pathname == '/mixes' ? 'soft' : undefined}
@@ -95,7 +94,7 @@ const LeftNav = () => {
                 </ListItemButton>
               </ListItem>
             </NavLink>
-            <NavLink to="sets" style={{ textDecoration: 'none' }}>
+            <NavLink to="/sets" style={{ textDecoration: 'none' }}>
               <ListItem>
                 <ListItemButton
                   variant={pathname == '/sets' ? 'soft' : undefined}

@@ -1,9 +1,10 @@
-import { Pause, PlayArrow, Shuffle, Stop } from '@mui/icons-material'
-import { Box, Button, Card } from '@mui/joy'
+import { MergeType, Pause, PlayArrow, Stop } from '@mui/icons-material'
+import { Box, Button } from '@mui/joy'
 import { ButtonGroup } from '@mui/material'
 import { useState } from 'react'
 import { getState, MixState, useLiveQuery } from '~/api/db'
 import { Events } from '~/api/Events'
+import Layout from '~/components/layout/Layout'
 import TrackForm from '~/components/mixes/trackform'
 
 const Mixes: React.FunctionComponent = () => {
@@ -14,7 +15,7 @@ const Mixes: React.FunctionComponent = () => {
   if (!fromState?.id && !toState?.id) return null
 
   const timeFormat = (secs: number) =>
-    new Date(secs * 1000).toISOString().substr(15, 6)
+    new Date(secs * 1000).toISOString().substring(15, 19)
 
   const mixPointControl = (
     <>
@@ -51,45 +52,37 @@ const Mixes: React.FunctionComponent = () => {
         style={{
           display: 'flex',
           flexWrap: 'nowrap',
-          justifyContent: 'space-between',
+          justifyContent: 'space-evenly',
           fontSize: '24px',
-          margin: '20px 2px 0',
+          margin: '10px 2px',
         }}
       >
-        <span style={{ flex: 'auto' }}>
-          {timeFormat(fromState?.mixPoint || 0)}
-        </span>
-        <Shuffle sx={{ alignSelf: 'center', marginTop: '1px', fontSize: 23 }} />
-        <span style={{ flex: 'auto', textAlign: 'right' }}>
-          {timeFormat(toState?.mixPoint || 0)}
-        </span>
+        {timeFormat(fromState?.mixPoint || 0)}
+        <MergeType
+          sx={{
+            alignSelf: 'center',
+            fontSize: 28,
+            transform: 'rotate(90deg)',
+          }}
+        />
+        {timeFormat(toState?.mixPoint || 0)}
       </div>
     </>
   )
 
   return (
-    <div className="mb-5">
+    <Layout.MainContent>
       <div style={{ display: 'flex' }}>
         <Box style={{ flex: '0 0 250px' }}>{mixPointControl}</Box>
-        <Box style={{ flex: 'auto', overflow: 'hidden' }}>
-          {fromState?.id && (
-            <div
-              id={`overview-container_${fromState.id}`}
-              style={{ height: '40px' }}
-            />
-          )}
-          {toState?.id && (
-            <div
-              id={`overview-container_${toState.id}`}
-              style={{ height: '40px' }}
-            />
-          )}
-        </Box>
       </div>
 
-      {fromState?.id && <TrackForm trackState={fromState} isFromTrack={true} />}
-      {toState?.id && <TrackForm trackState={toState} isFromTrack={false} />}
-    </div>
+      {!fromState?.id ? null : (
+        <TrackForm trackState={fromState} isFromTrack={true} />
+      )}
+      {!toState?.id ? null : (
+        <TrackForm trackState={toState} isFromTrack={false} />
+      )}
+    </Layout.MainContent>
   )
 }
 

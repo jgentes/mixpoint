@@ -44,7 +44,7 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
   const { numSelected } = props
 
   const trackCount = useLiveQuery(() => db.tracks.count())
-  const dirtyTracks = useLiveQuery(() => getDirtyTracks()) ?? []
+  const dirtyTracks = useLiveQuery(() => getDirtyTracks(), [], [])
 
   const showRemoveTracksModal = () =>
     confirmModalState.set({

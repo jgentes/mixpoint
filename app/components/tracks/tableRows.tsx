@@ -45,7 +45,6 @@ const TableRows = ({
         selected={isItemSelected}
         onMouseEnter={() => row.id && showButtonState.set(row.id)}
         onMouseLeave={() => showButtonState.set(null)}
-        sx={{ zIndex: 0 }}
       >
         <TableCell
           padding="none"
@@ -63,6 +62,7 @@ const TableRows = ({
             id={`${column.dbKey}-${row.id}`}
             sx={{
               cursor: 'default',
+              alignItems: 'center',
               ...column.sx,
             }}
             align={column.align}

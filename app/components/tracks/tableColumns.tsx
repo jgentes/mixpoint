@@ -38,7 +38,7 @@ const createColumnDefinitions = (): {
     return (
       <Chip
         variant="outlined"
-        className="visibleOnHover"
+        className={isInMix ? 'visible' : 'visibleOnHover'}
         startDecorator={isInMix ? <Check /> : <Add />}
         disabled={isInMix}
         color={isInMix ? 'success' : 'primary'}
@@ -62,7 +62,13 @@ const createColumnDefinitions = (): {
       padding: 'none',
       width: '60%',
       formatter: t => (
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <div onClick={event => tableOps.rowClick(event, t.id)}>
             {t.name?.replace(/\.[^/.]+$/, '') || 'Track name not found'}
           </div>
