@@ -95,7 +95,6 @@ interface TrackState {
   id?: Track['id']
   adjustedBpm?: Track['bpm']
   file?: File // this is to allow access on page refresh without prompting user for fileHandle permission
-  waveformData?: WaveformData | undefined
   mixPoint?: number
 }
 

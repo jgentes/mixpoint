@@ -1,6 +1,9 @@
-import { ViewAgenda } from '@mui/icons-material'
 import Peaks, { PeaksInstance, PeaksOptions } from 'peaks.js'
 import WaveformData from 'waveform-data'
+import WaveSurfer from 'wavesurfer.js'
+import MinimapPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.minimap'
+import PlayheadPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.playhead'
+import RegionsPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.regions'
 import { putTrackState, Track, TrackState } from '~/api/db'
 import { errorHandler } from '~/utils/notifications'
 
@@ -8,7 +11,6 @@ const initPeaks = async ({
   track,
   file,
   isFromTrack,
-  waveformData,
   setSliderControl,
   setAudioSrc,
   setWaveform,
@@ -17,7 +19,6 @@ const initPeaks = async ({
   track: Track
   file: TrackState['file']
   isFromTrack: boolean
-  waveformData?: TrackState['waveformData']
   setSliderControl: Function
   setAudioSrc: Function
   setWaveform: Function
@@ -26,36 +27,108 @@ const initPeaks = async ({
   if (!track?.id) throw errorHandler('No track to initialize.')
   if (!file) throw errorHandler(`Please try adding ${track.name} again.`)
 
-  setAnalyzing(true)
+  //setAnalyzing(true)
+
+  // const overview = WaveSurfer.create({
+  //   container: `#overview-container_${track.id}`,
+  //   hideScrollbar: true,
+  //   plugins: [
+  //     // PlayheadPlugin.create({
+  //     //   returnOnPause: true,
+  //     //   moveOnSeek: true,
+  //     //   draw: true,
+  //     // }),
+  //     RegionsPlugin.create({
+  //       regionsMinLength: 2,
+  //       regions: [
+  //         {
+  //           start: 100,
+  //           end: 130,
+  //           loop: false,
+  //           color: 'hsla(400, 100%, 30%, 0.5)',
+  //         },
+  //         {
+  //           start: 50,
+  //           end: 70,
+  //           loop: false,
+  //           color: 'hsla(200, 50%, 70%, 0.4)',
+  //           minLength: 10,
+  //           maxLength: 50,
+  //         },
+  //       ],
+  //       dragSelection: {
+  //         slop: 5,
+  //       },
+  //     }),
+  //   ],
+  // })
+  // overview.loadBlob(file)
+
+  const zoomview = WaveSurfer.create({
+    container: `#zoomview-container_${track.id}`,
+    hideScrollbar: true,
+    plugins: [
+      PlayheadPlugin.create({
+        returnOnPause: true,
+        moveOnSeek: true,
+        draw: true,
+      }),
+      MinimapPlugin.create({
+        container: `#overview-container_${track.id}`,
+        height: '80',
+      }),
+      RegionsPlugin.create({
+        regionsMinLength: 2,
+        regions: [
+          {
+            start: 100,
+            end: 130,
+            loop: false,
+            color: 'hsla(400, 100%, 30%, 0.5)',
+          },
+          {
+            start: 50,
+            end: 70,
+            loop: false,
+            color: 'hsla(200, 50%, 70%, 0.4)',
+            minLength: 10,
+            maxLength: 50,
+          },
+        ],
+      }),
+    ],
+  })
+  zoomview.loadBlob(file)
+  zoomview.zoom(64)
 
   // use waveformData to init the waveform (fast) otherwise analyze using the file handle (slow)
 
-  if (!waveformData) {
-    const arrayBuffer = await file.arrayBuffer()
-    const audioCtx = new window.AudioContext()
-    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
+  // if (!waveformData) {
+  //   const arrayBuffer = await file.arrayBuffer()
+  //   const audioCtx = new window.AudioContext()
+  //   const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
 
-    await new Promise<void>(resolve =>
-      WaveformData.createFromAudio(
-        {
-          audio_context: audioCtx,
-          audio_buffer: audioBuffer,
-          scale: 64,
-        },
-        (err, wave: WaveformData) => {
-          if (err || !wave)
-            throw errorHandler('There was a problem analyzing the audio.')
+  //   await new Promise<void>(resolve =>
+  //     WaveformData.createFromAudio(
+  //       {
+  //         audio_context: audioCtx,
+  //         audio_buffer: audioBuffer,
+  //         scale: 64,
+  //       },
+  //       (err, wave: WaveformData) => {
+  //         if (err || !wave)
+  //           throw errorHandler('There was a problem analyzing the audio.')
 
-          waveformData = wave.toJSON()
+  //         waveformData = wave.toJSON()
 
-          putTrackState(isFromTrack, { waveformData })
-          resolve()
-        }
-      )
-    )
-  }
+  //         putTrackState(isFromTrack, { waveformData })
+  //         resolve()
+  //       }
+  //     )
+  //   )
+  // }
 
-  if (!waveformData) throw errorHandler('Waveform data is missing.')
+  // if (!waveformData) throw errorHandler('Waveform data is missing.')
 
   // update the <audio> ref, this allows play/pause controls
   // note this must come before the mediaElement is queried in peakOptions
@@ -88,120 +161,123 @@ const initPeaks = async ({
   // @ts-ignore
   peakOptions.waveformData = { json: waveformData }
 
-  return new Promise(resolve =>
-    Peaks.init(peakOptions, async (err, waveform) => {
-      if (err) errorHandler(err)
-      if (!waveform)
-        throw errorHandler('Unable to display waveform data for some reason..')
+  //   return new Promise(resolve =>
+  //     Peaks.init(peakOptions, async (err, waveform) => {
+  //       if (err) errorHandler(err)
+  //       if (!waveform)
+  //         throw errorHandler('Unable to display waveform data for some reason..')
 
-      setWaveform(waveform)
+  //       setWaveform(waveform)
 
-      const zoomView = waveform.views.getView('zoomview')
+  //       const zoomView = waveform.views.getView('zoomview')
 
-      // destroy the overview so that it doesn't receive the beat markers
-      waveform.views.destroyOverview()
-      waveform.zoom.setZoom(3) // 512
-      zoomView?.showPlayheadTime(true)
+  //       // destroy the overview so that it doesn't receive the beat markers
+  //       waveform.views.destroyOverview()
+  //       waveform.zoom.setZoom(3) // 512
+  //       zoomView?.showPlayheadTime(true)
 
-      // adjust zoom view when mouse wheel is used
-      if (peakOptions.containers.zoomview) {
-        zoomView?.setWheelMode('scroll', { captureVerticalScroll: true })
-        // peakOptions.containers.zoomview.onwheel = e => {
-        //   e.preventDefault()
-        //   e.deltaY === 100 ? waveform.zoom.zoomOut() : waveform.zoom.zoomIn()
-        //   setSlider()
-        // }
-      } else
-        console.error(
-          'Zoomview container not found, could not set wheel zoom feature'
-        )
+  //       // adjust zoom view when mouse wheel is used
+  //       if (peakOptions.containers.zoomview) {
+  //         zoomView?.setWheelMode('scroll', { captureVerticalScroll: true })
+  //         // peakOptions.containers.zoomview.onwheel = e => {
+  //         //   e.preventDefault()
+  //         //   e.deltaY === 100 ? waveform.zoom.zoomOut() : waveform.zoom.zoomIn()
+  //         //   setSlider()
+  //         // }
+  //       } else
+  //         console.error(
+  //           'Zoomview container not found, could not set wheel zoom feature'
+  //         )
 
-      let { duration = 1, bpm = 1, offset = 1 } = track
+  //       let { duration = 1, bpm = 1, offset = 1 } = track
 
-      const beatInterval = 60 / bpm
-      let startPoint = offset
+  //       const beatInterval = 60 / bpm
+  //       let startPoint = offset
 
-      // work backward from initialPeak to peak out start of track (zerotime) based on bpm
-      while (startPoint - beatInterval > 0) startPoint -= beatInterval
+  //       // work backward from initialPeak to peak out start of track (zerotime) based on bpm
+  //       while (startPoint - beatInterval > 0) startPoint -= beatInterval
 
-      // now that we have zerotime, move forward with peaks based on the bpm (hope the bpm is accurate!)
-      const pointArray: number[] = []
-      for (let time = startPoint; time < duration; time += beatInterval) {
-        pointArray.push(time)
-      }
+  //       // now that we have zerotime, move forward with peaks based on the bpm (hope the bpm is accurate!)
+  //       const pointArray: number[] = []
+  //       for (let time = startPoint; time < duration; time += beatInterval) {
+  //         pointArray.push(time)
+  //       }
 
-      // add last point at the end to accurately size slider
-      pointArray.push(duration)
+  //       // add last point at the end to accurately size slider
+  //       pointArray.push(duration)
 
-      waveform.points.add(
-        pointArray.map(time => ({
-          time,
-        }))
-      )
+  //       waveform.points.add(
+  //         pointArray.map(time => ({
+  //           time,
+  //         }))
+  //       )
 
-      if (!peakOptions.containers.overview)
-        throw errorHandler('Overview container not found.')
+  //       if (!peakOptions.containers.overview)
+  //         throw errorHandler('Overview container not found.')
 
-      waveform.views.createOverview(peakOptions.containers.overview)
+  //       waveform.views.createOverview(peakOptions.containers.overview)
 
-      const timeFormat = (secs: number) =>
-        new Date(secs * 1000).toISOString().substring(15, 19)
+  //       const overView = waveform.views.getView('overview')
+  //       overView?.setAmplitudeScale(0.8)
 
-      const markFormatter = (point: number) =>
-        !isFromTrack ? (
-          <div style={{ marginTop: '-35px' }}>{timeFormat(point)}</div>
-        ) : (
-          timeFormat(point)
-        )
+  //       const timeFormat = (secs: number) =>
+  //         new Date(secs * 1000).toISOString().substring(15, 19)
 
-      const slider = document.querySelector(`#slider_${track.id}`)
+  //       const markFormatter = (point: number) =>
+  //         !isFromTrack ? (
+  //           <div style={{ marginTop: '-35px' }}>{timeFormat(point)}</div>
+  //         ) : (
+  //           timeFormat(point)
+  //         )
 
-      const updateScroll = (start: number) => {
-        // @ts-ignore
-        const scroll = (start * track.sampleRate) / zoomView?._scale
-        if (slider) slider.scrollLeft = scroll
-      }
+  //       const slider = document.querySelector(`#slider_${track.id}`)
 
-      let lastMove = Date.now()
-      const move = (start: number, end: number) => {
-        if (Date.now() - lastMove < 100) return
-        updateScroll(start)
-        lastMove = Date.now()
-      }
+  //       const updateScroll = (start: number) => {
+  //         // @ts-ignore
+  //         const scroll = (start * track.sampleRate) / zoomView?._scale
+  //         if (slider) slider.scrollLeft = scroll
+  //       }
 
-      // update slider controls on display change
-      // @ts-ignore
-      waveform.on('zoomview.displaying', move)
+  //       let lastMove = Date.now()
+  //       const move = (start: number, end: number) => {
+  //         if (Date.now() - lastMove < 100) return
+  //         updateScroll(start)
+  //         lastMove = Date.now()
+  //       }
 
-      // create initial slider control
-      const setSlider = () =>
-        setSliderControl({
-          min: 0,
-          max: pointArray[pointArray.length - 1],
-          // @ts-ignore
-          width: zoomView?._pixelLength,
-          marks: pointArray.reduce(
-            (o: any, p: number) => ({ ...o, [p]: markFormatter(p) }),
-            {}
-          ),
-        })
+  //       // update slider controls on display change
+  //       // @ts-ignore
+  //       waveform.on('zoomview.displaying', move)
 
-      setSlider()
+  //       // create initial slider control
+  //       const setSlider = () =>
+  //         setSliderControl({
+  //           min: 0,
+  //           max: pointArray[pointArray.length - 1],
+  //           // @ts-ignore
+  //           width: zoomView?._pixelLength,
+  //           marks: pointArray.reduce(
+  //             (o: any, p: number) => ({ ...o, [p]: markFormatter(p) }),
+  //             {}
+  //           ),
+  //         })
 
-      // create initial segment
-      /*      
-  waveform.segments.add({
-    startTime: sliderPoints[0],
-    endTime: sliderPoints[31],
-    color: 'rgba(191, 191, 63, 0.5)',
-    editable: true
-  })
-*/
-      setAnalyzing(false)
+  //       setSlider()
 
-      resolve(waveform)
-    })
-  )
+  //       // create initial segment
+  //       /*
+  //   waveform.segments.add({
+  //     startTime: sliderPoints[0],
+  //     endTime: sliderPoints[31],
+  //     color: 'rgba(191, 191, 63, 0.5)',
+  //     editable: true
+  //   })
+  // */
+  //       setAnalyzing(false)
+
+  //       resolve(waveform)
+  //     })
+  //   )
 }
 
 export { initPeaks }

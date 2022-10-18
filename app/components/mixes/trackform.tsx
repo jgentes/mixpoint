@@ -6,7 +6,14 @@ import {
   Replay,
   Stop,
 } from '@mui/icons-material'
-import { Button, Link, TextField, Typography } from '@mui/joy'
+import {
+  Button,
+  Card,
+  CardOverflow,
+  Link,
+  TextField,
+  Typography,
+} from '@mui/joy'
 import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2'
 import { PeaksInstance } from 'peaks.js'
@@ -284,15 +291,15 @@ const TrackForm = ({
       <div
         style={{
           width: `${sliderControl?.width}px`,
-          paddingTop: isFromTrack ? '10px' : '20px',
-          paddingBottom: isFromTrack ? '20px' : '10px',
+          //paddingTop: isFromTrack ? '10px' : '20px',
+          //paddingBottom: isFromTrack ? '20px' : '10px',
         }}
       >
         {!sliderControl?.max ? null : (
           <Slider
             min={sliderControl.min || 0}
             max={sliderControl.max}
-            marks={sliderControl.marks || {}}
+            //marks={sliderControl.marks || {}}
             step={null}
             included={false}
             onAfterChange={time => selectTime(time)}
@@ -304,29 +311,46 @@ const TrackForm = ({
     </div>
   )
 
-  const zoomview = (
-    <div
-      id={`zoomview-container_${id}`}
-      style={{
-        height: '150px',
-        visibility: analyzing ? 'hidden' : 'visible',
-      }}
-    />
-  )
-
   const loader = analyzing ? <Loader style={{ margin: '15px 0' }} /> : null
 
   return (
-    <Grid container spacing={2}>
-      <Grid xs={4} id={`peaks-container_${id}`}>
-        {zoomview}
-        {slider}
+    <Card variant="outlined" sx={{ bgcolor: 'background.body' }}>
+      <Grid container spacing={2}>
+        <Grid xs={3} id={`peaks-container_${id}`}>
+          <Card
+            variant="outlined"
+            sx={{
+              px: 0,
+              overflow: 'hidden',
+              visibility: analyzing ? 'hidden' : 'visible',
+            }}
+          >
+            <CardOverflow
+              id={`zoomview-container_${id}`}
+              sx={{
+                minHeight: '150px',
+              }}
+            ></CardOverflow>
+            <CardOverflow
+              variant="outlined"
+              sx={{
+                display: 'flex',
+                gap: 1,
+                p: 2,
+                borderTop: '1px solid',
+                borderColor: 'neutral.outlinedBorder',
+              }}
+            >
+              {slider}
+            </CardOverflow>
+          </Card>
+        </Grid>
+        <Grid xs={9}>
+          <div id={`overview-container_${id}`} />
+        </Grid>
+        <audio id={`audio_${id}`} src={audioSrc} ref={audioElement} />
       </Grid>
-      <Grid xs={8}>
-        <div id={`overview-container_${id}`} style={{ height: '40px' }} />
-      </Grid>
-      <audio id={`audio_${id}`} src={audioSrc} ref={audioElement} />
-    </Grid>
+    </Card>
   )
 }
 
