@@ -1,7 +1,5 @@
-import Peaks, { PeaksInstance, PeaksOptions } from 'peaks.js'
-import WaveformData from 'waveform-data'
 import WaveSurfer from 'wavesurfer.js'
-import MinimapPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.minimap'
+import CursorPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.cursor'
 import PlayheadPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.playhead'
 import RegionsPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.regions'
 import { putTrackState, Track, TrackState } from '~/api/db'
@@ -23,7 +21,7 @@ const initPeaks = async ({
   setAudioSrc: Function
   setWaveform: Function
   setAnalyzing: Function
-}): Promise<PeaksInstance> => {
+}): Promise<void> => {
   if (!track?.id) throw errorHandler('No track to initialize.')
   if (!file) throw errorHandler(`Please try adding ${track.name} again.`)
 
@@ -66,16 +64,39 @@ const initPeaks = async ({
 
   const zoomview = WaveSurfer.create({
     container: `#zoomview-container_${track.id}`,
+    height: 150,
+    //scrollParent: true,
+    pixelRatio: 1,
     hideScrollbar: true,
+    barWidth: 2,
+    barHeight: 0.75,
+    barGap: 1,
+    cursorColor: 'red',
+    interact: false,
+    // @ts-ignore
+    waveColor: [
+      'rgb(216, 185, 69)',
+      'rgb(216, 185, 69)',
+      'rgb(216, 185, 69)',
+      'rgb(221, 144, 69)',
+      'rgb(221, 144, 69)',
+    ],
+    // @ts-ignore
+    progressColor: ['rgba(226, 226, 226, 0.725)'],
     plugins: [
       PlayheadPlugin.create({
         returnOnPause: true,
         moveOnSeek: true,
-        draw: true,
+        draw: false,
       }),
-      MinimapPlugin.create({
-        container: `#overview-container_${track.id}`,
-        height: '80',
+      CursorPlugin.create({
+        showTime: true,
+        opacity: 1,
+        customShowTimeStyle: {
+          color: '#000',
+          padding: '4px',
+          'font-size': '12px',
+        },
       }),
       RegionsPlugin.create({
         regionsMinLength: 2,
@@ -99,67 +120,37 @@ const initPeaks = async ({
     ],
   })
   zoomview.loadBlob(file)
-  zoomview.zoom(64)
 
-  // use waveformData to init the waveform (fast) otherwise analyze using the file handle (slow)
+  zoomview.on('region-click', region => {
+    zoomview.playhead.setPlayheadTime(region.start)
+    zoomview.playPause()
+    zoomview.zoom(32)
+  })
 
-  // if (!waveformData) {
-  //   const arrayBuffer = await file.arrayBuffer()
-  //   const audioCtx = new window.AudioContext()
-  //   const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
+  zoomview.on('zoom', minPxPerSec => console.log(minPxPerSec))
 
-  //   await new Promise<void>(resolve =>
-  //     WaveformData.createFromAudio(
-  //       {
-  //         audio_context: audioCtx,
-  //         audio_buffer: audioBuffer,
-  //         scale: 64,
-  //       },
-  //       (err, wave: WaveformData) => {
-  //         if (err || !wave)
-  //           throw errorHandler('There was a problem analyzing the audio.')
-
-  //         waveformData = wave.toJSON()
-
-  //         putTrackState(isFromTrack, { waveformData })
-  //         resolve()
-  //       }
-  //     )
-  //   )
+  // const peakOptions: PeaksOptions = {
+  //   containers: {
+  //     overview: document.getElementById(`overview-container_${track.id}`),
+  //     zoomview: document.getElementById(`zoomview-container_${track.id}`),
+  //   },
+  //   mediaElement: document.getElementById(`audio_${track.id}`)!,
+  //   pointMarkerColor: '#1e8bc3',
+  //   overviewHighlightColor: '#1e8bc3',
+  //   overviewHighlightOffset: 5,
+  //   zoomWaveformColor: {
+  //     linearGradientStart: 45,
+  //     linearGradientEnd: 58,
+  //     linearGradientColorStops: ['#D8B945', '#DD9045'],
+  //   },
+  //   overviewWaveformColor: {
+  //     linearGradientStart: 45,
+  //     linearGradientEnd: 58,
+  //     linearGradientColorStops: ['#e2e2e2b9', '#cccccc97'],
+  //   },
+  //   zoomLevels: [64, 128, 256, 512],
+  //   emitCueEvents: true, // for mouse drag listener
   // }
-
-  // if (!waveformData) throw errorHandler('Waveform data is missing.')
-
-  // update the <audio> ref, this allows play/pause controls
-  // note this must come before the mediaElement is queried in peakOptions
-  const url = window.URL.createObjectURL(file)
-  setAudioSrc(url)
-
-  const peakOptions: PeaksOptions = {
-    containers: {
-      overview: document.getElementById(`overview-container_${track.id}`),
-      zoomview: document.getElementById(`zoomview-container_${track.id}`),
-    },
-    mediaElement: document.getElementById(`audio_${track.id}`)!,
-    pointMarkerColor: '#1e8bc3',
-    overviewHighlightColor: '#1e8bc3',
-    overviewHighlightOffset: 5,
-    zoomWaveformColor: {
-      linearGradientStart: 45,
-      linearGradientEnd: 58,
-      linearGradientColorStops: ['#D8B945', '#DD9045'],
-    },
-    overviewWaveformColor: {
-      linearGradientStart: 45,
-      linearGradientEnd: 58,
-      linearGradientColorStops: ['#e2e2e2b9', '#cccccc97'],
-    },
-    zoomLevels: [64, 128, 256, 512],
-    emitCueEvents: true, // for mouse drag listener
-  }
-
-  // @ts-ignore
-  peakOptions.waveformData = { json: waveformData }
 
   //   return new Promise(resolve =>
   //     Peaks.init(peakOptions, async (err, waveform) => {

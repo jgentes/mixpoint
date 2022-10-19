@@ -314,43 +314,48 @@ const TrackForm = ({
   const loader = analyzing ? <Loader style={{ margin: '15px 0' }} /> : null
 
   return (
-    <Card variant="outlined" sx={{ bgcolor: 'background.body' }}>
-      <Grid container spacing={2}>
-        <Grid xs={3} id={`peaks-container_${id}`}>
-          <Card
-            variant="outlined"
-            sx={{
-              px: 0,
-              overflow: 'hidden',
-              visibility: analyzing ? 'hidden' : 'visible',
-            }}
-          >
-            <CardOverflow
-              id={`zoomview-container_${id}`}
-              sx={{
-                minHeight: '150px',
-              }}
-            ></CardOverflow>
-            <CardOverflow
-              variant="outlined"
-              sx={{
-                display: 'flex',
-                gap: 1,
-                p: 2,
-                borderTop: '1px solid',
-                borderColor: 'neutral.outlinedBorder',
-              }}
-            >
-              {slider}
-            </CardOverflow>
-          </Card>
-        </Grid>
-        <Grid xs={9}>
-          <div id={`overview-container_${id}`} />
-        </Grid>
-        <audio id={`audio_${id}`} src={audioSrc} ref={audioElement} />
-      </Grid>
-    </Card>
+    <>
+      <Card
+        variant="soft"
+        id={`zoomview-container_${id}`}
+        sx={{
+          p: 0,
+          border: '1px solid #ddd',
+          overflow: 'hidden',
+          visibility: analyzing ? 'hidden' : 'visible',
+          height: '150px',
+        }}
+      />
+      <div id={`overview-container_${id}`} />
+    </>
+    // <Card variant="outlined" sx={{ bgcolor: 'background.body' }}>
+    //   <Grid container spacing={2}>
+    //     <Grid xs={12} id={`peaks-container_${id}`}>
+
+    //         {/* <CardOverflow
+    //           sx={{
+    //             minHeight: '150px',
+    //           }}
+    //         ></CardOverflow> */}
+    //         {/* <CardOverflow
+    //           variant="outlined"
+    //           sx={{
+    //             display: 'flex',
+    //             gap: 1,
+    //             p: 2,
+    //             borderTop: '1px solid',
+    //             borderColor: 'neutral.outlinedBorder',
+    //           }}
+    //         >
+    //           {slider}
+    //         </CardOverflow> */}
+    //       <audio id={`audio_${id}`} src={audioSrc} ref={audioElement} />
+    //     </Grid>
+    //     {/* <Grid xs={9}>
+    //       <div id={`overview-container_${id}`} />
+    //     </Grid> */}
+    //   </Grid>
+    // </Card>
   )
 }
 
