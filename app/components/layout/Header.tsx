@@ -8,7 +8,8 @@ import Logo from '~/components/MixpointLogo'
 import { Menu as MenuIcon, Settings } from '@mui/icons-material'
 
 const Header = () => {
-  const leftNavOpen = useLiveQuery(() => getState('app', 'leftNavOpen'))
+  const { leftNavOpen } =
+    useLiveQuery(() => getState('app', 'leftNavOpen')) || {}
 
   return (
     <>

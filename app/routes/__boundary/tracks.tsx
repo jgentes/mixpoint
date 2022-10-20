@@ -62,16 +62,13 @@ const TrackTable = () => {
   )
 
   // Retrieve sort state from database
-  const sortDirection = useLiveQuery(
-    () => getState('app', 'sortDirection'),
-    [],
-    'desc'
-  )
-  const sortColumn = useLiveQuery(
-    () => getState('app', 'sortColumn'),
-    [],
-    'lastModified'
-  )
+  const { sortDirection } = useLiveQuery(() =>
+    getState('app', 'sortDirection')
+  ) || { sortDirection: 'desc' }
+
+  const { sortColumn } = useLiveQuery(() => getState('app', 'sortColumn')) || {
+    sortColumn: 'lastModified',
+  }
 
   // Allow drag & drop files / folders into the table
   const [dragOver, setDragOver] = useState(false)

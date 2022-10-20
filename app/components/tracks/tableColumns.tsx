@@ -31,6 +31,7 @@ const createColumnDefinitions = (): {
 
   const AddToMixButton = ({ track }: { track: Track }) => {
     const { from, to, queue } = useLiveQuery(() => getState('mix')) || {}
+
     const isInMix =
       from?.id === track.id ||
       to?.id === track.id ||

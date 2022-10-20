@@ -11,8 +11,12 @@ import { errorHandler } from '~/utils/notifications'
 
 const tableOps = {
   sort: async (event: MouseEvent<unknown>, property: keyof Track) => {
-    const sortColumn = (await getState('app', 'sortColumn')) || 'lastModified'
-    const sortDirection = (await getState('app', 'sortDirection')) || 'desc'
+    const { sortDirection } = (await getState('app', 'sortDirection')) || {
+      sortDirection: 'desc',
+    }
+    const { sortColumn } = (await getState('app', 'sortColumn')) || {
+      sortColumn: 'lastModified',
+    }
 
     const isAsc = sortColumn === property && sortDirection === 'asc'
 

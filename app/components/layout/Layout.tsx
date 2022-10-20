@@ -14,7 +14,9 @@ const Root = (props: BoxProps) => {
 }
 
 const Tracks = (props: BoxProps) => {
-  const leftNavOpen = useLiveQuery(() => getState('app', 'leftNavOpen'))
+  const { leftNavOpen } =
+    useLiveQuery(() => getState('app', 'leftNavOpen')) || {}
+
   return (
     <Box
       {...props}

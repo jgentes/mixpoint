@@ -11,7 +11,7 @@ const Mixes: React.FunctionComponent = () => {
   const [playing, setPlaying] = useState(false)
 
   const { from: fromState, to: toState } =
-    (useLiveQuery(() => getState('mix')) as MixState) || {}
+    useLiveQuery(() => getState('mix')) || {}
   if (!fromState?.id && !toState?.id) return null
 
   const timeFormat = (secs: number) =>
