@@ -55,7 +55,8 @@ const Document = ({ children }: { children: React.ReactNode }) => (
 )
 
 const PageLayout = () => {
-  const leftNavOpen = useLiveQuery(() => getState('app', 'leftNavOpen'))
+  const { leftNavOpen } =
+    useLiveQuery(() => getState('app', 'leftNavOpen')) || {}
 
   return (
     <>

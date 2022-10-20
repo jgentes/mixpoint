@@ -316,11 +316,12 @@ const TrackForm = ({
   return (
     <>
       <Card
-        variant="soft"
+        variant="outlined"
         id={`zoomview-container_${id}`}
         sx={{
           p: 0,
-          border: '1px solid #ddd',
+          borderRadius: 'sm',
+          bgcolor: 'background.body',
           overflow: 'hidden',
           visibility: analyzing ? 'hidden' : 'visible',
           height: '150px',
