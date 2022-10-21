@@ -1,4 +1,4 @@
-/* For table buttons (ie. AddToMix) in tableColumns */
+/* start table buttons (ie. AddToMix) in tableColumns */
 tr:hover .visibleOnHover {
   visibility: visible;
 }
@@ -10,3 +10,19 @@ tr:hover .visibleOnHover {
 .visible {
   visibility: visible;
 }
+/* end table buttons */
+
+/* start playhead customization */
+.wavesurfer-playhead {
+  width: 0;
+  height: 0;
+  margin-left: 2px;
+  border-style: solid;
+  border-width: 8px 8px 0 8px;
+  border-color: #ff0000 transparent transparent transparent;
+}
+
+.wavesurfer-playhead svg {
+  display: none;
+}
+/* end playhead customization */

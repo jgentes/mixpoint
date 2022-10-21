@@ -169,7 +169,7 @@ interface StateTypes {
   app: AppState
 }
 
-// this function is a work of painful typescript art
+// this function is a work of typescript wizardry
 const getState = async <T extends keyof StateTypes>(
   table: T,
   key?: keyof StateTypes[T]

@@ -1,5 +1,8 @@
+import { Check, Navigation } from '@mui/icons-material'
 import WaveSurfer from 'wavesurfer.js'
 import CursorPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.cursor'
+import MarkersPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.markers'
+import MinimapPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.minimap'
 import PlayheadPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.playhead'
 import RegionsPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.regions'
 import { putTrackState, Track, TrackState } from '~/api/db'
@@ -8,20 +11,20 @@ import { errorHandler } from '~/utils/notifications'
 const initPeaks = async ({
   track,
   file,
+  zoomviewRef,
   isFromTrack,
   setSliderControl,
   setAudioSrc,
-  setWaveform,
   setAnalyzing,
 }: {
   track: Track
   file: TrackState['file']
+  zoomviewRef: React.RefObject<HTMLElement | string>
   isFromTrack: boolean
   setSliderControl: Function
   setAudioSrc: Function
-  setWaveform: Function
   setAnalyzing: Function
-}): Promise<void> => {
+}): Promise<WaveSurfer> => {
   if (!track?.id) throw errorHandler('No track to initialize.')
   if (!file) throw errorHandler(`Please try adding ${track.name} again.`)
 
@@ -62,8 +65,49 @@ const initPeaks = async ({
   // })
   // overview.loadBlob(file)
 
+  let { duration = 1, bpm = 1, offset = 1 } = track
+
+  let beatInterval = 60 / bpm
+  let startPoint = offset
+
+  // work backward from initialPeak to peak out start of track (zerotime) based on bpm
+  while (startPoint - beatInterval > 0) startPoint -= beatInterval
+
+  // now that we have zerotime, move forward with peaks based on the bpm (hope the bpm is accurate!)
+  const regions: Partial<{
+    start: number
+    end: number
+    color: string
+    drag: boolean
+    resize: boolean
+    showTooltip: false
+    handleStyle: { left: object; right: object }
+  }>[] = []
+  for (let time = startPoint; time < duration; time += beatInterval * 4) {
+    regions.push({
+      start: time,
+      end: time + beatInterval * 4,
+      color: 'rgba(255, 255, 255, 0)',
+      drag: false,
+      resize: true,
+      showTooltip: false,
+      handleStyle: {
+        left: { backgroundColor: '#ff0000', width: '1px' },
+        right: { width: 0 },
+      },
+    })
+  }
+
+  const markers: { time: number; label?: string; color?: string }[] = []
+  for (let time = startPoint; time < duration; time += beatInterval * 4) {
+    markers.push({
+      time,
+      position: 'top',
+    })
+  }
+
   const zoomview = WaveSurfer.create({
-    container: `#zoomview-container_${track.id}`,
+    container: zoomviewRef.current || '',
     height: 150,
     //scrollParent: true,
     pixelRatio: 1,
@@ -72,6 +116,7 @@ const initPeaks = async ({
     barHeight: 0.75,
     barGap: 1,
     cursorColor: 'red',
+    autoCenter: false,
     interact: false,
     // @ts-ignore
     waveColor: [
@@ -87,7 +132,7 @@ const initPeaks = async ({
       PlayheadPlugin.create({
         returnOnPause: true,
         moveOnSeek: true,
-        draw: false,
+        draw: true,
       }),
       CursorPlugin.create({
         showTime: true,
@@ -99,35 +144,41 @@ const initPeaks = async ({
         },
       }),
       RegionsPlugin.create({
-        regionsMinLength: 2,
-        regions: [
-          {
-            start: 100,
-            end: 130,
-            loop: false,
-            color: 'hsla(400, 100%, 30%, 0.5)',
-          },
-          {
-            start: 50,
-            end: 70,
-            loop: false,
-            color: 'hsla(200, 50%, 70%, 0.4)',
-            minLength: 10,
-            maxLength: 50,
-          },
-        ],
+        regions,
+        snapToGridOffset: offset,
+        snapToGridInterval: beatInterval,
+      }),
+      // MarkersPlugin.create({ markers }),
+      MinimapPlugin.create({
+        waveColor: '#777',
+        progressColor: '#222',
+        interact: true,
       }),
     ],
   })
   zoomview.loadBlob(file)
 
   zoomview.on('region-click', region => {
-    zoomview.playhead.setPlayheadTime(region.start)
+    if (!zoomview.isPlaying()) zoomview.playhead.setPlayheadTime(region.start)
     zoomview.playPause()
-    zoomview.zoom(32)
+    zoomview.seekAndCenter(1 / (duration / zoomview.playhead.playheadTime))
   })
 
   zoomview.on('zoom', minPxPerSec => console.log(minPxPerSec))
+  zoomview.on('ready', () => {
+    console.log('ready')
+  })
+  zoomview.on('loading', () => {
+    console.log('loading')
+  })
+  zoomview.on('scroll', () => {
+    console.log('scroll')
+  })
+  zoomview.on('interaction', e => {
+    console.log('interaction', e)
+  })
+  zoomview.zoom(64)
+  return zoomview
 
   // const peakOptions: PeaksOptions = {
   //   containers: {

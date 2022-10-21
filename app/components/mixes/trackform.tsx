@@ -1,6 +1,8 @@
 import {
   AccessTime,
+  Check,
   Eject,
+  Navigation,
   Pause,
   PlayArrow,
   Replay,
@@ -44,50 +46,49 @@ const TrackForm = ({
   const [sliderControl, setSliderControl] = useState<SliderControlProps>()
   const [playing, setPlaying] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
-  const [waveform, setWaveform] = useState<PeaksInstance>()
   const [audioSrc, setAudioSrc] = useState('')
   const [bpmTimer, setBpmTimer] = useState<number>()
   const [track, setTrack] = useState<Track | undefined>()
+  const [zoomview, setZoomview] = useState<WaveSurfer | undefined>()
+  const [zoomValue, setZoomValue] = useState(1000)
+  const zoomviewRef = useRef(null)
 
   const { id, file, mixPoint } = trackState
   if (!id) return null
 
-  let audioElement = useRef<HTMLAudioElement>(null),
-    zoomView = waveform?.views.getView('zoomview')
+  let audioElement = useRef<HTMLAudioElement>(null)
 
   useEffect(() => {
-    let peaks: PeaksInstance
-    const getWaveform = async () => {
-      // build waveform
+    let zoomview: WaveSurfer
+    const renderWaveform = async () => {
       const track = await db.tracks.get(id)
-      setTrack(track)
       if (track) {
-        peaks = await initPeaks({
+        setTrack(track)
+        zoomview = await initPeaks({
           track,
           file,
+          zoomviewRef,
           isFromTrack,
-          waveformData: trackState.waveformData,
           setAnalyzing,
-          setWaveform,
           setAudioSrc,
           setSliderControl,
         })
+
+        if (zoomview) setZoomview(zoomview)
       }
     }
 
-    getWaveform()
+    renderWaveform()
 
     // add event listeners
-    Events.on('audio', audioEffect)
+    //Events.on('audio', audioEffect)
 
     // listener cleanup
     return () => {
       Events.remove('audio', audioEffect)
-      peaks?.destroy()
+      zoomview?.destroy()
     }
   }, [id, isFromTrack])
-
-  zoomView = waveform?.views.getView('zoomview')
 
   const audioEffect = (detail: { tracks: number[]; effect: string }) => {
     if (!detail.tracks.includes(id)) return
@@ -127,8 +128,8 @@ const TrackForm = ({
   }
 
   const selectTime = async (time: number) => {
-    waveform?.player.seek(time)
-    zoomView?.enableAutoScroll(false)
+    // waveform?.player.seek(time)
+    // zoomView?.enableAutoScroll(false)
 
     Events.dispatch('audio', {
       effect: 'play',
@@ -318,6 +319,7 @@ const TrackForm = ({
       <Card
         variant="outlined"
         id={`zoomview-container_${id}`}
+        ref={zoomviewRef}
         sx={{
           p: 0,
           borderRadius: 'sm',
@@ -325,6 +327,21 @@ const TrackForm = ({
           overflow: 'hidden',
           visibility: analyzing ? 'hidden' : 'visible',
           height: '150px',
+
+          '&:hover': {
+            borderColor: '#30b2e947',
+          },
+        }}
+        // onMouseEnter={e => {
+        //   console.log(e)
+        //   e.preventDefault()
+        //   e.deltaY === 100 ? waveform.zoom.zoomOut() : waveform.zoom.zoomIn()
+        // }}
+        onWheel={e => {
+          console.log('onWheel', e.deltaY)
+          // check state first as debounce, then set set state, then zoom
+
+          e.deltaY > 100 ? zoomview?.zoom(64) : zoomview?.zoom(1000)
         }}
       />
       <div id={`overview-container_${id}`} />
