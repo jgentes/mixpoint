@@ -16,13 +16,18 @@ tr:hover .visibleOnHover {
 .wavesurfer-playhead {
   width: 0;
   height: 0;
-  margin-left: 2px;
+  margin-left: 3px;
   border-style: solid;
   border-width: 8px 8px 0 8px;
-  border-color: #ff0000 transparent transparent transparent;
+  border-color: #0492f79e transparent transparent transparent;
 }
 
 .wavesurfer-playhead svg {
   display: none;
 }
+
+/* playhead {
+  display: none !important;
+} */
+
 /* end playhead customization */

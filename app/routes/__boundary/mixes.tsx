@@ -72,9 +72,9 @@ const Mixes: React.FunctionComponent = () => {
 
   return (
     <Layout.MainContent>
-      <div style={{ display: 'flex' }}>
+      {/* <div style={{ display: 'flex' }}>
         <Box style={{ flex: '0 0 250px' }}>{mixPointControl}</Box>
-      </div>
+      </div> */}
 
       {!fromState?.id ? null : (
         <TrackForm trackState={fromState} isFromTrack={true} />

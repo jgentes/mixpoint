@@ -16,6 +16,7 @@ import {
   TextField,
   Typography,
 } from '@mui/joy'
+import { useTheme } from '@mui/joy/styles'
 import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2'
 import { PeaksInstance } from 'peaks.js'
@@ -55,6 +56,8 @@ const TrackForm = ({
 
   const { id, file, mixPoint } = trackState
   if (!id) return null
+
+  const { palette } = useTheme()
 
   let audioElement = useRef<HTMLAudioElement>(null)
 
@@ -318,7 +321,6 @@ const TrackForm = ({
     <>
       <Card
         variant="outlined"
-        id={`zoomview-container_${id}`}
         ref={zoomviewRef}
         sx={{
           p: 0,
@@ -331,6 +333,8 @@ const TrackForm = ({
           '&:hover': {
             borderColor: '#30b2e947',
           },
+
+          left: '-4px',
         }}
         // onMouseEnter={e => {
         //   console.log(e)

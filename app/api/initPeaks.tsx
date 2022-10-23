@@ -1,4 +1,5 @@
 import { Check, Navigation } from '@mui/icons-material'
+import { RGBA } from 'konva/lib/filters/RGBA'
 import WaveSurfer from 'wavesurfer.js'
 import CursorPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.cursor'
 import MarkersPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.markers'
@@ -92,17 +93,11 @@ const initPeaks = async ({
       resize: true,
       showTooltip: false,
       handleStyle: {
-        left: { backgroundColor: '#ff0000', width: '1px' },
+        left: {
+          backgroundColor: time == startPoint ? 'none' : '#0492f79e',
+        },
         right: { width: 0 },
       },
-    })
-  }
-
-  const markers: { time: number; label?: string; color?: string }[] = []
-  for (let time = startPoint; time < duration; time += beatInterval * 4) {
-    markers.push({
-      time,
-      position: 'top',
     })
   }
 
@@ -115,19 +110,18 @@ const initPeaks = async ({
     barWidth: 2,
     barHeight: 0.75,
     barGap: 1,
-    cursorColor: 'red',
-    autoCenter: false,
+    cursorColor: '#888',
     interact: false,
     // @ts-ignore
     waveColor: [
-      'rgb(216, 185, 69)',
-      'rgb(216, 185, 69)',
-      'rgb(216, 185, 69)',
-      'rgb(221, 144, 69)',
-      'rgb(221, 144, 69)',
+      'rgb(200, 165, 49)',
+      'rgb(200, 165, 49)',
+      'rgb(200, 165, 49)',
+      'rgb(205, 124, 49)',
+      'rgb(205, 124, 49)',
     ],
     // @ts-ignore
-    progressColor: ['rgba(226, 226, 226, 0.725)'],
+    progressColor: 'rgba(0, 0, 0, 0.2)',
     plugins: [
       PlayheadPlugin.create({
         returnOnPause: true,
@@ -148,10 +142,15 @@ const initPeaks = async ({
         snapToGridOffset: offset,
         snapToGridInterval: beatInterval,
       }),
-      // MarkersPlugin.create({ markers }),
       MinimapPlugin.create({
-        waveColor: '#777',
-        progressColor: '#222',
+        waveColor: [
+          'rgba(145, 145, 145, 0.8)',
+          'rgba(145, 145, 145, 0.8)',
+          'rgba(145, 145, 145, 0.8)',
+          'rgba(145, 145, 145, 0.5)',
+          'rgba(145, 145, 145, 0.5)',
+        ],
+        progressColor: 'rgba(0, 0, 0, 0.2)',
         interact: true,
       }),
     ],
