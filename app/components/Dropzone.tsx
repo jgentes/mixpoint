@@ -67,8 +67,15 @@ const Dropzone = (props: BoxProps) => {
       onDragEnter={() => setDragOver(true)}
       onDragLeave={() => setDragOver(false)}
     >
-      <DriveFolderUpload sx={{ fontSize: 38 }} className="drop" />
-      <Typography level="body1" className="drop">
+      <DriveFolderUpload
+        sx={{ fontSize: 38, color: 'text.secondary' }}
+        className="drop"
+      />
+      <Typography
+        level="body1"
+        className="drop"
+        sx={{ color: 'text.secondary' }}
+      >
         <b>Add Tracks</b>
       </Typography>
       <Typography className="drop" level="body2">

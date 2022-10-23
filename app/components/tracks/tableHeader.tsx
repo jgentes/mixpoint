@@ -31,8 +31,8 @@ import {
 } from '~/api/db'
 import { browseFile } from '~/api/fileHandlers'
 import { confirmModalState } from '~/components/ConfirmModal'
+import { selectedState } from '~/components/tracks/TrackTable'
 import { createColumnDefinitions } from '~/components/tracks/tableColumns'
-import { selectedState } from '~/routes/__boundary/tracks'
 
 // Broadcast search query
 const searchState = superstate<string | number>('')

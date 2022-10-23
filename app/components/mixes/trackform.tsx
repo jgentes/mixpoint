@@ -1,8 +1,6 @@
 import {
   AccessTime,
-  Check,
   Eject,
-  Navigation,
   Pause,
   PlayArrow,
   Replay,
@@ -11,6 +9,8 @@ import {
 import {
   Button,
   Card,
+  CardContent,
+  CardCover,
   CardOverflow,
   Link,
   TextField,
@@ -18,14 +18,12 @@ import {
 } from '@mui/joy'
 import { useTheme } from '@mui/joy/styles'
 import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
-import Grid from '@mui/material/Unstable_Grid2'
-import { PeaksInstance } from 'peaks.js'
 import Slider, { SliderProps } from 'rc-slider'
 import { useEffect, useRef, useState } from 'react'
 import { db, putTrackState, Track, TrackState } from '~/api/db'
 import { Events } from '~/api/Events'
-import { openDrawerState } from '~/components/TrackDrawer'
-import Loader from '~/components/TrackLoader'
+import { openDrawerState } from '~/components/layout/TrackDrawer'
+import Loader from '~/components/tracks/TrackLoader'
 
 // Only load initPeaks in the browser
 let initPeaks: typeof import('~/api/initPeaks').initPeaks
@@ -318,66 +316,33 @@ const TrackForm = ({
   const loader = analyzing ? <Loader style={{ margin: '15px 0' }} /> : null
 
   return (
-    <>
+    <Card
+      variant="soft"
+      sx={{
+        borderRadius: 'sm',
+        border: '1px solid',
+        borderColor: 'action.selected',
+        visibility: 'hidden',
+      }}
+    >
       <Card
-        variant="outlined"
         ref={zoomviewRef}
         sx={{
           p: 0,
+          border: '1px solid',
+          borderColor: 'action.focus',
           borderRadius: 'sm',
           bgcolor: 'background.body',
           overflow: 'hidden',
-          visibility: analyzing ? 'hidden' : 'visible',
-          height: '150px',
-
-          '&:hover': {
-            borderColor: '#30b2e947',
-          },
-
-          left: '-4px',
+          height: '100px',
         }}
-        // onMouseEnter={e => {
-        //   console.log(e)
-        //   e.preventDefault()
-        //   e.deltaY === 100 ? waveform.zoom.zoomOut() : waveform.zoom.zoomIn()
+        // onWheel={e => {
+        //   // check state first as debounce, then set set state, then zoom
+        //   e.deltaY > 100 ? zoomview?.zoom(64) : zoomview?.zoom(1000)
         // }}
-        onWheel={e => {
-          console.log('onWheel', e.deltaY)
-          // check state first as debounce, then set set state, then zoom
-
-          e.deltaY > 100 ? zoomview?.zoom(64) : zoomview?.zoom(1000)
-        }}
-      />
-      <div id={`overview-container_${id}`} />
-    </>
-    // <Card variant="outlined" sx={{ bgcolor: 'background.body' }}>
-    //   <Grid container spacing={2}>
-    //     <Grid xs={12} id={`peaks-container_${id}`}>
-
-    //         {/* <CardOverflow
-    //           sx={{
-    //             minHeight: '150px',
-    //           }}
-    //         ></CardOverflow> */}
-    //         {/* <CardOverflow
-    //           variant="outlined"
-    //           sx={{
-    //             display: 'flex',
-    //             gap: 1,
-    //             p: 2,
-    //             borderTop: '1px solid',
-    //             borderColor: 'neutral.outlinedBorder',
-    //           }}
-    //         >
-    //           {slider}
-    //         </CardOverflow> */}
-    //       <audio id={`audio_${id}`} src={audioSrc} ref={audioElement} />
-    //     </Grid>
-    //     {/* <Grid xs={9}>
-    //       <div id={`overview-container_${id}`} />
-    //     </Grid> */}
-    //   </Grid>
-    // </Card>
+      ></Card>
+      {/* <div id={`overview-container_${id}`} /> */}
+    </Card>
   )
 }
 

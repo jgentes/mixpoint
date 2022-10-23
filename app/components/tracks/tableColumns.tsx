@@ -5,7 +5,7 @@ import { SxProps } from '@mui/material/styles'
 import moment from 'moment'
 import { analyzeTracks, analyzingState } from '~/api/audio'
 import { addToMix, getState, Track, useLiveQuery } from '~/api/db'
-import TrackLoader from '~/components/TrackLoader'
+import TrackLoader from '~/components/tracks/TrackLoader'
 import { tableOps } from '~/utils/tableOps'
 
 const createColumnDefinitions = (): {

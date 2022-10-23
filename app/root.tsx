@@ -12,7 +12,7 @@ import InitialLoader from '~/components/InitialLoader'
 import Header from '~/components/layout/Header'
 import Layout from '~/components/layout/Layout'
 import LeftNav from '~/components/layout/LeftNav'
-import TrackDrawer from '~/components/TrackDrawer'
+import TrackDrawer from '~/components/layout/TrackDrawer'
 import globalStyles from '~/styles/globalStyles.css'
 import { theme } from '~/styles/theme'
 

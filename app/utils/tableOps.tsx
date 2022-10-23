@@ -1,12 +1,11 @@
 import moment from 'moment'
 import { ChangeEvent, MouseEvent } from 'react'
 import { db, getState, putState, Track } from '~/api/db'
-import { searchState } from '~/components/tracks/tableHeader'
 import {
   pageState,
   rowsPerPageState,
   selectedState,
-} from '~/routes/__boundary/tracks'
+} from '~/components/tracks/TrackTable'
 import { errorHandler } from '~/utils/notifications'
 
 const tableOps = {

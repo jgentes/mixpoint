@@ -1,5 +1,3 @@
-import { Check, Navigation } from '@mui/icons-material'
-import { RGBA } from 'konva/lib/filters/RGBA'
 import WaveSurfer from 'wavesurfer.js'
 import CursorPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.cursor'
 import MarkersPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.markers'
@@ -30,41 +28,6 @@ const initPeaks = async ({
   if (!file) throw errorHandler(`Please try adding ${track.name} again.`)
 
   //setAnalyzing(true)
-
-  // const overview = WaveSurfer.create({
-  //   container: `#overview-container_${track.id}`,
-  //   hideScrollbar: true,
-  //   plugins: [
-  //     // PlayheadPlugin.create({
-  //     //   returnOnPause: true,
-  //     //   moveOnSeek: true,
-  //     //   draw: true,
-  //     // }),
-  //     RegionsPlugin.create({
-  //       regionsMinLength: 2,
-  //       regions: [
-  //         {
-  //           start: 100,
-  //           end: 130,
-  //           loop: false,
-  //           color: 'hsla(400, 100%, 30%, 0.5)',
-  //         },
-  //         {
-  //           start: 50,
-  //           end: 70,
-  //           loop: false,
-  //           color: 'hsla(200, 50%, 70%, 0.4)',
-  //           minLength: 10,
-  //           maxLength: 50,
-  //         },
-  //       ],
-  //       dragSelection: {
-  //         slop: 5,
-  //       },
-  //     }),
-  //   ],
-  // })
-  // overview.loadBlob(file)
 
   let { duration = 1, bpm = 1, offset = 1 } = track
 
@@ -103,14 +66,14 @@ const initPeaks = async ({
 
   const zoomview = WaveSurfer.create({
     container: zoomviewRef.current || '',
-    height: 150,
-    //scrollParent: true,
+    height: 100,
+    scrollParent: true,
+    fillParent: false,
     pixelRatio: 1,
-    hideScrollbar: true,
     barWidth: 2,
     barHeight: 0.75,
     barGap: 1,
-    cursorColor: '#888',
+    cursorColor: '#0492f752',
     interact: false,
     // @ts-ignore
     waveColor: [
@@ -120,7 +83,6 @@ const initPeaks = async ({
       'rgb(205, 124, 49)',
       'rgb(205, 124, 49)',
     ],
-    // @ts-ignore
     progressColor: 'rgba(0, 0, 0, 0.2)',
     plugins: [
       PlayheadPlugin.create({
@@ -142,17 +104,17 @@ const initPeaks = async ({
         snapToGridOffset: offset,
         snapToGridInterval: beatInterval,
       }),
-      MinimapPlugin.create({
-        waveColor: [
-          'rgba(145, 145, 145, 0.8)',
-          'rgba(145, 145, 145, 0.8)',
-          'rgba(145, 145, 145, 0.8)',
-          'rgba(145, 145, 145, 0.5)',
-          'rgba(145, 145, 145, 0.5)',
-        ],
-        progressColor: 'rgba(0, 0, 0, 0.2)',
-        interact: true,
-      }),
+      // MinimapPlugin.create({
+      //   waveColor: [
+      //     'rgba(145, 145, 145, 0.8)',
+      //     'rgba(145, 145, 145, 0.8)',
+      //     'rgba(145, 145, 145, 0.8)',
+      //     'rgba(145, 145, 145, 0.5)',
+      //     'rgba(145, 145, 145, 0.5)',
+      //   ],
+      //   progressColor: 'rgba(0, 0, 0, 0.2)',
+      //   interact: true,
+      // }),
     ],
   })
   zoomview.loadBlob(file)
@@ -163,20 +125,13 @@ const initPeaks = async ({
     zoomview.seekAndCenter(1 / (duration / zoomview.playhead.playheadTime))
   })
 
-  zoomview.on('zoom', minPxPerSec => console.log(minPxPerSec))
   zoomview.on('ready', () => {
     console.log('ready')
+    zoomview.playhead.setPlayheadTime(regions[1].start || 0)
   })
   zoomview.on('loading', () => {
     console.log('loading')
   })
-  zoomview.on('scroll', () => {
-    console.log('scroll')
-  })
-  zoomview.on('interaction', e => {
-    console.log('interaction', e)
-  })
-  zoomview.zoom(64)
   return zoomview
 
   // const peakOptions: PeaksOptions = {
