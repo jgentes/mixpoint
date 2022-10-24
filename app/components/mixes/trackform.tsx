@@ -334,10 +334,7 @@ const TrackForm = ({
             ...loaderSx,
             zIndex: 2,
             position: 'absolute',
-            left: 16,
-            top: 16,
-            right: 16,
-            bottom: 16,
+            inset: 16,
           }}
         >
           <Loader style={{ margin: 'auto' }} />
