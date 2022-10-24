@@ -86,7 +86,7 @@ const MainContent = (props: BoxProps) => (
   <Box
     component="main"
     {...props}
-    sx={[{ px: 2 }, ...(Array.isArray(props.sx) ? props.sx : [props.sx])]}
+    sx={[{ p: 2 }, ...(Array.isArray(props.sx) ? props.sx : [props.sx])]}
   />
 )
 

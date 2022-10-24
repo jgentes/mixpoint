@@ -6,17 +6,7 @@ import {
   Replay,
   Stop,
 } from '@mui/icons-material'
-import {
-  Button,
-  Card,
-  CardContent,
-  CardCover,
-  CardOverflow,
-  Link,
-  TextField,
-  Typography,
-} from '@mui/joy'
-import { useTheme } from '@mui/joy/styles'
+import { Button, Card, Link, TextField, Typography } from '@mui/joy'
 import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
 import Slider, { SliderProps } from 'rc-slider'
 import { useEffect, useRef, useState } from 'react'
@@ -49,13 +39,10 @@ const TrackForm = ({
   const [bpmTimer, setBpmTimer] = useState<number>()
   const [track, setTrack] = useState<Track | undefined>()
   const [zoomview, setZoomview] = useState<WaveSurfer | undefined>()
-  const [zoomValue, setZoomValue] = useState(1000)
   const zoomviewRef = useRef(null)
 
   const { id, file, mixPoint } = trackState
   if (!id) return null
-
-  const { palette } = useTheme()
 
   let audioElement = useRef<HTMLAudioElement>(null)
 
@@ -322,7 +309,6 @@ const TrackForm = ({
         borderRadius: 'sm',
         border: '1px solid',
         borderColor: 'action.selected',
-        visibility: 'hidden',
       }}
     >
       <Card

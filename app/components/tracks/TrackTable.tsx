@@ -1,5 +1,4 @@
-import { KeyboardArrowUp } from '@mui/icons-material'
-import { Button, Sheet } from '@mui/joy'
+import { Sheet } from '@mui/joy'
 import {
   Table,
   TableBody,
@@ -14,7 +13,6 @@ import { useState } from 'react'
 import { processingState } from '~/api/audio'
 import { db, getState, useLiveQuery } from '~/api/db'
 import Dropzone, { itemsDropped } from '~/components/Dropzone'
-import InitialLoader from '~/components/InitialLoader'
 import Layout from '~/components/layout/Layout'
 import LeftNav from '~/components/layout/LeftNav'
 import { drawerButton, openDrawerState } from '~/components/layout/TrackDrawer'
@@ -32,7 +30,7 @@ const rowsPerPageState = superstate(10)
 const selectedState = superstate<number[]>([])
 
 const TrackTable = () => {
-  // Re-render when table selection or search changes
+  // Re-render when page or selection changes
   useSuperState(pageState)
   useSuperState(rowsPerPageState)
   useSuperState(selectedState)
@@ -45,6 +43,9 @@ const TrackTable = () => {
 
   // Close drawer button
   useSuperState(openDrawerState)
+
+  // Allow drag & drop files / folders into the table
+  const [dragOver, setDragOver] = useState(false)
 
   // Monitor db for track updates (and filter using searchquery if present)
   const tracks = useLiveQuery(
@@ -75,9 +76,6 @@ const TrackTable = () => {
     sortColumn: 'lastModified',
   }
 
-  // Allow drag & drop files / folders into the table
-  const [dragOver, setDragOver] = useState(false)
-
   // Avoid a layout jump when reaching the last page with empty rows
   const emptyRows =
     pageState.now() > 0
@@ -101,7 +99,7 @@ const TrackTable = () => {
           <LeftNav />
         </Layout.LeftNav>
 
-        <Layout.MainContent>
+        <Layout.MainContent sx={{ pr: 0, pt: 0 }}>
           <Sheet
             variant="outlined"
             id="track-table"

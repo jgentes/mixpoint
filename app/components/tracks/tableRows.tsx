@@ -11,6 +11,7 @@ import { superstate } from '@superstate/core'
 import { useSuperState } from '@superstate/react'
 import { useEffect, useMemo, useState } from 'react'
 import { analyzingState } from '~/api/audio'
+import { Track } from '~/api/db'
 import { tableOps } from '~/utils/tableOps'
 import { createColumnDefinitions } from './tableColumns'
 

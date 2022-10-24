@@ -37,7 +37,7 @@ const initPeaks = async ({
   // work backward from initialPeak to peak out start of track (zerotime) based on bpm
   while (startPoint - beatInterval > 0) startPoint -= beatInterval
 
-  // now that we have zerotime, move forward with peaks based on the bpm (hope the bpm is accurate!)
+  // now that we have zerotime, move forward with reagions based on the bpm (hope the bpm is accurate!)
   const regions: Partial<{
     start: number
     end: number
