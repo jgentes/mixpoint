@@ -1,18 +1,21 @@
 import moment from 'moment'
 import { ChangeEvent, MouseEvent } from 'react'
 import { db, getState, putState, Track } from '~/api/db'
-import { searchState } from '~/components/tracks/tableHeader'
 import {
   pageState,
   rowsPerPageState,
   selectedState,
-} from '~/routes/__boundary/tracks'
+} from '~/components/tracks/TrackTable'
 import { errorHandler } from '~/utils/notifications'
 
 const tableOps = {
   sort: async (event: MouseEvent<unknown>, property: keyof Track) => {
-    const sortColumn = (await getState('app', 'sortColumn')) || 'lastModified'
-    const sortDirection = (await getState('app', 'sortDirection')) || 'desc'
+    const { sortDirection } = (await getState('app', 'sortDirection')) || {
+      sortDirection: 'desc',
+    }
+    const { sortColumn } = (await getState('app', 'sortColumn')) || {
+      sortColumn: 'lastModified',
+    }
 
     const isAsc = sortColumn === property && sortDirection === 'asc'
 

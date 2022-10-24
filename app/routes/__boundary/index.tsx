@@ -1,2 +1,2 @@
 import { redirect } from '@remix-run/node'
-export const loader = () => redirect('/tracks')
+export const loader = () => redirect('/mixes')

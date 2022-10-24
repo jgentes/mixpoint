@@ -6,16 +6,24 @@ import {
   Replay,
   Stop,
 } from '@mui/icons-material'
-import { Button, Link, TextField, Typography } from '@mui/joy'
+import {
+  Button,
+  Card,
+  CardContent,
+  CardCover,
+  CardOverflow,
+  Link,
+  TextField,
+  Typography,
+} from '@mui/joy'
+import { useTheme } from '@mui/joy/styles'
 import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
-import Grid from '@mui/material/Unstable_Grid2'
-import { PeaksInstance } from 'peaks.js'
 import Slider, { SliderProps } from 'rc-slider'
 import { useEffect, useRef, useState } from 'react'
 import { db, putTrackState, Track, TrackState } from '~/api/db'
 import { Events } from '~/api/Events'
-import { openDrawerState } from '~/components/TrackDrawer'
-import Loader from '~/components/TrackLoader'
+import { openDrawerState } from '~/components/layout/TrackDrawer'
+import Loader from '~/components/tracks/TrackLoader'
 
 // Only load initPeaks in the browser
 let initPeaks: typeof import('~/api/initPeaks').initPeaks
@@ -37,50 +45,51 @@ const TrackForm = ({
   const [sliderControl, setSliderControl] = useState<SliderControlProps>()
   const [playing, setPlaying] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
-  const [waveform, setWaveform] = useState<PeaksInstance>()
   const [audioSrc, setAudioSrc] = useState('')
   const [bpmTimer, setBpmTimer] = useState<number>()
   const [track, setTrack] = useState<Track | undefined>()
+  const [zoomview, setZoomview] = useState<WaveSurfer | undefined>()
+  const [zoomValue, setZoomValue] = useState(1000)
+  const zoomviewRef = useRef(null)
 
   const { id, file, mixPoint } = trackState
   if (!id) return null
 
-  let audioElement = useRef<HTMLAudioElement>(null),
-    zoomView = waveform?.views.getView('zoomview')
+  const { palette } = useTheme()
+
+  let audioElement = useRef<HTMLAudioElement>(null)
 
   useEffect(() => {
-    let peaks: PeaksInstance
-    const getWaveform = async () => {
-      // build waveform
+    let zoomview: WaveSurfer
+    const renderWaveform = async () => {
       const track = await db.tracks.get(id)
-      setTrack(track)
       if (track) {
-        peaks = await initPeaks({
+        setTrack(track)
+        zoomview = await initPeaks({
           track,
           file,
+          zoomviewRef,
           isFromTrack,
-          waveformData: trackState.waveformData,
           setAnalyzing,
-          setWaveform,
           setAudioSrc,
           setSliderControl,
         })
+
+        if (zoomview) setZoomview(zoomview)
       }
     }
 
-    getWaveform()
+    renderWaveform()
 
     // add event listeners
-    Events.on('audio', audioEffect)
+    //Events.on('audio', audioEffect)
 
     // listener cleanup
     return () => {
       Events.remove('audio', audioEffect)
-      peaks?.destroy()
+      zoomview?.destroy()
     }
   }, [id, isFromTrack])
-
-  zoomView = waveform?.views.getView('zoomview')
 
   const audioEffect = (detail: { tracks: number[]; effect: string }) => {
     if (!detail.tracks.includes(id)) return
@@ -120,8 +129,8 @@ const TrackForm = ({
   }
 
   const selectTime = async (time: number) => {
-    waveform?.player.seek(time)
-    zoomView?.enableAutoScroll(false)
+    // waveform?.player.seek(time)
+    // zoomView?.enableAutoScroll(false)
 
     Events.dispatch('audio', {
       effect: 'play',
@@ -284,15 +293,15 @@ const TrackForm = ({
       <div
         style={{
           width: `${sliderControl?.width}px`,
-          paddingTop: isFromTrack ? '10px' : '20px',
-          paddingBottom: isFromTrack ? '20px' : '10px',
+          //paddingTop: isFromTrack ? '10px' : '20px',
+          //paddingBottom: isFromTrack ? '20px' : '10px',
         }}
       >
         {!sliderControl?.max ? null : (
           <Slider
             min={sliderControl.min || 0}
             max={sliderControl.max}
-            marks={sliderControl.marks || {}}
+            //marks={sliderControl.marks || {}}
             step={null}
             included={false}
             onAfterChange={time => selectTime(time)}
@@ -304,29 +313,36 @@ const TrackForm = ({
     </div>
   )
 
-  const zoomview = (
-    <div
-      id={`zoomview-container_${id}`}
-      style={{
-        height: '150px',
-        visibility: analyzing ? 'hidden' : 'visible',
-      }}
-    />
-  )
-
   const loader = analyzing ? <Loader style={{ margin: '15px 0' }} /> : null
 
   return (
-    <Grid container spacing={2}>
-      <Grid xs={4} id={`peaks-container_${id}`}>
-        {zoomview}
-        {slider}
-      </Grid>
-      <Grid xs={8}>
-        <div id={`overview-container_${id}`} style={{ height: '40px' }} />
-      </Grid>
-      <audio id={`audio_${id}`} src={audioSrc} ref={audioElement} />
-    </Grid>
+    <Card
+      variant="soft"
+      sx={{
+        borderRadius: 'sm',
+        border: '1px solid',
+        borderColor: 'action.selected',
+        visibility: 'hidden',
+      }}
+    >
+      <Card
+        ref={zoomviewRef}
+        sx={{
+          p: 0,
+          border: '1px solid',
+          borderColor: 'action.focus',
+          borderRadius: 'sm',
+          bgcolor: 'background.body',
+          overflow: 'hidden',
+          height: '100px',
+        }}
+        // onWheel={e => {
+        //   // check state first as debounce, then set set state, then zoom
+        //   e.deltaY > 100 ? zoomview?.zoom(64) : zoomview?.zoom(1000)
+        // }}
+      ></Card>
+      {/* <div id={`overview-container_${id}`} /> */}
+    </Card>
   )
 }
 

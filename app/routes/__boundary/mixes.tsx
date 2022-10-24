@@ -11,7 +11,7 @@ const Mixes: React.FunctionComponent = () => {
   const [playing, setPlaying] = useState(false)
 
   const { from: fromState, to: toState } =
-    (useLiveQuery(() => getState('mix')) as MixState) || {}
+    useLiveQuery(() => getState('mix')) || {}
   if (!fromState?.id && !toState?.id) return null
 
   const timeFormat = (secs: number) =>
@@ -72,9 +72,9 @@ const Mixes: React.FunctionComponent = () => {
 
   return (
     <Layout.MainContent>
-      <div style={{ display: 'flex' }}>
+      {/* <div style={{ display: 'flex' }}>
         <Box style={{ flex: '0 0 250px' }}>{mixPointControl}</Box>
-      </div>
+      </div> */}
 
       {!fromState?.id ? null : (
         <TrackForm trackState={fromState} isFromTrack={true} />

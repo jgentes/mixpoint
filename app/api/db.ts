@@ -95,7 +95,6 @@ interface TrackState {
   id?: Track['id']
   adjustedBpm?: Track['bpm']
   file?: File // this is to allow access on page refresh without prompting user for fileHandle permission
-  waveformData?: WaveformData | undefined
   mixPoint?: number
 }
 
@@ -170,18 +169,14 @@ interface StateTypes {
   app: AppState
 }
 
-// todo: fix this when typescript improves
-// use a single-call-signature overload to help TS determine the return type
-// https://stackoverflow.com/a/71726295/1058302
-// function getState<S extends keyof StateTypes>(key: S): StateTypes[S]
-async function getState(
-  table: keyof StateTypes,
-  key?: string
-): Promise<Partial<MixState>> {
-  const state = (await db[`${table}State`].orderBy('date').last()) || {}
-  // @ts-ignore - no easy TS fix for this as it doesn't know whether the key is
-  // valid for different tables
-  return key ? state[key] : state
+// this function is a work of typescript wizardry
+const getState = async <T extends keyof StateTypes>(
+  table: T,
+  key?: keyof StateTypes[T]
+): Promise<Partial<StateTypes[T]>> => {
+  const state =
+    ((await db[`${table}State`].orderBy('date').last()) as StateTypes[T]) || {}
+  return key ? ({ [key]: state[key] } as Partial<StateTypes[T]>) : state
 }
 
 const putState = async (

@@ -1,4 +1,5 @@
 import { styled } from '@mui/joy'
+import { NavLink } from '@remix-run/react'
 
 const LogoText = styled('span')`
   font-family: 'Public Sans', Menlo, Courier, monospace;
@@ -22,6 +23,10 @@ const LogoText = styled('span')`
   -webkit-text-stroke-color: rgb(255 255 255 / 35%);
 `
 
-const MixpointLogo = () => <LogoText>Mixpoint</LogoText>
+const MixpointLogo = () => (
+  <NavLink to="/" style={{ textDecoration: 'none' }}>
+    <LogoText>Mixpoint</LogoText>
+  </NavLink>
+)
 
 export default MixpointLogo

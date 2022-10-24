@@ -4,7 +4,7 @@ import { getState, putState, putTracks, Track, TrackState } from '~/api/db'
 import { getPermission } from '~/api/fileHandlers'
 
 import { confirmModalState } from '~/components/ConfirmModal'
-import { pageState } from '~/routes/__boundary/tracks'
+import { pageState } from '~/components/tracks/TrackTable'
 import { errorHandler } from '~/utils/notifications'
 
 const analyzingState = superstate<Track[]>([])

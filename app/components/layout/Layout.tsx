@@ -14,18 +14,21 @@ const Root = (props: BoxProps) => {
 }
 
 const Tracks = (props: BoxProps) => {
-  const leftNavOpen = useLiveQuery(() => getState('app', 'leftNavOpen'))
+  const { leftNavOpen } =
+    useLiveQuery(() => getState('app', 'leftNavOpen')) || {}
+
   return (
     <Box
       {...props}
       sx={{
         bgcolor: 'background.surface',
         display: 'grid',
+        height: 'calc(100% - 20px)',
         gridTemplateColumns: {
           xs: '1fr',
           sm: 'minmax(64px, 200px) minmax(450px, 1fr)',
         },
-        gridTemplateRows: '64px 1fr',
+        gridTemplateRows: '1fr',
         ...(leftNavOpen && {
           height: '100vh',
           overflow: 'hidden',
@@ -83,7 +86,7 @@ const MainContent = (props: BoxProps) => (
   <Box
     component="main"
     {...props}
-    sx={[{ p: 3 }, ...(Array.isArray(props.sx) ? props.sx : [props.sx])]}
+    sx={[{ px: 2 }, ...(Array.isArray(props.sx) ? props.sx : [props.sx])]}
   />
 )
 
@@ -93,7 +96,7 @@ const LeftNav = (props: BoxProps) => (
     {...props}
     sx={[
       {
-        p: 2,
+        pr: 2,
         borderRight: '1px solid',
         borderColor: 'divider',
         display: {

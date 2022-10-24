@@ -10,10 +10,10 @@ import {
 } from '@mui/joy'
 
 import {
-  FolderOpen,
+  Animation,
   JoinInner,
   KeyboardArrowDownRounded,
-  ListAlt,
+  TripOrigin,
 } from '@mui/icons-material'
 import { NavLink, useMatches } from '@remix-run/react'
 
@@ -24,7 +24,7 @@ const LeftNav = () => {
   const pathname = path[path.length - 1].pathname
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <List size="sm" sx={{ '--List-item-radius': '8px' }}>
         <ListItem nested sx={{ p: 0 }}>
           <Box
@@ -47,14 +47,6 @@ const LeftNav = () => {
             >
               Browse
             </Typography>
-            <IconButton
-              size="sm"
-              variant="plain"
-              color="primary"
-              sx={{ '--IconButton-size': '24px' }}
-            >
-              <KeyboardArrowDownRounded fontSize="small" color="primary" />
-            </IconButton>
           </Box>
           <List
             aria-labelledby="nav-list-browse"
@@ -69,7 +61,7 @@ const LeftNav = () => {
                   color={pathname == '/tracks' ? 'primary' : undefined}
                 >
                   <ListItemDecorator sx={{ color: 'inherit' }}>
-                    <FolderOpen sx={{ fontSize: '22px' }} />
+                    <TripOrigin sx={{ fontSize: '22px' }} />
                   </ListItemDecorator>
                   <ListItemContent>Tracks</ListItemContent>
                 </ListItemButton>
@@ -101,7 +93,9 @@ const LeftNav = () => {
                   color={pathname == '/sets' ? 'primary' : undefined}
                 >
                   <ListItemDecorator sx={{ color: 'inherit' }}>
-                    <ListAlt sx={{ fontSize: '22px' }} />
+                    <Animation
+                      sx={{ fontSize: '22px', transform: 'rotate(45deg)' }}
+                    />
                   </ListItemDecorator>
                   <ListItemContent>Sets</ListItemContent>
                 </ListItemButton>
@@ -109,7 +103,7 @@ const LeftNav = () => {
             </NavLink>
           </List>
         </ListItem>
-        <ListItem nested>
+        <ListItem nested sx={{ p: 0 }}>
           <Box
             sx={{
               mt: 2,
@@ -120,7 +114,7 @@ const LeftNav = () => {
             }}
           >
             <Typography
-              id="nav-list-tags"
+              id="nav-list-playlists"
               textColor="neutral.500"
               fontWeight={700}
               sx={{
@@ -129,19 +123,11 @@ const LeftNav = () => {
                 letterSpacing: '.1rem',
               }}
             >
-              Tags
+              Playlists
             </Typography>
-            <IconButton
-              size="sm"
-              variant="plain"
-              color="primary"
-              sx={{ '--IconButton-size': '24px' }}
-            >
-              <KeyboardArrowDownRounded fontSize="small" color="primary" />
-            </IconButton>
           </Box>
           <List
-            aria-labelledby="nav-list-tags"
+            aria-labelledby="nav-list-playlists"
             size="sm"
             sx={{
               '--List-decorator-size': '32px',
@@ -160,7 +146,7 @@ const LeftNav = () => {
                     }}
                   />
                 </ListItemDecorator>
-                <ListItemContent>Personal</ListItemContent>
+                <ListItemContent>Electro</ListItemContent>
               </ListItemButton>
             </ListItem>
             <ListItem>
@@ -175,7 +161,7 @@ const LeftNav = () => {
                     }}
                   />
                 </ListItemDecorator>
-                <ListItemContent>Work</ListItemContent>
+                <ListItemContent>House</ListItemContent>
               </ListItemButton>
             </ListItem>
             <ListItem>
@@ -190,7 +176,7 @@ const LeftNav = () => {
                     }}
                   />
                 </ListItemDecorator>
-                <ListItemContent>Travels</ListItemContent>
+                <ListItemContent>Drum & Bass</ListItemContent>
               </ListItemButton>
             </ListItem>
             <ListItem>
@@ -205,7 +191,7 @@ const LeftNav = () => {
                     }}
                   />
                 </ListItemDecorator>
-                <ListItemContent>Concert tickets</ListItemContent>
+                <ListItemContent>Downtempo</ListItemContent>
               </ListItemButton>
             </ListItem>
           </List>
