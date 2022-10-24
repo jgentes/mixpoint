@@ -13,6 +13,7 @@ import {
   Animation,
   JoinInner,
   KeyboardArrowDownRounded,
+  RadioButtonUnchecked,
   TripOrigin,
 } from '@mui/icons-material'
 import { NavLink, useMatches } from '@remix-run/react'
@@ -61,7 +62,9 @@ const LeftNav = () => {
                   color={pathname == '/tracks' ? 'primary' : undefined}
                 >
                   <ListItemDecorator sx={{ color: 'inherit' }}>
-                    <TripOrigin sx={{ fontSize: '22px' }} />
+                    <RadioButtonUnchecked
+                      sx={{ fontSize: '20px', color: '#1e87c1' }}
+                    />
                   </ListItemDecorator>
                   <ListItemContent>Tracks</ListItemContent>
                 </ListItemButton>
@@ -74,11 +77,7 @@ const LeftNav = () => {
                   color={pathname == '/mixes' ? 'primary' : undefined}
                 >
                   <ListItemDecorator sx={{ color: 'inherit' }}>
-                    <JoinInner
-                      sx={{
-                        fontSize: '22px',
-                      }}
-                    />
+                    <img src="/media/innerjoin32.png" width={20} />
                   </ListItemDecorator>
                   <ListItemContent>
                     <ListItemContent>Mixes</ListItemContent>
@@ -94,7 +93,11 @@ const LeftNav = () => {
                 >
                   <ListItemDecorator sx={{ color: 'inherit' }}>
                     <Animation
-                      sx={{ fontSize: '22px', transform: 'rotate(45deg)' }}
+                      sx={{
+                        fontSize: '22px',
+                        transform: 'rotate(45deg)',
+                        color: '#1e87c1',
+                      }}
                     />
                   </ListItemDecorator>
                   <ListItemContent>Sets</ListItemContent>
