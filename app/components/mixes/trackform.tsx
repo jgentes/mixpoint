@@ -62,7 +62,7 @@ const TrackForm = ({
           setSliderControl,
         })
 
-        if (zoomview) setZoomview(zoomview)
+        //if (zoomview) setZoomview(zoomview)
       }
     }
 
@@ -300,7 +300,15 @@ const TrackForm = ({
     </div>
   )
 
-  const loader = analyzing ? <Loader style={{ margin: '15px 0' }} /> : null
+  const loaderSx = {
+    p: 0,
+    border: '1px solid',
+    borderColor: 'action.focus',
+    borderRadius: 'sm',
+    bgcolor: 'background.body',
+    overflow: 'hidden',
+    height: '100px',
+  }
 
   return (
     <Card
@@ -309,64 +317,35 @@ const TrackForm = ({
         borderRadius: 'sm',
         border: '1px solid',
         borderColor: 'action.selected',
+        position: 'relative',
       }}
     >
       <Card
         ref={zoomviewRef}
-        sx={{
-          p: 0,
-          border: '1px solid',
-          borderColor: 'action.focus',
-          borderRadius: 'sm',
-          bgcolor: 'background.body',
-          overflow: 'hidden',
-          height: '100px',
-        }}
+        sx={{ ...loaderSx, zIndex: 1 }}
         // onWheel={e => {
         //   // check state first as debounce, then set set state, then zoom
         //   e.deltaY > 100 ? zoomview?.zoom(64) : zoomview?.zoom(1000)
         // }}
       ></Card>
+      {!analyzing ? null : (
+        <Card
+          sx={{
+            ...loaderSx,
+            zIndex: 2,
+            position: 'absolute',
+            left: 16,
+            top: 16,
+            right: 16,
+            bottom: 16,
+          }}
+        >
+          <Loader style={{ margin: 'auto' }} />
+        </Card>
+      )}
       {/* <div id={`overview-container_${id}`} /> */}
     </Card>
   )
 }
 
 export default TrackForm
-
-{
-  /* <Grid container spacing={2}>
-      <Grid xs={4}>
-      {zoomview}
-        {playerControl}
-        <Box
-          sx={{
-            flex: 'auto',
-            overflow: 'hidden',
-          }}
-        >
-          <div>
-            {isFromTrack && trackHeader}
-            <>{!isFromTrack && track?.name && slider}</>
-            <div id={`peaks-container_${id}`}>
-              {isFromTrack ? (
-                <>
-                  {loader}
-                  {zoomview}
-                </>
-              ) : (
-                <>
-                  {zoomview}
-                  {loader}
-                </>
-              )}
-            </div>
-            <>{isFromTrack && track?.name && slider}</>
-            {!isFromTrack && trackHeader}
-            <audio id={`audio_${id}`} src={audioSrc} ref={audioElement} />
-          </div>
-        </Box>
-      </Box>
-      <div id={`overview-container_${id}`} style={{ height: '40px' }} />
-    </Grid> */
-}

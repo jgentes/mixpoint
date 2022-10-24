@@ -30,7 +30,6 @@ const drawerButton = (direction: 'up' | 'down') => (
 
 const TrackDrawer = () => {
   useSuperState(openDrawerState)
-  console.log(openDrawerState.now())
   return (
     <>
       {drawerButton('up')}
