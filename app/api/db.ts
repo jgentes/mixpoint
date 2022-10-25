@@ -230,6 +230,15 @@ const addToMix = async (track: Track) => {
   await putState('mix', { from, to })
 }
 
+const removeFromMix = async (track: Track) => {
+  let { from, to } = await getState('mix')
+
+  from = from?.id == track.id ? undefined : from
+  to = to?.id == track.id ? undefined : to
+
+  await putState('mix', { from, to })
+}
+
 // db hooks to limit the number of rows in a state table
 const createHooks = (table: keyof StateTypes) => {
   db[`${table}State`].hook('creating', async () => {
@@ -253,6 +262,7 @@ export {
   getMix,
   removeMix,
   addToMix,
+  removeFromMix,
   useLiveQuery,
   getState,
   putState,

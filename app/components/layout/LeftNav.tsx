@@ -22,11 +22,10 @@ const LeftNav = () => {
       component="nav"
       sx={{
         display: 'flex',
+        flexDirection: 'column',
         p: 2,
         borderRight: '1px solid',
         borderColor: 'divider',
-        flexDirection: 'column',
-        height: '100%',
       }}
     >
       <List size="sm" sx={{ '--List-item-radius': '8px' }}>

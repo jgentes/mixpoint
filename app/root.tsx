@@ -1,6 +1,5 @@
 // this file establishes the root component that renders all subsequent / child routes
 // it also injects top level styling, HTML meta tags, links, and javascript for browser rendering
-import { Box } from '@mui/joy'
 import { CssVarsProvider } from '@mui/joy/styles'
 import { CssBaseline } from '@mui/material'
 import { LinksFunction, MetaFunction } from '@remix-run/node'
@@ -10,7 +9,6 @@ import { useEffect, useState } from 'react'
 import { ClientOnly } from 'remix-utils'
 import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
-import Header from '~/components/layout/Header'
 import { theme } from '~/theme'
 
 const meta: MetaFunction = () => {
@@ -35,28 +33,16 @@ const links: LinksFunction = () => [
 ]
 
 const Document = ({ children }: { children: React.ReactNode }) => (
-  <html lang="en">
+  <html lang="en" style={{ height: '100%' }}>
     <head>
       <Meta />
       <Links />
     </head>
-    <body style={{ margin: 0 }}>
+    <body style={{ margin: 0, height: '100%' }}>
       <LiveReload />
       {children}
     </body>
   </html>
-)
-
-const PageLayout = () => (
-  <Box
-    sx={{
-      bgcolor: 'background.surface',
-      minHeight: '100vh',
-    }}
-  >
-    <Header />
-    <Outlet />
-  </Box>
 )
 
 const ThemeLoader = () => {
@@ -78,7 +64,7 @@ const ThemeLoader = () => {
           <ClientOnly>{() => <InitialLoader />}</ClientOnly>
         ) : (
           <>
-            <PageLayout />
+            <Outlet />
             <ConfirmModal />
           </>
         )}

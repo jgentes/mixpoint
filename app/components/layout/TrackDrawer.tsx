@@ -36,7 +36,6 @@ const TrackDrawer = () => {
       <div
         style={{
           display: openDrawerState.now() ? 'block' : 'none',
-          height: '100%',
         }}
       >
         <Drawer
@@ -47,7 +46,6 @@ const TrackDrawer = () => {
           elevation={0}
           PaperProps={{
             sx: {
-              p: 2,
               height: '85%',
               bgcolor: 'background.surface',
             },

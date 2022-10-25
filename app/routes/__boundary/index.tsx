@@ -5,6 +5,7 @@ import { useSuperState } from '@superstate/react'
 import { useState } from 'react'
 import { getState, MixState, useLiveQuery } from '~/api/db'
 import { Events } from '~/api/Events'
+import Header from '~/components/layout/Header'
 import TrackDrawer, { openDrawerState } from '~/components/layout/TrackDrawer'
 import TrackCard from '~/components/mixes/TrackCard'
 import TrackView from '~/components/mixes/TrackView'
@@ -26,7 +27,7 @@ const Mixes: React.FunctionComponent = () => {
         <Button
           onClick={() => {
             setPlaying(false)
-            Events.dispatch('audio', {
+            Events.emit('audio', {
               effect: 'stop',
               tracks: [fromState?.id, toState?.id],
             })
@@ -40,7 +41,7 @@ const Mixes: React.FunctionComponent = () => {
         <Button
           onClick={() => {
             playing ? setPlaying(false) : setPlaying(true)
-            Events.dispatch('audio', {
+            Events.emit('audio', {
               effect: playing ? 'pause' : 'play',
               tracks: [fromState?.id, toState?.id],
             })
@@ -77,12 +78,14 @@ const Mixes: React.FunctionComponent = () => {
     <Box
       sx={{
         bgcolor: 'background.surface',
+        height: '100%',
       }}
     >
+      <Header />
       {!fromState?.id && !toState?.id ? (
         <TrackTable hideDrawerButton={true} />
       ) : (
-        <Box component="main" sx={{ p: 2 }}>
+        <Box component="main" sx={{ p: 2, height: 'calc(100vh - 60px)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
             {!fromState?.id ? null : <TrackView trackState={fromState} />}
             {!toState?.id ? null : <TrackView trackState={toState} />}

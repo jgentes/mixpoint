@@ -4,7 +4,13 @@ import { TableCellProps } from '@mui/material'
 import { SxProps } from '@mui/material/styles'
 import moment from 'moment'
 import { analyzeTracks, analyzingState } from '~/api/audio'
-import { addToMix, getState, Track, useLiveQuery } from '~/api/db'
+import {
+  addToMix,
+  getState,
+  removeFromMix,
+  Track,
+  useLiveQuery,
+} from '~/api/db'
 import TrackLoader from '~/components/tracks/TrackLoader'
 import { tableOps } from '~/utils/tableOps'
 
@@ -38,14 +44,13 @@ const createColumnDefinitions = (): {
         variant="outlined"
         className={isInMix ? 'visible' : 'visibleOnHover'}
         startDecorator={isInMix ? <Check /> : <Add />}
-        disabled={isInMix}
         color={isInMix ? 'success' : 'primary'}
         size="sm"
         sx={{
           maxHeight: '30px',
           alignSelf: 'center',
         }}
-        onClick={() => addToMix(track)}
+        onClick={() => (isInMix ? removeFromMix(track) : addToMix(track))}
       >
         {`Add${isInMix ? 'ed' : ' to Mix'}`}
       </Chip>
