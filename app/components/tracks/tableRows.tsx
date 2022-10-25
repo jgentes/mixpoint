@@ -45,6 +45,19 @@ const TableRows = ({
         selected={isItemSelected}
         onMouseEnter={() => row.id && showButtonState.set(row.id)}
         onMouseLeave={() => showButtonState.set(null)}
+        sx={{
+          'tr:hover .visibleOnHover': {
+            visibility: 'visible',
+          },
+
+          '.visibleOnHover': {
+            visibility: 'hidden',
+          },
+
+          '.visible': {
+            visibility: 'visible',
+          },
+        }}
       >
         <TableCell
           padding="none"

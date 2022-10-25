@@ -13,7 +13,6 @@ import Header from '~/components/layout/Header'
 import Layout from '~/components/layout/Layout'
 import LeftNav from '~/components/layout/LeftNav'
 import TrackDrawer from '~/components/layout/TrackDrawer'
-import globalStyles from '~/styles/globalStyles.css'
 import { theme } from '~/styles/theme'
 
 const meta: MetaFunction = () => {
@@ -34,10 +33,6 @@ const links: LinksFunction = () => [
   {
     rel: 'stylesheet',
     href: 'http://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400&family=Public+Sans:wght@300;400;500;700&display=swap',
-  },
-  {
-    rel: 'stylesheet',
-    href: globalStyles,
   },
 ]
 

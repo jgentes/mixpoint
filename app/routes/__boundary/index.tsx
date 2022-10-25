@@ -73,23 +73,15 @@ const Mixes: React.FunctionComponent = () => {
 
   return (
     <Layout.MainContent>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {!fromState?.id ? null : (
-          <TrackView trackState={fromState} isFromTrack={true} />
-        )}
-        {!toState?.id ? null : (
-          <TrackView trackState={toState} isFromTrack={false} />
-        )}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
-        {!fromState?.id ? null : (
-          <TrackCard trackState={fromState} isFromTrack={true} />
-        )}
-        {/* <Box style={{ flex: '0 0 250px' }}>{mixPointControl}</Box> */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+        {!fromState?.id ? null : <TrackView trackState={fromState} />}
+        {!toState?.id ? null : <TrackView trackState={toState} />}
+        <div style={{ display: 'flex', flexDirection: 'row', gap: 15 }}>
+          {!fromState?.id ? null : <TrackCard trackState={fromState} />}
+          {/* <Box style={{ flex: '0 0 250px' }}>{mixPointControl}</Box> */}
 
-        {!toState?.id ? null : (
-          <TrackCard trackState={toState} isFromTrack={false} />
-        )}
+          {!toState?.id ? null : <TrackCard trackState={toState} />}
+        </div>
       </div>
     </Layout.MainContent>
   )

@@ -1,7 +1,6 @@
 import {
   AccessTime,
   Eject,
-  LocalConvenienceStoreOutlined,
   Pause,
   PlayArrow,
   Replay,
@@ -21,13 +20,7 @@ if (typeof document !== 'undefined') {
   import('~/api/initWaveform').then(m => (initWaveform = m.initWaveform))
 }
 
-const TrackView = ({
-  trackState,
-  isFromTrack,
-}: {
-  trackState: TrackState
-  isFromTrack: boolean
-}) => {
+const TrackView = ({ trackState }: { trackState: TrackState }) => {
   const [playing, setPlaying] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
   const [bpmTimer, setBpmTimer] = useState<number>()
@@ -64,7 +57,7 @@ const TrackView = ({
       Events.off('audio', audioEffect)
       zoomview?.destroy()
     }
-  }, [id, isFromTrack])
+  }, [id])
 
   const audioEffect = (detail: { tracks: number[]; effect: string }) => {
     if (!detail.tracks.includes(id)) return
@@ -100,7 +93,7 @@ const TrackView = ({
     updatePlaybackRate(bpm)
 
     // store custom bpm value in trackstate
-    putTrackState(isFromTrack, { adjustedBpm: Number(bpm.toFixed(1)) })
+    //putTrackState(isFromTrack, { adjustedBpm: Number(bpm.toFixed(1)) })
   }
 
   const selectTime = async (time: number) => {
@@ -218,8 +211,6 @@ const TrackView = ({
       style={{
         display: 'flex',
         justifyContent: 'space-between',
-        marginBottom: isFromTrack ? '5px' : 0,
-        marginTop: isFromTrack ? 0 : '10px',
       }}
     >
       <div
@@ -243,7 +234,7 @@ const TrackView = ({
           level="h5"
           style={{
             display: 'inline',
-            verticalAlign: isFromTrack ? 'text-bottom' : 'middle',
+            verticalAlign: 'text-bottom',
           }}
         >
           {analyzing
@@ -280,11 +271,23 @@ const TrackView = ({
         sx={{
           ...loaderSx,
           zIndex: 1,
+
+          '.wavesurfer-playhead': {
+            width: 0,
+            height: 0,
+            marginLeft: '5px',
+            borderStyle: 'solid',
+            borderWidth: '7px 7px 0 7px',
+            borderColor: '#0492f79e transparent transparent transparent',
+          },
+
+          '.wavesurfer-playhead svg': {
+            display: 'none',
+          },
         }}
-        // onWheel={e => {
-        //   // check state first as debounce, then set set state, then zoom
-        //   e.deltaY > 100 ? zoomview?.zoom(64) : zoomview?.zoom(1000)
-        // }}
+        onWheel={e => {
+          e.deltaY > 100 ? Events.emit('zoomOut') : Events.emit('zoomIn')
+        }}
       ></Card>
       {!analyzing ? null : (
         <Card
@@ -298,7 +301,6 @@ const TrackView = ({
           <Loader style={{ margin: 'auto' }} />
         </Card>
       )}
-      {/* <div id={`overview-container_${id}`} /> */}
     </Card>
   )
 }

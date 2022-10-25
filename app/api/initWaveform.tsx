@@ -59,6 +59,7 @@ const initWaveform = async ({
     barGap: 1,
     cursorColor: '#0492f752',
     interact: false,
+    skipLength: beatInterval * 4,
     //@ts-ignore - author hasn't updated types for gradients
     waveColor: [
       'rgb(200, 165, 49)',
@@ -99,6 +100,10 @@ const initWaveform = async ({
         ],
         progressColor: 'rgba(0, 0, 0, 0.25)',
         interact: true,
+        scrollParent: false,
+        hideScrollbar: true,
+        pixelRatio: 1,
+        height: 50,
       }),
     ],
   })

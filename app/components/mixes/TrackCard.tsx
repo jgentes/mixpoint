@@ -14,13 +14,7 @@ import { Events } from '~/api/Events'
 import { openDrawerState } from '~/components/layout/TrackDrawer'
 import Loader from '~/components/tracks/TrackLoader'
 
-const TrackCard = ({
-  trackState,
-  isFromTrack,
-}: {
-  trackState: TrackState
-  isFromTrack: boolean
-}) => {
+const TrackCard = ({ trackState }: { trackState: TrackState }) => {
   const [playing, setPlaying] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
   const [bpmTimer, setBpmTimer] = useState<number>()
@@ -63,7 +57,7 @@ const TrackCard = ({
     updatePlaybackRate(bpm)
 
     // store custom bpm value in trackstate
-    putTrackState(isFromTrack, { adjustedBpm: Number(bpm.toFixed(1)) })
+    //putTrackState(isFromTrack, { adjustedBpm: Number(bpm.toFixed(1)) })
   }
 
   const selectTime = async (time: number) => {
@@ -181,8 +175,6 @@ const TrackCard = ({
       style={{
         display: 'flex',
         justifyContent: 'space-between',
-        marginBottom: isFromTrack ? '5px' : 0,
-        marginTop: isFromTrack ? 0 : '10px',
       }}
     >
       <div
@@ -206,7 +198,7 @@ const TrackCard = ({
           level="h5"
           style={{
             display: 'inline',
-            verticalAlign: isFromTrack ? 'text-bottom' : 'middle',
+            verticalAlign: 'text-bottom',
           }}
         >
           {analyzing
@@ -237,7 +229,7 @@ const TrackCard = ({
           borderRadius: 'sm',
           bgcolor: 'background.body',
           overflow: 'hidden',
-          height: '50px',
+          //height: '50px',
         }}
       />
     </Card>
