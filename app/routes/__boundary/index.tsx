@@ -1,19 +1,21 @@
 import { MergeType, Pause, PlayArrow, Stop } from '@mui/icons-material'
 import { Box, Button } from '@mui/joy'
 import { ButtonGroup } from '@mui/material'
+import { useSuperState } from '@superstate/react'
 import { useState } from 'react'
 import { getState, MixState, useLiveQuery } from '~/api/db'
 import { Events } from '~/api/Events'
-import Layout from '~/components/layout/Layout'
+import TrackDrawer, { openDrawerState } from '~/components/layout/TrackDrawer'
 import TrackCard from '~/components/mixes/TrackCard'
 import TrackView from '~/components/mixes/TrackView'
+import TrackTable from '~/components/tracks/TrackTable'
 
 const Mixes: React.FunctionComponent = () => {
   const [playing, setPlaying] = useState(false)
+  useSuperState(openDrawerState)
 
   const { from: fromState, to: toState } =
     useLiveQuery(() => getState('mix')) || {}
-  if (!fromState?.id && !toState?.id) return null
 
   const timeFormat = (secs: number) =>
     new Date(secs * 1000).toISOString().substring(15, 19)
@@ -72,18 +74,30 @@ const Mixes: React.FunctionComponent = () => {
   )
 
   return (
-    <Layout.MainContent>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
-        {!fromState?.id ? null : <TrackView trackState={fromState} />}
-        {!toState?.id ? null : <TrackView trackState={toState} />}
-        <div style={{ display: 'flex', flexDirection: 'row', gap: 15 }}>
-          {!fromState?.id ? null : <TrackCard trackState={fromState} />}
-          {/* <Box style={{ flex: '0 0 250px' }}>{mixPointControl}</Box> */}
+    <Box
+      sx={{
+        bgcolor: 'background.surface',
+      }}
+    >
+      {true /* {!fromState?.id && !toState?.id ? ( */ ? (
+        <TrackTable hideDrawerButton={true} />
+      ) : (
+        <>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+            {!fromState?.id ? null : <TrackView trackState={fromState} />}
+            {!toState?.id ? null : <TrackView trackState={toState} />}
+            <div style={{ display: 'flex', flexDirection: 'row', gap: 15 }}>
+              {!fromState?.id ? null : <TrackCard trackState={fromState} />}
+              {/* <Box style={{ flex: '0 0 250px' }}>{mixPointControl}</Box> */}
 
-          {!toState?.id ? null : <TrackCard trackState={toState} />}
-        </div>
-      </div>
-    </Layout.MainContent>
+              {!toState?.id ? null : <TrackCard trackState={toState} />}
+            </div>
+          </div>
+
+          <TrackDrawer />
+        </>
+      )}
+    </Box>
   )
 }
 

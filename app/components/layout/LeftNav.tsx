@@ -1,6 +1,5 @@
 import {
   Box,
-  IconButton,
   List,
   ListItem,
   ListItemButton,
@@ -9,13 +8,7 @@ import {
   Typography,
 } from '@mui/joy'
 
-import {
-  Animation,
-  JoinInner,
-  KeyboardArrowDownRounded,
-  RadioButtonUnchecked,
-  TripOrigin,
-} from '@mui/icons-material'
+import { Animation, RadioButtonUnchecked } from '@mui/icons-material'
 import { NavLink, useMatches } from '@remix-run/react'
 
 import Dropzone from '~/components/Dropzone'
@@ -25,7 +18,17 @@ const LeftNav = () => {
   const pathname = path[path.length - 1].pathname
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <Box
+      component="nav"
+      sx={{
+        display: 'flex',
+        p: 2,
+        borderRight: '1px solid',
+        borderColor: 'divider',
+        flexDirection: 'column',
+        height: '100%',
+      }}
+    >
       <List size="sm" sx={{ '--List-item-radius': '8px' }}>
         <ListItem nested sx={{ p: 0 }}>
           <Box

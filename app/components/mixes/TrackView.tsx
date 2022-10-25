@@ -1,12 +1,22 @@
 import {
   AccessTime,
+  CreateNewFolder,
   Eject,
+  Favorite,
   Pause,
   PlayArrow,
   Replay,
   Stop,
 } from '@mui/icons-material'
-import { Button, Card, Link, TextField, Typography } from '@mui/joy'
+import {
+  Button,
+  Card,
+  CardCover,
+  IconButton,
+  Link,
+  TextField,
+  Typography,
+} from '@mui/joy'
 import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { db, putTrackState, Track, TrackState } from '~/api/db'
@@ -33,6 +43,7 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
 
   useEffect(() => {
     let zoomview: WaveSurfer
+
     const renderWaveform = async () => {
       const track = await db.tracks.get(id)
       if (track) {
@@ -42,43 +53,52 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
           file,
           setAnalyzing,
         })
-        //if (zoomview) setZoomview(zoomview)
-        //Events.emit('zoomview', zoomview)
       }
     }
 
     renderWaveform()
 
+    const scrollEffect = (scrollEvent: {
+      direction: 'up' | 'down'
+      trackId: number
+    }) => {
+      const { direction, trackId } = scrollEvent
+      if (trackId == id)
+        direction == 'down' ? zoomview.skipBackward() : zoomview.skipForward()
+    }
+
+    const audioEffect = (detail: { tracks: number[]; effect: string }) => {
+      if (!detail.tracks.includes(id)) return
+
+      setPlaying(detail.effect == 'play')
+
+      switch (detail.effect) {
+        case 'play':
+          zoomview.enableAutoScroll(true)
+          audioElement.current?.play()
+          break
+        case 'pause':
+          audioElement.current?.pause()
+          zoomview.enableAutoScroll(true)
+          break
+        case 'stop':
+          audioElement.current?.pause()
+          waveform?.player.seek(mixPoint || 0)
+          zoomview.enableAutoScroll(true)
+      }
+    }
+
     // add event listeners
     //Events.on('audio', audioEffect)
+    Events.on('scroll', scrollEffect)
 
     // listener cleanup
     return () => {
       Events.off('audio', audioEffect)
+      Events.off('scroll', scrollEffect)
       zoomview?.destroy()
     }
   }, [id])
-
-  const audioEffect = (detail: { tracks: number[]; effect: string }) => {
-    if (!detail.tracks.includes(id)) return
-
-    setPlaying(detail.effect == 'play')
-
-    switch (detail.effect) {
-      case 'play':
-        zoomView?.enableAutoScroll(true)
-        audioElement.current?.play()
-        break
-      case 'pause':
-        audioElement.current?.pause()
-        zoomView?.enableAutoScroll(true)
-        break
-      case 'stop':
-        audioElement.current?.pause()
-        waveform?.player.seek(mixPoint || 0)
-        zoomView?.enableAutoScroll(true)
-    }
-  }
 
   const updatePlaybackRate = (bpm: number) => {
     // update play speed to new bpm
@@ -156,7 +176,7 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
       }}
       value={adjustedBpm || track?.bpm?.toFixed(1) || 0}
       id={`bpmInput_${id}`}
-      variant="soft"
+      variant="outlined"
       endDecorator={<ResetBpmLink />}
     />
   )
@@ -211,6 +231,9 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
       style={{
         display: 'flex',
         justifyContent: 'space-between',
+        // position: 'absolute',
+        // inset: 0,
+        // padding: '15px 5px 0 20px',
       }}
     >
       <div
@@ -220,7 +243,7 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
           whiteSpace: 'nowrap',
         }}
       >
-        <Button
+        {/* <Button
           size="sm"
           variant="outlined"
           onClick={() => openDrawerState.set(true)}
@@ -228,11 +251,11 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
           style={{ marginRight: '8px' }}
         >
           <Eject titleAccess="Load Track" />
-        </Button>
+        </Button> */}
 
         <Typography
-          level="h5"
-          style={{
+          level="body1"
+          sx={{
             display: 'inline',
             verticalAlign: 'text-bottom',
           }}
@@ -242,7 +265,6 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
             : track?.name?.replace(/\.[^/.]+$/, '') || 'No Track Loaded..'}
         </Typography>
       </div>
-      {bpmControl}
     </div>
   )
 
@@ -260,35 +282,89 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
     <Card
       variant="soft"
       sx={{
+        // pt: 5,
         borderRadius: 'sm',
         border: '1px solid',
         borderColor: 'action.selected',
         position: 'relative',
       }}
     >
-      <Card
-        id={`zoomview-container_${id}`}
-        sx={{
-          ...loaderSx,
-          zIndex: 1,
+      <Box sx={{ position: 'relative' }}>
+        <Card
+          id={`zoomview-container_${id}`}
+          sx={{
+            ...loaderSx,
+            zIndex: 1,
 
-          '.wavesurfer-playhead': {
-            width: 0,
-            height: 0,
-            marginLeft: '5px',
-            borderStyle: 'solid',
-            borderWidth: '7px 7px 0 7px',
-            borderColor: '#0492f79e transparent transparent transparent',
-          },
+            '.wavesurfer-playhead': {
+              width: 0,
+              height: 0,
+              marginLeft: '5px',
+              borderStyle: 'solid',
+              borderWidth: '7px 7px 0 7px',
+              borderColor: '#0492f79e transparent transparent transparent',
+            },
 
-          '.wavesurfer-playhead svg': {
-            display: 'none',
-          },
-        }}
-        onWheel={e => {
-          e.deltaY > 100 ? Events.emit('zoomOut') : Events.emit('zoomIn')
-        }}
-      ></Card>
+            '.wavesurfer-playhead svg': {
+              display: 'none',
+            },
+          }}
+          onWheel={e =>
+            Events.emit('scroll', {
+              direction: e.deltaY > 100 ? 'down' : 'up',
+              trackId: id,
+            })
+          }
+        ></Card>
+        <CardCover
+          className="gradient-cover"
+          sx={{
+            '&:hover, &:focus-within': {
+              opacity: 1,
+            },
+            opacity: 0,
+            transition: '0.1s ease-in',
+            background:
+              'linear-gradient(180deg, transparent 62%, rgba(0,0,0,0.00345888) 63.94%, rgba(0,0,0,0.014204) 65.89%, rgba(0,0,0,0.0326639) 67.83%, rgba(0,0,0,0.0589645) 69.78%, rgba(0,0,0,0.0927099) 71.72%, rgba(0,0,0,0.132754) 73.67%, rgba(0,0,0,0.177076) 75.61%, rgba(0,0,0,0.222924) 77.56%, rgba(0,0,0,0.267246) 79.5%, rgba(0,0,0,0.30729) 81.44%, rgba(0,0,0,0.341035) 83.39%, rgba(0,0,0,0.367336) 85.33%, rgba(0,0,0,0.385796) 87.28%, rgba(0,0,0,0.396541) 89.22%, rgba(0,0,0,0.4) 91.17%)',
+          }}
+        >
+          {/* The first box acts as a container that inherits style from the CardCover */}
+          <Box>
+            <Box
+              sx={{
+                p: 2,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                flexGrow: 1,
+                alignSelf: 'flex-end',
+              }}
+            >
+              <Typography level="h2" noWrap sx={{ fontSize: 'lg' }}>
+                <Link
+                  href="#dribbble-shot"
+                  overlay
+                  underline="none"
+                  sx={{
+                    color: '#fff',
+                    textOverflow: 'ellipsis',
+                    overflow: 'hidden',
+                    display: 'block',
+                  }}
+                >
+                  Yosemite
+                </Link>
+              </Typography>
+              <IconButton size="sm" color="neutral" sx={{ ml: 'auto' }}>
+                <CreateNewFolder />
+              </IconButton>
+              <IconButton size="sm" color="neutral">
+                <Favorite />
+              </IconButton>
+            </Box>
+          </Box>
+        </CardCover>
+      </Box>
       {!analyzing ? null : (
         <Card
           sx={{

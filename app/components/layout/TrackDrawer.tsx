@@ -1,13 +1,13 @@
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material'
 import { Button } from '@mui/joy'
-import { Drawer } from '@mui/material'
+import { Drawer, DrawerProps } from '@mui/material'
 import { superstate } from '@superstate/core'
 import { useSuperState } from '@superstate/react'
 import TrackTable from '~/components//tracks/TrackTable'
 
 const openDrawerState = superstate(false)
 
-const drawerButton = (direction: 'up' | 'down') => (
+const DrawerButton = ({ direction }: { direction: 'up' | 'down' }) => (
   <Button
     variant="plain"
     size="sm"
@@ -28,26 +28,43 @@ const drawerButton = (direction: 'up' | 'down') => (
   </Button>
 )
 
-const TrackDrawer = () => {
+const TrackDrawer = ({
+  drawerProps,
+  hideButton,
+}: {
+  drawerProps?: Partial<DrawerProps>
+  hideButton?: boolean
+}) => {
   useSuperState(openDrawerState)
   return (
     <>
-      {drawerButton('up')}
-      <Drawer
-        anchor="bottom"
-        transitionDuration={400}
-        open={openDrawerState.now()}
-        onClose={() => openDrawerState.set(false)}
-        elevation={0}
-        PaperProps={{
-          sx: { p: 2, height: '85%', bgcolor: 'background.surface' },
-          variant: 'outlined',
+      {hideButton ? null : <DrawerButton direction="up" />}
+      <div
+        style={{
+          display: openDrawerState.now() ? 'block' : 'none',
+          height: '100%',
         }}
       >
-        <TrackTable />
-      </Drawer>
+        <Drawer
+          anchor="bottom"
+          transitionDuration={400}
+          open={openDrawerState.now()}
+          onClose={() => openDrawerState.set(false)}
+          elevation={0}
+          PaperProps={{
+            sx: {
+              p: 2,
+              height: '85%',
+              bgcolor: 'background.surface',
+            },
+            variant: 'outlined',
+          }}
+        >
+          <TrackTable />
+        </Drawer>
+      </div>
     </>
   )
 }
 
-export { TrackDrawer as default, openDrawerState, drawerButton }
+export { TrackDrawer as default, openDrawerState, DrawerButton }

@@ -1,24 +1,21 @@
 // this file establishes the root component that renders all subsequent / child routes
 // it also injects top level styling, HTML meta tags, links, and javascript for browser rendering
+import { Box } from '@mui/joy'
 import { CssVarsProvider } from '@mui/joy/styles'
 import { LinksFunction, MetaFunction } from '@remix-run/node'
 import { Links, LiveReload, Meta, Outlet, Scripts } from '@remix-run/react'
 import { SnackbarProvider } from 'notistack'
 import { useEffect, useState } from 'react'
 import { ClientOnly } from 'remix-utils'
-import { getState, useLiveQuery } from '~/api/db'
 import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import Header from '~/components/layout/Header'
-import Layout from '~/components/layout/Layout'
-import LeftNav from '~/components/layout/LeftNav'
-import TrackDrawer from '~/components/layout/TrackDrawer'
-import { theme } from '~/styles/theme'
+import { theme } from '~/theme'
 
 const meta: MetaFunction = () => {
   return {
     title: 'Mixpoint',
-    description: 'Mixpoint is multi-track audio editor for the modern dj',
+    description: 'Mixpoint is multi-track audio mixing app for the modern dj',
     charset: 'utf-8',
   }
 }
@@ -49,27 +46,17 @@ const Document = ({ children }: { children: React.ReactNode }) => (
   </html>
 )
 
-const PageLayout = () => {
-  const { leftNavOpen } =
-    useLiveQuery(() => getState('app', 'leftNavOpen')) || {}
-
-  return (
-    <>
-      {leftNavOpen && (
-        <Layout.MobileNav>
-          <LeftNav />
-        </Layout.MobileNav>
-      )}
-      <Layout.Root>
-        <Layout.Header>
-          <Header />
-        </Layout.Header>
-        <Outlet />
-        <TrackDrawer />
-      </Layout.Root>
-    </>
-  )
-}
+const PageLayout = () => (
+  <Box
+    sx={{
+      bgcolor: 'background.surface',
+      minHeight: '100vh',
+    }}
+  >
+    <Header />
+    <Outlet />
+  </Box>
+)
 
 const ThemeLoader = () => {
   const [loading, setLoading] = useState(true)
