@@ -33,7 +33,7 @@ const muiTheme = extendMuiTheme({
           borderColor: '#0492f79e transparent transparent transparent',
         },
 
-        '.wavesurfer-playhead svg': {
+        '.wavesurfer-playhead svg, .wavesurfer-playhead div': {
           display: 'none',
         },
       },

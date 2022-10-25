@@ -14,9 +14,8 @@ import TrackTable from '~/components/tracks/TrackTable'
 const Mixes: React.FunctionComponent = () => {
   const [playing, setPlaying] = useState(false)
   useSuperState(openDrawerState)
-
-  const { from: fromState, to: toState } =
-    useLiveQuery(() => getState('mix')) || {}
+  console.log('openDrawerState', openDrawerState.now())
+  const { from, to } = useLiveQuery(() => getState('mix')) || {}
 
   const timeFormat = (secs: number) =>
     new Date(secs * 1000).toISOString().substring(15, 19)
@@ -29,7 +28,7 @@ const Mixes: React.FunctionComponent = () => {
             setPlaying(false)
             Events.emit('audio', {
               effect: 'stop',
-              tracks: [fromState?.id, toState?.id],
+              tracks: [from?.id, to?.id],
             })
           }}
           id={`stopButton_mix`}
@@ -43,7 +42,7 @@ const Mixes: React.FunctionComponent = () => {
             playing ? setPlaying(false) : setPlaying(true)
             Events.emit('audio', {
               effect: playing ? 'pause' : 'play',
-              tracks: [fromState?.id, toState?.id],
+              tracks: [from?.id, to?.id],
             })
           }}
           id={`playButton_mix`}
@@ -61,7 +60,7 @@ const Mixes: React.FunctionComponent = () => {
           margin: '10px 2px',
         }}
       >
-        {timeFormat(fromState?.mixPoint || 0)}
+        {timeFormat(from?.mixPoint || 0)}
         <MergeType
           sx={{
             alignSelf: 'center',
@@ -69,7 +68,7 @@ const Mixes: React.FunctionComponent = () => {
             transform: 'rotate(90deg)',
           }}
         />
-        {timeFormat(toState?.mixPoint || 0)}
+        {timeFormat(to?.mixPoint || 0)}
       </div>
     </>
   )
@@ -82,18 +81,18 @@ const Mixes: React.FunctionComponent = () => {
       }}
     >
       <Header />
-      {!fromState?.id && !toState?.id ? (
+      {!from?.id && !to?.id ? (
         <TrackTable hideDrawerButton={true} />
       ) : (
-        <Box component="main" sx={{ p: 2, height: 'calc(100vh - 60px)' }}>
+        <Box component="main" sx={{ p: 2, height: '90vh' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
-            {!fromState?.id ? null : <TrackView trackState={fromState} />}
-            {!toState?.id ? null : <TrackView trackState={toState} />}
+            {!from?.id ? null : <TrackView trackState={from} />}
+            {!to?.id ? null : <TrackView trackState={to} />}
             <div style={{ display: 'flex', flexDirection: 'row', gap: 15 }}>
-              {!fromState?.id ? null : <TrackCard trackState={fromState} />}
+              {!from?.id ? null : <TrackCard trackState={from} />}
               {/* <Box style={{ flex: '0 0 250px' }}>{mixPointControl}</Box> */}
 
-              {!toState?.id ? null : <TrackCard trackState={toState} />}
+              {!to?.id ? null : <TrackCard trackState={to} />}
             </div>
           </div>
 

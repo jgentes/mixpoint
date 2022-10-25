@@ -1,25 +1,18 @@
 import {
   AccessTime,
-  CreateNewFolder,
   Eject,
+  EventBusy,
   Favorite,
   Pause,
   PlayArrow,
   Replay,
   Stop,
 } from '@mui/icons-material'
-import {
-  Button,
-  Card,
-  CardCover,
-  IconButton,
-  Link,
-  TextField,
-  Typography,
-} from '@mui/joy'
+import { Card, Chip, Link, TextField, Typography } from '@mui/joy'
 import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
+import { useSuperState } from '@superstate/react'
 import { useEffect, useRef, useState } from 'react'
-import { db, putTrackState, Track, TrackState } from '~/api/db'
+import { db, putTrackState, removeFromMix, Track, TrackState } from '~/api/db'
 import { Events } from '~/api/Events'
 import { openDrawerState } from '~/components/layout/TrackDrawer'
 import Loader from '~/components/tracks/TrackLoader'
@@ -35,6 +28,8 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
   const [analyzing, setAnalyzing] = useState(false)
   const [bpmTimer, setBpmTimer] = useState<number>()
   const [track, setTrack] = useState<Track | undefined>()
+
+  useSuperState(openDrawerState)
 
   const { id, file, mixPoint } = trackState
   if (!id) return null
@@ -226,46 +221,59 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
     </Box>
   )
 
+  const ejectTrack = () => {
+    if (track) removeFromMix(track?.id)
+    openDrawerState.set(true)
+  }
+
   const trackHeader = (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        // position: 'absolute',
-        // inset: 0,
-        // padding: '15px 5px 0 20px',
-      }}
-    >
-      <div
-        style={{
-          textOverflow: 'ellipsis',
-          overflow: 'hidden',
-          whiteSpace: 'nowrap',
+    <Box sx={{ display: 'flex', gap: 1, mt: 1.5, alignItems: 'center' }}>
+      <Chip
+        variant="outlined"
+        color="primary"
+        size="sm"
+        onClick={() => ejectTrack()}
+        sx={{
+          borderRadius: 'sm',
+          py: 0.25,
         }}
       >
-        {/* <Button
-          size="sm"
-          variant="outlined"
-          onClick={() => openDrawerState.set(true)}
-          id={`loadButton_${id}`}
-          style={{ marginRight: '8px' }}
-        >
-          <Eject titleAccess="Load Track" />
-        </Button> */}
+        <Eject titleAccess="Load Track" />
+      </Chip>
+      <Typography sx={{ fontSize: 'sm', fontWeight: 'md' }}>
+        {analyzing
+          ? 'Loading...'
+          : track?.name?.replace(/\.[^/.]+$/, '') || 'No Track Loaded..'}
+      </Typography>
 
-        <Typography
-          level="body1"
-          sx={{
-            display: 'inline',
-            verticalAlign: 'text-bottom',
-          }}
-        >
-          {analyzing
-            ? 'Loading..'
-            : track?.name?.replace(/\.[^/.]+$/, '') || 'No Track Loaded..'}
-        </Typography>
-      </div>
-    </div>
+      <Link
+        href="#dribbble-shot"
+        level="body3"
+        underline="none"
+        startDecorator={<Favorite />}
+        sx={{
+          fontWeight: 'md',
+          ml: 'auto',
+          color: 'text.secondary',
+          '&:hover': { color: 'danger.plainColor' },
+        }}
+      >
+        117
+      </Link>
+      <Link
+        href="#dribbble-shot"
+        level="body3"
+        underline="none"
+        startDecorator={<EventBusy />}
+        sx={{
+          fontWeight: 'md',
+          color: 'text.secondary',
+          '&:hover': { color: 'primary.plainColor' },
+        }}
+      >
+        10.4k
+      </Link>
+    </Box>
   )
 
   const loaderSx = {
@@ -286,72 +294,22 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
         borderRadius: 'sm',
         border: '1px solid',
         borderColor: 'action.selected',
-        position: 'relative',
       }}
     >
-      <Box sx={{ position: 'relative' }}>
-        <Card
-          id={`zoomview-container_${id}`}
-          sx={{
-            ...loaderSx,
-            zIndex: 1,
-          }}
-          onWheel={e =>
-            Events.emit('scroll', {
-              direction: e.deltaY > 100 ? 'down' : 'up',
-              trackId: id,
-            })
-          }
-        ></Card>
-        <CardCover
-          className="gradient-cover"
-          sx={{
-            '&:hover, &:focus-within': {
-              opacity: 1,
-            },
-            opacity: 0,
-            transition: '0.1s ease-in',
-            background:
-              'linear-gradient(180deg, transparent 62%, rgba(0,0,0,0.00345888) 63.94%, rgba(0,0,0,0.014204) 65.89%, rgba(0,0,0,0.0326639) 67.83%, rgba(0,0,0,0.0589645) 69.78%, rgba(0,0,0,0.0927099) 71.72%, rgba(0,0,0,0.132754) 73.67%, rgba(0,0,0,0.177076) 75.61%, rgba(0,0,0,0.222924) 77.56%, rgba(0,0,0,0.267246) 79.5%, rgba(0,0,0,0.30729) 81.44%, rgba(0,0,0,0.341035) 83.39%, rgba(0,0,0,0.367336) 85.33%, rgba(0,0,0,0.385796) 87.28%, rgba(0,0,0,0.396541) 89.22%, rgba(0,0,0,0.4) 91.17%)',
-          }}
-        >
-          {/* The first box acts as a container that inherits style from the CardCover */}
-          <Box>
-            <Box
-              sx={{
-                p: 2,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.5,
-                flexGrow: 1,
-                alignSelf: 'flex-end',
-              }}
-            >
-              <Typography level="h2" noWrap sx={{ fontSize: 'lg' }}>
-                <Link
-                  href="#dribbble-shot"
-                  overlay
-                  underline="none"
-                  sx={{
-                    color: '#fff',
-                    textOverflow: 'ellipsis',
-                    overflow: 'hidden',
-                    display: 'block',
-                  }}
-                >
-                  Yosemite
-                </Link>
-              </Typography>
-              <IconButton size="sm" color="neutral" sx={{ ml: 'auto' }}>
-                <CreateNewFolder />
-              </IconButton>
-              <IconButton size="sm" color="neutral">
-                <Favorite />
-              </IconButton>
-            </Box>
-          </Box>
-        </CardCover>
-      </Box>
+      <Card
+        id={`zoomview-container_${id}`}
+        sx={{
+          ...loaderSx,
+          zIndex: 1,
+        }}
+        onWheel={e =>
+          Events.emit('scroll', {
+            direction: e.deltaY > 100 ? 'down' : 'up',
+            trackId: id,
+          })
+        }
+      ></Card>
+      {trackHeader}
       {!analyzing ? null : (
         <Card
           sx={{

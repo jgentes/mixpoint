@@ -50,7 +50,7 @@ const createColumnDefinitions = (): {
           maxHeight: '30px',
           alignSelf: 'center',
         }}
-        onClick={() => (isInMix ? removeFromMix(track) : addToMix(track))}
+        onClick={() => (isInMix ? removeFromMix(track.id) : addToMix(track))}
       >
         {`Add${isInMix ? 'ed' : ' to Mix'}`}
       </Chip>

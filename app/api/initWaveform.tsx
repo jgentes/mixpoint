@@ -79,9 +79,10 @@ const initWaveform = async ({
         showTime: true,
         opacity: '1',
         customShowTimeStyle: {
-          color: '#000',
-          padding: '4px',
-          'font-size': '12px',
+          color: '#eee',
+          padding: '0 4px',
+          'font-size': '10px',
+          backgroundColor: 'rgba(0, 0, 0, 0.3)',
         },
       }),
       RegionsPlugin.create({

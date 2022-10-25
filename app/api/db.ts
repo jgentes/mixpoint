@@ -219,6 +219,7 @@ const putTrackState = async (
 const addToMix = async (track: Track) => {
   let { from, to } = await getState('mix')
 
+  // store file for access on page refresh
   const file = await getPermission(track)
   if (!file) return
 
@@ -227,14 +228,14 @@ const addToMix = async (track: Track) => {
   if (!from) from = state
   else to = state
 
-  await putState('mix', { from, to })
+  putState('mix', { from, to })
 }
 
-const removeFromMix = async (track: Track) => {
+const removeFromMix = async (id: Track['id']) => {
   let { from, to } = await getState('mix')
 
-  from = from?.id == track.id ? undefined : from
-  to = to?.id == track.id ? undefined : to
+  from = from?.id == id ? undefined : from
+  to = to?.id == id ? undefined : to
 
   await putState('mix', { from, to })
 }

@@ -31,8 +31,8 @@ import {
 } from '~/api/db'
 import { browseFile } from '~/api/fileHandlers'
 import { confirmModalState } from '~/components/ConfirmModal'
-import { selectedState } from '~/components/tracks/TrackTable'
 import { createColumnDefinitions } from '~/components/tracks/tableColumns'
+import { selectedState } from '~/components/tracks/TrackTable'
 
 // Broadcast search query
 const searchState = superstate<string | number>('')
@@ -97,7 +97,7 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
       {numSelected > 0 ? (
         <Typography component="div">{numSelected} selected</Typography>
       ) : (
-        <Typography id="tableTitle" component="div">
+        <Typography id="tableTitle" component="div" sx={{ flexBasis: '200px' }}>
           {trackCount} Track{trackCount == 1 ? '' : 's'}
           {!dirtyTracks.length ? null : (
             <Link
@@ -142,24 +142,20 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
         }}
       />
       {numSelected == 0 ? (
-        <div style={{ alignSelf: 'center' }}>
-          <Button size="sm" variant="soft" onClick={browseFile}>
-            <Add />
-            Add Track
-          </Button>
-        </div>
+        <Button size="sm" variant="soft" onClick={browseFile}>
+          <Add />
+          Add Track
+        </Button>
       ) : (
-        <>
-          <IconButton
-            variant="plain"
-            title="Remove tracks"
-            size="sm"
-            color="neutral"
-            onClick={() => showRemoveTracksModal()}
-          >
-            <Delete />
-          </IconButton>
-        </>
+        <IconButton
+          variant="plain"
+          title="Remove tracks"
+          size="sm"
+          color="neutral"
+          onClick={() => showRemoveTracksModal()}
+        >
+          <Delete />
+        </IconButton>
       )}
     </Toolbar>
   )
