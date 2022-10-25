@@ -1,6 +1,6 @@
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material'
 import { Button } from '@mui/joy'
-import { Drawer, DrawerProps } from '@mui/material'
+import { Drawer } from '@mui/material'
 import { superstate } from '@superstate/core'
 import { useSuperState } from '@superstate/react'
 import TrackTable from '~/components//tracks/TrackTable'
@@ -28,17 +28,11 @@ const DrawerButton = ({ direction }: { direction: 'up' | 'down' }) => (
   </Button>
 )
 
-const TrackDrawer = ({
-  drawerProps,
-  hideButton,
-}: {
-  drawerProps?: Partial<DrawerProps>
-  hideButton?: boolean
-}) => {
+const TrackDrawer = () => {
   useSuperState(openDrawerState)
   return (
     <>
-      {hideButton ? null : <DrawerButton direction="up" />}
+      <DrawerButton direction="up" />
       <div
         style={{
           display: openDrawerState.now() ? 'block' : 'none',

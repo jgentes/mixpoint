@@ -10,6 +10,34 @@ const muiTheme = extendMuiTheme({
   // This is required to point to `var(--joy-*)` because we are using `CssVarsProvider` from Joy UI.
   cssVarPrefix: 'joy',
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        'tr:hover .visibleOnHover': {
+          visibility: 'visible',
+        },
+
+        '.visibleOnHover': {
+          visibility: 'hidden',
+        },
+
+        '.visible': {
+          visibility: 'visible',
+        },
+
+        '.wavesurfer-playhead': {
+          width: 0,
+          height: 0,
+          marginLeft: '5px',
+          borderStyle: 'solid',
+          borderWidth: '7px 7px 0 7px',
+          borderColor: '#0492f79e transparent transparent transparent',
+        },
+
+        '.wavesurfer-playhead svg': {
+          display: 'none',
+        },
+      },
+    },
     MuiTable: {
       styleOverrides: {
         root: {

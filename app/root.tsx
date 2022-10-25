@@ -2,6 +2,7 @@
 // it also injects top level styling, HTML meta tags, links, and javascript for browser rendering
 import { Box } from '@mui/joy'
 import { CssVarsProvider } from '@mui/joy/styles'
+import { CssBaseline } from '@mui/material'
 import { LinksFunction, MetaFunction } from '@remix-run/node'
 import { Links, LiveReload, Meta, Outlet, Scripts } from '@remix-run/react'
 import { SnackbarProvider } from 'notistack'
@@ -71,7 +72,8 @@ const ThemeLoader = () => {
 
   return (
     <SnackbarProvider preventDuplicate maxSnack={3}>
-      <CssVarsProvider theme={theme} disableTransitionOnChange>
+      <CssVarsProvider theme={theme}>
+        <CssBaseline />
         {loading ? (
           <ClientOnly>{() => <InitialLoader />}</ClientOnly>
         ) : (

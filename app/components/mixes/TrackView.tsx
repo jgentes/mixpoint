@@ -295,19 +295,6 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
           sx={{
             ...loaderSx,
             zIndex: 1,
-
-            '.wavesurfer-playhead': {
-              width: 0,
-              height: 0,
-              marginLeft: '5px',
-              borderStyle: 'solid',
-              borderWidth: '7px 7px 0 7px',
-              borderColor: '#0492f79e transparent transparent transparent',
-            },
-
-            '.wavesurfer-playhead svg': {
-              display: 'none',
-            },
           }}
           onWheel={e =>
             Events.emit('scroll', {

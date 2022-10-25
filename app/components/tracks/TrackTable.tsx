@@ -28,7 +28,7 @@ const pageState = superstate(0)
 const rowsPerPageState = superstate(10)
 const selectedState = superstate<number[]>([])
 
-const TrackTable = ({ hideDrawerButton }: { hideDrawerButton: boolean }) => {
+const TrackTable = ({ hideDrawerButton }: { hideDrawerButton?: boolean }) => {
   // Re-render when page or selection changes
   useSuperState(pageState)
   useSuperState(rowsPerPageState)
