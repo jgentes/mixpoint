@@ -2,6 +2,7 @@ import { Add, Check, GraphicEq } from '@mui/icons-material'
 import { Box, Chip } from '@mui/joy'
 import { TableCellProps } from '@mui/material'
 import { SxProps } from '@mui/material/styles'
+import { useSuperState } from '@superstate/react'
 import moment from 'moment'
 import { analyzeTracks, analyzingState } from '~/api/audio'
 import {
@@ -13,6 +14,7 @@ import {
 } from '~/api/db'
 import TrackLoader from '~/components/tracks/TrackLoader'
 import { tableOps } from '~/utils/tableOps'
+import { openDrawerState } from '../layout/TrackDrawer'
 
 const createColumnDefinitions = (): {
   dbKey: keyof Track
@@ -50,7 +52,9 @@ const createColumnDefinitions = (): {
           maxHeight: '30px',
           alignSelf: 'center',
         }}
-        onClick={() => (isInMix ? removeFromMix(track.id) : addToMix(track))}
+        onClick={() => {
+          !isInMix ? addToMix(track) : removeFromMix(track.id)
+        }}
       >
         {`Add${isInMix ? 'ed' : ' to Mix'}`}
       </Chip>

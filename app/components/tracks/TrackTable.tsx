@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import { superstate } from '@superstate/core'
 import { useSuperState } from '@superstate/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { processingState } from '~/api/audio'
 import { db, getState, useLiveQuery } from '~/api/db'
 import Dropzone, { itemsDropped } from '~/components/Dropzone'
@@ -67,13 +67,8 @@ const TrackTable = ({ hideDrawerButton }: { hideDrawerButton?: boolean }) => {
   )
 
   // Retrieve sort state from database
-  const { sortDirection } = useLiveQuery(() =>
-    getState('app', 'sortDirection')
-  ) || { sortDirection: 'desc' }
-
-  const { sortColumn } = useLiveQuery(() => getState('app', 'sortColumn')) || {
-    sortColumn: 'lastModified',
-  }
+  const { sortDirection = 'desc', sortColumn = 'lastModified' } =
+    useLiveQuery(() => getState('app')) || {}
 
   // Avoid a layout jump when reaching the last page with empty rows
   const emptyRows =
@@ -92,8 +87,6 @@ const TrackTable = ({ hideDrawerButton }: { hideDrawerButton?: boolean }) => {
         gridTemplateColumns: 'minmax(64px, 200px) minmax(450px, 1fr)',
       }}
     >
-      {hideDrawerButton ? null : <DrawerButton direction="down" />}
-
       <LeftNav />
 
       <Box component="main" sx={{ p: 2 }}>
@@ -185,6 +178,7 @@ const TrackTable = ({ hideDrawerButton }: { hideDrawerButton?: boolean }) => {
           />
         </Sheet>
       </Box>
+      {hideDrawerButton ? null : <DrawerButton direction="down" />}
     </Box>
   )
 }

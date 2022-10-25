@@ -12,7 +12,14 @@ import { Card, Chip, Link, TextField, Typography } from '@mui/joy'
 import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
 import { useSuperState } from '@superstate/react'
 import { useEffect, useRef, useState } from 'react'
-import { db, putTrackState, removeFromMix, Track, TrackState } from '~/api/db'
+import {
+  db,
+  getState,
+  putTrackState,
+  removeFromMix,
+  Track,
+  TrackState,
+} from '~/api/db'
 import { Events } from '~/api/Events'
 import { openDrawerState } from '~/components/layout/TrackDrawer'
 import Loader from '~/components/tracks/TrackLoader'
@@ -221,9 +228,12 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
     </Box>
   )
 
-  const ejectTrack = () => {
+  const ejectTrack = async () => {
+    // If this is not the last track in the mix, open drawer, otherwise it will open automatically
+    const { from, to } = await getState('mix')
+    if (from?.id && to?.id) openDrawerState.set(true)
+
     if (track) removeFromMix(track?.id)
-    openDrawerState.set(true)
   }
 
   const trackHeader = (

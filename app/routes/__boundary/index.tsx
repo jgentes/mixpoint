@@ -14,8 +14,10 @@ import TrackTable from '~/components/tracks/TrackTable'
 const Mixes: React.FunctionComponent = () => {
   const [playing, setPlaying] = useState(false)
   useSuperState(openDrawerState)
-  console.log('openDrawerState', openDrawerState.now())
+
   const { from, to } = useLiveQuery(() => getState('mix')) || {}
+
+  if (!from?.id && !to?.id) openDrawerState.set(true)
 
   const timeFormat = (secs: number) =>
     new Date(secs * 1000).toISOString().substring(15, 19)

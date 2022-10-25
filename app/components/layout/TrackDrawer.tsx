@@ -32,7 +32,6 @@ const TrackDrawer = () => {
   useSuperState(openDrawerState)
   return (
     <>
-      <DrawerButton direction="up" />
       <div
         style={{
           display: openDrawerState.now() ? 'block' : 'none',
@@ -55,6 +54,7 @@ const TrackDrawer = () => {
           <TrackTable />
         </Drawer>
       </div>
+      <DrawerButton direction="up" />
     </>
   )
 }

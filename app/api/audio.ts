@@ -26,9 +26,6 @@ async function getTracksRecursively(
 ): Promise<Partial<Track>[]> {
   const trackArray: Partial<Track>[] = []
 
-  // Show indicator inside empty table
-  processingState.set(true)
-
   // Change sort order to lastModified so new tracks are visible at the top
   await putState('app', { sortColumn: 'lastModified', sortDirection: 'desc' })
 
@@ -70,6 +67,9 @@ async function getTracksRecursively(
 
   // Warn user if large number of tracks are added, this is due to memory leak in web audio api
   if (trackArray.length > 100) {
+    // Show indicator inside empty table
+    processingState.set(true)
+
     confirmModalState.set({
       openState: true,
       headerText: 'More than 100 tracks added',
