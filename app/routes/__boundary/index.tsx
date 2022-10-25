@@ -2,7 +2,7 @@ import { MergeType, Pause, PlayArrow, Stop } from '@mui/icons-material'
 import { Box, Button } from '@mui/joy'
 import { ButtonGroup } from '@mui/material'
 import { useSuperState } from '@superstate/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { getState, MixState, useLiveQuery } from '~/api/db'
 import { Events } from '~/api/Events'
 import Header from '~/components/layout/Header'
@@ -16,8 +16,6 @@ const Mixes: React.FunctionComponent = () => {
   useSuperState(openDrawerState)
 
   const { from, to } = useLiveQuery(() => getState('mix')) || {}
-
-  if (!from?.id && !to?.id) openDrawerState.set(true)
 
   const timeFormat = (secs: number) =>
     new Date(secs * 1000).toISOString().substring(15, 19)

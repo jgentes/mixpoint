@@ -10,7 +10,7 @@ import {
 import { superstate } from '@superstate/core'
 import { useSuperState } from '@superstate/react'
 import { useEffect, useState } from 'react'
-import { processingState } from '~/api/audio'
+import { processingState } from '~/api/audioHandlers'
 import { db, getState, useLiveQuery } from '~/api/db'
 import Dropzone, { itemsDropped } from '~/components/Dropzone'
 import LeftNav from '~/components/layout/LeftNav'

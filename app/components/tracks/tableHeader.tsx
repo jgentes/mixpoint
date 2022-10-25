@@ -20,7 +20,7 @@ import { visuallyHidden } from '@mui/utils'
 import { superstate } from '@superstate/core'
 import { useSuperState } from '@superstate/react'
 import { ChangeEvent, MouseEvent, useMemo, useState } from 'react'
-import { analyzeTracks } from '~/api/audio'
+import { analyzeTracks } from '~/api/audioHandlers'
 import {
   AppState,
   db,

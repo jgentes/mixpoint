@@ -1,6 +1,6 @@
 import { Track } from '~/api/db'
 import { errorHandler } from '~/utils/notifications'
-import { processTracks } from './audio'
+import { processTracks } from './audioHandlers'
 
 const _getFile = async (track: Track): Promise<File | null> => {
   let handle = track.dirHandle || track.fileHandle

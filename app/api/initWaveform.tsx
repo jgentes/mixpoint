@@ -5,7 +5,7 @@ import PlayheadPlugin from 'wavesurfer.js/src/plugin/playhead'
 import RegionsPlugin, { RegionParams } from 'wavesurfer.js/src/plugin/regions'
 import { putTrackState, Track, TrackState } from '~/api/db'
 import { errorHandler } from '~/utils/notifications'
-import { analyzeTracks } from './audio'
+import { analyzeTracks } from './audioHandlers'
 
 const initWaveform = async ({
   track,
@@ -119,7 +119,7 @@ const initWaveform = async ({
   zoomview.on('region-click', region => {
     if (!zoomview.isPlaying()) zoomview.playhead.setPlayheadTime(region.start)
     zoomview.playPause()
-    zoomview.seekAndCenter(1 / (duration / zoomview.playhead.playheadTime))
+    zoomview.seekAndCenter(1 / (duration! / zoomview.playhead.playheadTime))
   })
 
   zoomview.on('ready', () => {

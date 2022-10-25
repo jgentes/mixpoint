@@ -1,7 +1,7 @@
 import { DriveFolderUpload } from '@mui/icons-material'
 import { BoxProps, Sheet, Typography } from '@mui/joy'
 import { useState } from 'react'
-import { processTracks } from '~/api/audio'
+import { processTracks } from '~/api/audioHandlers'
 import { browseFile } from '~/api/fileHandlers'
 
 const itemsDropped = async (items: DataTransferItemList) => {

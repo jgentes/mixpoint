@@ -4,7 +4,7 @@ import { TableCellProps } from '@mui/material'
 import { SxProps } from '@mui/material/styles'
 import { useSuperState } from '@superstate/react'
 import moment from 'moment'
-import { analyzeTracks, analyzingState } from '~/api/audio'
+import { analyzeTracks, analyzingState } from '~/api/audioHandlers'
 import {
   addToMix,
   getState,
@@ -37,6 +37,13 @@ const createColumnDefinitions = (): {
     </Chip>
   )
 
+  const addToMixHandler = async (t: Track) => {
+    // if this is the first track in the mix, leave the drawer open
+    const { from, to } = await getState('mix')
+    if (!from?.id && !to?.id) openDrawerState.set(true)
+    addToMix(t)
+  }
+
   const AddToMixButton = ({ track }: { track: Track }) => {
     const { from, to } = useLiveQuery(() => getState('mix')) || {}
 
@@ -53,7 +60,7 @@ const createColumnDefinitions = (): {
           alignSelf: 'center',
         }}
         onClick={() => {
-          !isInMix ? addToMix(track) : removeFromMix(track.id)
+          !isInMix ? addToMixHandler(track) : removeFromMix(track.id)
         }}
       >
         {`Add${isInMix ? 'ed' : ' to Mix'}`}
