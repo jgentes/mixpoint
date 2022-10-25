@@ -8,7 +8,7 @@ import {
   Typography,
 } from '@mui/joy'
 
-import { Animation, RadioButtonUnchecked } from '@mui/icons-material'
+import { Animation, JoinInner, RadioButtonUnchecked } from '@mui/icons-material'
 import { NavLink, useMatches } from '@remix-run/react'
 
 import Dropzone from '~/components/Dropzone'
@@ -65,7 +65,10 @@ const LeftNav = () => {
                 >
                   <ListItemDecorator sx={{ color: 'inherit' }}>
                     <RadioButtonUnchecked
-                      sx={{ fontSize: '20px', color: '#1e87c1' }}
+                      sx={{
+                        fontSize: '20px',
+                        color: '#3399FF',
+                      }}
                     />
                   </ListItemDecorator>
                   <ListItemContent>Tracks</ListItemContent>
@@ -79,7 +82,12 @@ const LeftNav = () => {
                   color={pathname == '/mixes' ? 'primary' : undefined}
                 >
                   <ListItemDecorator sx={{ color: 'inherit' }}>
-                    <img src="/media/innerjoin32.png" width={20} />
+                    <JoinInner
+                      sx={{
+                        fontSize: '20px',
+                        color: '#3399FF',
+                      }}
+                    />
                   </ListItemDecorator>
                   <ListItemContent>
                     <ListItemContent>Mixes</ListItemContent>
@@ -98,7 +106,7 @@ const LeftNav = () => {
                       sx={{
                         fontSize: '22px',
                         transform: 'rotate(45deg)',
-                        color: '#1e87c1',
+                        color: '#3399FF',
                       }}
                     />
                   </ListItemDecorator>
