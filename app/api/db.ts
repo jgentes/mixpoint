@@ -102,7 +102,6 @@ interface MixState {
   date?: Date
   from?: TrackState
   to?: TrackState
-  queue?: TrackState[] // backlog of tracks to consider for mix
 }
 
 interface SetState {
@@ -144,9 +143,19 @@ const putTracks = async (tracks: Partial<Track[]>): Promise<Track[]> => {
   return (await db.tracks.bulkGet(updatedTracks)) as Track[]
 }
 
-const removeTracks = async (ids: number[]): Promise<void> =>
-  await db.tracks.bulkDelete(ids)
+const removeTracks = async (ids: number[]): Promise<void> => {
+  // remove tracks from mixState if needed
+  const mixState = await getState('mix')
+  const from =
+    mixState.from?.id && ids.includes(mixState.from.id)
+      ? undefined
+      : mixState.from
+  const to =
+    mixState.to?.id && ids.includes(mixState.to.id) ? undefined : mixState.to
+  await putState('mix', { from, to })
 
+  await db.tracks.bulkDelete(ids)
+}
 // const addMix = async (
 //   trackIds: Track['id'][],
 //   mixPoints: MixPoint[]
@@ -208,18 +217,17 @@ const putTrackState = async (
 }
 
 const addToMix = async (track: Track) => {
-  let { from, to, queue } = await getState('mix')
+  let { from, to } = await getState('mix')
 
   const file = await getPermission(track)
   if (!file) return
 
-  // order of operations: from -> to -> queue
+  // order of operations: from -> to
   const state = { id: track.id, file }
   if (!from) from = state
-  else if (!to) to = state
-  else queue = [...(queue || []), ...[state]]
+  else to = state
 
-  await putState('mix', { from, to, queue })
+  await putState('mix', { from, to })
 }
 
 // db hooks to limit the number of rows in a state table

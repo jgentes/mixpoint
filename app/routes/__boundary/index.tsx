@@ -79,10 +79,10 @@ const Mixes: React.FunctionComponent = () => {
         bgcolor: 'background.surface',
       }}
     >
-      {true /* {!fromState?.id && !toState?.id ? ( */ ? (
+      {!fromState?.id && !toState?.id ? (
         <TrackTable hideDrawerButton={true} />
       ) : (
-        <>
+        <Box component="main" sx={{ p: 2 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
             {!fromState?.id ? null : <TrackView trackState={fromState} />}
             {!toState?.id ? null : <TrackView trackState={toState} />}
@@ -95,7 +95,7 @@ const Mixes: React.FunctionComponent = () => {
           </div>
 
           <TrackDrawer />
-        </>
+        </Box>
       )}
     </Box>
   )

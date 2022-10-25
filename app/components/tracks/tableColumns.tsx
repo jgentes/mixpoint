@@ -30,12 +30,9 @@ const createColumnDefinitions = (): {
   )
 
   const AddToMixButton = ({ track }: { track: Track }) => {
-    const { from, to, queue } = useLiveQuery(() => getState('mix')) || {}
+    const { from, to } = useLiveQuery(() => getState('mix')) || {}
 
-    const isInMix =
-      from?.id === track.id ||
-      to?.id === track.id ||
-      queue?.some(t => t.id === track.id)
+    const isInMix = from?.id === track.id || to?.id === track.id
     return (
       <Chip
         variant="outlined"
