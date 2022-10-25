@@ -1,27 +1,18 @@
 import WaveSurfer from 'wavesurfer.js'
 import CursorPlugin from 'wavesurfer.js/src/plugin/cursor'
-import MarkersPlugin from 'wavesurfer.js/src/plugin/markers'
 import MinimapPlugin from 'wavesurfer.js/src/plugin/minimap'
 import PlayheadPlugin from 'wavesurfer.js/src/plugin/playhead'
 import RegionsPlugin, { RegionParams } from 'wavesurfer.js/src/plugin/regions'
 import { putTrackState, Track, TrackState } from '~/api/db'
 import { errorHandler } from '~/utils/notifications'
 
-const initPeaks = async ({
+const initWaveform = async ({
   track,
   file,
-  zoomviewRef,
-  isFromTrack,
-  setSliderControl,
-  setAudioSrc,
   setAnalyzing,
 }: {
   track: Track
   file: TrackState['file']
-  zoomviewRef: React.RefObject<HTMLElement | string>
-  isFromTrack: boolean
-  setSliderControl: Function
-  setAudioSrc: Function
   setAnalyzing: Function
 }): Promise<WaveSurfer> => {
   if (!track?.id) throw errorHandler('No track to initialize.')
@@ -34,10 +25,10 @@ const initPeaks = async ({
   let beatInterval = 60 / bpm
   let startPoint = offset
 
-  // work backward from initialPeak to peak out start of track (zerotime) based on bpm
+  // Work backward from initialPeak to start of track (zerotime) based on bpm
   while (startPoint - beatInterval > 0) startPoint -= beatInterval
 
-  // now that we have zerotime, move forward with reagions based on the bpm (hope the bpm is accurate!)
+  // Now that we have zerotime, move forward with regions based on the bpm
   const regions: RegionParams[] = []
 
   for (let time = startPoint; time < duration; time += beatInterval * 4) {
@@ -58,7 +49,7 @@ const initPeaks = async ({
   }
 
   const zoomview = WaveSurfer.create({
-    container: zoomviewRef.current || '',
+    container: `#zoomview-container_${track.id}`,
     height: 100,
     scrollParent: true,
     fillParent: false,
@@ -68,7 +59,7 @@ const initPeaks = async ({
     barGap: 1,
     cursorColor: '#0492f752',
     interact: false,
-    // @ts-ignore
+    //@ts-ignore - author hasn't updated types for gradients
     waveColor: [
       'rgb(200, 165, 49)',
       'rgb(200, 165, 49)',
@@ -76,7 +67,7 @@ const initPeaks = async ({
       'rgb(205, 124, 49)',
       'rgb(205, 124, 49)',
     ],
-    progressColor: 'rgba(0, 0, 0, 0.2)',
+    progressColor: 'rgba(0, 0, 0, 0.25)',
     plugins: [
       PlayheadPlugin.create({
         returnOnPause: true,
@@ -97,17 +88,18 @@ const initPeaks = async ({
         snapToGridOffset: offset,
         snapToGridInterval: beatInterval,
       }),
-      // MinimapPlugin.create({
-      //   waveColor: [
-      //     'rgba(145, 145, 145, 0.8)',
-      //     'rgba(145, 145, 145, 0.8)',
-      //     'rgba(145, 145, 145, 0.8)',
-      //     'rgba(145, 145, 145, 0.5)',
-      //     'rgba(145, 145, 145, 0.5)',
-      //   ],
-      //   progressColor: 'rgba(0, 0, 0, 0.2)',
-      //   interact: true,
-      // }),
+      MinimapPlugin.create({
+        container: `#overview-container_${track.id}`,
+        waveColor: [
+          'rgba(145, 145, 145, 0.8)',
+          'rgba(145, 145, 145, 0.8)',
+          'rgba(145, 145, 145, 0.8)',
+          'rgba(145, 145, 145, 0.5)',
+          'rgba(145, 145, 145, 0.5)',
+        ],
+        progressColor: 'rgba(0, 0, 0, 0.25)',
+        interact: true,
+      }),
     ],
   })
   zoomview.loadBlob(file)
@@ -124,4 +116,4 @@ const initPeaks = async ({
   return zoomview
 }
 
-export { initPeaks }
+export { initWaveform }

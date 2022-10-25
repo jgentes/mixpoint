@@ -26,35 +26,14 @@ const Header = () => {
         <Logo />
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.5 }}>
-        <Menu
-          id="app-selector"
-          control={
-            <IconButton
-              size="sm"
-              variant="outlined"
-              color="primary"
-              aria-label="Apps"
-            >
-              <Settings />
-            </IconButton>
-          }
-          menus={[
-            {
-              label: 'Email',
-              href: '/joy-ui/getting-started/templates/email/',
-            },
-            {
-              label: 'Team',
-              href: '/joy-ui/getting-started/templates/team/',
-            },
-            {
-              label: 'Files',
-              active: true,
-              href: '/joy-ui/getting-started/templates/files/',
-              'aria-current': 'page',
-            },
-          ]}
-        />
+        <IconButton
+          size="sm"
+          variant="outlined"
+          color="primary"
+          aria-label="Apps"
+        >
+          <Settings />
+        </IconButton>
         <DarkMode />
       </Box>
     </>

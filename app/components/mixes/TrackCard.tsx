@@ -8,75 +8,26 @@ import {
 } from '@mui/icons-material'
 import { Button, Card, Link, TextField, Typography } from '@mui/joy'
 import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
-import Slider, { SliderProps } from 'rc-slider'
 import { useEffect, useRef, useState } from 'react'
 import { db, putTrackState, Track, TrackState } from '~/api/db'
 import { Events } from '~/api/Events'
 import { openDrawerState } from '~/components/layout/TrackDrawer'
 import Loader from '~/components/tracks/TrackLoader'
 
-// Only load initPeaks in the browser
-let initPeaks: typeof import('~/api/initPeaks').initPeaks
-if (typeof document !== 'undefined') {
-  import('~/api/initPeaks').then(m => (initPeaks = m.initPeaks))
-}
-
-interface SliderControlProps extends SliderProps {
-  width: number
-}
-
-const TrackForm = ({
+const TrackCard = ({
   trackState,
   isFromTrack,
 }: {
   trackState: TrackState
   isFromTrack: boolean
 }) => {
-  const [sliderControl, setSliderControl] = useState<SliderControlProps>()
   const [playing, setPlaying] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
-  const [audioSrc, setAudioSrc] = useState('')
   const [bpmTimer, setBpmTimer] = useState<number>()
   const [track, setTrack] = useState<Track | undefined>()
-  const [zoomview, setZoomview] = useState<WaveSurfer | undefined>()
-  const zoomviewRef = useRef(null)
 
   const { id, file, mixPoint } = trackState
   if (!id) return null
-
-  let audioElement = useRef<HTMLAudioElement>(null)
-
-  useEffect(() => {
-    let zoomview: WaveSurfer
-    const renderWaveform = async () => {
-      const track = await db.tracks.get(id)
-      if (track) {
-        setTrack(track)
-        zoomview = await initPeaks({
-          track,
-          file,
-          zoomviewRef,
-          isFromTrack,
-          setAnalyzing,
-          setAudioSrc,
-          setSliderControl,
-        })
-
-        //if (zoomview) setZoomview(zoomview)
-      }
-    }
-
-    renderWaveform()
-
-    // add event listeners
-    //Events.on('audio', audioEffect)
-
-    // listener cleanup
-    return () => {
-      Events.remove('audio', audioEffect)
-      zoomview?.destroy()
-    }
-  }, [id, isFromTrack])
 
   const audioEffect = (detail: { tracks: number[]; effect: string }) => {
     if (!detail.tracks.includes(id)) return
@@ -267,82 +218,30 @@ const TrackForm = ({
     </div>
   )
 
-  const slider = (
-    <div
-      style={{
-        overflow: 'scroll',
-        overflowX: 'hidden',
-        overflowY: 'hidden',
-        visibility: analyzing ? 'hidden' : 'visible',
-      }}
-      id={`slider_${id}`}
-    >
-      <div
-        style={{
-          width: `${sliderControl?.width}px`,
-          //paddingTop: isFromTrack ? '10px' : '20px',
-          //paddingBottom: isFromTrack ? '20px' : '10px',
-        }}
-      >
-        {!sliderControl?.max ? null : (
-          <Slider
-            min={sliderControl.min || 0}
-            max={sliderControl.max}
-            //marks={sliderControl.marks || {}}
-            step={null}
-            included={false}
-            onAfterChange={time => selectTime(time)}
-            dotStyle={{ borderColor: '#1e8bc3' }}
-            handleStyle={{ borderColor: '#cc1d1d' }}
-          />
-        )}
-      </div>
-    </div>
-  )
-
-  const loaderSx = {
-    p: 0,
-    border: '1px solid',
-    borderColor: 'action.focus',
-    borderRadius: 'sm',
-    bgcolor: 'background.body',
-    overflow: 'hidden',
-    height: '100px',
-  }
-
   return (
     <Card
       variant="soft"
       sx={{
+        flexGrow: 1,
         borderRadius: 'sm',
         border: '1px solid',
         borderColor: 'action.selected',
-        position: 'relative',
       }}
     >
       <Card
-        ref={zoomviewRef}
-        sx={{ ...loaderSx, zIndex: 1 }}
-        // onWheel={e => {
-        //   // check state first as debounce, then set set state, then zoom
-        //   e.deltaY > 100 ? zoomview?.zoom(64) : zoomview?.zoom(1000)
-        // }}
-      ></Card>
-      {!analyzing ? null : (
-        <Card
-          sx={{
-            ...loaderSx,
-            zIndex: 2,
-            position: 'absolute',
-            inset: 16,
-          }}
-        >
-          <Loader style={{ margin: 'auto' }} />
-        </Card>
-      )}
-      {/* <div id={`overview-container_${id}`} /> */}
+        id={`overview-container_${id}`}
+        sx={{
+          p: 0,
+          border: '1px solid',
+          borderColor: 'action.focus',
+          borderRadius: 'sm',
+          bgcolor: 'background.body',
+          overflow: 'hidden',
+          height: '50px',
+        }}
+      />
     </Card>
   )
 }
 
-export default TrackForm
+export default TrackCard

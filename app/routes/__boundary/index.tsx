@@ -5,7 +5,8 @@ import { useState } from 'react'
 import { getState, MixState, useLiveQuery } from '~/api/db'
 import { Events } from '~/api/Events'
 import Layout from '~/components/layout/Layout'
-import TrackForm from '~/components/mixes/trackform'
+import TrackCard from '~/components/mixes/TrackCard'
+import TrackView from '~/components/mixes/TrackView'
 
 const Mixes: React.FunctionComponent = () => {
   const [playing, setPlaying] = useState(false)
@@ -72,16 +73,24 @@ const Mixes: React.FunctionComponent = () => {
 
   return (
     <Layout.MainContent>
-      {/* <div style={{ display: 'flex' }}>
-        <Box style={{ flex: '0 0 250px' }}>{mixPointControl}</Box>
-      </div> */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {!fromState?.id ? null : (
+          <TrackView trackState={fromState} isFromTrack={true} />
+        )}
+        {!toState?.id ? null : (
+          <TrackView trackState={toState} isFromTrack={false} />
+        )}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
+        {!fromState?.id ? null : (
+          <TrackCard trackState={fromState} isFromTrack={true} />
+        )}
+        {/* <Box style={{ flex: '0 0 250px' }}>{mixPointControl}</Box> */}
 
-      {!fromState?.id ? null : (
-        <TrackForm trackState={fromState} isFromTrack={true} />
-      )}
-      {!toState?.id ? null : (
-        <TrackForm trackState={toState} isFromTrack={false} />
-      )}
+        {!toState?.id ? null : (
+          <TrackCard trackState={toState} isFromTrack={false} />
+        )}
+      </div>
     </Layout.MainContent>
   )
 }
