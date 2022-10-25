@@ -5,6 +5,7 @@ import PlayheadPlugin from 'wavesurfer.js/src/plugin/playhead'
 import RegionsPlugin, { RegionParams } from 'wavesurfer.js/src/plugin/regions'
 import { putTrackState, Track, TrackState } from '~/api/db'
 import { errorHandler } from '~/utils/notifications'
+import { analyzeTracks } from './audio'
 
 const initWaveform = async ({
   track,
@@ -20,7 +21,12 @@ const initWaveform = async ({
 
   setAnalyzing(true)
 
-  let { duration = 1, bpm = 1, offset = 1 } = track
+  let { duration, bpm, offset } = track
+
+  if (!duration || !bpm || !offset) {
+    const analyziedTracks = await analyzeTracks([track])
+    ;({ duration = 1, bpm = 1, offset = 1 } = analyziedTracks[0])
+  }
 
   let beatInterval = 60 / bpm
   let startPoint = offset

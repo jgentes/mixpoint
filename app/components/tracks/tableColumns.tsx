@@ -31,7 +31,7 @@ const createColumnDefinitions = (): {
       variant="outlined"
       startDecorator={<GraphicEq />}
       size="sm"
-      onClick={t => analyzeTracks([t])}
+      onClick={() => analyzeTracks([t])}
     >
       Analyze
     </Chip>

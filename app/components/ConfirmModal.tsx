@@ -47,6 +47,7 @@ const ConfirmModal = () => {
       open={openState}
       sx={{ alignItems: 'normal' }}
       onClose={() => closeModal()}
+      disableEnforceFocus={true}
     >
       <ModalDialog variant="outlined" role="alertdialog">
         <Typography

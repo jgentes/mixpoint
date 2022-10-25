@@ -91,9 +91,12 @@ async function getTracksRecursively(
   } else return addTracksToDb()
 }
 
-const analyzeTracks = async (tracks: Track[]): Promise<void> => {
+const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
   // Set analyzing state now to avoid tracks appearing with 'analyze' button
   analyzingState.set(prev => [...prev, ...tracks])
+
+  // Return array of updated tracks
+  const updatedTracks: Track[] = []
 
   let sorted
   for (const track of tracks) {
@@ -123,6 +126,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<void> => {
       sampleRate,
     }
 
+    updatedTracks.push(updatedTrack)
     await putTracks([updatedTrack])
 
     // Give Dexie a few ms to update the UI before removing analyzing state. This is to avoid the 'analyze' button appearing briefly.
@@ -131,6 +135,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<void> => {
       250
     )
   }
+  return updatedTracks
 }
 
 const getAudioDetails = async (
