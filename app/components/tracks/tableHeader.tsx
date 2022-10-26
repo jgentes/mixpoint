@@ -28,7 +28,7 @@ import {
   removeTracks,
   Track,
   useLiveQuery,
-} from '~/api/db'
+} from '~/api/dbHandlers'
 import { browseFile } from '~/api/fileHandlers'
 import { confirmModalState } from '~/components/ConfirmModal'
 import { createColumnDefinitions } from '~/components/tracks/tableColumns'

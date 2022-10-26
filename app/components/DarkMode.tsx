@@ -11,6 +11,7 @@ const DarkMode = () => {
       size="sm"
       variant="outlined"
       color="primary"
+      aria-label="Darkmode"
       onClick={() => {
         new Audio('/media/light.mp3').play()
         setMode(mode === 'dark' ? 'light' : 'dark')

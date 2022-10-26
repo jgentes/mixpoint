@@ -3,20 +3,21 @@ import CursorPlugin from 'wavesurfer.js/src/plugin/cursor'
 import MinimapPlugin from 'wavesurfer.js/src/plugin/minimap'
 import PlayheadPlugin from 'wavesurfer.js/src/plugin/playhead'
 import RegionsPlugin, { RegionParams } from 'wavesurfer.js/src/plugin/regions'
-import { putTrackState, Track, TrackState } from '~/api/db'
+import { Track } from '~/api/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
 import { analyzeTracks } from './audioHandlers'
+import { getPermission } from './fileHandlers'
 
 const initWaveform = async ({
   track,
-  file,
   setAnalyzing,
 }: {
   track: Track
-  file: TrackState['file']
   setAnalyzing: Function
 }): Promise<WaveSurfer> => {
   if (!track?.id) throw errorHandler('No track to initialize.')
+
+  const file = await getPermission(track)
   if (!file) throw errorHandler(`Please try adding ${track.name} again.`)
 
   setAnalyzing(true)
@@ -24,8 +25,11 @@ const initWaveform = async ({
   let { duration, bpm, offset } = track
 
   if (!duration || !bpm || !offset) {
-    const analyziedTracks = await analyzeTracks([track])
-    ;({ duration = 1, bpm = 1, offset = 1 } = analyziedTracks[0])
+    const analyzedTracks = await analyzeTracks([track])
+    ;({ duration = 1, bpm = 1, offset = 1 } = analyzedTracks[0])
+
+    if (!duration || !bpm || !offset)
+      throw errorHandler(`Please try adding ${track.name} again.`)
   }
 
   let beatInterval = 60 / bpm
@@ -56,7 +60,6 @@ const initWaveform = async ({
 
   const zoomview = WaveSurfer.create({
     container: `#zoomview-container_${track.id}`,
-    height: 100,
     scrollParent: true,
     fillParent: false,
     pixelRatio: 1,
@@ -110,10 +113,10 @@ const initWaveform = async ({
         scrollParent: false,
         hideScrollbar: true,
         pixelRatio: 1,
-        height: 50,
       }),
     ],
   })
+
   zoomview.loadBlob(file)
 
   zoomview.on('region-click', region => {

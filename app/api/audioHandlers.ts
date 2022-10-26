@@ -1,6 +1,7 @@
 import { superstate } from '@superstate/core'
 import { guess } from 'web-audio-beat-detector'
-import { getState, putState, putTracks, Track, TrackState } from '~/api/db'
+import { putState, putTracks } from '~/api/dbHandlers'
+import { Track, TrackState } from '~/api/dbSchema'
 import { getPermission } from '~/api/fileHandlers'
 
 import { confirmModalState } from '~/components/ConfirmModal'
@@ -230,7 +231,6 @@ const createMix = async (trackStateArray: TrackState[]) => {
 export {
   processTracks,
   getAudioDetails,
-  getPeaks,
   createMix,
   analyzeTracks,
   analyzingState,

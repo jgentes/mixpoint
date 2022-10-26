@@ -14,12 +14,11 @@ import { useSuperState } from '@superstate/react'
 import { useEffect, useRef, useState } from 'react'
 import {
   db,
-  getState,
-  putTrackState,
-  removeFromMix,
   Track,
   TrackState,
-} from '~/api/db'
+  getState,
+  removeFromMix,
+} from '~/api/dbHandlers'
 import { Events } from '~/api/Events'
 import { openDrawerState } from '~/components/layout/TrackDrawer'
 import Loader from '~/components/tracks/TrackLoader'
@@ -38,7 +37,7 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
 
   useSuperState(openDrawerState)
 
-  const { id, file, mixPoint } = trackState
+  const { id, mixPoint } = trackState
   if (!id) return null
 
   let audioElement = useRef<HTMLAudioElement>(null)
@@ -52,7 +51,6 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
         setTrack(track)
         zoomview = await initWaveform({
           track,
-          file,
           setAnalyzing,
         })
       }
@@ -237,7 +235,7 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
   }
 
   const trackHeader = (
-    <Box sx={{ display: 'flex', gap: 1, mt: 1.5, alignItems: 'center' }}>
+    <Box sx={{ display: 'flex', gap: 1, mt: 1, alignItems: 'center' }}>
       <Chip
         variant="outlined"
         color="primary"
@@ -293,14 +291,14 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
     borderRadius: 'sm',
     bgcolor: 'background.body',
     overflow: 'hidden',
-    height: '100px',
+    height: '80px',
   }
 
   return (
     <Card
       variant="soft"
       sx={{
-        // pt: 5,
+        p: 1,
         borderRadius: 'sm',
         border: '1px solid',
         borderColor: 'action.selected',
@@ -326,7 +324,7 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
             ...loaderSx,
             zIndex: 2,
             position: 'absolute',
-            inset: 16,
+            inset: 8,
           }}
         >
           <Loader style={{ margin: 'auto' }} />

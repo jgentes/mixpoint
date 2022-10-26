@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import { superstate } from '@superstate/core'
 import { useEffect, useMemo, useState } from 'react'
-import { Track } from '~/api/db'
+import { Track } from '~/api/dbHandlers'
 import { tableOps } from '~/utils/tableOps'
 import { createColumnDefinitions } from './tableColumns'
 

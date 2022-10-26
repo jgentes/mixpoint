@@ -3,7 +3,7 @@ import { Box, IconButton } from '@mui/joy'
 import DarkMode from '~/components/DarkMode'
 import Logo from '~/components/MixpointLogo'
 
-import { Settings } from '@mui/icons-material'
+import { GitHub, Settings } from '@mui/icons-material'
 
 const Header = () => (
   <Box
@@ -26,13 +26,25 @@ const Header = () => (
   >
     <Logo />
     <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.5 }}>
-      <IconButton
+      {/* <IconButton
         size="sm"
         variant="outlined"
         color="primary"
         aria-label="Apps"
       >
         <Settings />
+      </IconButton> */}
+      <IconButton
+        size="sm"
+        variant="outlined"
+        color="primary"
+        aria-label="Github"
+        title="Meet on Github"
+        onClick={() =>
+          window.open('https://github.com/jgentes/mixpoint/discussions')
+        }
+      >
+        <GitHub />
       </IconButton>
       <DarkMode />
     </Box>
