@@ -8,6 +8,53 @@ import { errorHandler } from '~/utils/notifications'
 import { analyzeTracks } from './audioHandlers'
 import { getPermission } from './fileHandlers'
 
+const calcRegions = async (
+  track: Track,
+  beatResolution: 0.25 | 0.5 | 1 = 0.25
+): Promise<{
+  duration: number
+  skipLength: number
+  regions: RegionParams[]
+}> => {
+  let { duration, bpm, offset } = track
+
+  if (!duration || !bpm || !offset) {
+    const analyzedTracks = await analyzeTracks([track])
+    ;({ duration = 1, bpm = 1, offset = 1 } = analyzedTracks[0])
+
+    if (!duration || !bpm || !offset)
+      throw errorHandler(`Please try adding ${track.name} again.`)
+  }
+
+  const beatInterval = 60 / bpm
+  let startPoint = offset
+  const skipLength = beatInterval * (1 / beatResolution)
+
+  // Work backward from initialPeak to start of track (zerotime) based on bpm
+  while (startPoint - beatInterval > 0) startPoint -= beatInterval
+
+  // Now that we have zerotime, move forward with regions based on the bpm
+  const regions = []
+
+  for (let time = startPoint; time < duration; time += skipLength) {
+    regions.push({
+      start: time,
+      end: time + skipLength,
+      color: 'rgba(255, 255, 255, 0)',
+      drag: false,
+      resize: true,
+      showTooltip: false,
+      handleStyle: {
+        left: {
+          backgroundColor: time == startPoint ? 'none' : '#0492f79e',
+        },
+        right: { width: '0' },
+      },
+    })
+  }
+  return { duration, skipLength, regions }
+}
+
 const initWaveform = async ({
   track,
   setAnalyzing,
@@ -22,41 +69,7 @@ const initWaveform = async ({
 
   setAnalyzing(true)
 
-  let { duration, bpm, offset } = track
-
-  if (!duration || !bpm || !offset) {
-    const analyzedTracks = await analyzeTracks([track])
-    ;({ duration = 1, bpm = 1, offset = 1 } = analyzedTracks[0])
-
-    if (!duration || !bpm || !offset)
-      throw errorHandler(`Please try adding ${track.name} again.`)
-  }
-
-  let beatInterval = 60 / bpm
-  let startPoint = offset
-
-  // Work backward from initialPeak to start of track (zerotime) based on bpm
-  while (startPoint - beatInterval > 0) startPoint -= beatInterval
-
-  // Now that we have zerotime, move forward with regions based on the bpm
-  const regions: RegionParams[] = []
-
-  for (let time = startPoint; time < duration; time += beatInterval * 4) {
-    regions.push({
-      start: time,
-      end: time + beatInterval * 4,
-      color: 'rgba(255, 255, 255, 0)',
-      drag: false,
-      resize: true,
-      showTooltip: false,
-      handleStyle: {
-        left: {
-          backgroundColor: time == startPoint ? 'none' : '#0492f79e',
-        },
-        right: { width: '0' },
-      },
-    })
-  }
+  const { duration, skipLength, regions } = await calcRegions(track)
 
   const zoomview = WaveSurfer.create({
     container: `#zoomview-container_${track.id}`,
@@ -68,7 +81,7 @@ const initWaveform = async ({
     barGap: 1,
     cursorColor: '#0492f752',
     interact: false,
-    skipLength: beatInterval * 4,
+    skipLength,
     //@ts-ignore - author hasn't updated types for gradients
     waveColor: [
       'rgb(200, 165, 49)',
@@ -96,8 +109,6 @@ const initWaveform = async ({
       }),
       RegionsPlugin.create({
         regions,
-        snapToGridOffset: offset,
-        snapToGridInterval: beatInterval,
       }),
       MinimapPlugin.create({
         container: `#overview-container_${track.id}`,
@@ -128,7 +139,10 @@ const initWaveform = async ({
   zoomview.on('ready', () => {
     setAnalyzing(false)
   })
+
+  zoomview.on('destroy', () => zoomview.unAll())
+
   return zoomview
 }
 
-export { initWaveform }
+export { initWaveform, calcRegions }

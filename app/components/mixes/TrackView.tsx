@@ -2,38 +2,43 @@ import {
   AccessTime,
   Eject,
   EventBusy,
+  Expand,
   Favorite,
   Pause,
   PlayArrow,
   Replay,
+  Search,
   Stop,
 } from '@mui/icons-material'
-import { Card, Chip, Link, TextField, Typography } from '@mui/joy'
+import {
+  Card,
+  Chip,
+  Link,
+  Option,
+  Select,
+  TextField,
+  Typography,
+} from '@mui/joy'
 import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
 import { useSuperState } from '@superstate/react'
 import { useEffect, useRef, useState } from 'react'
+import { renderWaveform } from '~/api/audioEffects'
 import {
   db,
-  Track,
-  TrackState,
   getState,
   removeFromMix,
+  Track,
+  TrackState,
+  useLiveQuery,
 } from '~/api/dbHandlers'
 import { Events } from '~/api/Events'
 import { openDrawerState } from '~/components/layout/TrackDrawer'
 import Loader from '~/components/tracks/TrackLoader'
 
-// Only load initPeaks in the browser
-let initWaveform: typeof import('~/api/initWaveform').initWaveform
-if (typeof document !== 'undefined') {
-  import('~/api/initWaveform').then(m => (initWaveform = m.initWaveform))
-}
-
 const TrackView = ({ trackState }: { trackState: TrackState }) => {
   const [playing, setPlaying] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
   const [bpmTimer, setBpmTimer] = useState<number>()
-  const [track, setTrack] = useState<Track | undefined>()
 
   useSuperState(openDrawerState)
 
@@ -42,63 +47,23 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
 
   let audioElement = useRef<HTMLAudioElement>(null)
 
+  const track = useLiveQuery(() => db.tracks.get(id))
+
   useEffect(() => {
     let zoomview: WaveSurfer
 
-    const renderWaveform = async () => {
-      const track = await db.tracks.get(id)
-      if (track) {
-        setTrack(track)
-        zoomview = await initWaveform({
+    const renderTrack = async () => {
+      if (track)
+        zoomview = await renderWaveform({
           track,
           setAnalyzing,
         })
-      }
     }
 
-    renderWaveform()
+    renderTrack()
 
-    const scrollEffect = (scrollEvent: {
-      direction: 'up' | 'down'
-      trackId: number
-    }) => {
-      const { direction, trackId } = scrollEvent
-      if (trackId == id)
-        direction == 'down' ? zoomview.skipBackward() : zoomview.skipForward()
-    }
-
-    const audioEffect = (detail: { tracks: number[]; effect: string }) => {
-      if (!detail.tracks.includes(id)) return
-
-      setPlaying(detail.effect == 'play')
-
-      switch (detail.effect) {
-        case 'play':
-          zoomview.enableAutoScroll(true)
-          audioElement.current?.play()
-          break
-        case 'pause':
-          audioElement.current?.pause()
-          zoomview.enableAutoScroll(true)
-          break
-        case 'stop':
-          audioElement.current?.pause()
-          waveform?.player.seek(mixPoint || 0)
-          zoomview.enableAutoScroll(true)
-      }
-    }
-
-    // add event listeners
-    //Events.on('audio', audioEffect)
-    Events.on('scroll', scrollEffect)
-
-    // listener cleanup
-    return () => {
-      Events.off('audio', audioEffect)
-      Events.off('scroll', scrollEffect)
-      zoomview?.destroy()
-    }
-  }, [id])
+    return () => zoomview?.destroy()
+  }, [track])
 
   const updatePlaybackRate = (bpm: number) => {
     // update play speed to new bpm
@@ -120,7 +85,7 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
     // waveform?.player.seek(time)
     // zoomView?.enableAutoScroll(false)
 
-    Events.dispatch('audio', {
+    Events.emit('audio', {
       effect: 'play',
       tracks: [id],
     })
@@ -199,7 +164,7 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
       >
         <ButtonGroupButton
           onClick={() => {
-            Events.dispatch('audio', { effect: 'stop', tracks: [id] })
+            Events.emit('audio', { effect: 'stop', tracks: [id] })
           }}
           id={`stopButton_${id}`}
         >
@@ -209,7 +174,7 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
 
         <ButtonGroupButton
           onClick={() => {
-            Events.dispatch('audio', {
+            Events.emit('audio', {
               effect: playing ? 'pause' : 'play',
               tracks: [id],
             })
@@ -227,14 +192,17 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
   )
 
   const ejectTrack = async () => {
-    // If this is not the last track in the mix, open drawer, otherwise it will open automatically
+    // If this is not the last track in the mix, open drawer, otherwise the drawer will open automatically
     const { from, to } = await getState('mix')
     if (from?.id && to?.id) openDrawerState.set(true)
 
     if (track) removeFromMix(track?.id)
   }
 
-  const trackHeader = (
+  const changeBeatResolution = (resolution: number | null) =>
+    Events.emit('beatResolution', { trackId: track?.id, resolution })
+
+  const trackFooter = (
     <Box sx={{ display: 'flex', gap: 1, mt: 1, alignItems: 'center' }}>
       <Chip
         variant="outlined"
@@ -253,6 +221,21 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
           ? 'Loading...'
           : track?.name?.replace(/\.[^/.]+$/, '') || 'No Track Loaded..'}
       </Typography>
+
+      <Select
+        variant="outlined"
+        defaultValue={0.25}
+        size="sm"
+        color="neutral"
+        indicator={null}
+        sx={{ fontSize: 'sm', ml: 'auto', backgroundColor: 'transparent' }}
+        startDecorator={<Expand sx={{ transform: 'rotate(90deg)' }} />}
+        onChange={(e, val) => changeBeatResolution(val)}
+      >
+        {[0.25, 0.5, 1].map(key => (
+          <Option value={key}>{key * 100}%</Option>
+        ))}
+      </Select>
 
       <Link
         href="#dribbble-shot"
@@ -317,7 +300,7 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
           })
         }
       ></Card>
-      {trackHeader}
+      {trackFooter}
       {!analyzing ? null : (
         <Card
           sx={{
