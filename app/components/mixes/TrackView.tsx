@@ -1,42 +1,34 @@
 import {
   AccessTime,
   Eject,
-  EventBusy,
-  Expand,
-  Favorite,
-  OpenInFull,
   Pause,
   PlayArrow,
   Replay,
-  Search,
-  SettingsEthernet,
   Stop,
 } from '@mui/icons-material'
 import {
   Card,
   Chip,
   Link,
-  Option,
   Radio,
   radioClasses,
   RadioGroup,
-  Select,
   TextField,
   Typography,
 } from '@mui/joy'
 import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
 import { useSuperState } from '@superstate/react'
 import { useEffect, useRef, useState } from 'react'
-import { renderWaveform } from '~/api/audioEffects'
+import { loadAudioEffects } from '~/api/audioEffects'
 import {
   db,
   getState,
   removeFromMix,
-  Track,
   TrackState,
   useLiveQuery,
 } from '~/api/dbHandlers'
 import { Events } from '~/api/Events'
+import { renderWaveform } from '~/api/renderWaveform'
 import { openDrawerState } from '~/components/layout/TrackDrawer'
 import Loader from '~/components/tracks/TrackLoader'
 
@@ -55,20 +47,23 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
   const track = useLiveQuery(() => db.tracks.get(id))
 
   useEffect(() => {
-    let zoomview: WaveSurfer
+    let waveform: WaveSurfer
 
     const renderTrack = async () => {
-      if (track)
-        zoomview = await renderWaveform({
+      if (track) {
+        waveform = await renderWaveform({
           track,
           trackState,
           setAnalyzing,
         })
+
+        await loadAudioEffects({ track, trackState, waveform })
+      }
     }
 
     renderTrack()
 
-    return () => zoomview?.destroy()
+    return () => waveform?.destroy()
   }, [track])
 
   const updatePlaybackRate = (bpm: number) => {

@@ -1,11 +1,19 @@
-import WaveSurfer from 'wavesurfer.js'
-import CursorPlugin from 'wavesurfer.js/src/plugin/cursor'
-import PlayheadPlugin from 'wavesurfer.js/src/plugin/playhead'
-import RegionsPlugin, { RegionParams } from 'wavesurfer.js/src/plugin/regions'
 import { Track, TrackState } from '~/api/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
 import { analyzeTracks } from './audioHandlers'
 import { getPermission } from './fileHandlers'
+
+// Only load WaveSurfer in the browser
+let WaveSurfer: typeof import('wavesurfer.js'),
+  PlayheadPlugin: typeof import('wavesurfer.js/src/plugin/playhead').default,
+  CursorPlugin: typeof import('wavesurfer.js/src/plugin/cursor').default,
+  RegionsPlugin: typeof import('wavesurfer.js/src/plugin/regions').default
+if (typeof document !== 'undefined') {
+  WaveSurfer = require('wavesurfer.js')
+  PlayheadPlugin = require('wavesurfer.js/src/plugin/playhead').default
+  CursorPlugin = require('wavesurfer.js/src/plugin/cursor').default
+  RegionsPlugin = require('wavesurfer.js/src/plugin/regions').default
+}
 
 const calcRegions = async (
   track: Track,
@@ -14,7 +22,7 @@ const calcRegions = async (
   duration: Track['duration']
   skipLength: number
   beatResolution: TrackState['beatResolution']
-  regions: RegionParams[]
+  regions: any[] // RegionParams exists, but can't access it using deferred import style
 }> => {
   let { duration, bpm, offset } = track
   let { adjustedBpm, adjustedOffset, beatResolution = 0.25 } = trackState
@@ -56,7 +64,7 @@ const calcRegions = async (
   return { duration, skipLength, regions, beatResolution }
 }
 
-const initWaveform = async ({
+const renderWaveform = async ({
   track,
   trackState,
   setAnalyzing,
@@ -153,4 +161,4 @@ const initWaveform = async ({
   return zoomview
 }
 
-export { initWaveform, calcRegions }
+export { renderWaveform, calcRegions }

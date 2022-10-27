@@ -24,27 +24,6 @@ const TrackCard = ({ trackState }: { trackState: TrackState }) => {
   const { id, mixPoint } = trackState
   if (!id) return null
 
-  // const audioEffect = (detail: { tracks: number[]; effect: string }) => {
-  //   if (!detail.tracks.includes(id)) return
-
-  //   setPlaying(detail.effect == 'play')
-
-  //   switch (detail.effect) {
-  //     case 'play':
-  //       zoomView?.enableAutoScroll(true)
-  //       audioElement.current?.play()
-  //       break
-  //     case 'pause':
-  //       audioElement.current?.pause()
-  //       zoomView?.enableAutoScroll(true)
-  //       break
-  //     case 'stop':
-  //       audioElement.current?.pause()
-  //       waveform?.player.seek(mixPoint || 0)
-  //       zoomView?.enableAutoScroll(true)
-  //   }
-  // }
-
   // const updatePlaybackRate = (bpm: number) => {
   //   // update play speed to new bpm
   //   const playbackRate = bpm / (track?.bpm || bpm)

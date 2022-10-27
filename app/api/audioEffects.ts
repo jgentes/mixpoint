@@ -1,24 +1,16 @@
 import { putTrackState, Track, TrackState } from '~/api/dbHandlers'
 import { Events } from '~/api/Events'
+import { calcRegions } from './renderWaveform'
 
-// Only load initPeaks in the browser
-let initWaveform: typeof import('~/api/initWaveform').initWaveform
-let calcRegions: typeof import('~/api/initWaveform').calcRegions
-if (typeof document !== 'undefined') {
-  import('~/api/initWaveform').then(m => {
-    initWaveform = m.initWaveform
-    calcRegions = m.calcRegions
-  })
-}
-
-const renderWaveform = async (props: {
+const loadAudioEffects = async ({
+  track,
+  trackState,
+  waveform,
+}: {
   track: Track
   trackState: TrackState
-  setAnalyzing: Function
+  waveform: WaveSurfer
 }) => {
-  const waveform = await initWaveform(props)
-  const { track, trackState } = props
-
   const scrollEffect = (scrollEvent: {
     direction: 'up' | 'down'
     trackId: number
@@ -42,7 +34,6 @@ const renderWaveform = async (props: {
           waveform.zoom(20)
           break
         case 0.5:
-          console.log('hit')
           waveform.zoom(40)
           break
         case 1:
@@ -92,4 +83,4 @@ const renderWaveform = async (props: {
   return waveform
 }
 
-export { renderWaveform }
+export { loadAudioEffects }
