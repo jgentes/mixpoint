@@ -2,16 +2,16 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { getPermission } from '~/api/fileHandlers'
 import {
-  AppState,
-  db,
-  Mix,
-  MixState,
-  Set,
-  SetState,
-  StateTypes,
-  Track,
-  TrackState,
-  FileStore,
+  __AppState as AppState,
+  __db as db,
+  __FileStore as FileStore,
+  __Mix as Mix,
+  __MixState as MixState,
+  __Set as Set,
+  __SetState as SetState,
+  __StateTypes as StateTypes,
+  __Track as Track,
+  __TrackState as TrackState,
 } from '~/api/__dbSchema'
 
 const FILE_STORE_LIMIT = 50
@@ -106,12 +106,15 @@ const putState = async (
 }
 
 const putTrackState = async (
-  isFromTrack: boolean,
-  state: TrackState
+  trackId: Track['id'],
+  state: Partial<TrackState>
 ): Promise<void> => {
   const prevState = await getState('mix')
-  const prevTrack = prevState[isFromTrack ? 'from' : 'to'] || {}
-  const newState = { ...prevTrack, ...state }
+  const isFromTrack = prevState.from?.id == trackId
+  if (!isFromTrack && prevState.to?.id !== trackId)
+    throw 'Track not found in mix state'
+
+  const newState = { ...prevState[isFromTrack ? 'from' : 'to'], ...state }
 
   await db.mixState.put({
     ...prevState,

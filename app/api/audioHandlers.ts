@@ -1,7 +1,6 @@
 import { superstate } from '@superstate/core'
 import { guess } from 'web-audio-beat-detector'
-import { putState, putTracks } from '~/api/dbHandlers'
-import { Track, TrackState } from '~/api/dbSchema'
+import { putState, putTracks, Track, TrackState } from '~/api/dbHandlers'
 import { getPermission } from '~/api/fileHandlers'
 
 import { confirmModalState } from '~/components/ConfirmModal'

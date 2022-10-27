@@ -3,20 +3,22 @@ import CursorPlugin from 'wavesurfer.js/src/plugin/cursor'
 import MinimapPlugin from 'wavesurfer.js/src/plugin/minimap'
 import PlayheadPlugin from 'wavesurfer.js/src/plugin/playhead'
 import RegionsPlugin, { RegionParams } from 'wavesurfer.js/src/plugin/regions'
-import { Track } from '~/api/dbHandlers'
+import { Track, TrackState } from '~/api/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
 import { analyzeTracks } from './audioHandlers'
 import { getPermission } from './fileHandlers'
 
 const calcRegions = async (
   track: Track,
-  beatResolution: 0.25 | 0.5 | 1 = 0.25
+  trackState: TrackState
 ): Promise<{
-  duration: number
+  duration: Track['duration']
   skipLength: number
+  beatResolution: TrackState['beatResolution']
   regions: RegionParams[]
 }> => {
   let { duration, bpm, offset } = track
+  let { adjustedBpm, adjustedOffset, beatResolution = 0.25 } = trackState
 
   if (!duration || !bpm || !offset) {
     const analyzedTracks = await analyzeTracks([track])
@@ -26,8 +28,8 @@ const calcRegions = async (
       throw errorHandler(`Please try adding ${track.name} again.`)
   }
 
-  const beatInterval = 60 / bpm
-  let startPoint = offset
+  const beatInterval = 60 / (adjustedBpm || bpm)
+  let startPoint = adjustedOffset || offset
   const skipLength = beatInterval * (1 / beatResolution)
 
   // Work backward from initialPeak to start of track (zerotime) based on bpm
@@ -52,14 +54,16 @@ const calcRegions = async (
       },
     })
   }
-  return { duration, skipLength, regions }
+  return { duration, skipLength, regions, beatResolution }
 }
 
 const initWaveform = async ({
   track,
+  trackState,
   setAnalyzing,
 }: {
   track: Track
+  trackState: TrackState
   setAnalyzing: Function
 }): Promise<WaveSurfer> => {
   if (!track?.id) throw errorHandler('No track to initialize.')
@@ -69,7 +73,10 @@ const initWaveform = async ({
 
   setAnalyzing(true)
 
-  const { duration, skipLength, regions } = await calcRegions(track)
+  const { duration, skipLength, regions, beatResolution } = await calcRegions(
+    track,
+    trackState
+  )
 
   const zoomview = WaveSurfer.create({
     container: `#zoomview-container_${track.id}`,
@@ -129,6 +136,8 @@ const initWaveform = async ({
   })
 
   zoomview.loadBlob(file)
+
+  zoomview.zoom(beatResolution == 1 ? 80 : beatResolution == 0.5 ? 40 : 20)
 
   zoomview.on('region-click', region => {
     if (!zoomview.isPlaying()) zoomview.playhead.setPlayheadTime(region.start)

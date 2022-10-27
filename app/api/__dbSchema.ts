@@ -99,13 +99,6 @@ interface FileStore {
 // This allows easy undo/redo of state changes by using timestamps (primary key)
 // State tables are limited to STATE_ROW_LIMIT rows (arbitrarily 100)
 
-// Note TrackState is not a table. Track states are contained in MixState
-interface TrackState {
-  id?: Track['id']
-  adjustedBpm?: Track['bpm']
-  mixPoint?: number
-}
-
 interface MixState {
   date?: Date
   from?: TrackState
@@ -122,6 +115,15 @@ interface AppState {
   leftNavOpen?: boolean
   sortDirection?: 'asc' | 'desc'
   sortColumn?: keyof Track // track table order property
+}
+
+// Note TrackState is not a table. Track states are contained in MixState
+interface TrackState {
+  id?: Track['id']
+  adjustedBpm?: Track['bpm']
+  adjustedOffset?: Track['offset']
+  beatResolution?: 0.25 | 0.5 | 1
+  mixPoint?: number
 }
 
 // state getter and setter
@@ -148,15 +150,16 @@ db.tracks.hook('deleting', async id => db.fileStore.delete(id))
 const tables = ['mix', 'set', 'app'] as const
 tables.forEach(table => createHooks(table))
 
+// Avoid having two files export same type names
 export type {
-  Track,
-  Mix,
-  Set,
-  TrackState,
-  MixState,
-  SetState,
-  AppState,
-  StateTypes,
-  FileStore,
+  Track as __Track,
+  Mix as __Mix,
+  Set as __Set,
+  TrackState as __TrackState,
+  MixState as __MixState,
+  SetState as __SetState,
+  AppState as __AppState,
+  StateTypes as __StateTypes,
+  FileStore as __FileStore,
 }
-export { db }
+export { db as __db }

@@ -1,4 +1,4 @@
-import { Track } from '~/api/dbHandlers'
+import { putTrackState, Track, TrackState } from '~/api/dbHandlers'
 import { Events } from '~/api/Events'
 
 // Only load initPeaks in the browser
@@ -13,10 +13,11 @@ if (typeof document !== 'undefined') {
 
 const renderWaveform = async (props: {
   track: Track
+  trackState: TrackState
   setAnalyzing: Function
 }) => {
   const waveform = await initWaveform(props)
-  const { track, setAnalyzing } = props
+  const { track, trackState } = props
 
   const scrollEffect = (scrollEvent: {
     direction: 'up' | 'down'
@@ -28,28 +29,37 @@ const renderWaveform = async (props: {
   }
 
   const beatResolutionEffect = async (beatResolutionEvent: {
-    resolution: 0.25 | 0.5 | 1
+    beatResolution: TrackState['beatResolution']
     trackId: number
   }) => {
-    const { resolution, trackId } = beatResolutionEvent
-    if (trackId == track.id) {
-      // Rebuild regions
-      waveform.regions.clear()
-      const { regions } = await calcRegions(track, resolution)
-      for (const region of regions) waveform.regions.add(region)
+    const { beatResolution, trackId } = beatResolutionEvent
+    if (!beatResolution) return
 
-      // Now zoom
-      switch (resolution) {
+    if (trackId == track.id) {
+      // Adjust zoom
+      switch (+beatResolution) {
         case 0.25:
           waveform.zoom(20)
           break
         case 0.5:
+          console.log('hit')
           waveform.zoom(40)
           break
         case 1:
           waveform.zoom(80)
           break
       }
+
+      // Rebuild regions
+      waveform.regions.clear()
+      const { regions } = await calcRegions(track, {
+        ...trackState,
+        beatResolution,
+      })
+      for (const region of regions) waveform.regions.add(region)
+
+      // Update mixState
+      await putTrackState(trackId, { beatResolution })
     }
   }
 

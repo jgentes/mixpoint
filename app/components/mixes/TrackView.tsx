@@ -4,10 +4,12 @@ import {
   EventBusy,
   Expand,
   Favorite,
+  OpenInFull,
   Pause,
   PlayArrow,
   Replay,
   Search,
+  SettingsEthernet,
   Stop,
 } from '@mui/icons-material'
 import {
@@ -15,6 +17,9 @@ import {
   Chip,
   Link,
   Option,
+  Radio,
+  radioClasses,
+  RadioGroup,
   Select,
   TextField,
   Typography,
@@ -56,6 +61,7 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
       if (track)
         zoomview = await renderWaveform({
           track,
+          trackState,
           setAnalyzing,
         })
     }
@@ -199,11 +205,18 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
     if (track) removeFromMix(track?.id)
   }
 
-  const changeBeatResolution = (resolution: number | null) =>
-    Events.emit('beatResolution', { trackId: track?.id, resolution })
+  const changeBeatResolution = (beatResolution: TrackState['beatResolution']) =>
+    Events.emit('beatResolution', { trackId: track?.id, beatResolution })
 
   const trackFooter = (
-    <Box sx={{ display: 'flex', gap: 1, mt: 1, alignItems: 'center' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        gap: 1,
+        mt: 1,
+        alignItems: 'center',
+      }}
+    >
       <Chip
         variant="outlined"
         color="primary"
@@ -211,59 +224,78 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
         onClick={() => ejectTrack()}
         sx={{
           borderRadius: 'sm',
-          py: 0.25,
         }}
       >
         <Eject titleAccess="Load Track" />
       </Chip>
-      <Typography sx={{ fontSize: 'sm', fontWeight: 'md' }}>
+      <Typography
+        sx={{
+          fontSize: 'sm',
+          fontWeight: 'md',
+          flexBasis: '200px',
+          whiteSpace: 'nowrap',
+        }}
+      >
         {analyzing
           ? 'Loading...'
           : track?.name?.replace(/\.[^/.]+$/, '') || 'No Track Loaded..'}
       </Typography>
 
-      <Select
+      <RadioGroup
+        row
+        name="beatResolution"
+        value={trackState.beatResolution}
         variant="outlined"
-        defaultValue={0.25}
-        size="sm"
-        color="neutral"
-        indicator={null}
-        sx={{ fontSize: 'sm', ml: 'auto', backgroundColor: 'transparent' }}
-        startDecorator={<Expand sx={{ transform: 'rotate(90deg)' }} />}
-        onChange={(e, val) => changeBeatResolution(val)}
+        sx={{ ml: 'auto' }}
+        onChange={e =>
+          changeBeatResolution(+e.target.value as TrackState['beatResolution'])
+        }
       >
-        {[0.25, 0.5, 1].map(key => (
-          <Option value={key}>{key * 100}%</Option>
+        {[0.25, 0.5, 1].map(item => (
+          <Box
+            key={item}
+            sx={theme => ({
+              position: 'relative',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: 48,
+              height: 24,
+              '&:not([data-first-child])': {
+                borderLeft: '1px solid',
+                borderColor: 'divider',
+              },
+              [`&[data-first-child] .${radioClasses.action}`]: {
+                borderTopLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+                borderBottomLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+              },
+              [`&[data-last-child] .${radioClasses.action}`]: {
+                borderTopRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+                borderBottomRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+              },
+            })}
+          >
+            <Radio
+              value={item}
+              disableIcon
+              overlay
+              label={`${item * 100}%`}
+              variant={trackState.beatResolution == item ? 'outlined' : 'plain'}
+              color="primary"
+              sx={{
+                fontSize: '12px',
+                color: 'text.secondary',
+              }}
+              componentsProps={{
+                action: {
+                  sx: { borderRadius: 0, transition: 'none' },
+                },
+                label: { sx: { lineHeight: 0 } },
+              }}
+            />
+          </Box>
         ))}
-      </Select>
-
-      <Link
-        href="#dribbble-shot"
-        level="body3"
-        underline="none"
-        startDecorator={<Favorite />}
-        sx={{
-          fontWeight: 'md',
-          ml: 'auto',
-          color: 'text.secondary',
-          '&:hover': { color: 'danger.plainColor' },
-        }}
-      >
-        117
-      </Link>
-      <Link
-        href="#dribbble-shot"
-        level="body3"
-        underline="none"
-        startDecorator={<EventBusy />}
-        sx={{
-          fontWeight: 'md',
-          color: 'text.secondary',
-          '&:hover': { color: 'primary.plainColor' },
-        }}
-      >
-        10.4k
-      </Link>
+      </RadioGroup>
     </Box>
   )
 
