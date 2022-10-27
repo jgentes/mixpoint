@@ -20,19 +20,19 @@ import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
 import { useSuperState } from '@superstate/react'
 import { useEffect, useRef, useState } from 'react'
 import { loadAudioEvents } from '~/api/audioEvents'
-import {
-  db,
-  getState,
-  removeFromMix,
-  TrackState,
-  useLiveQuery,
-} from '~/api/dbHandlers'
+import { getState, removeFromMix, Track, TrackState } from '~/api/dbHandlers'
 import { EventBus } from '~/api/EventBus'
 import { renderWaveform } from '~/api/renderWaveform'
 import { openDrawerState } from '~/components/layout/TrackDrawer'
 import Loader from '~/components/tracks/TrackLoader'
 
-const TrackView = ({ trackState }: { trackState: TrackState }) => {
+const TrackView = ({
+  track,
+  trackState,
+}: {
+  track: Track
+  trackState: TrackState
+}) => {
   const [playing, setPlaying] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
   const [bpmTimer, setBpmTimer] = useState<number>()
@@ -43,8 +43,6 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
   if (!id) return null
 
   let audioElement = useRef<HTMLAudioElement>(null)
-
-  const track = useLiveQuery(() => db.tracks.get(id))
 
   useEffect(() => {
     let waveform: WaveSurfer

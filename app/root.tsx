@@ -15,7 +15,6 @@ const meta: MetaFunction = () => {
   return {
     title: 'Mixpoint',
     description: 'Mixpoint is multi-track audio mixing app for the modern dj',
-    charset: 'utf-8',
     viewport: 'width=device-width, initial-scale=1',
   }
 }

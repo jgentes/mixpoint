@@ -15,15 +15,19 @@ import { getState, removeFromMix, Track, TrackState } from '~/api/dbHandlers'
 import { EventBus } from '~/api/EventBus'
 import { openDrawerState } from '~/components/layout/TrackDrawer'
 
-const TrackCard = ({ trackState }: { trackState: TrackState }) => {
+const TrackCard = ({
+  track,
+  trackState,
+}: {
+  track: Track
+  trackState: TrackState
+}) => {
   const [playing, setPlaying] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
   const [bpmTimer, setBpmTimer] = useState<number>()
-  const [track, setTrack] = useState<Track | undefined>()
 
-  const { id, mixPoint } = trackState
+  const { id, adjustedBpm, mixPoint } = trackState
   if (!id) return null
-
   // const updatePlaybackRate = (bpm: number) => {
   //   // update play speed to new bpm
   //   const playbackRate = bpm / (track?.bpm || bpm)
@@ -138,12 +142,52 @@ const TrackCard = ({ trackState }: { trackState: TrackState }) => {
     if (track) removeFromMix(track?.id)
   }
 
+  const adjustOffset = async (adjustedOffset?: Track['adjustedOffset']) => {
+    // get offset from the user input field or mixState or current track
+    adjustedOffset = Number(adjustedOffset?.toFixed(2)) ?? Number(track?.offset)
+
+    EventBus.emit('adjustedOffset', { trackId: track?.id, adjustedOffset })
+  }
+
+  const adjustedOffset =
+    track.adjustedOffset && Number(track.adjustedOffset).toFixed(2)
+
+  const offsetDiff =
+    adjustedOffset && adjustedOffset !== track?.offset?.toFixed(2)
+
+  const ResetOffsetLink = () => {
+    return (
+      <Link
+        component="button"
+        underline="none"
+        onClick={() => adjustOffset(track?.offset || 0)}
+        color="neutral"
+        level="body2"
+        disabled={!offsetDiff}
+        title="Reset Beat Offset"
+      >
+        {offsetDiff ? <Replay sx={{ mr: 0.5 }} /> : ''}Beat Offset
+      </Link>
+    )
+  }
+
+  const offsetControl = (
+    <TextField
+      size="sm"
+      onChange={e => adjustOffset(+e.target.value)}
+      value={adjustedOffset || track?.offset?.toFixed(2) || 0}
+      id={`offsetInput_${id}`}
+      variant="outlined"
+      endDecorator={<ResetOffsetLink />}
+      sx={{ width: 155, m: 1 }}
+    />
+  )
+
   const trackInfo = (
     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
       <Typography sx={{ fontSize: 'sm', fontWeight: 'md' }}>
         {!track?.name ? null : track.name?.replace(/\.[^/.]+$/, '')}
       </Typography>
-
       <Link
         href="#dribbble-shot"
         level="body3"
@@ -185,7 +229,7 @@ const TrackCard = ({ trackState }: { trackState: TrackState }) => {
         borderColor: 'action.selected',
       }}
     >
-      {trackInfo}
+      {offsetControl}
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
         <Typography sx={{ fontSize: 'sm', fontWeight: 'md' }}>
           {analyzing

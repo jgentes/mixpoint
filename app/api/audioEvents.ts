@@ -1,4 +1,6 @@
-import { putTrackState, Track, TrackState } from '~/api/dbHandlers'
+// This file allows events to be received which need access to the waveform, rather than passing waveform around as a property of functions
+
+import { putTracks, putTrackState, Track, TrackState } from '~/api/dbHandlers'
 import { EventBus } from '~/api/EventBus'
 import { calcRegions } from './renderWaveform'
 
@@ -29,33 +31,51 @@ const loadAudioEvents = async ({
     beatResolution: TrackState['beatResolution']
     trackId: number
   }) => {
-    if (!beatResolution) return
+    if (!beatResolution || trackId !== track.id) return
 
-    if (trackId == track.id) {
-      // Adjust zoom
-      switch (+beatResolution) {
-        case 0.25:
-          waveform.zoom(20)
-          break
-        case 0.5:
-          waveform.zoom(40)
-          break
-        case 1:
-          waveform.zoom(80)
-          break
-      }
-
-      // Rebuild regions
-      waveform.regions.clear()
-      const { regions } = await calcRegions(track, {
-        ...trackState,
-        beatResolution,
-      })
-      for (const region of regions) waveform.regions.add(region)
-
-      // Update mixState
-      await putTrackState(trackId, { beatResolution })
+    // Adjust zoom
+    switch (+beatResolution) {
+      case 0.25:
+        waveform.zoom(20)
+        break
+      case 0.5:
+        waveform.zoom(40)
+        break
+      case 1:
+        waveform.zoom(80)
+        break
     }
+
+    // Rebuild regions
+    waveform.regions.clear()
+    const { regions } = await calcRegions(track, {
+      ...trackState,
+      beatResolution,
+    })
+    for (const region of regions) waveform.regions.add(region)
+
+    // Update mixState
+    await putTrackState(trackId, { beatResolution })
+  }
+
+  const adjustedOffsetEvent = async ({
+    adjustedOffset,
+    trackId,
+  }: {
+    adjustedOffset: Track['adjustedOffset']
+    trackId: number
+  }) => {
+    if (trackId !== track.id) return
+
+    const newTrack = { ...track, adjustedOffset }
+
+    // Rebuild regions
+    waveform.regions.clear()
+    const { regions } = await calcRegions(newTrack, trackState)
+    for (const region of regions) waveform.regions.add(region)
+
+    // Update mixState
+    await putTracks([newTrack])
   }
 
   // const audioEffect = (detail: { tracks: number[]; effect: string }) => {
@@ -83,6 +103,7 @@ const loadAudioEvents = async ({
   //Events.on('audio', audioEffect)
   EventBus.on('scroll', scrollEvent)
   EventBus.on('beatResolution', beatResolutionEvent)
+  EventBus.on('adjustedOffset', adjustedOffsetEvent)
 
   return waveform
 }

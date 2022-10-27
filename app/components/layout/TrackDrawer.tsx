@@ -28,8 +28,6 @@ const DrawerButton = ({ direction }: { direction: 'up' | 'down' }) => (
   </Button>
 )
 
-const mb = openDrawerState.now() ? 3 : 0 // ts no like superstate in sx
-
 const TrackDrawer = () => {
   useSuperState(openDrawerState)
   return (

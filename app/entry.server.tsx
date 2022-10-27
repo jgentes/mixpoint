@@ -12,7 +12,7 @@ const handleRequest = (
     <RemixServer context={remixContext} url={request.url} />
   )
 
-  responseHeaders.set('Content-Type', 'text/html')
+  responseHeaders.set('Content-Type', 'text/html; charset=utf-8')
   //responseHeaders.set('Cross-Origin-Embedder-Policy', 'require-corp')
   //responseHeaders.set('Cross-Origin-Opener-Policy', 'same-origin')
 

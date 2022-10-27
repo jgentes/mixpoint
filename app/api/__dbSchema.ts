@@ -54,6 +54,7 @@ interface Track {
   bpm?: number
   sampleRate?: number
   offset?: number // first beat as determined by bpm analysis
+  adjustedOffset?: number
   mixpoints?: MixPoint[]
   sets?: Set['id'][]
 }
@@ -121,7 +122,6 @@ interface AppState {
 interface TrackState {
   id?: Track['id']
   adjustedBpm?: Track['bpm']
-  adjustedOffset?: Track['offset']
   beatResolution?: 0.25 | 0.5 | 1
   mixPoint?: number
 }

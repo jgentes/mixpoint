@@ -24,8 +24,8 @@ const calcRegions = async (
   beatResolution: TrackState['beatResolution']
   regions: any[] // RegionParams exists, but can't access it using deferred import style
 }> => {
-  let { duration, bpm, offset } = track
-  let { adjustedBpm, adjustedOffset, beatResolution = 0.25 } = trackState
+  let { duration, offset, adjustedOffset, bpm } = track
+  let { adjustedBpm, beatResolution = 0.25 } = trackState
 
   if (!duration || !bpm || !offset) {
     const analyzedTracks = await analyzeTracks([track])

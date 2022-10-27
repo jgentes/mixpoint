@@ -123,13 +123,6 @@ const putTrackState = async (
   })
 }
 
-const getMixTracks = async (): Promise<(Track | undefined)[]> => {
-  const { from, to } = await getState('mix')
-  return await db.tracks.bulkGet(
-    [from?.id, to?.id].flatMap(a => (typeof a === 'number' ? a : []))
-  )
-}
-
 const addToMix = async (track: Track) => {
   let { from, to } = await getState('mix')
 
@@ -178,6 +171,5 @@ export {
   getState,
   putState,
   putTrackState,
-  getMixTracks,
   storeFile,
 }
