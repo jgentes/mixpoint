@@ -232,7 +232,7 @@ const TrackCard = ({ trackState }: { trackState: TrackState }) => {
             : track?.name?.replace(/\.[^/.]+$/, '') || 'No Track Loaded..'}
         </Typography>
       </Box>
-      <Card
+      {/* <Card
         id={`overview-container_${id}`}
         sx={{
           p: 0,
@@ -243,7 +243,7 @@ const TrackCard = ({ trackState }: { trackState: TrackState }) => {
           overflow: 'hidden',
           height: '25px',
         }}
-      />
+      /> */}
       {trackInfo}
     </Card>
   )

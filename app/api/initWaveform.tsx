@@ -1,6 +1,5 @@
 import WaveSurfer from 'wavesurfer.js'
 import CursorPlugin from 'wavesurfer.js/src/plugin/cursor'
-import MinimapPlugin from 'wavesurfer.js/src/plugin/minimap'
 import PlayheadPlugin from 'wavesurfer.js/src/plugin/playhead'
 import RegionsPlugin, { RegionParams } from 'wavesurfer.js/src/plugin/regions'
 import { Track, TrackState } from '~/api/dbHandlers'
@@ -117,21 +116,21 @@ const initWaveform = async ({
       RegionsPlugin.create({
         regions,
       }),
-      MinimapPlugin.create({
-        container: `#overview-container_${track.id}`,
-        waveColor: [
-          'rgba(145, 145, 145, 0.8)',
-          'rgba(145, 145, 145, 0.8)',
-          'rgba(145, 145, 145, 0.8)',
-          'rgba(145, 145, 145, 0.5)',
-          'rgba(145, 145, 145, 0.5)',
-        ],
-        progressColor: 'rgba(0, 0, 0, 0.25)',
-        interact: true,
-        scrollParent: false,
-        hideScrollbar: true,
-        pixelRatio: 1,
-      }),
+      // MinimapPlugin.create({
+      //   container: `#overview-container_${track.id}`,
+      //   waveColor: [
+      //     'rgba(145, 145, 145, 0.8)',
+      //     'rgba(145, 145, 145, 0.8)',
+      //     'rgba(145, 145, 145, 0.8)',
+      //     'rgba(145, 145, 145, 0.5)',
+      //     'rgba(145, 145, 145, 0.5)',
+      //   ],
+      //   progressColor: 'rgba(0, 0, 0, 0.25)',
+      //   interact: true,
+      //   scrollParent: false,
+      //   hideScrollbar: true,
+      //   pixelRatio: 1,
+      // }),
     ],
   })
 
