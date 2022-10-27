@@ -13,6 +13,7 @@ import {
   __Track as Track,
   __TrackState as TrackState,
 } from '~/api/__dbSchema'
+import { errorHandler } from '~/utils/notifications'
 
 const FILE_STORE_LIMIT = 50
 
@@ -105,6 +106,19 @@ const putState = async (
   })
 }
 
+const getTrackState = async (trackId: Track['id']): Promise<TrackState> => {
+  const mixState = await getState('mix')
+  const state =
+    mixState.from?.id == trackId
+      ? mixState.from
+      : mixState.to?.id == trackId
+      ? mixState.to
+      : null
+
+  if (!state) throw errorHandler('Track not found in mix state.')
+  return state
+}
+
 const putTrackState = async (
   trackId: Track['id'],
   state: Partial<TrackState>
@@ -112,7 +126,7 @@ const putTrackState = async (
   const prevState = await getState('mix')
   const isFromTrack = prevState.from?.id == trackId
   if (!isFromTrack && prevState.to?.id !== trackId)
-    throw 'Track not found in mix state'
+    throw errorHandler('Track not found in mix state')
 
   const newState = { ...prevState[isFromTrack ? 'from' : 'to'], ...state }
 
@@ -170,6 +184,7 @@ export {
   removeFromMix,
   getState,
   putState,
+  getTrackState,
   putTrackState,
   storeFile,
 }

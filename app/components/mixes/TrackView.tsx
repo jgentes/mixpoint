@@ -1,84 +1,45 @@
-import {
-  AccessTime,
-  Eject,
-  Pause,
-  PlayArrow,
-  Replay,
-  Stop,
-} from '@mui/icons-material'
-import {
-  Card,
-  Chip,
-  Link,
-  Radio,
-  radioClasses,
-  RadioGroup,
-  TextField,
-  Typography,
-} from '@mui/joy'
-import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
-import { useSuperState } from '@superstate/react'
-import { useEffect, useRef, useState } from 'react'
+import { Card, Typography } from '@mui/joy'
+import { Box } from '@mui/material'
+import { useEffect, useState } from 'react'
 import { loadAudioEvents } from '~/api/audioEvents'
-import { getState, removeFromMix, Track, TrackState } from '~/api/dbHandlers'
+import { db, Track, TrackState } from '~/api/dbHandlers'
 import { EventBus } from '~/api/EventBus'
 import { renderWaveform } from '~/api/renderWaveform'
-import { openDrawerState } from '~/components/layout/TrackDrawer'
+import BeatResolutionControl from '~/components/tracks/BeatResolutionControl'
+import EjectControl from '~/components/tracks/EjectControl'
 import Loader from '~/components/tracks/TrackLoader'
+import { errorHandler } from '~/utils/notifications'
+import TrackName from '../tracks/TrackName'
 
 const TrackView = ({
-  track,
-  trackState,
+  trackId,
+  beatResolution,
 }: {
-  track: Track
-  trackState: TrackState
+  trackId: Track['id']
+  beatResolution: TrackState['beatResolution']
 }) => {
-  const [playing, setPlaying] = useState(false)
+  if (!trackId || !beatResolution)
+    throw errorHandler('Please try uploading the track again.')
+
   const [analyzing, setAnalyzing] = useState(false)
-  const [bpmTimer, setBpmTimer] = useState<number>()
 
-  useSuperState(openDrawerState)
-
-  const { id, mixPoint } = trackState
-  if (!id) return null
-
-  let audioElement = useRef<HTMLAudioElement>(null)
-
+  // View component must be in the DOM before rendering waveform
   useEffect(() => {
     let waveform: WaveSurfer
 
     const renderTrack = async () => {
-      if (track) {
-        waveform = await renderWaveform({
-          track,
-          trackState,
-          setAnalyzing,
-        })
+      waveform = await renderWaveform({
+        trackId,
+        setAnalyzing,
+      })
 
-        await loadAudioEvents({ track, trackState, waveform })
-      }
+      await loadAudioEvents({ trackId, waveform })
     }
 
     renderTrack()
 
     return () => waveform?.destroy()
-  }, [track])
-
-  const updatePlaybackRate = (bpm: number) => {
-    // update play speed to new bpm
-    const playbackRate = bpm / (track?.bpm || bpm)
-    if (audioElement.current) audioElement.current.playbackRate = playbackRate
-  }
-
-  const adjustBpm = async (bpm?: number) => {
-    // get bpm from the user input field or mixState or current track
-    bpm = bpm ?? Number(track?.bpm)
-
-    updatePlaybackRate(bpm)
-
-    // store custom bpm value in trackstate
-    //putTrackState(isFromTrack, { adjustedBpm: Number(bpm.toFixed(1)) })
-  }
+  }, [trackId])
 
   const setMixPoint = async () => {
     //const id = await addMix(mixState.tracks.map(t => t.id))
@@ -88,99 +49,50 @@ const TrackView = ({
   const timeFormat = (secs: number) =>
     new Date(secs * 1000).toISOString().substring(15, 19)
 
-  const adjustedBpm =
-    trackState.adjustedBpm && Number(trackState.adjustedBpm).toFixed(1)
+  // const playerControl = !track?.name ? null : (
+  //   <Box
+  //     sx={{
+  //       display: 'flex',
+  //       '& > *': {
+  //         m: 1,
+  //       },
+  //     }}
+  //   >
+  //     <ButtonGroup
+  //       size="small"
+  //       variant="outlined"
+  //       style={{
+  //         visibility: analyzing ? 'hidden' : 'visible',
+  //       }}
+  //     >
+  //       <ButtonGroupButton
+  //         onClick={() => {
+  //           EventBus.emit('audio', { effect: 'stop', tracks: [id] })
+  //         }}
+  //         id={`stopButton_${id}`}
+  //       >
+  //         <Stop />
+  //         Stop
+  //       </ButtonGroupButton>
 
-  const bpmDiff = adjustedBpm && adjustedBpm !== track?.bpm?.toFixed(1)
-
-  const ResetBpmLink = () => (
-    <Link
-      component="button"
-      underline="none"
-      onClick={() => adjustBpm(track?.bpm || 1)}
-      color="neutral"
-      level="body2"
-      disabled={!bpmDiff}
-      title="Reset BPM"
-    >
-      {bpmDiff ? <Replay sx={{ mr: 0.5 }} /> : ''}BPM
-    </Link>
-  )
-
-  const bpmControl = (
-    <TextField
-      disabled={!track?.bpm}
-      size="sm"
-      onChange={val => {
-        console.log('changeval:', val)
-        if (val) {
-          if (bpmTimer) window.clearTimeout(bpmTimer)
-          const debounce = window.setTimeout(() => adjustBpm(val), 1000)
-          setBpmTimer(debounce)
-        }
-      }}
-      value={adjustedBpm || track?.bpm?.toFixed(1) || 0}
-      id={`bpmInput_${id}`}
-      variant="outlined"
-      endDecorator={<ResetBpmLink />}
-    />
-  )
-
-  const playerControl = !track?.name ? null : (
-    <Box
-      sx={{
-        display: 'flex',
-        '& > *': {
-          m: 1,
-        },
-      }}
-    >
-      <ButtonGroup
-        size="small"
-        variant="outlined"
-        style={{
-          visibility: analyzing ? 'hidden' : 'visible',
-        }}
-      >
-        <ButtonGroupButton
-          onClick={() => {
-            EventBus.emit('audio', { effect: 'stop', tracks: [id] })
-          }}
-          id={`stopButton_${id}`}
-        >
-          <Stop />
-          Stop
-        </ButtonGroupButton>
-
-        <ButtonGroupButton
-          onClick={() => {
-            EventBus.emit('audio', {
-              effect: playing ? 'pause' : 'play',
-              tracks: [id],
-            })
-          }}
-          id={`playButton_${id}`}
-        >
-          {playing ? <Pause /> : <PlayArrow />}
-          {playing ? 'Pause' : 'Play'}
-        </ButtonGroupButton>
-      </ButtonGroup>
-      <TextField size="sm" variant="soft" value={timeFormat(mixPoint || 0)}>
-        <AccessTime />
-      </TextField>
-    </Box>
-  )
-
-  const ejectTrack = async () => {
-    // If this is not the last track in the mix, open drawer, otherwise the drawer will open automatically
-    const { from, to } = await getState('mix')
-    if (from?.id && to?.id) openDrawerState.set(true)
-
-    if (track) removeFromMix(track?.id)
-  }
-
-  const changeBeatResolution = (beatResolution: TrackState['beatResolution']) =>
-    EventBus.emit('beatResolution', { trackId: track?.id, beatResolution })
+  //       <ButtonGroupButton
+  //         onClick={() => {
+  //           EventBus.emit('audio', {
+  //             effect: playing ? 'pause' : 'play',
+  //             tracks: [id],
+  //           })
+  //         }}
+  //         id={`playButton_${id}`}
+  //       >
+  //         {playing ? <Pause /> : <PlayArrow />}
+  //         {playing ? 'Pause' : 'Play'}
+  //       </ButtonGroupButton>
+  //     </ButtonGroup>
+  //     <TextField size="sm" variant="soft" value={timeFormat(mixPoint || 0)}>
+  //       <AccessTime />
+  //     </TextField>
+  //   </Box>
+  // )
 
   const trackFooter = (
     <Box
@@ -191,17 +103,7 @@ const TrackView = ({
         alignItems: 'center',
       }}
     >
-      <Chip
-        variant="outlined"
-        color="primary"
-        size="sm"
-        onClick={() => ejectTrack()}
-        sx={{
-          borderRadius: 'sm',
-        }}
-      >
-        <Eject titleAccess="Load Track" />
-      </Chip>
+      <EjectControl trackId={trackId} />
       <Typography
         sx={{
           fontSize: 'sm',
@@ -210,66 +112,12 @@ const TrackView = ({
           whiteSpace: 'nowrap',
         }}
       >
-        {analyzing
-          ? 'Loading...'
-          : track?.name?.replace(/\.[^/.]+$/, '') || 'No Track Loaded..'}
+        {TrackName(trackId)}
       </Typography>
-
-      <RadioGroup
-        row
-        name="beatResolution"
-        value={trackState.beatResolution}
-        variant="outlined"
-        sx={{ ml: 'auto' }}
-        onChange={e =>
-          changeBeatResolution(+e.target.value as TrackState['beatResolution'])
-        }
-      >
-        {[0.25, 0.5, 1].map(item => (
-          <Box
-            key={item}
-            sx={theme => ({
-              position: 'relative',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: 48,
-              height: 24,
-              '&:not([data-first-child])': {
-                borderLeft: '1px solid',
-                borderColor: 'divider',
-              },
-              [`&[data-first-child] .${radioClasses.action}`]: {
-                borderTopLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-                borderBottomLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-              },
-              [`&[data-last-child] .${radioClasses.action}`]: {
-                borderTopRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-                borderBottomRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-              },
-            })}
-          >
-            <Radio
-              value={item}
-              disableIcon
-              overlay
-              label={`${item * 100}%`}
-              variant={trackState.beatResolution == item ? 'outlined' : 'plain'}
-              color="primary"
-              sx={{
-                fontSize: '12px',
-                color: 'text.secondary',
-              }}
-              componentsProps={{
-                action: {
-                  sx: { borderRadius: 0, transition: 'none' },
-                },
-                label: { sx: { lineHeight: 0 } },
-              }}
-            />
-          </Box>
-        ))}
-      </RadioGroup>
+      <BeatResolutionControl
+        trackId={trackId}
+        beatResolution={beatResolution}
+      />
     </Box>
   )
 
@@ -294,7 +142,7 @@ const TrackView = ({
       }}
     >
       <Card
-        id={`zoomview-container_${id}`}
+        id={`zoomview-container_${trackId}`}
         sx={{
           ...loaderSx,
           zIndex: 1,
@@ -302,7 +150,7 @@ const TrackView = ({
         onWheel={e =>
           EventBus.emit('scroll', {
             direction: e.deltaY > 100 ? 'down' : 'up',
-            trackId: id,
+            trackId,
           })
         }
       ></Card>

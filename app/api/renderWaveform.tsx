@@ -1,4 +1,4 @@
-import { Track, TrackState } from '~/api/dbHandlers'
+import { db, getTrackState, Track, TrackState } from '~/api/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
 import { analyzeTracks } from './audioHandlers'
 import { getPermission } from './fileHandlers'
@@ -17,7 +17,7 @@ if (typeof document !== 'undefined') {
 
 const calcRegions = async (
   track: Track,
-  trackState: TrackState
+  partialTrackState: Partial<TrackState> = {}
 ): Promise<{
   duration: Track['duration']
   skipLength: number
@@ -25,7 +25,6 @@ const calcRegions = async (
   regions: any[] // RegionParams exists, but can't access it using deferred import style
 }> => {
   let { duration, offset, adjustedOffset, bpm } = track
-  let { adjustedBpm, beatResolution = 0.25 } = trackState
 
   if (!duration || !bpm || !offset) {
     const analyzedTracks = await analyzeTracks([track])
@@ -34,6 +33,10 @@ const calcRegions = async (
     if (!duration || !bpm || !offset)
       throw errorHandler(`Please try adding ${track.name} again.`)
   }
+
+  const trackState = await getTrackState(track.id)
+  const newTrackState = { ...trackState, ...partialTrackState }
+  let { adjustedBpm, beatResolution = 0.25 } = newTrackState
 
   const beatInterval = 60 / (adjustedBpm || bpm)
   let startPoint = adjustedOffset || offset
@@ -65,15 +68,16 @@ const calcRegions = async (
 }
 
 const renderWaveform = async ({
-  track,
-  trackState,
+  trackId,
   setAnalyzing,
 }: {
-  track: Track
-  trackState: TrackState
+  trackId: Track['id']
   setAnalyzing: Function
 }): Promise<WaveSurfer> => {
-  if (!track?.id) throw errorHandler('No track to initialize.')
+  if (!trackId) throw errorHandler('No track to initialize.')
+
+  const track = await db.tracks.get(trackId)
+  if (!track) throw errorHandler('Could not retrieve track from database.')
 
   const file = await getPermission(track)
   if (!file) throw errorHandler(`Please try adding ${track.name} again.`)
@@ -81,12 +85,11 @@ const renderWaveform = async ({
   setAnalyzing(true)
 
   const { duration, skipLength, regions, beatResolution } = await calcRegions(
-    track,
-    trackState
+    track
   )
 
   const zoomview = WaveSurfer.create({
-    container: `#zoomview-container_${track.id}`,
+    container: `#zoomview-container_${trackId}`,
     scrollParent: true,
     fillParent: false,
     pixelRatio: 1,

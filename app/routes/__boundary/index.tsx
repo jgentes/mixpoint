@@ -1,35 +1,17 @@
-import { MergeType, Pause, PlayArrow, Stop } from '@mui/icons-material'
-import { Box, Button } from '@mui/joy'
-import { ButtonGroup } from '@mui/material'
-import { useSuperState } from '@superstate/react'
+import { Box } from '@mui/joy'
 import { useState } from 'react'
-import { db, getState, useLiveQuery } from '~/api/dbHandlers'
-import { EventBus } from '~/api/EventBus'
+import { getState, useLiveQuery } from '~/api/dbHandlers'
 import Header from '~/components/layout/Header'
-import TrackDrawer, { openDrawerState } from '~/components/layout/TrackDrawer'
+import TrackDrawer from '~/components/layout/TrackDrawer'
 import TrackCard from '~/components/mixes/TrackCard'
 import TrackView from '~/components/mixes/TrackView'
 import TrackTable from '~/components/tracks/TrackTable'
 
 const Mixes: React.FunctionComponent = () => {
   const [playing, setPlaying] = useState(false)
-  useSuperState(openDrawerState)
 
   const { from: fromState, to: toState } =
     useLiveQuery(() => getState('mix')) || {}
-  const [fromTrack, toTrack] =
-    useLiveQuery(
-      () =>
-        db.tracks.bulkGet(
-          [fromState?.id, toState?.id].flatMap(a =>
-            typeof a === 'number' ? a : []
-          )
-        ),
-      [fromState, toState]
-    ) || []
-
-  const isFrom = fromState?.id && fromTrack?.id
-  const isTo = toState?.id && toTrack?.id
 
   const timeFormat = (secs: number) =>
     new Date(secs * 1000).toISOString().substring(15, 19)
@@ -100,19 +82,23 @@ const Mixes: React.FunctionComponent = () => {
       ) : (
         <Box component="main" sx={{ p: 2, height: '90vh' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
-            {!isFrom ? null : (
-              <TrackView track={fromTrack} trackState={fromState} />
+            {!fromState?.id ? null : (
+              <TrackView
+                trackId={fromState.id}
+                beatResolution={fromState.beatResolution}
+              />
             )}
-            {!isTo ? null : <TrackView track={toTrack} trackState={toState} />}
+            {!toState?.id ? null : (
+              <TrackView
+                trackId={toState.id}
+                beatResolution={toState.beatResolution}
+              />
+            )}
             <div style={{ display: 'flex', flexDirection: 'row', gap: 15 }}>
-              {!isFrom ? null : (
-                <TrackCard track={fromTrack} trackState={fromState} />
-              )}
+              {!fromState?.id ? null : <TrackCard trackId={fromState.id} />}
               {/* <Box style={{ flex: '0 0 250px' }}>{mixPointControl}</Box> */}
 
-              {!isTo ? null : (
-                <TrackCard track={toTrack} trackState={toState} />
-              )}
+              {!toState?.id ? null : <TrackCard trackId={toState.id} />}
             </div>
           </div>
 
