@@ -2,7 +2,7 @@ import { putTrackState, Track, TrackState } from '~/api/dbHandlers'
 import { Events } from '~/api/Events'
 import { calcRegions } from './renderWaveform'
 
-const loadAudioEffects = async ({
+const loadAudioEvents = async ({
   track,
   trackState,
   waveform,
@@ -11,20 +11,24 @@ const loadAudioEffects = async ({
   trackState: TrackState
   waveform: WaveSurfer
 }) => {
-  const scrollEffect = (scrollEvent: {
+  const scrollEvent = ({
+    direction,
+    trackId,
+  }: {
     direction: 'up' | 'down'
     trackId: number
   }) => {
-    const { direction, trackId } = scrollEvent
     if (trackId == track.id)
       direction == 'down' ? waveform.skipBackward() : waveform.skipForward()
   }
 
-  const beatResolutionEffect = async (beatResolutionEvent: {
+  const beatResolutionEvent = async ({
+    beatResolution,
+    trackId,
+  }: {
     beatResolution: TrackState['beatResolution']
     trackId: number
   }) => {
-    const { beatResolution, trackId } = beatResolutionEvent
     if (!beatResolution) return
 
     if (trackId == track.id) {
@@ -77,10 +81,10 @@ const loadAudioEffects = async ({
 
   // add event listeners
   //Events.on('audio', audioEffect)
-  Events.on('scroll', scrollEffect)
-  Events.on('beatResolution', beatResolutionEffect)
+  Events.on('scroll', scrollEvent)
+  Events.on('beatResolution', beatResolutionEvent)
 
   return waveform
 }
 
-export { loadAudioEffects }
+export { loadAudioEvents }

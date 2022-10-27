@@ -19,7 +19,7 @@ import {
 import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
 import { useSuperState } from '@superstate/react'
 import { useEffect, useRef, useState } from 'react'
-import { loadAudioEffects } from '~/api/audioEffects'
+import { loadAudioEvents } from '~/api/audioEvents'
 import {
   db,
   getState,
@@ -57,7 +57,7 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
           setAnalyzing,
         })
 
-        await loadAudioEffects({ track, trackState, waveform })
+        await loadAudioEvents({ track, trackState, waveform })
       }
     }
 
