@@ -12,7 +12,7 @@ import { Button, Card, Chip, Link, TextField, Typography } from '@mui/joy'
 import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { getState, removeFromMix, Track, TrackState } from '~/api/dbHandlers'
-import { Events } from '~/api/Events'
+import { EventBus } from '~/api/EventBus'
 import { openDrawerState } from '~/components/layout/TrackDrawer'
 
 const TrackCard = ({ trackState }: { trackState: TrackState }) => {
@@ -38,25 +38,6 @@ const TrackCard = ({ trackState }: { trackState: TrackState }) => {
 
   //   // store custom bpm value in trackstate
   //   //putTrackState(isFromTrack, { adjustedBpm: Number(bpm.toFixed(1)) })
-  // }
-
-  // const selectTime = async (time: number) => {
-  //   // waveform?.player.seek(time)
-  //   // zoomView?.enableAutoScroll(false)
-
-  //   Events.dispatch('audio', {
-  //     effect: 'play',
-  //     tracks: [id],
-  //   })
-
-  //   /*
-  //   waveform?.segments.add({
-  //     startTime: time,
-  //     endTime: sliderPoints[31],
-  //     color: 'rgba(191, 191, 63, 0.5)',
-  //     editable: true
-  //   })
-  //   */
   // }
 
   // const setMixPoint = async () => {
@@ -204,6 +185,7 @@ const TrackCard = ({ trackState }: { trackState: TrackState }) => {
         borderColor: 'action.selected',
       }}
     >
+      {trackInfo}
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
         <Typography sx={{ fontSize: 'sm', fontWeight: 'md' }}>
           {analyzing
@@ -223,7 +205,6 @@ const TrackCard = ({ trackState }: { trackState: TrackState }) => {
           height: '25px',
         }}
       /> */}
-      {trackInfo}
     </Card>
   )
 }

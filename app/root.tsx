@@ -16,6 +16,7 @@ const meta: MetaFunction = () => {
     title: 'Mixpoint',
     description: 'Mixpoint is multi-track audio mixing app for the modern dj',
     charset: 'utf-8',
+    viewport: 'width=device-width, initial-scale=1',
   }
 }
 
@@ -33,12 +34,12 @@ const links: LinksFunction = () => [
 ]
 
 const Document = ({ children }: { children: React.ReactNode }) => (
-  <html lang="en" style={{ height: '100%' }}>
+  <html lang="en">
     <head>
       <Meta />
       <Links />
     </head>
-    <body style={{ margin: 0, height: '100%' }}>
+    <body>
       <LiveReload />
       {children}
     </body>

@@ -1,5 +1,5 @@
 import { putTrackState, Track, TrackState } from '~/api/dbHandlers'
-import { Events } from '~/api/Events'
+import { EventBus } from '~/api/EventBus'
 import { calcRegions } from './renderWaveform'
 
 const loadAudioEvents = async ({
@@ -81,8 +81,8 @@ const loadAudioEvents = async ({
 
   // add event listeners
   //Events.on('audio', audioEffect)
-  Events.on('scroll', scrollEvent)
-  Events.on('beatResolution', beatResolutionEvent)
+  EventBus.on('scroll', scrollEvent)
+  EventBus.on('beatResolution', beatResolutionEvent)
 
   return waveform
 }

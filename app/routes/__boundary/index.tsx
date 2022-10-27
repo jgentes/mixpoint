@@ -4,7 +4,7 @@ import { ButtonGroup } from '@mui/material'
 import { useSuperState } from '@superstate/react'
 import { useState } from 'react'
 import { getState, useLiveQuery } from '~/api/dbHandlers'
-import { Events } from '~/api/Events'
+import { EventBus } from '~/api/EventBus'
 import Header from '~/components/layout/Header'
 import TrackDrawer, { openDrawerState } from '~/components/layout/TrackDrawer'
 import TrackCard from '~/components/mixes/TrackCard'
@@ -26,7 +26,7 @@ const Mixes: React.FunctionComponent = () => {
         <Button
           onClick={() => {
             setPlaying(false)
-            Events.emit('audio', {
+            EventBus.emit('audio', {
               effect: 'stop',
               tracks: [from?.id, to?.id],
             })
@@ -40,7 +40,7 @@ const Mixes: React.FunctionComponent = () => {
         <Button
           onClick={() => {
             playing ? setPlaying(false) : setPlaying(true)
-            Events.emit('audio', {
+            EventBus.emit('audio', {
               effect: playing ? 'pause' : 'play',
               tracks: [from?.id, to?.id],
             })

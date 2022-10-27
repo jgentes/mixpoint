@@ -14,7 +14,7 @@ const DrawerButton = ({ direction }: { direction: 'up' | 'down' }) => (
     fullWidth
     title={direction === 'up' ? 'Open drawer' : 'Close drawer'}
     sx={{
-      position: 'absolute',
+      position: 'fixed',
       bottom: 0,
       left: 0,
       borderTop: '1px solid',
@@ -27,6 +27,8 @@ const DrawerButton = ({ direction }: { direction: 'up' | 'down' }) => (
     {direction == 'up' ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
   </Button>
 )
+
+const mb = openDrawerState.now() ? 3 : 0 // ts no like superstate in sx
 
 const TrackDrawer = () => {
   useSuperState(openDrawerState)
@@ -47,6 +49,7 @@ const TrackDrawer = () => {
             sx: {
               height: '85%',
               bgcolor: 'background.surface',
+              mb: openDrawerState.now() ? 3 : 0,
             },
             variant: 'outlined',
           }}

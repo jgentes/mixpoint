@@ -27,7 +27,7 @@ import {
   TrackState,
   useLiveQuery,
 } from '~/api/dbHandlers'
-import { Events } from '~/api/Events'
+import { EventBus } from '~/api/EventBus'
 import { renderWaveform } from '~/api/renderWaveform'
 import { openDrawerState } from '~/components/layout/TrackDrawer'
 import Loader from '~/components/tracks/TrackLoader'
@@ -80,25 +80,6 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
 
     // store custom bpm value in trackstate
     //putTrackState(isFromTrack, { adjustedBpm: Number(bpm.toFixed(1)) })
-  }
-
-  const selectTime = async (time: number) => {
-    // waveform?.player.seek(time)
-    // zoomView?.enableAutoScroll(false)
-
-    Events.emit('audio', {
-      effect: 'play',
-      tracks: [id],
-    })
-
-    /*
-    waveform?.segments.add({
-      startTime: time,
-      endTime: sliderPoints[31],
-      color: 'rgba(191, 191, 63, 0.5)',
-      editable: true
-    })
-    */
   }
 
   const setMixPoint = async () => {
@@ -165,7 +146,7 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
       >
         <ButtonGroupButton
           onClick={() => {
-            Events.emit('audio', { effect: 'stop', tracks: [id] })
+            EventBus.emit('audio', { effect: 'stop', tracks: [id] })
           }}
           id={`stopButton_${id}`}
         >
@@ -175,7 +156,7 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
 
         <ButtonGroupButton
           onClick={() => {
-            Events.emit('audio', {
+            EventBus.emit('audio', {
               effect: playing ? 'pause' : 'play',
               tracks: [id],
             })
@@ -201,7 +182,7 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
   }
 
   const changeBeatResolution = (beatResolution: TrackState['beatResolution']) =>
-    Events.emit('beatResolution', { trackId: track?.id, beatResolution })
+    EventBus.emit('beatResolution', { trackId: track?.id, beatResolution })
 
   const trackFooter = (
     <Box
@@ -321,7 +302,7 @@ const TrackView = ({ trackState }: { trackState: TrackState }) => {
           zIndex: 1,
         }}
         onWheel={e =>
-          Events.emit('scroll', {
+          EventBus.emit('scroll', {
             direction: e.deltaY > 100 ? 'down' : 'up',
             trackId: id,
           })

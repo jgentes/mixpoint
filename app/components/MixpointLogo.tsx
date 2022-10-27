@@ -16,8 +16,8 @@ const LogoText = styled('span')`
     hsl(220, 75%, 50%) 95%
   );
   color: #fff;
-  background-clip: text;
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   -webkit-text-stroke-width: thin;
   -webkit-text-stroke-color: rgb(255 255 255 / 35%);

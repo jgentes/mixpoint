@@ -12,6 +12,15 @@ const muiTheme = extendMuiTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
+        html: {
+          height: '100%',
+        },
+
+        body: {
+          margin: 0,
+          height: '100%',
+        },
+
         'tr:hover .visibleOnHover': {
           visibility: 'visible',
         },

@@ -1,4 +1,4 @@
-const Events = {
+const EventBus = {
   on(event: string, callback: Function) {
     window.addEventListener(event, (e: CustomEventInit) => callback(e.detail))
   },
@@ -10,4 +10,4 @@ const Events = {
   },
 }
 
-export { Events }
+export { EventBus }
