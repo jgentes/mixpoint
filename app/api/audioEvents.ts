@@ -23,6 +23,8 @@ const loadAudioEvents = async ({
   const track = await db.tracks.get(trackId)
   if (!track) throw errorHandler('Track not found for waveform generation.')
 
+  let skipLength = waveform.skipLength
+
   const scrollEvent = ({
     direction,
     trackId,
@@ -31,7 +33,9 @@ const loadAudioEvents = async ({
     trackId: number
   }) => {
     if (trackId == track.id)
-      direction == 'down' ? waveform.skipBackward() : waveform.skipForward()
+      direction == 'down'
+        ? waveform.skipBackward(skipLength)
+        : waveform.skipForward(skipLength)
   }
 
   const beatResolutionEvent = async ({
@@ -58,8 +62,13 @@ const loadAudioEvents = async ({
 
     // Rebuild regions
     waveform.regions.clear()
-    const { regions } = await calcRegions(track, { beatResolution })
+    const { regions, skipLength: newSkipLength } = await calcRegions(track, {
+      beatResolution,
+    })
     for (const region of regions) waveform.regions.add(region)
+
+    // Adjust skiplength
+    skipLength = newSkipLength
 
     // Update mixState
     await putTrackState(trackId, { beatResolution })
@@ -72,7 +81,6 @@ const loadAudioEvents = async ({
     trackId: number
     adjustedOffset: Track['adjustedOffset']
   }) => {
-    console.log({ trackId, adjustedOffset })
     if (trackId !== track.id) return
 
     const newTrack = { ...track, adjustedOffset }

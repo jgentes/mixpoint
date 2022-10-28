@@ -30,11 +30,11 @@ const muiTheme = extendMuiTheme({
           background:
             'linear-gradient(60deg, hsl(0, 75%, 50%) 5%,hsl(260, 75%, 50%) 35%, hsl(200, 75%, 50%) 65%,hsl(220, 75%, 50%) 95%)',
           color: '#fff',
-          '-webkit-background-clip': 'text',
-          'background-clip': 'text',
-          '-webkit-text-fill-color': 'transparent',
-          '-webkit-text-stroke-width': 'thin',
-          '-webkit-text-stroke-color': 'rgb(255 255 255 / 35%)',
+          WebkitBackgroundClip: 'text',
+          backgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          WebkitTextStrokeWidth: 'thin',
+          WebkitTextStrokeColor: 'rgb(255 255 255 / 35%)',
         },
 
         'tr:hover .visibleOnHover': {
