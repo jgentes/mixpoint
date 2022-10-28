@@ -6,9 +6,9 @@ import {
   putTrackState,
   Track,
   TrackState,
-  useLiveQuery,
 } from '~/api/dbHandlers'
 import { EventBus } from '~/api/EventBus'
+import { errorHandler } from '~/utils/notifications'
 import { calcRegions } from './renderWaveform'
 
 const loadAudioEvents = async ({
@@ -19,7 +19,9 @@ const loadAudioEvents = async ({
   waveform: WaveSurfer
 }) => {
   if (!trackId) return null
-  const track = useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
+
+  const track = await db.tracks.get(trackId)
+  if (!track) throw errorHandler('Track not found for waveform generation.')
 
   const scrollEvent = ({
     direction,
