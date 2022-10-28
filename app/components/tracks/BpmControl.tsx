@@ -1,36 +1,46 @@
 import { Replay } from '@mui/icons-material'
 import { Link, TextField } from '@mui/joy'
-import { Track, TrackState } from '~/api/dbHandlers'
+import { useEffect, useState } from 'react'
+import {
+  db,
+  getTrackState,
+  Track,
+  TrackState,
+  useLiveQuery,
+} from '~/api/dbHandlers'
 import { EventBus } from '~/api/EventBus'
 
-const BpmControl = ({
-  track,
-  trackState,
-}: {
-  track: Track
-  trackState: TrackState
-}) => {
-  const adjustedBpm =
-    trackState.adjustedBpm && Number(trackState.adjustedBpm).toFixed(1)
+const BpmControl = ({ trackId }: { trackId: Track['id'] }) => {
+  if (!trackId) return null
 
-  const bpmDiff = adjustedBpm && adjustedBpm !== track?.bpm?.toFixed(1)
+  const { bpm } = useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
+
+  const { adjustedBpm } =
+    useLiveQuery(() => getTrackState(trackId), [trackId]) || {}
+
+  const [bpmVal, setBpmVal] = useState<string | number>()
+
+  useEffect(
+    () => setBpmVal((adjustedBpm ?? bpm ?? 0).toFixed(1)),
+    [adjustedBpm, bpm]
+  )
+
+  const bpmDiff = adjustedBpm !== bpm
 
   const adjustBpm = async (adjustedBpm?: TrackState['adjustedBpm']) => {
-    // get bpm from the user input field or mixState or current track
-    adjustedBpm = Number(adjustedBpm?.toFixed(1)) ?? Number(track?.bpm)
+    adjustedBpm = adjustedBpm ?? bpm
+    setBpmVal(adjustedBpm)
 
     EventBus.emit('adjustBpm', { trackId, adjustedBpm })
   }
 
   const ResetBpmLink = () => (
     <Link
-      component="button"
       underline="none"
-      onClick={() => adjustBpm(track?.bpm || 1)}
+      onClick={() => adjustBpm()}
       color="neutral"
-      level="body2"
-      disabled={!bpmDiff}
       title="Reset BPM"
+      disabled={!bpmDiff}
     >
       {bpmDiff ? <Replay sx={{ mr: 0.5 }} /> : ''}BPM
     </Link>

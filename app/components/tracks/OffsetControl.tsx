@@ -33,9 +33,11 @@ const OffsetControl = ({ trackId }: { trackId: Track['id'] }) => {
         onClick={() => adjustOffset()}
         color="neutral"
         title="Reset Beat Offset"
+        disabled={!offsetDiff}
         sx={{
           fontSize: 12,
           fontWeight: 300,
+          '-webkit-text-fill-color': '#888',
         }}
       >
         Beat Offset{offsetDiff ? <Replay sx={{ ml: 0.5 }} /> : ''}
@@ -56,12 +58,20 @@ const OffsetControl = ({ trackId }: { trackId: Track['id'] }) => {
         startDecorator={<ResetOffsetLink />}
         value={offsetVal}
         onChange={e => setOffsetVal(e.target.value)}
+        onBlur={() => {
+          if (Number(offsetVal) !== adjustedOffset)
+            adjustOffset(Number(offsetVal))
+        }}
         id={`offsetInput_${trackId}`}
         sx={{
-          width: 142,
+          width: 144,
           fontWeight: 300,
           '& div': { minHeight: '24px', borderColor: 'action.disabled' },
-          '& input': { textAlign: 'right', fontSize: 12 },
+          '& input': {
+            textAlign: 'right',
+            fontSize: 12,
+            color: 'text.secondary',
+          },
         }}
       />
     </form>
