@@ -14,8 +14,8 @@ import { useEffect, useState } from 'react'
 import { getState, removeFromMix, Track, TrackState } from '~/api/dbHandlers'
 import { EventBus } from '~/api/EventBus'
 import { openDrawerState } from '~/components/layout/TrackDrawer'
-import OffsetControl from '../tracks/OffsetControl'
-import TrackName from '../tracks/TrackName'
+import OffsetControl from '~/components/tracks/OffsetControl'
+import TrackName from '~/components/tracks/TrackName'
 
 const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
   const [playing, setPlaying] = useState(false)
@@ -136,7 +136,6 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
         borderColor: 'action.selected',
       }}
     >
-      <OffsetControl trackId={trackId} />
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
         <Typography sx={{ fontSize: 'sm', fontWeight: 'md' }}>
           {TrackName(trackId)}

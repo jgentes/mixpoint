@@ -7,19 +7,19 @@ import { EventBus } from '~/api/EventBus'
 import { renderWaveform } from '~/api/renderWaveform'
 import BeatResolutionControl from '~/components/tracks/BeatResolutionControl'
 import EjectControl from '~/components/tracks/EjectControl'
+import OffsetControl from '~/components/tracks/OffsetControl'
 import Loader from '~/components/tracks/TrackLoader'
+import TrackName from '~/components/tracks/TrackName'
 import { errorHandler } from '~/utils/notifications'
-import TrackName from '../tracks/TrackName'
 
 const TrackView = ({
   trackId,
-  beatResolution,
+  beatResolution = 0.25,
 }: {
   trackId: Track['id']
   beatResolution: TrackState['beatResolution']
 }) => {
-  if (!trackId || !beatResolution)
-    throw errorHandler('Please try uploading the track again.')
+  if (!trackId) throw errorHandler('Please try uploading the track again.')
 
   const [analyzing, setAnalyzing] = useState(false)
 
@@ -114,6 +114,7 @@ const TrackView = ({
       >
         {TrackName(trackId)}
       </Typography>
+      <OffsetControl trackId={trackId} />
       <BeatResolutionControl
         trackId={trackId}
         beatResolution={beatResolution}

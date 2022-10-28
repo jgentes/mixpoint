@@ -72,6 +72,7 @@ const loadAudioEvents = async ({
     trackId: number
     adjustedOffset: Track['adjustedOffset']
   }) => {
+    console.log({ trackId, adjustedOffset })
     if (trackId !== track.id) return
 
     const newTrack = { ...track, adjustedOffset }

@@ -26,20 +26,22 @@ const calcRegions = async (
 }> => {
   let { duration, offset, adjustedOffset, bpm } = track
 
-  if (!duration || !bpm || !offset) {
-    const analyzedTracks = await analyzeTracks([track])
-    ;({ duration = 1, bpm = 1, offset = 1 } = analyzedTracks[0])
+  // isNaN check here to allow for zero values
+  const valsMissing = !duration || isNaN(Number(bpm)) || isNaN(Number(offset))
 
-    if (!duration || !bpm || !offset)
-      throw errorHandler(`Please try adding ${track.name} again.`)
+  if (valsMissing) {
+    const analyzedTracks = await analyzeTracks([track])
+    ;({ duration, bpm, offset } = analyzedTracks[0])
   }
+
+  if (!duration) throw errorHandler(`Please try adding ${track.name} again.`)
 
   const trackState = await getTrackState(track.id)
   const newTrackState = { ...trackState, ...partialTrackState }
   let { adjustedBpm, beatResolution = 0.25 } = newTrackState
 
-  const beatInterval = 60 / (adjustedBpm || bpm)
-  let startPoint = adjustedOffset || offset
+  const beatInterval = 60 / (adjustedBpm || bpm || 1)
+  let startPoint = adjustedOffset || offset || 0
   const skipLength = beatInterval * (1 / beatResolution)
 
   // Work backward from initialPeak to start of track (zerotime) based on bpm

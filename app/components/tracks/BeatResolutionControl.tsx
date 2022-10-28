@@ -18,7 +18,6 @@ const BeatResolutionControl = ({
       name="beatResolution"
       value={beatResolution}
       variant="outlined"
-      sx={{ ml: 'auto' }}
       onChange={e =>
         changeBeatResolution(+e.target.value as TrackState['beatResolution'])
       }
@@ -55,7 +54,8 @@ const BeatResolutionControl = ({
             variant={beatResolution == item ? 'outlined' : 'plain'}
             color="primary"
             sx={{
-              fontSize: '12px',
+              fontSize: 12,
+              fontWeight: 300,
               color: 'text.secondary',
             }}
             componentsProps={{

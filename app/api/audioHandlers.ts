@@ -170,6 +170,9 @@ const getAudioDetails = async (
     errorHandler(`Unable to determine BPM for ${name}`)
   }
 
+  // Reduce offset to 2 decimal places
+  offset = Math.round(offset * 1e2) / 1e2
+
   return {
     name,
     size,
