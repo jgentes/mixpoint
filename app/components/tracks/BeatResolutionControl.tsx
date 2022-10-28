@@ -55,7 +55,6 @@ const BeatResolutionControl = ({
             color="primary"
             sx={{
               fontSize: 12,
-              fontWeight: 300,
               color: 'text.secondary',
             }}
             componentsProps={{

@@ -36,7 +36,6 @@ const OffsetControl = ({ trackId }: { trackId: Track['id'] }) => {
         disabled={!offsetDiff}
         sx={{
           fontSize: 12,
-          fontWeight: 300,
           '-webkit-text-fill-color': '#888',
         }}
       >
@@ -65,7 +64,6 @@ const OffsetControl = ({ trackId }: { trackId: Track['id'] }) => {
         id={`offsetInput_${trackId}`}
         sx={{
           width: 144,
-          fontWeight: 300,
           '& div': { minHeight: '24px', borderColor: 'action.disabled' },
           '& input': {
             textAlign: 'right',

@@ -21,6 +21,22 @@ const muiTheme = extendMuiTheme({
           height: '100%',
         },
 
+        '.logoText': {
+          fontFamily: "'Public Sans', Menlo, Courier, monospace",
+          fontFeatureSettings: "'calt' 1, 'kern' 1, 'liga' 1",
+          fontWeight: 400,
+          fontSize: '22px',
+          margin: 0,
+          background:
+            'linear-gradient(60deg, hsl(0, 75%, 50%) 5%,hsl(260, 75%, 50%) 35%, hsl(200, 75%, 50%) 65%,hsl(220, 75%, 50%) 95%)',
+          color: '#fff',
+          '-webkit-background-clip': 'text',
+          'background-clip': 'text',
+          '-webkit-text-fill-color': 'transparent',
+          '-webkit-text-stroke-width': 'thin',
+          '-webkit-text-stroke-color': 'rgb(255 255 255 / 35%)',
+        },
+
         'tr:hover .visibleOnHover': {
           visibility: 'visible',
         },

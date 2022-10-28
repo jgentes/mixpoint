@@ -41,28 +41,45 @@ const BpmControl = ({ trackId }: { trackId: Track['id'] }) => {
       color="neutral"
       title="Reset BPM"
       disabled={!bpmDiff}
+      sx={{
+        fontSize: 12,
+        fontWeight: 300,
+        '-webkit-text-fill-color': '#888',
+      }}
     >
-      {bpmDiff ? <Replay sx={{ mr: 0.5 }} /> : ''}BPM
+      BPM{bpmDiff ? <Replay sx={{ ml: 0.5 }} /> : ''}
     </Link>
   )
 
   return (
-    <TextField
-      disabled={!track?.bpm}
-      size="sm"
-      onChange={val => {
-        console.log('changeval:', val)
-        if (val) {
-          if (bpmTimer) window.clearTimeout(bpmTimer)
-          const debounce = window.setTimeout(() => adjustBpm(val), 1000)
-          setBpmTimer(debounce)
-        }
+    <form
+      style={{ marginLeft: 'auto' }}
+      onSubmit={e => {
+        e.preventDefault()
+        adjustBpm(Number(bpmVal))
       }}
-      value={adjustedBpm || track?.bpm?.toFixed(1) || 0}
-      id={`bpmInput_${id}`}
-      variant="soft"
-      endDecorator={<ResetBpmLink />}
-    />
+    >
+      <TextField
+        variant="outlined"
+        startDecorator={<ResetBpmLink />}
+        value={bpmVal}
+        onChange={e => setBpmVal(e.target.value)}
+        onBlur={() => {
+          if (Number(bpmVal) !== adjustedBpm) adjustBpm(Number(bpmVal))
+        }}
+        id={`bpmInput_${trackId}`}
+        sx={{
+          width: 144,
+          fontWeight: 300,
+          '& div': { minHeight: '24px', borderColor: 'action.disabled' },
+          '& input': {
+            textAlign: 'right',
+            fontSize: 12,
+            color: 'text.secondary',
+          },
+        }}
+      />
+    </form>
   )
 }
 
