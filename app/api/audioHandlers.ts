@@ -114,14 +114,14 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
       await getAudioDetails(track)
 
     // adjust for miscalc tempo > 160bpm
-    const adjustedBpm = bpm > 160 ? bpm / 2 : bpm
+    const normalizedBpm = bpm > 160 ? bpm / 2 : bpm
 
     const updatedTrack = {
       name,
       size,
       type,
       duration,
-      bpm: adjustedBpm,
+      bpm: normalizedBpm,
       offset,
       sampleRate,
     }

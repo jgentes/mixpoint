@@ -5,9 +5,11 @@ import { loadAudioEvents } from '~/api/audioEvents'
 import { db, Track, TrackState } from '~/api/dbHandlers'
 import { EventBus } from '~/api/EventBus'
 import { renderWaveform } from '~/api/renderWaveform'
-import BeatResolutionControl from '~/components/tracks/BeatResolutionControl'
-import EjectControl from '~/components/tracks/EjectControl'
-import OffsetControl from '~/components/tracks/OffsetControl'
+import {
+  BeatResolutionControl,
+  EjectControl,
+  OffsetControl,
+} from '~/components/tracks/Controls'
 import Loader from '~/components/tracks/TrackLoader'
 import TrackName from '~/components/tracks/TrackName'
 import { errorHandler } from '~/utils/notifications'
@@ -127,6 +129,7 @@ const TrackView = ({
     border: '1px solid',
     borderColor: 'action.focus',
     borderRadius: 'sm',
+    borderBottom: 'none',
     bgcolor: 'background.body',
     overflow: 'hidden',
     height: '80px',

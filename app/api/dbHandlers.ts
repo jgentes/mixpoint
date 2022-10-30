@@ -113,10 +113,9 @@ const getTrackState = async (trackId: Track['id']): Promise<TrackState> => {
       ? mixState.from
       : mixState.to?.id == trackId
       ? mixState.to
-      : null
+      : {}
 
-  if (!state) throw errorHandler('Track not found in mix state.')
-  return state
+  return state || {}
 }
 
 const putTrackState = async (

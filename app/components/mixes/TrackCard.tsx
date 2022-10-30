@@ -1,20 +1,9 @@
-import {
-  AccessTime,
-  Eject,
-  EventBusy,
-  Favorite,
-  Pause,
-  PlayArrow,
-  Replay,
-  Stop,
-} from '@mui/icons-material'
-import { Button, Card, Chip, Link, TextField, Typography } from '@mui/joy'
+import { Card, Typography } from '@mui/joy'
 import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { getState, removeFromMix, Track, TrackState } from '~/api/dbHandlers'
-import { EventBus } from '~/api/EventBus'
 import { openDrawerState } from '~/components/layout/TrackDrawer'
-import OffsetControl from '~/components/tracks/OffsetControl'
+import { BpmControl } from '~/components/tracks/Controls'
 import TrackName from '~/components/tracks/TrackName'
 
 const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
@@ -82,14 +71,6 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
   //   </Box>
   // )
 
-  const ejectTrack = async () => {
-    // If this is not the last track in the mix, open drawer, otherwise it will open automatically
-    const { from, to } = await getState('mix')
-    if (from?.id && to?.id) openDrawerState.set(true)
-
-    removeFromMix(trackId)
-  }
-
   // const trackInfo = (
   //   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
   //     <Typography sx={{ fontSize: 'sm', fontWeight: 'md' }}>
@@ -136,6 +117,7 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
         borderColor: 'action.selected',
       }}
     >
+      <BpmControl trackId={trackId} />
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
         <Typography sx={{ fontSize: 'sm', fontWeight: 'md' }}>
           {TrackName(trackId)}

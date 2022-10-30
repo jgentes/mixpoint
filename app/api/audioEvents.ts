@@ -23,6 +23,7 @@ const loadAudioEvents = async ({
   const track = await db.tracks.get(trackId)
   if (!track) throw errorHandler('Track not found for waveform generation.')
 
+  // Allow adjustment in skipLength, as this cannot be updated via wavesurfer
   let skipLength = waveform.skipLength
 
   const scrollEvent = ({
@@ -74,6 +75,23 @@ const loadAudioEvents = async ({
     await putTrackState(trackId, { beatResolution })
   }
 
+  const bpmEvent = async ({
+    trackId,
+    adjustedBpm,
+  }: {
+    trackId: number
+    adjustedBpm: TrackState['adjustedBpm']
+  }) => {
+    if (!adjustedBpm || trackId !== track.id) return
+
+    // Update playback rate based on new bpm
+    const playbackRate = adjustedBpm / (track.bpm || adjustedBpm)
+    waveform.setPlaybackRate(playbackRate)
+
+    // Update mixState
+    await putTrackState(trackId, { adjustedBpm })
+  }
+
   const offsetEvent = async ({
     trackId,
     adjustedOffset,
@@ -90,7 +108,7 @@ const loadAudioEvents = async ({
     const { regions } = await calcRegions(newTrack)
     for (const region of regions) waveform.regions.add(region)
 
-    // Update mixState
+    // Update track
     await putTracks([newTrack])
   }
 
@@ -118,6 +136,7 @@ const loadAudioEvents = async ({
   // add event listeners
   //Events.on('audio', audioEffect)
   EventBus.on('scroll', scrollEvent)
+  EventBus.on('bpm', bpmEvent)
   EventBus.on('beatResolution', beatResolutionEvent)
   EventBus.on('offset', offsetEvent)
 

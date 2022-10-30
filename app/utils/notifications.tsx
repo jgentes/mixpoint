@@ -10,6 +10,8 @@ type Notification = {
 const errorHandler = (error: Error | string) => {
   if (typeof error == 'string') error = Error(error)
 
+  console.error(error)
+
   notificationState.set({
     message: error.message,
     variant: 'error',
