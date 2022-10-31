@@ -2,10 +2,11 @@
 
 import {
   db,
+  getMixTrack,
+  MixTrack,
+  putMixTrack,
   putTracks,
-  putTrackState,
   Track,
-  TrackState,
 } from '~/api/dbHandlers'
 import { EventBus } from '~/api/EventBus'
 import { errorHandler } from '~/utils/notifications'
@@ -17,8 +18,8 @@ const loadAudioEvents = async ({
 }: {
   trackId: Track['id']
   waveform: WaveSurfer
-}) => {
-  if (!trackId) return null
+}): Promise<void> => {
+  if (!trackId) return
 
   const track = await db.tracks.get(trackId)
   if (!track) throw errorHandler('Track not found for waveform generation.')
@@ -27,11 +28,11 @@ const loadAudioEvents = async ({
   let skipLength = waveform.skipLength
 
   const scrollEvent = ({
-    direction,
     trackId,
+    direction,
   }: {
+    trackId: Track['id']
     direction: 'up' | 'down'
-    trackId: number
   }) => {
     if (trackId == track.id)
       direction == 'down'
@@ -43,9 +44,9 @@ const loadAudioEvents = async ({
     trackId,
     beatResolution,
   }: {
-    trackId: number
-    beatResolution: TrackState['beatResolution']
-  }) => {
+    trackId: Track['id']
+    beatResolution: MixTrack['beatResolution']
+  }): Promise<void> => {
     if (!beatResolution || trackId !== track.id) return
 
     // Adjust zoom
@@ -72,16 +73,16 @@ const loadAudioEvents = async ({
     skipLength = newSkipLength
 
     // Update mixState
-    await putTrackState(trackId, { beatResolution })
+    putMixTrack(trackId, { beatResolution })
   }
 
-  const bpmEvent = async ({
+  const bpmEvent = ({
     trackId,
     adjustedBpm,
   }: {
-    trackId: number
-    adjustedBpm: TrackState['adjustedBpm']
-  }) => {
+    trackId: Track['id']
+    adjustedBpm: MixTrack['adjustedBpm']
+  }): void => {
     if (!adjustedBpm || trackId !== track.id) return
 
     // Update playback rate based on new bpm
@@ -89,16 +90,16 @@ const loadAudioEvents = async ({
     waveform.setPlaybackRate(playbackRate)
 
     // Update mixState
-    await putTrackState(trackId, { adjustedBpm })
+    putMixTrack(trackId, { adjustedBpm })
   }
 
   const offsetEvent = async ({
     trackId,
     adjustedOffset,
   }: {
-    trackId: number
+    trackId: Track['id']
     adjustedOffset: Track['adjustedOffset']
-  }) => {
+  }): Promise<void> => {
     if (trackId !== track.id) return
 
     const newTrack = { ...track, adjustedOffset }
@@ -109,38 +110,50 @@ const loadAudioEvents = async ({
     for (const region of regions) waveform.regions.add(region)
 
     // Update track
-    await putTracks([newTrack])
+    putTracks([newTrack])
   }
 
-  // const audioEffect = (detail: { tracks: number[]; effect: string }) => {
-  //   if (!detail.tracks.includes(track.id)) return
+  const audioEvent = ({
+    tracks,
+    effect,
+  }: {
+    tracks: Track['id'][]
+    effect: 'Play' | 'Pause' | 'Stop'
+  }): void => {
+    if (!tracks.includes(trackId)) return
 
-  //   setPlaying(detail.effect == 'play')
+    switch (effect) {
+      case 'Play':
+      case 'Pause':
+        waveform.playPause()
+        break
+      case 'Stop':
+        waveform.stop()
+        break
+    }
+  }
 
-  //   switch (detail.effect) {
-  //     case 'play':
-  //       zoomview.enableAutoScroll(true)
-  //       audioElement.current?.play()
-  //       break
-  //     case 'pause':
-  //       audioElement.current?.pause()
-  //       zoomview.enableAutoScroll(true)
-  //       break
-  //     case 'stop':
-  //       audioElement.current?.pause()
-  //       waveform?.player.seek(mixPoint || 0)
-  //       zoomview.enableAutoScroll(true)
-  //   }
-  // }
+  const mixpointEvent = async ({
+    trackId,
+    mixpoint,
+  }: {
+    trackId: Track['id']
+    mixpoint: MixTrack['mixpoint']
+  }): Promise<void> => {
+    if (trackId !== track.id) return
+
+    const { mixpoint: prevMixpoint } = (await getMixTrack(trackId)) || {}
+    console.log(prevMixpoint, mixpoint)
+    if (mixpoint !== prevMixpoint) putMixTrack(trackId, { mixpoint })
+  }
 
   // add event listeners
-  //Events.on('audio', audioEffect)
   EventBus.on('scroll', scrollEvent)
   EventBus.on('bpm', bpmEvent)
   EventBus.on('beatResolution', beatResolutionEvent)
   EventBus.on('offset', offsetEvent)
-
-  return waveform
+  EventBus.on('audio', audioEvent)
+  EventBus.on('mixpoint', mixpointEvent)
 }
 
 export { loadAudioEvents }

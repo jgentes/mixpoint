@@ -1,9 +1,9 @@
 import { Card, Typography } from '@mui/joy'
 import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { getState, removeFromMix, Track, TrackState } from '~/api/dbHandlers'
+import { getState, MixTrack, removeFromMix, Track } from '~/api/dbHandlers'
 import { openDrawerState } from '~/components/layout/TrackDrawer'
-import { BpmControl } from '~/components/tracks/Controls'
+import { BpmControl, MixpointControl } from '~/components/tracks/Controls'
 import TrackName from '~/components/tracks/TrackName'
 
 const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
@@ -12,99 +12,47 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
   const [bpmTimer, setBpmTimer] = useState<number>()
 
   if (!trackId) return null
-  // const updatePlaybackRate = (bpm: number) => {
-  //   // update play speed to new bpm
-  //   const playbackRate = bpm / (track?.bpm || bpm)
-  //   if (audioElement.current) audioElement.current.playbackRate = playbackRate
-  // }
 
   // const setMixPoint = async () => {
   //   //const id = await addMix(mixState.tracks.map(t => t.id))
   //   //await updateMixState({ ...mixState, mix: { id } })
   // }
 
-  // const timeFormat = (secs: number) =>
-  //   new Date(secs * 1000).toISOString().substring(15, 19)
-
-  // const playerControl = !track?.name ? null : (
-  //   <Box
+  // const mixPointControl = (<div
+  //   style={{
+  //     display: 'flex',
+  //     flexWrap: 'nowrap',
+  //     justifyContent: 'space-evenly',
+  //     fontSize: '24px',
+  //     margin: '10px 2px',
+  //   }}
+  // >
+  //   {timeFormat(from?.mixPoint || 0)}
+  //   <MergeType
   //     sx={{
-  //       display: 'flex',
-  //       '& > *': {
-  //         m: 1,
-  //       },
+  //       alignSelf: 'center',
+  //       fontSize: 28,
+  //       transform: 'rotate(90deg)',
   //     }}
-  //   >
-  //     <ButtonGroup
-  //       size="small"
-  //       variant="outlined"
-  //       style={{
-  //         visibility: analyzing ? 'hidden' : 'visible',
-  //       }}
-  //     >
-  //       <ButtonGroupButton
-  //         onClick={() => {
-  //           Events.dispatch('audio', { effect: 'stop', tracks: [id] })
-  //         }}
-  //         id={`stopButton_${id}`}
-  //       >
-  //         <Stop />
-  //         Stop
-  //       </ButtonGroupButton>
-
-  //       <ButtonGroupButton
-  //         onClick={() => {
-  //           Events.dispatch('audio', {
-  //             effect: playing ? 'pause' : 'play',
-  //             tracks: [id],
-  //           })
-  //         }}
-  //         id={`playButton_${id}`}
-  //       >
-  //         {playing ? <Pause /> : <PlayArrow />}
-  //         {playing ? 'Pause' : 'Play'}
-  //       </ButtonGroupButton>
-  //     </ButtonGroup>
-  //     <TextField size="sm" variant="soft" value={timeFormat(mixPoint || 0)}>
-  //       <AccessTime />
-  //     </TextField>
-  //   </Box>
+  //   />
+  //   {timeFormat(to?.mixPoint || 0)}
+  // </div>
   // )
 
-  // const trackInfo = (
-  //   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-  //     <Typography sx={{ fontSize: 'sm', fontWeight: 'md' }}>
-  //       {!track?.name ? null : track.name?.replace(/\.[^/.]+$/, '')}
-  //     </Typography>
-  //     <Link
-  //       href="#dribbble-shot"
-  //       level="body3"
-  //       underline="none"
-  //       startDecorator={<Favorite />}
-  //       sx={{
-  //         fontWeight: 'md',
-  //         ml: 'auto',
-  //         color: 'text.secondary',
-  //         '&:hover': { color: 'danger.plainColor' },
-  //       }}
-  //     >
-  //       117
-  //     </Link>
-  //     <Link
-  //       href="#dribbble-shot"
-  //       level="body3"
-  //       underline="none"
-  //       startDecorator={<EventBusy />}
-  //       sx={{
-  //         fontWeight: 'md',
-  //         color: 'text.secondary',
-  //         '&:hover': { color: 'primary.plainColor' },
-  //       }}
-  //     >
-  //       10.4k
-  //     </Link>
-  //   </Box>
-  // )
+  const overviewFooter = (
+    <Box
+      sx={{
+        display: 'flex',
+        gap: 1,
+        my: 1,
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}
+    >
+      <MixpointControl trackId={trackId} />
+      <BpmControl trackId={trackId} />
+    </Box>
+  )
 
   return (
     <Card
@@ -117,14 +65,8 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
         borderColor: 'action.selected',
       }}
     >
-      <BpmControl trackId={trackId} />
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        <Typography sx={{ fontSize: 'sm', fontWeight: 'md' }}>
-          {TrackName(trackId)}
-        </Typography>
-      </Box>
-      {/* <Card
-        id={`overview-container_${id}`}
+      <Card
+        id={`overview-container_${trackId}`}
         sx={{
           p: 0,
           border: '1px solid',
@@ -134,7 +76,17 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
           overflow: 'hidden',
           height: '25px',
         }}
-      /> */}
+      />
+      {overviewFooter}
+      <Typography
+        sx={{
+          fontSize: 'sm',
+          fontWeight: 'md',
+          pl: '3px',
+        }}
+      >
+        {TrackName(trackId)}
+      </Typography>
     </Card>
   )
 }

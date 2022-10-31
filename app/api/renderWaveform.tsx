@@ -1,4 +1,5 @@
-import { db, getTrackState, Track, TrackState } from '~/api/dbHandlers'
+import { db, getMixTrack, MixTrack, putMixTrack, Track } from '~/api/dbHandlers'
+import { EventBus } from '~/api/EventBus'
 import { errorHandler } from '~/utils/notifications'
 import { analyzeTracks } from './audioHandlers'
 import { getPermission } from './fileHandlers'
@@ -7,21 +8,23 @@ import { getPermission } from './fileHandlers'
 let WaveSurfer: typeof import('wavesurfer.js'),
   PlayheadPlugin: typeof import('wavesurfer.js/src/plugin/playhead').default,
   CursorPlugin: typeof import('wavesurfer.js/src/plugin/cursor').default,
-  RegionsPlugin: typeof import('wavesurfer.js/src/plugin/regions').default
+  RegionsPlugin: typeof import('wavesurfer.js/src/plugin/regions').default,
+  MinimapPlugin: typeof import('wavesurfer.js/src/plugin/minimap').default
 if (typeof document !== 'undefined') {
   WaveSurfer = require('wavesurfer.js')
   PlayheadPlugin = require('wavesurfer.js/src/plugin/playhead').default
   CursorPlugin = require('wavesurfer.js/src/plugin/cursor').default
   RegionsPlugin = require('wavesurfer.js/src/plugin/regions').default
+  MinimapPlugin = require('wavesurfer.js/src/plugin/minimap').default
 }
 
 const calcRegions = async (
   track: Track,
-  partialTrackState: Partial<TrackState> = {}
+  partialMixTrack: Partial<MixTrack> = {}
 ): Promise<{
   duration: Track['duration']
   skipLength: number
-  beatResolution: TrackState['beatResolution']
+  beatResolution: MixTrack['beatResolution']
   regions: any[] // RegionParams exists, but can't access it using deferred import style
 }> => {
   let { duration, offset, adjustedOffset, bpm } = track
@@ -36,9 +39,9 @@ const calcRegions = async (
 
   if (!duration) throw errorHandler(`Please try adding ${track.name} again.`)
 
-  const trackState = await getTrackState(track.id)
-  const newTrackState = { ...trackState, ...partialTrackState }
-  let { adjustedBpm, beatResolution = 0.25 } = newTrackState
+  const mixTrack = await getMixTrack(track.id)
+  const newMixTrack = { ...mixTrack, ...partialMixTrack }
+  let { adjustedBpm, beatResolution = 0.25 } = newMixTrack
 
   const beatInterval = 60 / (adjustedBpm || bpm || 1)
   let startPoint = adjustedOffset || offset || 0
@@ -129,36 +132,47 @@ const renderWaveform = async ({
       RegionsPlugin.create({
         regions,
       }),
-      // MinimapPlugin.create({
-      //   container: `#overview-container_${track.id}`,
-      //   waveColor: [
-      //     'rgba(145, 145, 145, 0.8)',
-      //     'rgba(145, 145, 145, 0.8)',
-      //     'rgba(145, 145, 145, 0.8)',
-      //     'rgba(145, 145, 145, 0.5)',
-      //     'rgba(145, 145, 145, 0.5)',
-      //   ],
-      //   progressColor: 'rgba(0, 0, 0, 0.25)',
-      //   interact: true,
-      //   scrollParent: false,
-      //   hideScrollbar: true,
-      //   pixelRatio: 1,
-      // }),
+      MinimapPlugin.create({
+        container: `#overview-container_${track.id}`,
+        waveColor: [
+          'rgba(145, 145, 145, 0.8)',
+          'rgba(145, 145, 145, 0.8)',
+          'rgba(145, 145, 145, 0.8)',
+          'rgba(145, 145, 145, 0.5)',
+          'rgba(145, 145, 145, 0.5)',
+        ],
+        progressColor: 'rgba(0, 0, 0, 0.25)',
+        interact: true,
+        scrollParent: false,
+        hideScrollbar: true,
+        pixelRatio: 1,
+      }),
     ],
   })
 
   zoomview.loadBlob(file)
-
   zoomview.zoom(beatResolution == 1 ? 80 : beatResolution == 0.5 ? 40 : 20)
 
-  zoomview.on('region-click', region => {
-    if (!zoomview.isPlaying()) zoomview.playhead.setPlayheadTime(region.start)
-    zoomview.playPause()
-    zoomview.seekAndCenter(1 / (duration! / zoomview.playhead.playheadTime))
-  })
-
+  // Configure wavesurfer event listeners
   zoomview.on('ready', () => {
     setAnalyzing(false)
+    // do this elsewhere when initializing mxipoint from state:
+    // if (zoomview.playhead.playheadTime == 0)
+    //   zoomview.playhead.setPlayheadTime(regions[0].start)
+  })
+
+  zoomview.on('region-click', region => {
+    // If audio isn't playing, set playhead to region start
+    //if (!zoomview.isPlaying()) zoomview.playhead.setPlayheadTime(region.start)
+
+    // Mixpoint is the current playhead position
+    //const mixpoint = zoomview.playhead.playheadTime
+    const mixpoint = region.start
+
+    zoomview.playPause()
+    zoomview.seekAndCenter(1 / (duration! / mixpoint))
+
+    EventBus.emit('mixpoint', { trackId: track.id, mixpoint })
   })
 
   zoomview.on('destroy', () => zoomview.unAll())

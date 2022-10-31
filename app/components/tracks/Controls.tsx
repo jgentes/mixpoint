@@ -1,4 +1,12 @@
-import { Eject, Replay } from '@mui/icons-material'
+import {
+  Eject,
+  Pause,
+  PlayArrow,
+  Replay,
+  SettingsBackupRestore,
+  SkipNext,
+  SkipPrevious,
+} from '@mui/icons-material'
 import {
   Box,
   Chip,
@@ -7,15 +15,16 @@ import {
   radioClasses,
   RadioGroup,
   TextField,
+  Typography,
 } from '@mui/joy'
 import { useEffect, useState } from 'react'
 import {
   db,
+  getMixTrack,
   getState,
-  getTrackState,
+  MixTrack,
   removeFromMix,
   Track,
-  TrackState,
   useLiveQuery,
 } from '~/api/dbHandlers'
 import { EventBus } from '~/api/EventBus'
@@ -31,7 +40,7 @@ const NumberControl = ({
   width = 144,
   emitEvent,
   propName,
-  styles = { marginLeft: 'auto' },
+  styles,
 }: {
   trackId: Track['id']
   val: number | undefined
@@ -53,13 +62,13 @@ const NumberControl = ({
 
   const valDiff = !isNaN(Number(adjustedVal)) && adjustedVal !== val
 
-  const adjustVal = async (adjustedVal?: number) => {
-    adjustedVal = adjustedVal ?? val
-    if (!adjustedVal) return
+  const adjustVal = async (newVal?: number) => {
+    newVal = newVal ?? val
+    if (typeof newVal !== 'number') return
 
-    setInputVal(adjustedVal)
+    setInputVal(newVal)
 
-    EventBus.emit(emitEvent, { trackId, [propName]: adjustedVal })
+    EventBus.emit(emitEvent, { trackId, [propName]: newVal })
   }
 
   const ResetValLink = () => (
@@ -71,7 +80,8 @@ const NumberControl = ({
       disabled={!valDiff}
       sx={{
         fontSize: 12,
-        WebkitTextFillColor: '#888',
+        WebkitTextFillColor: 'divider',
+        lineHeight: 0,
       }}
     >
       {text}
@@ -105,6 +115,7 @@ const NumberControl = ({
             textAlign: 'right',
             fontSize: 12,
             color: 'text.secondary',
+            lineHeight: 0,
           },
         }}
       />
@@ -129,7 +140,7 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
       onClick={() => ejectTrack()}
       sx={{
         borderRadius: 'sm',
-        minHeight: 22,
+        //minHeight: 22,
       }}
     >
       <Eject titleAccess="Load Track" />
@@ -143,7 +154,7 @@ const BpmControl = ({ trackId }: { trackId: Track['id'] }) => {
   const { bpm } = useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
 
   const { adjustedBpm } =
-    useLiveQuery(() => getTrackState(trackId), [trackId]) || {}
+    useLiveQuery(() => getMixTrack(trackId), [trackId]) || {}
 
   return (
     <NumberControl
@@ -155,6 +166,7 @@ const BpmControl = ({ trackId }: { trackId: Track['id'] }) => {
       text="BPM"
       emitEvent="bpm"
       propName="adjustedBpm"
+      width={112}
     />
   )
 }
@@ -183,10 +195,10 @@ const BeatResolutionControl = ({
   trackId,
   beatResolution,
 }: {
-  trackId: TrackState['id']
-  beatResolution: TrackState['beatResolution']
+  trackId: MixTrack['id']
+  beatResolution: MixTrack['beatResolution']
 }) => {
-  const changeBeatResolution = (beatResolution: TrackState['beatResolution']) =>
+  const changeBeatResolution = (beatResolution: MixTrack['beatResolution']) =>
     EventBus.emit('beatResolution', { trackId: trackId, beatResolution })
 
   return (
@@ -196,7 +208,7 @@ const BeatResolutionControl = ({
       value={beatResolution}
       variant="outlined"
       onChange={e =>
-        changeBeatResolution(+e.target.value as TrackState['beatResolution'])
+        changeBeatResolution(+e.target.value as MixTrack['beatResolution'])
       }
     >
       {[0.25, 0.5, 1].map(item => (
@@ -247,4 +259,210 @@ const BeatResolutionControl = ({
   )
 }
 
-export { BpmControl, OffsetControl, BeatResolutionControl, EjectControl }
+const TrackAudioControl = ({ trackId }: { trackId: MixTrack['id'] }) => {
+  return (
+    <RadioGroup row variant="outlined">
+      {[
+        { val: 'Previous Mixpoint', icon: <SkipPrevious /> },
+        { val: 'Rewind', icon: <SettingsBackupRestore /> },
+        { val: 'Play', icon: <PlayArrow /> },
+        { val: 'Next Mixpoint', icon: <SkipNext /> },
+      ].map(item => (
+        <Box
+          key={item.val}
+          sx={theme => ({
+            position: 'relative',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: 34,
+            height: 20,
+            '&:not([data-first-child])': {
+              borderLeft: '1px solid',
+              borderColor: 'divider',
+            },
+            [`&[data-first-child] .${radioClasses.action}`]: {
+              borderTopLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+              borderBottomLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+            },
+            [`&[data-last-child] .${radioClasses.action}`]: {
+              borderTopRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+              borderBottomRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+            },
+          })}
+        >
+          <Radio
+            value={item}
+            disableIcon
+            overlay
+            label={item.icon}
+            variant="plain"
+            color="primary"
+            sx={{
+              color: 'text.secondary',
+            }}
+            componentsProps={{
+              action: {
+                sx: { borderRadius: 0, transition: 'none' },
+              },
+              label: { sx: { lineHeight: 0 } },
+            }}
+          />
+        </Box>
+      ))}
+    </RadioGroup>
+  )
+}
+
+const MixControl = ({
+  fromState,
+  toState,
+}: {
+  fromState?: MixTrack
+  toState?: MixTrack
+}) => {
+  const controlVals = ['Play', 'Pause', 'Stop'] as const
+  type ControlVals = typeof controlVals[number]
+
+  const [state, setState] = useState<ControlVals>('Stop')
+
+  return (
+    <RadioGroup
+      row
+      name="mixControl"
+      variant="outlined"
+      value={state}
+      sx={{ height: 48 }}
+      onChange={e => {
+        const val = e.target.value as ControlVals
+
+        setState(val)
+        EventBus.emit('audio', {
+          effect: val,
+          tracks: [fromState?.id, toState?.id],
+        })
+      }}
+    >
+      {[
+        { val: 'Stop', icon: <SettingsBackupRestore /> },
+        {
+          val: state == 'Play' ? 'Pause' : 'Play',
+          icon: state == 'Play' ? <Pause /> : <PlayArrow />,
+        },
+      ].map(item => (
+        <Box
+          key={item.val}
+          sx={theme => ({
+            position: 'relative',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: 48,
+            height: 48,
+            '&:not([data-first-child])': {
+              borderLeft: '1px solid',
+              borderColor: 'divider',
+              height: '99%',
+            },
+            [`&[data-first-child] .${radioClasses.action}`]: {
+              borderTopLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+              borderBottomLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+              bottom: '2px',
+              left: '-1px',
+            },
+            [`&[data-last-child] .${radioClasses.action}`]: {
+              borderTopRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+              borderBottomRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+              height: '101%',
+            },
+          })}
+        >
+          <Radio
+            value={item.val}
+            disableIcon
+            overlay
+            label={item.icon}
+            variant={state == item.val ? 'soft' : 'plain'}
+            color="primary"
+            componentsProps={{
+              action: {
+                sx: {
+                  borderRadius: 0,
+                  transition: 'none',
+                },
+              },
+              label: { sx: { lineHeight: 0 } },
+            }}
+          />
+        </Box>
+      ))}
+    </RadioGroup>
+  )
+}
+
+const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
+  if (!trackId) return null
+
+  const [mixpointVal, setMixpointVal] = useState<string | number>(0)
+
+  const { mixpoint } = useLiveQuery(() => getMixTrack(trackId), [trackId]) || {}
+
+  useEffect(() => setMixpointVal((mixpoint ?? 0).toFixed(1)), [mixpoint])
+
+  const adjustVal = async (newMixpoint?: number) => {
+    if (typeof newMixpoint !== 'number') return
+
+    setMixpointVal(newMixpoint)
+
+    EventBus.emit('mixpoint', { trackId, mixpoint: newMixpoint })
+  }
+
+  const timeFormat = (secs: number) =>
+    new Date(secs * 1000).toISOString().substring(15, 22)
+
+  return (
+    <form
+      onSubmit={e => {
+        e.preventDefault()
+        adjustVal(Number(mixpointVal))
+      }}
+    >
+      <TextField
+        variant="outlined"
+        startDecorator={
+          <Typography level="body2" color="neutral" sx={{ lineHeight: 0 }}>
+            Mixpoint
+          </Typography>
+        }
+        value={timeFormat(Number(mixpointVal) || 0)}
+        onChange={e => setMixpointVal(e.target.value)}
+        onBlur={() => {
+          if (Number(mixpointVal) !== mixpoint) adjustVal(Number(mixpointVal))
+        }}
+        sx={{
+          width: 144,
+          '& div': {
+            minHeight: '24px',
+            borderColor: 'action.disabled',
+          },
+          '& input': {
+            textAlign: 'right',
+            fontSize: 12,
+            color: 'text.secondary',
+            lineHeight: 0,
+          },
+        }}
+      />
+    </form>
+  )
+}
+
+export {
+  BpmControl,
+  OffsetControl,
+  BeatResolutionControl,
+  EjectControl,
+  MixControl,
+  MixpointControl,
+  TrackAudioControl,
+}

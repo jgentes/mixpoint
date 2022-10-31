@@ -1,6 +1,6 @@
 import { superstate } from '@superstate/core'
 import { guess } from 'web-audio-beat-detector'
-import { putState, putTracks, Track, TrackState } from '~/api/dbHandlers'
+import { MixTrack, putState, putTracks, Track } from '~/api/dbHandlers'
 import { getPermission } from '~/api/fileHandlers'
 
 import { confirmModalState } from '~/components/ConfirmModal'
@@ -184,10 +184,10 @@ const getAudioDetails = async (
   }
 }
 
-const createMix = async (trackStateArray: TrackState[]) => {
+const createMix = async (mixTrackArray: MixTrack[]) => {
   // this is slow, also look at https://github.com/jackedgson/crunker and https://github.com/audiojs/audio-buffer-utils
 
-  const [wave0, wave1] = [...trackStateArray].map(track =>
+  const [wave0, wave1] = [...mixTrackArray].map(track =>
     track.waveformData?.toJSON()
   )
 
@@ -196,14 +196,14 @@ const createMix = async (trackStateArray: TrackState[]) => {
   const track1Duration =
     (wave1 &&
       (wave1.length / wave1.sample_rate) * wave1.samples_per_pixel -
-        (trackStateArray[0]?.mixPoint || 0) -
-        (trackStateArray[1]?.mixPoint || 0)) ||
+        (mixTrackArray[0]?.mixPoint || 0) -
+        (mixTrackArray[1]?.mixPoint || 0)) ||
     0
 
   const totalDuration = track0Duration + track1Duration
 
   const arrayOfAudioBuffers = []
-  for (let t of trackStateArray)
+  for (let t of mixTrackArray)
     arrayOfAudioBuffers.push(await getAudioBuffer(t.file!))
 
   var audioCtx = new AudioContext()

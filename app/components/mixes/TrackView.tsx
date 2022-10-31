@@ -2,13 +2,14 @@ import { Card, Typography } from '@mui/joy'
 import { Box } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { loadAudioEvents } from '~/api/audioEvents'
-import { db, Track, TrackState } from '~/api/dbHandlers'
+import { db, MixTrack, Track } from '~/api/dbHandlers'
 import { EventBus } from '~/api/EventBus'
 import { renderWaveform } from '~/api/renderWaveform'
 import {
   BeatResolutionControl,
   EjectControl,
   OffsetControl,
+  TrackAudioControl,
 } from '~/components/tracks/Controls'
 import Loader from '~/components/tracks/TrackLoader'
 import TrackName from '~/components/tracks/TrackName'
@@ -19,7 +20,7 @@ const TrackView = ({
   beatResolution = 0.25,
 }: {
   trackId: Track['id']
-  beatResolution: TrackState['beatResolution']
+  beatResolution: MixTrack['beatResolution']
 }) => {
   if (!trackId) throw errorHandler('Please try uploading the track again.')
 
@@ -43,59 +44,6 @@ const TrackView = ({
     return () => waveform?.destroy()
   }, [trackId])
 
-  const setMixPoint = async () => {
-    //const id = await addMix(mixState.tracks.map(t => t.id))
-    //await updateMixState({ ...mixState, mix: { id } })
-  }
-
-  const timeFormat = (secs: number) =>
-    new Date(secs * 1000).toISOString().substring(15, 19)
-
-  // const playerControl = !track?.name ? null : (
-  //   <Box
-  //     sx={{
-  //       display: 'flex',
-  //       '& > *': {
-  //         m: 1,
-  //       },
-  //     }}
-  //   >
-  //     <ButtonGroup
-  //       size="small"
-  //       variant="outlined"
-  //       style={{
-  //         visibility: analyzing ? 'hidden' : 'visible',
-  //       }}
-  //     >
-  //       <ButtonGroupButton
-  //         onClick={() => {
-  //           EventBus.emit('audio', { effect: 'stop', tracks: [id] })
-  //         }}
-  //         id={`stopButton_${id}`}
-  //       >
-  //         <Stop />
-  //         Stop
-  //       </ButtonGroupButton>
-
-  //       <ButtonGroupButton
-  //         onClick={() => {
-  //           EventBus.emit('audio', {
-  //             effect: playing ? 'pause' : 'play',
-  //             tracks: [id],
-  //           })
-  //         }}
-  //         id={`playButton_${id}`}
-  //       >
-  //         {playing ? <Pause /> : <PlayArrow />}
-  //         {playing ? 'Pause' : 'Play'}
-  //       </ButtonGroupButton>
-  //     </ButtonGroup>
-  //     <TextField size="sm" variant="soft" value={timeFormat(mixPoint || 0)}>
-  //       <AccessTime />
-  //     </TextField>
-  //   </Box>
-  // )
-
   const trackFooter = (
     <Box
       sx={{
@@ -105,22 +53,43 @@ const TrackView = ({
         alignItems: 'center',
       }}
     >
-      <EjectControl trackId={trackId} />
-      <Typography
+      <Box
         sx={{
-          fontSize: 'sm',
-          fontWeight: 'md',
-          flexBasis: '200px',
-          whiteSpace: 'nowrap',
+          display: 'flex',
+          gap: 1,
+          alignItems: 'center',
+          flexBasis: 'calc(50% - 69px)',
         }}
       >
-        {TrackName(trackId)}
-      </Typography>
-      <OffsetControl trackId={trackId} />
-      <BeatResolutionControl
-        trackId={trackId}
-        beatResolution={beatResolution}
-      />
+        <EjectControl trackId={trackId} />
+        <Typography
+          sx={{
+            fontSize: 'sm',
+            fontWeight: 'md',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {TrackName(trackId)}
+        </Typography>
+      </Box>
+      <TrackAudioControl trackId={trackId} />
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+          alignItems: 'center',
+          flexGrow: 1,
+          justifyContent: 'end',
+        }}
+      >
+        <OffsetControl trackId={trackId} />
+        <BeatResolutionControl
+          trackId={trackId}
+          beatResolution={beatResolution}
+        />
+      </Box>
     </Box>
   )
 

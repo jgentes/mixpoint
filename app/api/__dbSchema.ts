@@ -55,14 +55,14 @@ interface Track {
   sampleRate?: number
   offset?: number // first beat as determined by bpm analysis
   adjustedOffset?: number
-  mixpoints?: MixPoint[]
+  mixpoints?: Mixpoint[]
   sets?: Set['id'][]
 }
 
 // a mixpoint is a point in time where the To track begins to overlay the From track.
 // a mixpoint is not the output of two tracks mixed together.
 
-interface MixPoint {
+interface Mixpoint {
   timestamp: number
   mixes: Mix['id'][]
 }
@@ -71,8 +71,8 @@ interface MixPoint {
 
 interface Mix {
   id: number
-  from: TrackState
-  to: TrackState
+  from: MixTrack
+  to: MixTrack
   status: string // good | bad | unknown?
   effects: {
     timestamp: number
@@ -102,8 +102,8 @@ interface FileStore {
 
 interface MixState {
   date?: Date
-  from?: TrackState
-  to?: TrackState
+  from?: MixTrack
+  to?: MixTrack
 }
 
 interface SetState {
@@ -118,12 +118,12 @@ interface AppState {
   sortColumn?: keyof Track // track table order property
 }
 
-// Note TrackState is not a table. Track states are contained in MixState
-interface TrackState {
+// Note MixTrack is not a table. Track states are contained in MixState
+interface MixTrack {
   id?: Track['id']
   adjustedBpm?: Track['bpm']
   beatResolution?: 0.25 | 0.5 | 1
-  mixPoint?: number
+  mixpoint?: number
 }
 
 // state getter and setter
@@ -155,7 +155,7 @@ export type {
   Track as __Track,
   Mix as __Mix,
   Set as __Set,
-  TrackState as __TrackState,
+  MixTrack as __MixTrack,
   MixState as __MixState,
   SetState as __SetState,
   AppState as __AppState,

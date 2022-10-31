@@ -7,11 +7,11 @@ import {
   __FileStore as FileStore,
   __Mix as Mix,
   __MixState as MixState,
+  __MixTrack as MixTrack,
   __Set as Set,
   __SetState as SetState,
   __StateTypes as StateTypes,
   __Track as Track,
-  __TrackState as TrackState,
 } from '~/api/__dbSchema'
 import { errorHandler } from '~/utils/notifications'
 
@@ -106,7 +106,7 @@ const putState = async (
   })
 }
 
-const getTrackState = async (trackId: Track['id']): Promise<TrackState> => {
+const getMixTrack = async (trackId: Track['id']): Promise<MixTrack> => {
   const mixState = await getState('mix')
   const state =
     mixState.from?.id == trackId
@@ -118,9 +118,9 @@ const getTrackState = async (trackId: Track['id']): Promise<TrackState> => {
   return state || {}
 }
 
-const putTrackState = async (
+const putMixTrack = async (
   trackId: Track['id'],
-  state: Partial<TrackState>
+  state: Partial<MixTrack>
 ): Promise<void> => {
   const prevState = await getState('mix')
   const isFromTrack = prevState.from?.id == trackId
@@ -164,7 +164,7 @@ export type {
   Track,
   Mix,
   Set,
-  TrackState,
+  MixTrack,
   MixState,
   SetState,
   AppState,
@@ -183,7 +183,7 @@ export {
   removeFromMix,
   getState,
   putState,
-  getTrackState,
-  putTrackState,
+  getMixTrack,
+  putMixTrack,
   storeFile,
 }
