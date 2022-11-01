@@ -58,7 +58,7 @@ const ThemeLoader = () => {
 
   return (
     <SnackbarProvider preventDuplicate maxSnack={3}>
-      <CssVarsProvider theme={theme}>
+      <CssVarsProvider theme={theme} defaultMode={'system'}>
         {/* CSS Baseline is used to inject global styles */}
         <CssBaseline />
         {loading ? (
