@@ -1296,7 +1296,14 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.6.tgz#cee20bd55e68a1720bdab363ecf0c821ded4cd45"
   integrity sha512-50/17A98tWUfQ176raKiOGXuYpLyyVMkxxG6oylzL3BPOlA6ADGdK7EYunSa4I064xerltq9TGXs8HmOk5E+vw==
 
-"@remix-run/cloudflare@^1.7.4":
+"@remix-run/cloudflare-pages@^1.7.4":
+  version "1.7.4"
+  resolved "https://registry.yarnpkg.com/@remix-run/cloudflare-pages/-/cloudflare-pages-1.7.4.tgz#0d78b870703c3558b8a69adc5331a3fb20fcb8b0"
+  integrity sha512-wswvO0fPtMrK+PBHD+oA/smDCjZ93QPPOjXwziWi5BwDoOvTdLNWBcnl8lapmKplgoleaxZOcqDqjyZ7Tr7UpQ==
+  dependencies:
+    "@remix-run/cloudflare" "1.7.4"
+
+"@remix-run/cloudflare@1.7.4":
   version "1.7.4"
   resolved "https://registry.yarnpkg.com/@remix-run/cloudflare/-/cloudflare-1.7.4.tgz#989472a8f9761489a3fd0391cdf9e9bfc3550070"
   integrity sha512-//UET9jxrr0lSdJCWav8waR0EYR4NmBZy3GWSsSFFAEJgb6tZaASq1h7NJfZhPdJ4j/Jp64f+YTzWmQahKF8UA==

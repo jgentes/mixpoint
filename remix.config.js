@@ -6,4 +6,5 @@ module.exports = {
   publicPath: '/build/',
   serverBuildDirectory: 'build',
   browserBuildDirectory: 'public/build',
+  server: './server.js',
 }
