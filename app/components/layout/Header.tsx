@@ -26,14 +26,6 @@ const Header = () => (
   >
     <Logo />
     <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.5 }}>
-      {/* <IconButton
-        size="sm"
-        variant="outlined"
-        color="primary"
-        aria-label="Apps"
-      >
-        <Settings />
-      </IconButton> */}
       <IconButton
         size="sm"
         variant="outlined"

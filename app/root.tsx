@@ -26,10 +26,6 @@ const links: LinksFunction = () => [
     href: '/media/innerjoin32.png',
     sizes: '32x32',
   },
-  {
-    rel: 'stylesheet',
-    href: 'http://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400&family=Public+Sans:wght@300;400;500;700&display=swap',
-  },
 ]
 
 const Document = ({ children }: { children: React.ReactNode }) => (

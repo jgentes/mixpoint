@@ -22,8 +22,7 @@ const muiTheme = extendMuiTheme({
         },
 
         '.logoText': {
-          fontFamily: "'Public Sans', Menlo, Courier, monospace",
-          fontFeatureSettings: "'calt' 1, 'kern' 1, 'liga' 1",
+          fontFamily: 'system-ui, sans-serif',
           fontWeight: 400,
           fontSize: '22px',
           margin: 0,
@@ -276,8 +275,8 @@ const joyTheme = extendJoyTheme({
     },
   },
   fontFamily: {
-    display: "'Public Sans', var(--joy-fontFamily-fallback)",
-    body: "'Public Sans', var(--joy-fontFamily-fallback)",
+    display: 'system-ui',
+    body: 'system-ui',
   },
 })
 
