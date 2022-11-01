@@ -8,9 +8,40 @@ import {
   putTracks,
   Track,
 } from '~/api/dbHandlers'
-import { EventBus } from '~/api/EventBus'
 import { errorHandler } from '~/utils/notifications'
 import { calcRegions } from './renderWaveform'
+
+// Events are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
+
+const audioEventTypes = [
+  'scroll',
+  'beatResolution',
+  'bpm',
+  'offset',
+  'nav',
+  'mixpoint',
+] as const
+type AudioEvent = typeof audioEventTypes[number]
+
+const audioEvent = {
+  on(event: AudioEvent, callback: Function) {
+    window.addEventListener(event, (e: CustomEventInit) => callback(e.detail))
+  },
+  emit(event: AudioEvent, data?: any) {
+    window.dispatchEvent(new CustomEvent(event, { detail: data }))
+  },
+  off(event: AudioEvent, callback: any) {
+    window.removeEventListener(event, callback)
+  },
+}
+
+type NavEvent =
+  | 'Play'
+  | 'Pause'
+  | 'Set Mixpoint'
+  | 'Go to Mixpoint'
+  | 'Previous Beat Marker'
+  | 'Next Beat Marker'
 
 const loadAudioEvents = async ({
   trackId,
@@ -22,7 +53,8 @@ const loadAudioEvents = async ({
   if (!trackId) return
 
   const track = await db.tracks.get(trackId)
-  if (!track) throw errorHandler('Track not found for waveform generation.')
+  if (!track)
+    throw errorHandler('Track not found while setting up audio events.')
 
   // Allow adjustment in skipLength, as this cannot be updated via wavesurfer
   let skipLength = waveform.skipLength
@@ -113,22 +145,41 @@ const loadAudioEvents = async ({
     putTracks([newTrack])
   }
 
-  const audioEvent = ({
+  const navEvent = ({
     tracks,
     effect,
   }: {
     tracks: Track['id'][]
-    effect: 'Play' | 'Pause' | 'Stop'
+    effect: NavEvent
   }): void => {
     if (!tracks.includes(trackId)) return
 
     switch (effect) {
       case 'Play':
-      case 'Pause':
         waveform.playPause()
         break
-      case 'Stop':
-        waveform.stop()
+      case 'Pause':
+        waveform.pause()
+        break
+      case 'Set Mixpoint':
+        // const time = waveform.getCurrentTime()
+        // waveform.pause()
+        // waveform.seekTo(1 / (track.duration! / time))
+        audioEvent.emit('mixpoint', {
+          trackId: track.id,
+          mixpoint: waveform.playhead.playheadTime,
+        })
+        break
+      case 'Go to Mixpoint':
+        const mixpoint = waveform.playhead.playheadTime
+        waveform.seekAndCenter(1 / (track.duration! / mixpoint))
+        waveform.pause()
+        break
+      case 'Previous Beat Marker':
+        waveform.skipBackward(skipLength)
+        break
+      case 'Next Beat Marker':
+        waveform.skipForward(skipLength)
         break
     }
   }
@@ -143,17 +194,18 @@ const loadAudioEvents = async ({
     if (trackId !== track.id) return
 
     const { mixpoint: prevMixpoint } = (await getMixTrack(trackId)) || {}
-    console.log(prevMixpoint, mixpoint)
+
     if (mixpoint !== prevMixpoint) putMixTrack(trackId, { mixpoint })
   }
 
   // add event listeners
-  EventBus.on('scroll', scrollEvent)
-  EventBus.on('bpm', bpmEvent)
-  EventBus.on('beatResolution', beatResolutionEvent)
-  EventBus.on('offset', offsetEvent)
-  EventBus.on('audio', audioEvent)
-  EventBus.on('mixpoint', mixpointEvent)
+  audioEvent.on('scroll', scrollEvent)
+  audioEvent.on('bpm', bpmEvent)
+  audioEvent.on('beatResolution', beatResolutionEvent)
+  audioEvent.on('offset', offsetEvent)
+  audioEvent.on('nav', navEvent)
+  audioEvent.on('mixpoint', mixpointEvent)
 }
 
-export { loadAudioEvents }
+export type { NavEvent }
+export { audioEvent, loadAudioEvents }

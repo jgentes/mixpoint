@@ -1,4 +1,5 @@
 import {
+  Adjust,
   Eject,
   Pause,
   PlayArrow,
@@ -17,7 +18,9 @@ import {
   TextField,
   Typography,
 } from '@mui/joy'
+import { Button, ButtonGroup } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { audioEvent, NavEvent } from '~/api/audioEvents'
 import {
   db,
   getMixTrack,
@@ -27,7 +30,6 @@ import {
   Track,
   useLiveQuery,
 } from '~/api/dbHandlers'
-import { EventBus } from '~/api/EventBus'
 import { openDrawerState } from '~/components/layout/TrackDrawer'
 
 const NumberControl = ({
@@ -68,7 +70,7 @@ const NumberControl = ({
 
     setInputVal(newVal)
 
-    EventBus.emit(emitEvent, { trackId, [propName]: newVal })
+    audioEvent.emit(emitEvent, { trackId, [propName]: newVal })
   }
 
   const ResetValLink = () => (
@@ -199,7 +201,7 @@ const BeatResolutionControl = ({
   beatResolution: MixTrack['beatResolution']
 }) => {
   const changeBeatResolution = (beatResolution: MixTrack['beatResolution']) =>
-    EventBus.emit('beatResolution', { trackId: trackId, beatResolution })
+    audioEvent.emit('beatResolution', { trackId: trackId, beatResolution })
 
   return (
     <RadioGroup
@@ -259,58 +261,34 @@ const BeatResolutionControl = ({
   )
 }
 
-const TrackAudioControl = ({ trackId }: { trackId: MixTrack['id'] }) => {
+const TrackNavControl = ({ trackId }: { trackId: MixTrack['id'] }) => {
+  const navEvent = (effect: NavEvent) =>
+    audioEvent.emit('nav', { tracks: [trackId], effect })
+
   return (
-    <RadioGroup row variant="outlined">
+    <ButtonGroup variant="text" color="inherit" disableRipple id="navControl">
       {[
-        { val: 'Previous Mixpoint', icon: <SkipPrevious /> },
-        { val: 'Rewind', icon: <SettingsBackupRestore /> },
+        { val: 'Previous Beat Marker', icon: <SkipPrevious /> },
+        { val: 'Go to Mixpoint', icon: <SettingsBackupRestore /> },
+        { val: 'Set Mixpoint', icon: <Adjust /> },
         { val: 'Play', icon: <PlayArrow /> },
-        { val: 'Next Mixpoint', icon: <SkipNext /> },
+        { val: 'Next Beat Marker', icon: <SkipNext /> },
       ].map(item => (
-        <Box
+        <Button
+          component="button"
+          onClick={e => navEvent(e.currentTarget.value as NavEvent)}
           key={item.val}
-          sx={theme => ({
-            position: 'relative',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: 34,
-            height: 20,
-            '&:not([data-first-child])': {
-              borderLeft: '1px solid',
-              borderColor: 'divider',
-            },
-            [`&[data-first-child] .${radioClasses.action}`]: {
-              borderTopLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-              borderBottomLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-            },
-            [`&[data-last-child] .${radioClasses.action}`]: {
-              borderTopRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-              borderBottomRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-            },
-          })}
+          value={item.val}
+          title={item.val}
+          sx={{
+            '--Icon-color': 'var(--joy-palette-text-secondary)',
+            borderColor: 'var(--joy-palette-divider) !important',
+          }}
         >
-          <Radio
-            value={item}
-            disableIcon
-            overlay
-            label={item.icon}
-            variant="plain"
-            color="primary"
-            sx={{
-              color: 'text.secondary',
-            }}
-            componentsProps={{
-              action: {
-                sx: { borderRadius: 0, transition: 'none' },
-              },
-              label: { sx: { lineHeight: 0 } },
-            }}
-          />
-        </Box>
+          {item.icon}
+        </Button>
       ))}
-    </RadioGroup>
+    </ButtonGroup>
   )
 }
 
@@ -321,10 +299,7 @@ const MixControl = ({
   fromState?: MixTrack
   toState?: MixTrack
 }) => {
-  const controlVals = ['Play', 'Pause', 'Stop'] as const
-  type ControlVals = typeof controlVals[number]
-
-  const [state, setState] = useState<ControlVals>('Stop')
+  const [state, setState] = useState<NavEvent>('Go to Mixpoint')
 
   return (
     <RadioGroup
@@ -334,21 +309,22 @@ const MixControl = ({
       value={state}
       sx={{ height: 48 }}
       onChange={e => {
-        const val = e.target.value as ControlVals
+        const val = e.target.value as NavEvent
 
         setState(val)
-        EventBus.emit('audio', {
-          effect: val,
+        audioEvent.emit('nav', {
           tracks: [fromState?.id, toState?.id],
+          effect: val,
         })
       }}
     >
       {[
-        { val: 'Stop', icon: <SettingsBackupRestore /> },
+        { val: 'Go to Mixpoint', icon: <SettingsBackupRestore /> },
         {
-          val: state == 'Play' ? 'Pause' : 'Play',
-          icon: state == 'Play' ? <Pause /> : <PlayArrow />,
+          val: 'Pause',
+          icon: <Pause />,
         },
+        { val: 'Play', icon: <PlayArrow /> },
       ].map(item => (
         <Box
           key={item.val}
@@ -414,7 +390,7 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
 
     setMixpointVal(newMixpoint)
 
-    EventBus.emit('mixpoint', { trackId, mixpoint: newMixpoint })
+    audioEvent.emit('mixpoint', { trackId, mixpoint: newMixpoint })
   }
 
   const timeFormat = (secs: number) =>
@@ -464,5 +440,5 @@ export {
   EjectControl,
   MixControl,
   MixpointControl,
-  TrackAudioControl,
+  TrackNavControl,
 }

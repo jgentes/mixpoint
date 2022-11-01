@@ -1,5 +1,5 @@
+import { audioEvent } from '~/api/audioEvents'
 import { db, getMixTrack, MixTrack, putMixTrack, Track } from '~/api/dbHandlers'
-import { EventBus } from '~/api/EventBus'
 import { errorHandler } from '~/utils/notifications'
 import { analyzeTracks } from './audioHandlers'
 import { getPermission } from './fileHandlers'
@@ -23,9 +23,11 @@ const calcRegions = async (
   partialMixTrack: Partial<MixTrack> = {}
 ): Promise<{
   duration: Track['duration']
+  adjustedBpm: MixTrack['adjustedBpm']
   skipLength: number
   beatResolution: MixTrack['beatResolution']
   regions: any[] // RegionParams exists, but can't access it using deferred import style
+  mixpoint: MixTrack['mixpoint']
 }> => {
   let { duration, offset, adjustedOffset, bpm } = track
 
@@ -39,9 +41,9 @@ const calcRegions = async (
 
   if (!duration) throw errorHandler(`Please try adding ${track.name} again.`)
 
-  const mixTrack = await getMixTrack(track.id)
-  const newMixTrack = { ...mixTrack, ...partialMixTrack }
-  let { adjustedBpm, beatResolution = 0.25 } = newMixTrack
+  const prevMixTrack = await getMixTrack(track.id)
+  const mixTrack = { ...prevMixTrack, ...partialMixTrack }
+  let { adjustedBpm, beatResolution = 0.25, mixpoint } = mixTrack
 
   const beatInterval = 60 / (adjustedBpm || bpm || 1)
   let startPoint = adjustedOffset || offset || 0
@@ -59,17 +61,18 @@ const calcRegions = async (
       end: time + skipLength,
       color: 'rgba(255, 255, 255, 0)',
       drag: false,
-      resize: true,
+      resize: false,
       showTooltip: false,
-      handleStyle: {
-        left: {
-          backgroundColor: time == startPoint ? 'none' : '#0492f79e',
-        },
-        right: { width: '0' },
-      },
     })
   }
-  return { duration, skipLength, regions, beatResolution }
+  return {
+    duration,
+    adjustedBpm,
+    skipLength,
+    regions,
+    beatResolution,
+    mixpoint,
+  }
 }
 
 const renderWaveform = async ({
@@ -89,11 +92,16 @@ const renderWaveform = async ({
 
   setAnalyzing(true)
 
-  const { duration, skipLength, regions, beatResolution } = await calcRegions(
-    track
-  )
+  const {
+    duration,
+    adjustedBpm,
+    skipLength,
+    regions,
+    beatResolution,
+    mixpoint,
+  } = await calcRegions(track)
 
-  const zoomview = WaveSurfer.create({
+  const waveform = WaveSurfer.create({
     container: `#zoomview-container_${trackId}`,
     scrollParent: true,
     fillParent: false,
@@ -101,7 +109,7 @@ const renderWaveform = async ({
     barWidth: 2,
     barHeight: 0.9,
     barGap: 1,
-    cursorColor: '#0492f752',
+    cursorColor: 'secondary.mainChannel',
     interact: false,
     skipLength,
     //@ts-ignore - author hasn't updated types for gradients
@@ -115,8 +123,7 @@ const renderWaveform = async ({
     progressColor: 'rgba(0, 0, 0, 0.25)',
     plugins: [
       PlayheadPlugin.create({
-        returnOnPause: true,
-        moveOnSeek: true,
+        returnOnPause: false,
         draw: true,
       }),
       CursorPlugin.create({
@@ -150,34 +157,51 @@ const renderWaveform = async ({
     ],
   })
 
-  zoomview.loadBlob(file)
-  zoomview.zoom(beatResolution == 1 ? 80 : beatResolution == 0.5 ? 40 : 20)
+  waveform.loadBlob(file)
+  waveform.zoom(beatResolution == 1 ? 80 : beatResolution == 0.5 ? 40 : 20)
+  if (adjustedBpm)
+    waveform.setPlaybackRate(adjustedBpm / (track.bpm || adjustedBpm))
 
   // Configure wavesurfer event listeners
-  zoomview.on('ready', () => {
+  waveform.on('ready', () => {
     setAnalyzing(false)
-    // do this elsewhere when initializing mxipoint from state:
-    // if (zoomview.playhead.playheadTime == 0)
-    //   zoomview.playhead.setPlayheadTime(regions[0].start)
+
+    // Set playhead to mixpoint if it exists
+    const currentPlayhead = mixpoint || regions[0].start
+    waveform.playhead.setPlayheadTime(currentPlayhead)
+    waveform.seekAndCenter(1 / (duration! / currentPlayhead))
   })
 
-  zoomview.on('region-click', region => {
-    // If audio isn't playing, set playhead to region start
-    //if (!zoomview.isPlaying()) zoomview.playhead.setPlayheadTime(region.start)
-
-    // Mixpoint is the current playhead position
-    //const mixpoint = zoomview.playhead.playheadTime
-    const mixpoint = region.start
-
-    zoomview.playPause()
-    zoomview.seekAndCenter(1 / (duration! / mixpoint))
-
-    EventBus.emit('mixpoint', { trackId: track.id, mixpoint })
+  waveform.on('region-dblclick', region => {
+    // Double click sets a mixpoint at current region
+    // waveform.play(region.start)
+    // waveform.playhead.setPlayheadTime(region.start)
+    // audioEvent.emit('mixpoint', { trackId: track.id, mixpoint: region.start })
   })
 
-  zoomview.on('destroy', () => zoomview.unAll())
+  waveform.on('region-click', region => {
+    if (waveform.isPlaying()) return waveform.pause()
 
-  return zoomview
+    // Time gets inconsistent at 14 digits so need to round here
+    const time = waveform.getCurrentTime().toFixed(3)
+    const clickInsideOfPlayheadRegion =
+      waveform.playhead.playheadTime.toFixed(3) == region.start.toFixed(3)
+    const cursorIsAtPlayhead = time == waveform.playhead.playheadTime.toFixed(3)
+
+    if (cursorIsAtPlayhead && clickInsideOfPlayheadRegion) {
+      waveform.play()
+    } else if (clickInsideOfPlayheadRegion) {
+      // Take the user back to playhead
+      waveform.seekAndCenter(1 / (duration! / waveform.playhead.playheadTime))
+    } else {
+      // Move playhead to new region (seek is somewhat disorienting)
+      waveform.playhead.setPlayheadTime(region.start)
+    }
+  })
+
+  waveform.on('destroy', () => waveform.unAll())
+
+  return waveform
 }
 
 export { renderWaveform, calcRegions }

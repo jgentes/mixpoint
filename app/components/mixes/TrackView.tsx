@@ -1,15 +1,14 @@
 import { Card, Typography } from '@mui/joy'
 import { Box } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { loadAudioEvents } from '~/api/audioEvents'
-import { db, MixTrack, Track } from '~/api/dbHandlers'
-import { EventBus } from '~/api/EventBus'
+import { audioEvent, loadAudioEvents } from '~/api/audioEvents'
+import { MixTrack, Track } from '~/api/dbHandlers'
 import { renderWaveform } from '~/api/renderWaveform'
 import {
   BeatResolutionControl,
   EjectControl,
   OffsetControl,
-  TrackAudioControl,
+  TrackNavControl,
 } from '~/components/tracks/Controls'
 import Loader from '~/components/tracks/TrackLoader'
 import TrackName from '~/components/tracks/TrackName'
@@ -58,7 +57,8 @@ const TrackView = ({
           display: 'flex',
           gap: 1,
           alignItems: 'center',
-          flexBasis: 'calc(50% - 69px)',
+          '--width': '200px',
+          flexBasis: 'calc(50% - ((var(--width) + 16px) / 2))', // center audio controls
         }}
       >
         <EjectControl trackId={trackId} />
@@ -74,7 +74,9 @@ const TrackView = ({
           {TrackName(trackId)}
         </Typography>
       </Box>
-      <TrackAudioControl trackId={trackId} />
+
+      <TrackNavControl trackId={trackId} />
+
       <Box
         sx={{
           display: 'flex',
@@ -121,13 +123,15 @@ const TrackView = ({
           zIndex: 1,
         }}
         onWheel={e =>
-          EventBus.emit('scroll', {
-            direction: e.deltaY > 100 ? 'down' : 'up',
+          audioEvent.emit('scroll', {
             trackId,
+            direction: e.deltaY > 100 ? 'down' : 'up',
           })
         }
       ></Card>
+
       {trackFooter}
+
       {!analyzing ? null : (
         <Card
           sx={{

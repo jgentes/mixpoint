@@ -36,7 +36,13 @@ const Mixes: React.FunctionComponent = () => {
                 beatResolution={toState.beatResolution}
               />
             )}
-            <div style={{ display: 'flex', flexDirection: 'row', gap: 15 }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 15,
+              }}
+            >
               {!fromState?.id ? null : <TrackCard trackId={fromState.id} />}
 
               <MixControl fromState={fromState} toState={toState} />

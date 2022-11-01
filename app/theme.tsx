@@ -61,6 +61,10 @@ const muiTheme = extendMuiTheme({
         '.wavesurfer-playhead svg, .wavesurfer-playhead div': {
           display: 'none',
         },
+
+        '.wavesurfer-region': {
+          borderLeft: '2px solid #0492f79e',
+        },
       },
     },
     MuiTable: {

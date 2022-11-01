@@ -63,6 +63,7 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
         borderRadius: 'sm',
         border: '1px solid',
         borderColor: 'action.selected',
+        width: '30%', // this just restricts it from going too wide
       }}
     >
       <Card
@@ -77,7 +78,9 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
           height: '25px',
         }}
       />
+
       {overviewFooter}
+
       <Typography
         sx={{
           fontSize: 'sm',
