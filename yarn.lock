@@ -1406,13 +1406,6 @@
     set-cookie-parser "^2.4.8"
     source-map "^0.7.3"
 
-"@remix-run/vercel@^1.7.4":
-  version "1.7.4"
-  resolved "https://registry.yarnpkg.com/@remix-run/vercel/-/vercel-1.7.4.tgz#5ba08d180800764a5fa2645e7b49554680b2a37f"
-  integrity sha512-Ww2mRa95Cd4oOthLQewS/A10S8h22jCuh+4PYH2jHazGWy6gDm4FxFCTaAUmzNJvEfzP2BTUnxiavlv5XlnFlw==
-  dependencies:
-    "@remix-run/node" "1.7.4"
-
 "@remix-run/web-blob@^3.0.3", "@remix-run/web-blob@^3.0.4":
   version "3.0.4"
   resolved "https://registry.npmjs.org/@remix-run/web-blob/-/web-blob-3.0.4.tgz"
@@ -6451,9 +6444,9 @@ web-audio-beat-detector-worker@^5.2.26, web-audio-beat-detector-worker@^5.2.27:
     "@babel/runtime" "^7.19.4"
     tslib "^2.4.0"
 
-"web-audio-beat-detector@github:jgentes/web-audio-beat-detector.git":
+"web-audio-beat-detector@git+https://<gitub_key>:x-oauth-basic@github.com/jgentes/web-audio-beat-detector.git":
   version "8.1.35"
-  resolved "git+ssh://git@github.com/jgentes/web-audio-beat-detector.git#79bc9e20254c2142b12106d4fe2a499e43feae31"
+  resolved "git+https://<gitub_key>:x-oauth-basic@github.com/jgentes/web-audio-beat-detector.git#79bc9e20254c2142b12106d4fe2a499e43feae31"
   dependencies:
     "@babel/runtime" "^7.19.0"
     tslib "^2.4.0"
