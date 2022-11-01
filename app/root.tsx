@@ -2,7 +2,7 @@
 // it also injects top level styling, HTML meta tags, links, and javascript for browser rendering
 import { CssVarsProvider } from '@mui/joy/styles'
 import { CssBaseline } from '@mui/material'
-import { LinksFunction, MetaFunction } from '@remix-run/node'
+import { LinksFunction, MetaFunction } from '@remix-run/cloudflare'
 import { Links, LiveReload, Meta, Outlet, Scripts } from '@remix-run/react'
 import { SnackbarProvider } from 'notistack'
 import { useEffect, useState } from 'react'

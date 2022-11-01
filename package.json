@@ -13,6 +13,7 @@
     "@mui/icons-material": "^5.10.3",
     "@mui/joy": "^5.0.0-alpha.48",
     "@mui/material": "^5.10.8",
+    "@remix-run/cloudflare": "^1.7.4",
     "@remix-run/node": "^1.7.2",
     "@remix-run/react": "^1.7.2",
     "@superstate/core": "^0.1.0",
