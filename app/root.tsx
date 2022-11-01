@@ -14,7 +14,7 @@ import { theme } from '~/theme'
 const meta: MetaFunction = () => {
   return {
     title: 'Mixpoint',
-    description: 'Mixpoint is multi-track audio mixing app for the modern dj',
+    description: 'Mixpoint is multi-track audio mixing app for the browser',
     viewport: 'width=device-width, initial-scale=1',
   }
 }
