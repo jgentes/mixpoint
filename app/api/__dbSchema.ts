@@ -123,7 +123,7 @@ interface MixTrack {
   id?: Track['id']
   adjustedBpm?: Track['bpm']
   beatResolution?: 0.25 | 0.5 | 1
-  mixpoint?: number
+  mixpoint?: string
 }
 
 // state getter and setter

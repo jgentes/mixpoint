@@ -45,7 +45,9 @@ const Mixes: React.FunctionComponent = () => {
             >
               {!fromState?.id ? null : <TrackCard trackId={fromState.id} />}
 
-              <MixControl fromState={fromState} toState={toState} />
+              {!fromState?.id || !toState?.id ? null : (
+                <MixControl fromState={fromState} toState={toState} />
+              )}
 
               {!toState?.id ? null : <TrackCard trackId={toState.id} />}
             </div>

@@ -45,7 +45,7 @@ const TrackDrawer = () => {
           elevation={0}
           PaperProps={{
             sx: {
-              height: '85%',
+              height: '80%',
               bgcolor: 'background.surface',
               mb: openDrawerState.now() ? 3 : 0,
             },

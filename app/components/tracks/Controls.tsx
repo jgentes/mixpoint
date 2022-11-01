@@ -20,7 +20,7 @@ import {
 } from '@mui/joy'
 import { Button, ButtonGroup } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { audioEvent, NavEvent } from '~/api/audioEvents'
+import { audioEvent, AudioEvent, NavEvent } from '~/api/audioEvents'
 import {
   db,
   getMixTrack,
@@ -51,7 +51,7 @@ const NumberControl = ({
   title: string
   text: string
   width?: number
-  emitEvent: string
+  emitEvent: AudioEvent
   propName: string
   styles?: object
 }) => {
@@ -379,28 +379,26 @@ const MixControl = ({
 const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
 
-  const [mixpointVal, setMixpointVal] = useState<string | number>(0)
-
   const { mixpoint } = useLiveQuery(() => getMixTrack(trackId), [trackId]) || {}
 
-  useEffect(() => setMixpointVal((mixpoint ?? 0).toFixed(1)), [mixpoint])
+  const [mixpointVal, setMixpointVal] = useState<string>('0:00.00')
 
-  const adjustVal = async (newMixpoint?: number) => {
-    if (typeof newMixpoint !== 'number') return
+  console.log({ mixpoint }, { mixpointVal })
+  useEffect(() => setMixpointVal(mixpoint || '0:00.00'), [mixpoint])
 
-    setMixpointVal(newMixpoint)
+  const adjustMixpoint = async (newMixpoint: string) => {
+    if (newMixpoint == mixpoint) return
+
+    //setMixpointVal(newMixpoint)
 
     audioEvent.emit('mixpoint', { trackId, mixpoint: newMixpoint })
   }
-
-  const timeFormat = (secs: number) =>
-    new Date(secs * 1000).toISOString().substring(15, 22)
 
   return (
     <form
       onSubmit={e => {
         e.preventDefault()
-        adjustVal(Number(mixpointVal))
+        adjustMixpoint(mixpointVal)
       }}
     >
       <TextField
@@ -410,11 +408,9 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
             Mixpoint
           </Typography>
         }
-        value={timeFormat(Number(mixpointVal) || 0)}
+        value={mixpointVal}
         onChange={e => setMixpointVal(e.target.value)}
-        onBlur={() => {
-          if (Number(mixpointVal) !== mixpoint) adjustVal(Number(mixpointVal))
-        }}
+        onBlur={() => adjustMixpoint(mixpointVal)}
         sx={{
           width: 144,
           '& div': {

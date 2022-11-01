@@ -9,6 +9,7 @@ import {
   Track,
 } from '~/api/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
+import { tableOps } from '~/utils/tableOps'
 import { calcRegions } from './renderWaveform'
 
 // Events are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
@@ -154,6 +155,8 @@ const loadAudioEvents = async ({
   }): void => {
     if (!tracks.includes(trackId)) return
 
+    const mixpoint = waveform.playhead.playheadTime
+
     switch (effect) {
       case 'Play':
         waveform.playPause()
@@ -162,16 +165,14 @@ const loadAudioEvents = async ({
         waveform.pause()
         break
       case 'Set Mixpoint':
-        // const time = waveform.getCurrentTime()
-        // waveform.pause()
-        // waveform.seekTo(1 / (track.duration! / time))
+        waveform.pause()
+
         audioEvent.emit('mixpoint', {
           trackId: track.id,
-          mixpoint: waveform.playhead.playheadTime,
+          mixpoint: tableOps.timeFormat(mixpoint),
         })
         break
       case 'Go to Mixpoint':
-        const mixpoint = waveform.playhead.playheadTime
         waveform.seekAndCenter(1 / (track.duration! / mixpoint))
         waveform.pause()
         break
@@ -189,13 +190,18 @@ const loadAudioEvents = async ({
     mixpoint,
   }: {
     trackId: Track['id']
-    mixpoint: MixTrack['mixpoint']
+    mixpoint: string
   }): Promise<void> => {
     if (trackId !== track.id) return
 
     const { mixpoint: prevMixpoint } = (await getMixTrack(trackId)) || {}
 
-    if (mixpoint !== prevMixpoint) putMixTrack(trackId, { mixpoint })
+    if (mixpoint == prevMixpoint) return
+
+    putMixTrack(trackId, { mixpoint })
+    waveform.seekAndCenter(
+      1 / (track.duration! / tableOps.convertToSecs(mixpoint))
+    )
   }
 
   // add event listeners
@@ -207,5 +213,5 @@ const loadAudioEvents = async ({
   audioEvent.on('mixpoint', mixpointEvent)
 }
 
-export type { NavEvent }
+export type { AudioEvent, NavEvent }
 export { audioEvent, loadAudioEvents }

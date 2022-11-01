@@ -92,6 +92,16 @@ const tableOps = {
   formatMinutes: (mins: number) => {
     return moment().startOf('day').add(mins, 'minutes').format('m:ss')
   },
+
+  // Convert seconds to mm:ss.ms
+  timeFormat: (seconds: number): string =>
+    new Date(seconds * 1000).toISOString().substring(15, 22),
+
+  // Convert time string to ms
+  convertToSecs: (time: string): number => {
+    const [minutes, seconds, ms] = time.split(/[:.]/)
+    return +minutes * 60 + +seconds + +`.${ms}`
+  },
 }
 
 export { tableOps }

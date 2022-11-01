@@ -1,6 +1,6 @@
-import { audioEvent } from '~/api/audioEvents'
-import { db, getMixTrack, MixTrack, putMixTrack, Track } from '~/api/dbHandlers'
+import { db, getMixTrack, MixTrack, Track } from '~/api/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
+import { tableOps } from '~/utils/tableOps'
 import { analyzeTracks } from './audioHandlers'
 import { getPermission } from './fileHandlers'
 
@@ -167,7 +167,9 @@ const renderWaveform = async ({
     setAnalyzing(false)
 
     // Set playhead to mixpoint if it exists
-    const currentPlayhead = mixpoint || regions[0].start
+    const currentPlayhead = mixpoint
+      ? tableOps.convertToSecs(mixpoint)
+      : regions[0].start
     waveform.playhead.setPlayheadTime(currentPlayhead)
     waveform.seekAndCenter(1 / (duration! / currentPlayhead))
   })
