@@ -28,7 +28,7 @@
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "wavesurfer.js": "^6.3.0",
-    "web-audio-beat-detector": "git+https://<gitub_key>/jgentes/web-audio-beat-detector.git"
+    "web-audio-beat-detector": "git+https://<gitub_key>:x-oauth-basic@github.com/jgentes/web-audio-beat-detector.git"
   },
   "devDependencies": {
     "@remix-run/dev": "^1.7.2",
