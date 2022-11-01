@@ -4,6 +4,6 @@ module.exports = {
   assetsBuildDirectory: 'public/build', // default
   ignoredRouteFiles: ['**/.*'], // default
   serverBuildTarget: 'cloudflare-pages',
-  //publicPath: "/build/",
+  publicPath: '/build/',
   serverBuildDirectory: 'build',
 }
