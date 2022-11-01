@@ -3,6 +3,6 @@ module.exports =
   process.env.NODE_ENV === 'production'
     ? {
         serverBuildTarget: 'cloudflare-pages',
-        server: 'server.js',
+        server: './server.js',
       }
     : {}
