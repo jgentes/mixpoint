@@ -383,7 +383,6 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
 
   const [mixpointVal, setMixpointVal] = useState<string>('0:00.00')
 
-  console.log({ mixpoint }, { mixpointVal })
   useEffect(() => setMixpointVal(mixpoint || '0:00.00'), [mixpoint])
 
   const adjustMixpoint = async (newMixpoint: string) => {
