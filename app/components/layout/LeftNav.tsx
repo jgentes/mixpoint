@@ -9,14 +9,11 @@ import {
 } from '@mui/joy'
 
 import { Animation, JoinInner, RadioButtonUnchecked } from '@mui/icons-material'
-import { NavLink, useMatches } from '@remix-run/react'
 
 import Dropzone from '~/components/Dropzone'
+import { openDrawerState } from '~/components/layout/TrackDrawer'
 
 const LeftNav = () => {
-  const path = useMatches()
-  const pathname = path[path.length - 1].pathname
-
   return (
     <Box
       component="nav"
@@ -57,63 +54,51 @@ const LeftNav = () => {
               '& .JoyListItemButton-root': { p: '8px' },
             }}
           >
-            <NavLink to="/tracks" style={{ textDecoration: 'none' }}>
-              <ListItem>
-                <ListItemButton
-                  variant={pathname == '/tracks' ? 'soft' : undefined}
-                  color={pathname == '/tracks' ? 'primary' : undefined}
-                >
-                  <ListItemDecorator sx={{ color: 'inherit' }}>
-                    <RadioButtonUnchecked
-                      sx={{
-                        fontSize: '20px',
-                        color: '#3399FF',
-                      }}
-                    />
-                  </ListItemDecorator>
-                  <ListItemContent>Tracks</ListItemContent>
-                </ListItemButton>
-              </ListItem>
-            </NavLink>
-            <NavLink to="/mixes" style={{ textDecoration: 'none' }}>
-              <ListItem>
-                <ListItemButton
-                  variant={pathname == '/mixes' ? 'soft' : undefined}
-                  color={pathname == '/mixes' ? 'primary' : undefined}
-                >
-                  <ListItemDecorator sx={{ color: 'inherit' }}>
-                    <JoinInner
-                      sx={{
-                        fontSize: '20px',
-                        color: '#3399FF',
-                      }}
-                    />
-                  </ListItemDecorator>
-                  <ListItemContent>
-                    <ListItemContent>Mixes</ListItemContent>
-                  </ListItemContent>
-                </ListItemButton>
-              </ListItem>
-            </NavLink>
-            <NavLink to="/sets" style={{ textDecoration: 'none' }}>
-              <ListItem>
-                <ListItemButton
-                  variant={pathname == '/sets' ? 'soft' : undefined}
-                  color={pathname == '/sets' ? 'primary' : undefined}
-                >
-                  <ListItemDecorator sx={{ color: 'inherit' }}>
-                    <Animation
-                      sx={{
-                        fontSize: '22px',
-                        transform: 'rotate(45deg)',
-                        color: '#3399FF',
-                      }}
-                    />
-                  </ListItemDecorator>
-                  <ListItemContent>Sets</ListItemContent>
-                </ListItemButton>
-              </ListItem>
-            </NavLink>
+            <ListItem>
+              <ListItemButton
+                variant={openDrawerState ? 'soft' : undefined}
+                color={openDrawerState ? 'primary' : undefined}
+              >
+                <ListItemDecorator sx={{ color: 'inherit' }}>
+                  <RadioButtonUnchecked
+                    sx={{
+                      fontSize: '20px',
+                      color: '#3399FF',
+                    }}
+                  />
+                </ListItemDecorator>
+                <ListItemContent>Tracks</ListItemContent>
+              </ListItemButton>
+            </ListItem>
+            <ListItem>
+              <ListItemButton>
+                <ListItemDecorator sx={{ color: 'inherit' }}>
+                  <JoinInner
+                    sx={{
+                      fontSize: '20px',
+                      color: '#3399FF',
+                    }}
+                  />
+                </ListItemDecorator>
+                <ListItemContent>
+                  <ListItemContent>Mixes</ListItemContent>
+                </ListItemContent>
+              </ListItemButton>
+            </ListItem>
+            <ListItem>
+              <ListItemButton>
+                <ListItemDecorator sx={{ color: 'inherit' }}>
+                  <Animation
+                    sx={{
+                      fontSize: '22px',
+                      transform: 'rotate(45deg)',
+                      color: '#3399FF',
+                    }}
+                  />
+                </ListItemDecorator>
+                <ListItemContent>Sets</ListItemContent>
+              </ListItemButton>
+            </ListItem>
           </List>
         </ListItem>
         <ListItem nested sx={{ p: 0 }}>
