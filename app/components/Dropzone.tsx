@@ -38,7 +38,7 @@ const Dropzone = (props: BoxProps) => {
       variant="soft"
       id="dropzone"
       sx={{
-        m: 1,
+        mt: 1,
         border: '2px dashed #bbb',
         padding: '10px',
         textAlign: 'center',
