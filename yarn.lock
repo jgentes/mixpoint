@@ -974,6 +974,11 @@
   dependencies:
     mime "^2.5.2"
 
+"@cloudflare/workers-types@^3.18.0":
+  version "3.18.0"
+  resolved "https://registry.yarnpkg.com/@cloudflare/workers-types/-/workers-types-3.18.0.tgz#b4177cbe9306d7df4654db594d6e77c036341d2e"
+  integrity sha512-ehKOJVLMeR+tZkYhWEaLYQxl0TaIZu/kE86HF3/RidR8Xv5LuQxpbh+XXAoKVqsaphWLhIgBhgnlN5HGdheXSQ==
+
 "@emotion/babel-plugin@^11.10.5":
   version "11.10.5"
   resolved "https://registry.npmjs.org/@emotion/babel-plugin/-/babel-plugin-11.10.5.tgz"

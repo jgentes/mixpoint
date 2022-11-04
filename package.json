@@ -8,6 +8,7 @@
     "start": "remix-serve ./build"
   },
   "dependencies": {
+    "@cloudflare/workers-types": "^3.18.0",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
     "@mui/icons-material": "^5.10.3",
@@ -24,8 +25,8 @@
     "moment": "^2.29.4",
     "notistack": "^2.0.5",
     "rc-slider": "^10.0.1",
-    "react": "^18",
-    "react-dom": "^18",
+    "react": "^17",
+    "react-dom": "^17",
     "wavesurfer.js": "^6.3.0",
     "web-audio-beat-detector": "^8.1.37"
   },
