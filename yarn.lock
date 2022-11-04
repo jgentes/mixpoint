@@ -926,7 +926,7 @@
     pirates "^4.0.5"
     source-map-support "^0.5.16"
 
-"@babel/runtime@^7.10.1", "@babel/runtime@^7.12.5", "@babel/runtime@^7.18.3", "@babel/runtime@^7.19.0", "@babel/runtime@^7.19.4", "@babel/runtime@^7.5.5", "@babel/runtime@^7.7.6", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7":
+"@babel/runtime@^7.10.1", "@babel/runtime@^7.12.5", "@babel/runtime@^7.18.3", "@babel/runtime@^7.19.0", "@babel/runtime@^7.19.4", "@babel/runtime@^7.20.1", "@babel/runtime@^7.5.5", "@babel/runtime@^7.7.6", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7":
   version "7.20.1"
   resolved "https://registry.npmjs.org/@babel/runtime/-/runtime-7.20.1.tgz"
   integrity sha512-mrzLkl6U9YLF8qpqI7TB82PESyEGjm/0Ly91jG575eVxMMlb8fYfOXFZIJ8XfLrJZQbm7dlKry2bJmXBUEkdFg==
@@ -1830,7 +1830,7 @@ atob@^2.1.2:
 
 automation-events@^4.0.22:
   version "4.0.22"
-  resolved "https://registry.npmjs.org/automation-events/-/automation-events-4.0.22.tgz"
+  resolved "https://registry.yarnpkg.com/automation-events/-/automation-events-4.0.22.tgz#eaaea55ea0edbbd20f54053cce5c686f56736866"
   integrity sha512-npbme6c94VOnW8pvns60ioIi1+9lUZEMC6feTJoAkINnKSEHda5dKwMRmzoh4Y8zjQVXMUNcO6LcQkH4SXyvWA==
   dependencies:
     "@babel/runtime" "^7.19.4"
@@ -2998,7 +2998,7 @@ fast-levenshtein@~2.0.6:
 
 fast-unique-numbers@^6.0.22:
   version "6.0.22"
-  resolved "https://registry.npmjs.org/fast-unique-numbers/-/fast-unique-numbers-6.0.22.tgz"
+  resolved "https://registry.yarnpkg.com/fast-unique-numbers/-/fast-unique-numbers-6.0.22.tgz#f97fd65243e83ad2738d337d4645b9207431765a"
   integrity sha512-42ta7bfw+vNdtUpeDJ/ytPg8YfjopV/x+AErfQzZ8Wjzy5xv8d04I8D72ay1PtaHEp9i/7uWb+S7mW4yMbjn/w==
   dependencies:
     "@babel/runtime" "^7.19.4"
@@ -5260,7 +5260,7 @@ rc-util@^5.18.1:
 
 react-dom@^18:
   version "18.2.0"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.2.0.tgz#22aaf38708db2674ed9ada224ca4aa708d821e3d"
+  resolved "https://registry.npmjs.org/react-dom/-/react-dom-18.2.0.tgz"
   integrity sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==
   dependencies:
     loose-envify "^1.1.0"
@@ -5303,7 +5303,7 @@ react-transition-group@^4.4.5:
 
 react@^18:
   version "18.2.0"
-  resolved "https://registry.yarnpkg.com/react/-/react-18.2.0.tgz#555bd98592883255fa00de14f1151a917b5d77d5"
+  resolved "https://registry.npmjs.org/react/-/react-18.2.0.tgz"
   integrity sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==
   dependencies:
     loose-envify "^1.1.0"
@@ -5627,7 +5627,7 @@ safe-regex@^1.1.0:
 
 scheduler@^0.23.0:
   version "0.23.0"
-  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.23.0.tgz#ba8041afc3d30eb206a487b6b384002e4e61fdfe"
+  resolved "https://registry.npmjs.org/scheduler/-/scheduler-0.23.0.tgz"
   integrity sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==
   dependencies:
     loose-envify "^1.1.0"
@@ -5868,7 +5868,7 @@ ssri@^8.0.1:
 
 standardized-audio-context@^25.3.33:
   version "25.3.33"
-  resolved "https://registry.npmjs.org/standardized-audio-context/-/standardized-audio-context-25.3.33.tgz"
+  resolved "https://registry.yarnpkg.com/standardized-audio-context/-/standardized-audio-context-25.3.33.tgz#8108ee2520097d1b359badbf6b573f0fab41d14c"
   integrity sha512-9BzVo8NDemOMENPKiwdE65uJJ6ae00jmafT2ZzZ0j+1WVhYZXfmykDgcP4h8eRAPC7r+mFedJfbdr7DMANJRkw==
   dependencies:
     "@babel/runtime" "^7.19.4"
@@ -6126,7 +6126,7 @@ tslib@^1.13.0:
   resolved "https://registry.npmjs.org/tslib/-/tslib-1.14.1.tgz"
   integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
 
-tslib@^2.0.1, tslib@^2.1.0, tslib@^2.4.0:
+tslib@^2.0.1, tslib@^2.1.0, tslib@^2.4.0, tslib@^2.4.1:
   version "2.4.1"
   resolved "https://registry.npmjs.org/tslib/-/tslib-2.4.1.tgz"
   integrity sha512-tGyy4dAjRIEwI7BzsB0lynWgOpfqjUdq91XXAlIWD2OwKBH7oCl/GZG/HT4BOHrTlPMOASlMQ7veyTqpmRcrNA==
@@ -6422,9 +6422,9 @@ wcwidth@^1.0.1:
   dependencies:
     defaults "^1.0.3"
 
-web-audio-beat-detector-broker@^4.0.73:
+web-audio-beat-detector-broker@^4.0.74:
   version "4.0.74"
-  resolved "https://registry.npmjs.org/web-audio-beat-detector-broker/-/web-audio-beat-detector-broker-4.0.74.tgz"
+  resolved "https://registry.yarnpkg.com/web-audio-beat-detector-broker/-/web-audio-beat-detector-broker-4.0.74.tgz#e66d04b948219e16281a00d8f1593dbbcc62dc9c"
   integrity sha512-XjiLE47JcgR1lkjENAT0YkmqA7unCH4EBLC+e/QXou0NSBr0hQ2AquKqXLyxHOa5FLL759tdGvhbmQGpl32XiA==
   dependencies:
     "@babel/runtime" "^7.19.4"
@@ -6433,22 +6433,23 @@ web-audio-beat-detector-broker@^4.0.73:
     tslib "^2.4.0"
     web-audio-beat-detector-worker "^5.2.27"
 
-web-audio-beat-detector-worker@^5.2.26, web-audio-beat-detector-worker@^5.2.27:
+web-audio-beat-detector-worker@^5.2.27:
   version "5.2.27"
-  resolved "https://registry.npmjs.org/web-audio-beat-detector-worker/-/web-audio-beat-detector-worker-5.2.27.tgz"
+  resolved "https://registry.yarnpkg.com/web-audio-beat-detector-worker/-/web-audio-beat-detector-worker-5.2.27.tgz#d44dafa7604f3ac4844e655767fbafcae96e731e"
   integrity sha512-9WmzbwsYEEHIp8jMCUFdFN3eoCGTVNss6gP1M3N23w2KwCkEYGSiaKXEnMkpb95vdHK76hAj2XQr+CO3VdAezw==
   dependencies:
     "@babel/runtime" "^7.19.4"
     tslib "^2.4.0"
 
-"web-audio-beat-detector@git+https://<gitub_key>:x-oauth-basic@github.com/jgentes/web-audio-beat-detector.git":
-  version "8.1.35"
-  resolved "git+https://<gitub_key>:x-oauth-basic@github.com/jgentes/web-audio-beat-detector.git#79bc9e20254c2142b12106d4fe2a499e43feae31"
+web-audio-beat-detector@^8.1.37:
+  version "8.1.37"
+  resolved "https://registry.yarnpkg.com/web-audio-beat-detector/-/web-audio-beat-detector-8.1.37.tgz#113850aef6f5f8f0b3c05184af9dccc54ec72e35"
+  integrity sha512-G+H4d8hKfZ2jlxZ2qDPjHA+jWgw9gdexDB+HETrOfo7rDHIzOW+Nr9HuS/mxmBgsS8jEGnvEwCF5GPHq4OH1Yw==
   dependencies:
-    "@babel/runtime" "^7.19.0"
-    tslib "^2.4.0"
-    web-audio-beat-detector-broker "^4.0.73"
-    web-audio-beat-detector-worker "^5.2.26"
+    "@babel/runtime" "^7.20.1"
+    tslib "^2.4.1"
+    web-audio-beat-detector-broker "^4.0.74"
+    web-audio-beat-detector-worker "^5.2.27"
 
 web-encoding@1.1.5:
   version "1.1.5"
