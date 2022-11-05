@@ -3,7 +3,7 @@ import { Box } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { audioEvent, loadAudioEvents } from '~/api/audioEvents'
 import { MixTrack, Track } from '~/api/dbHandlers'
-import { renderWaveform } from '~/api/renderWaveform'
+import { Waveform } from '~/api/renderWaveform'
 import {
   BeatResolutionControl,
   EjectControl,
@@ -24,24 +24,6 @@ const TrackView = ({
   if (!trackId) throw errorHandler('Please try uploading the track again.')
 
   const [analyzing, setAnalyzing] = useState(false)
-
-  // View component must be in the DOM before rendering waveform
-  useEffect(() => {
-    let waveform: WaveSurfer
-
-    const renderTrack = async () => {
-      waveform = await renderWaveform({
-        trackId,
-        setAnalyzing,
-      })
-
-      await loadAudioEvents({ trackId, waveform })
-    }
-
-    renderTrack()
-
-    return () => waveform?.destroy()
-  }, [trackId])
 
   const trackFooter = (
     <Box
@@ -116,19 +98,7 @@ const TrackView = ({
         borderColor: 'action.selected',
       }}
     >
-      <Card
-        id={`zoomview-container_${trackId}`}
-        sx={{
-          ...loaderSx,
-          zIndex: 1,
-        }}
-        onWheel={e =>
-          audioEvent.emit('scroll', {
-            trackId,
-            direction: e.deltaY > 100 ? 'down' : 'up',
-          })
-        }
-      ></Card>
+      <Waveform trackId={trackId} setAnalyzing={setAnalyzing} sx={loaderSx} />
 
       {trackFooter}
 
