@@ -1095,6 +1095,11 @@
     escape-string-regexp "^4.0.0"
     rollup-plugin-node-polyfills "^0.2.1"
 
+"@foobar404/wave@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@foobar404/wave/-/wave-2.0.3.tgz#12c15adf854038aa1c24d2bf7aa0fbd83ce566ff"
+  integrity sha512-12V66AHNU/gj56cJucWEAGJHbVQcev8TyEI5AFTd8ukapTIOs76HlrHe8oIt0SdIf+5MD6nZ/2R42MMWqlzQuQ==
+
 "@gar/promisify@^1.0.1":
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/@gar/promisify/-/promisify-1.1.3.tgz#555193ab2e3bb3b6adc3d551c9c030d9e860daf6"
@@ -2394,6 +2399,11 @@ deasync@^0.1.0:
     bindings "^1.5.0"
     node-addon-api "^1.7.1"
 
+debounce@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/debounce/-/debounce-1.2.1.tgz#38881d8f4166a5c5848020c11827b834bcb3e0a5"
+  integrity sha512-XRRe6Glud4rd/ZGQfiV1ruXSfbvfJedlV9Y6zOlP+2K04vBYiJEte6stfFkCP03aMnY5tsipamumUjL14fofug==
+
 debug@2.6.9, debug@^2.2.0, debug@^2.3.3:
   version "2.6.9"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.9.tgz#5d128515df134ff327e90a4c93f4e077a536341f"
@@ -2577,11 +2587,6 @@ end-of-stream@^1.0.0, end-of-stream@^1.1.0, end-of-stream@^1.4.1:
   integrity sha512-+uw1inIHVPQoaVuHzRyXd21icM+cnt4CzD5rW+NC1wjOUSTOs+Te7FOv7AhN7vS9x/oIyhLP5PR1H+phQAHu5Q==
   dependencies:
     once "^1.4.0"
-
-equalizer.js@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/equalizer.js/-/equalizer.js-2.2.0.tgz#b91769ec86fea9d4a350ce5a00b2533fd81a7eef"
-  integrity sha512-u1+AG9CtSlp5WiH6bdZwvTkkJBAJkVbi8OWM+5N1O/YbZwNoL+anmGbOUiRy1scKf5K0v4JJJeKDBKGhI8C2aQ==
 
 error-ex@^1.3.1:
   version "1.3.2"

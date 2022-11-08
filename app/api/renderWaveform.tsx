@@ -10,7 +10,7 @@ import { analyzeTracks } from './audioHandlers'
 import { getPermission } from './fileHandlers'
 
 // Only load WaveSurfer in the browser
-let Equalizer: any
+//let Wave
 let WaveSurfer: typeof import('wavesurfer.js'),
   PlayheadPlugin: typeof import('wavesurfer.js/src/plugin/playhead').default,
   CursorPlugin: typeof import('wavesurfer.js/src/plugin/cursor').default,
@@ -22,7 +22,7 @@ if (typeof document !== 'undefined') {
   CursorPlugin = require('wavesurfer.js/src/plugin/cursor').default
   RegionsPlugin = require('wavesurfer.js/src/plugin/regions').default
   MinimapPlugin = require('wavesurfer.js/src/plugin/minimap').default
-  Equalizer = require('equalizer.js').default
+  //  Wave = require('@foobar404/wave').Wave
 }
 
 const calcRegions = async (
@@ -183,6 +183,12 @@ const Waveform = ({
         ],
       })
 
+      // if (typeof document !== undefined) {
+      //   let audioElement = document.getElementById('eqAudio')
+      //   let canvasElement = document.getElementById('eqCanvas')
+      //   let wave = new Wave(audioElement, canvasElement)
+      // }
+
       setWaveformProps({
         track,
         file,
@@ -214,11 +220,6 @@ const Waveform = ({
   } = waveformProps
 
   if (file) waveform?.loadBlob(file)
-
-  // const context = waveform?.getAudioContext()
-  // new Equalizer(context).appendTo(
-  //   document.getElementById('zoomview-container_' + track?.id)
-  // )
 
   waveform?.zoom(beatResolution == 1 ? 80 : beatResolution == 0.5 ? 40 : 20)
   if (adjustedBpm)

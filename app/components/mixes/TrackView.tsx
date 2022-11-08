@@ -13,6 +13,7 @@ import {
 import Loader from '~/components/tracks/TrackLoader'
 import TrackName from '~/components/tracks/TrackName'
 import { errorHandler } from '~/utils/notifications'
+import { ClientOnly } from 'remix-utils'
 
 const TrackView = ({
   trackId,
@@ -98,9 +99,20 @@ const TrackView = ({
         borderColor: 'action.selected',
       }}
     >
-      <Waveform trackId={trackId} setAnalyzing={setAnalyzing} sx={loaderSx} />
+      <ClientOnly>
+        {() => (
+          <Waveform
+            trackId={trackId}
+            setAnalyzing={setAnalyzing}
+            sx={loaderSx}
+          />
+        )}
+      </ClientOnly>
 
       {trackFooter}
+
+      {/* <audio id="eqAudio" />
+      <div id="eqCanvas" /> */}
 
       {!analyzing ? null : (
         <Card

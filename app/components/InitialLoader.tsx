@@ -23,7 +23,6 @@ const LoaderDiv = styled('div')`
 `
 
 const LoaderRow = styled('div')`
-  font-family: 'system-ui, sans-serif';
   line-height: 24px;
   display: flex;
   justify-content: space-between;
