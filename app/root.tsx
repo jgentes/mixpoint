@@ -28,7 +28,7 @@ const links: LinksFunction = () => [
   },
 ]
 
-const Document = ({ children }: { children: React.ReactNode }) => (
+const HtmlDoc = ({ children }: { children: React.ReactNode }) => (
   <html lang="en">
     <head>
       <Meta />
@@ -71,10 +71,10 @@ const ThemeLoader = () => {
 }
 
 const App = () => (
-  <Document>
+  <HtmlDoc>
     <ThemeLoader />
     <Scripts />
-  </Document>
+  </HtmlDoc>
 )
 
-export { App as default, meta, links }
+export { App as default, ThemeLoader, meta, links }

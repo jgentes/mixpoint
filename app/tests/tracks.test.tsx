@@ -1,9 +1,11 @@
-import { render, screen, waitFor } from '../../test-setup'
-import '@testing-library/jest-dom/extend-expect'
-import { Tracks } from './Tracks'
+import '@testing-library/jest-dom'
+import { waitFor } from '@testing-library/react'
+import { expect, assert, test } from 'vitest'
+import Dropzone from '~/components/Dropzone'
+import { render, screen } from '~/tests/testSetup'
 
 test('Dropzone is visible', () => {
-  render(<Tracks />)
+  render(<Dropzone />)
   const dropzone = waitFor(() => screen.getByText(/Add Tracks/))
 
   expect(dropzone).toBeVisible

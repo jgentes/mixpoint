@@ -1,9 +1,7 @@
-import { NavLink } from '@remix-run/react'
-
 const MixpointLogo = () => (
-  <NavLink to="/" style={{ textDecoration: 'none' }} className="logoText">
+  <a href="/" style={{ textDecoration: 'none' }} className="logoText">
     Mixpoint
-  </NavLink>
+  </a>
 )
 
 export default MixpointLogo

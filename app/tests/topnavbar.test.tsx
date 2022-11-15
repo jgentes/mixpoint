@@ -1,24 +1,24 @@
-import { render, screen } from '../../test-setup'
 import '@testing-library/jest-dom/extend-expect'
-import { TopNavbar } from './topnavbar'
+import Header from '~/components/layout/Header'
+import { render, screen } from '~/tests/testSetup'
 
 test('Logo must have proper src and alt text', () => {
-  render(<TopNavbar />)
-  const logo = screen.getByRole('img', { name: 'DJ Set Editor Logo' })
+  render(<Header />)
+  const logo = screen.getByRole('img', { name: 'Mixpoint Logo' })
 
   expect(logo).toBeVisible
 })
 
 test('Site title must appear in header', () => {
-  render(<TopNavbar />)
+  render(<Header />)
   const headerText = screen.getByRole('heading', { name: 'site title' })
 
   // match whole content
-  expect(headerText).toHaveTextContent(/^DJ Set Editor$/)
+  expect(headerText).toHaveTextContent(/^Mixpoint$/)
 })
 
 test('Nav links must exist', () => {
-  render(<TopNavbar />)
+  render(<Header />)
 
   const tracks = screen.getByRole('link', { name: 'Tracks' })
   const mixes = screen.getByRole('link', { name: 'Mixes' })
