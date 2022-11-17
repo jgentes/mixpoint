@@ -142,8 +142,13 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
         }}
       />
       {numSelected == 0 ? (
-        <Button size="sm" variant="soft" onClick={browseFile}>
-          <Add />
+        <Button
+          size="sm"
+          variant="soft"
+          onClick={browseFile}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          <Add fontSize="small" />
           Add Track
         </Button>
       ) : (

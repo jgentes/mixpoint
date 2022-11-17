@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom/extend-expect'
+import { expect } from 'vitest'
 import Header from '~/components/layout/Header'
 import { render, screen } from '~/tests/testSetup'
 

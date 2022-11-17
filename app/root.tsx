@@ -41,7 +41,7 @@ const HtmlDoc = ({ children }: { children: React.ReactNode }) => (
   </html>
 )
 
-const ThemeLoader = () => {
+const ThemeLoader = ({ noSplash }: { noSplash?: boolean }) => {
   const [loading, setLoading] = useState(true)
 
   // InitialLoader is used to hide the flash of unstyled content
@@ -57,7 +57,7 @@ const ThemeLoader = () => {
       <CssVarsProvider theme={theme} defaultMode={'light'}>
         {/* CSS Baseline is used to inject global styles */}
         <CssBaseline />
-        {loading ? (
+        {loading && !noSplash ? (
           <ClientOnly>{() => <InitialLoader />}</ClientOnly>
         ) : (
           <>

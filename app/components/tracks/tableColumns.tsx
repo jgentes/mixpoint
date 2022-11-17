@@ -80,6 +80,7 @@ const createColumnDefinitions = (): {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
+            fontSize: '.85rem',
           }}
         >
           <div onClick={event => tableOps.rowClick(event, t.id)}>

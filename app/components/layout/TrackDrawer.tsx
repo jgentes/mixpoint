@@ -9,7 +9,7 @@ const openDrawerState = superstate(false)
 
 const DrawerButton = ({ direction }: { direction: 'up' | 'down' }) => (
   <Button
-    variant="plain"
+    variant="solid"
     size="sm"
     fullWidth
     title={direction === 'up' ? 'Open drawer' : 'Close drawer'}
