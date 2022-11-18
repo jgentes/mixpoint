@@ -9,7 +9,7 @@ const openDrawerState = superstate(false)
 
 const DrawerButton = ({ direction }: { direction: 'up' | 'down' }) => (
   <Button
-    variant="solid"
+    variant="soft"
     size="sm"
     fullWidth
     title={direction === 'up' ? 'Open drawer' : 'Close drawer'}
@@ -20,7 +20,6 @@ const DrawerButton = ({ direction }: { direction: 'up' | 'down' }) => (
       borderTop: '1px solid',
       borderColor: 'divider',
       borderRadius: 0,
-      bgcolor: 'background.surface',
     }}
     onClick={() => openDrawerState.set(direction == 'up' ? true : false)}
   >
@@ -39,10 +38,8 @@ const TrackDrawer = () => {
       >
         <Drawer
           anchor="bottom"
-          transitionDuration={400}
           open={openDrawerState.now()}
           onClose={() => openDrawerState.set(false)}
-          elevation={0}
           PaperProps={{
             sx: {
               height: '80%',

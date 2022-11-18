@@ -83,7 +83,7 @@ const TrackTable = ({ hideDrawerButton }: { hideDrawerButton?: boolean }) => {
     <Box
       sx={{
         display: 'grid',
-        height: '90vh',
+        height: `calc(100% - ${openDrawerState ? '8' : '66'}px)`,
         gridTemplateColumns: 'minmax(64px, 200px) minmax(450px, 1fr)',
       }}
     >

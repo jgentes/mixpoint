@@ -13,6 +13,7 @@
   "dependencies": {
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
+    "@fontsource/public-sans": "^4.5.11",
     "@foobar404/wave": "^2.0.3",
     "@mui/icons-material": "^5.10.3",
     "@mui/joy": "^5.0.0-alpha.48",
@@ -37,8 +38,8 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^3.18.0",
-    "@remix-run/dev": "^1.7.2",
-    "@remix-run/serve": "^1.7.2",
+    "@remix-run/dev": "^1.7.3",
+    "@remix-run/serve": "^1.7.3",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "12.1.5",
     "@types/node": "^18.7.3",

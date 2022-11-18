@@ -1,5 +1,6 @@
 // this file establishes the root component that renders all subsequent / child routes
 // it also injects top level styling, HTML meta tags, links, and javascript for browser rendering
+import PublicSansFont from '@fontsource/public-sans/index.css'
 import { CssVarsProvider } from '@mui/joy/styles'
 import { CssBaseline } from '@mui/material'
 import { LinksFunction, MetaFunction } from '@remix-run/node'
@@ -26,6 +27,7 @@ const links: LinksFunction = () => [
     href: '/media/innerjoin32.png',
     sizes: '32x32',
   },
+  { rel: 'stylesheet', href: PublicSansFont },
 ]
 
 const HtmlDoc = ({ children }: { children: React.ReactNode }) => (

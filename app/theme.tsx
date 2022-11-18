@@ -275,8 +275,8 @@ const joyTheme = extendJoyTheme({
     },
   },
   fontFamily: {
-    display: 'system-ui',
-    body: 'system-ui',
+    display: 'Public Sans, system-ui',
+    body: 'Public Sans, system-ui',
   },
 })
 
