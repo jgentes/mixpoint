@@ -143,9 +143,6 @@ const createHooks = (table: keyof StateTypes) => {
   })
 }
 
-// Ensure we delete the file cache when a track is deleted
-db.tracks.hook('deleting', async id => db.fileStore.delete(id))
-
 const tables = ['mix', 'set', 'app'] as const
 tables.forEach(table => createHooks(table))
 

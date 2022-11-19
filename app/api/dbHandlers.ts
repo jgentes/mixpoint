@@ -1,5 +1,6 @@
 // This file provides a few helper functions for interacting with the database
 import { useLiveQuery } from 'dexie-react-hooks'
+import { audioEvent } from '~/api/audioEvents'
 import { getPermission } from '~/api/fileHandlers'
 import {
   __AppState as AppState,
@@ -62,9 +63,13 @@ const removeTracks = async (ids: number[]): Promise<void> => {
       : mixState.from
   const to =
     mixState.to?.id && ids.includes(mixState.to.id) ? undefined : mixState.to
+
   await putState('mix', { from, to })
 
   await db.tracks.bulkDelete(ids)
+
+  // Ensure we delete the file cache when a track is deleted
+  await db.fileStore.bulkDelete(ids)
 }
 // const addMix = async (
 //   trackIds: Track['id'][],
@@ -146,9 +151,12 @@ const addToMix = async (track: Track) => {
   // order of operations: from -> to
   const state = { id: track.id, file }
   if (!from) from = state
-  else to = state
+  else {
+    if (to?.id) await removeFromMix(to.id)
+    to = state
+  }
 
-  putState('mix', { from, to })
+  await putState('mix', { from, to })
 }
 
 const removeFromMix = async (id: Track['id']) => {

@@ -30,7 +30,7 @@ import {
   Track,
   useLiveQuery,
 } from '~/api/dbHandlers'
-import { openDrawerState } from '~/components/layout/TrackDrawer'
+import { openDrawerState } from '~/components/tracks/TrackDrawer'
 
 const NumberControl = ({
   trackId,
@@ -70,7 +70,7 @@ const NumberControl = ({
 
     setInputVal(newVal)
 
-    audioEvent.emit(emitEvent, { trackId, [propName]: newVal })
+    audioEvent.emit(trackId!, emitEvent, { [propName]: newVal })
   }
 
   const ResetValLink = () => (
@@ -201,7 +201,7 @@ const BeatResolutionControl = ({
   beatResolution: MixTrack['beatResolution']
 }) => {
   const changeBeatResolution = (beatResolution: MixTrack['beatResolution']) =>
-    audioEvent.emit('beatResolution', { trackId: trackId, beatResolution })
+    audioEvent.emit(trackId!, 'beatResolution', { beatResolution })
 
   return (
     <RadioGroup
@@ -263,7 +263,7 @@ const BeatResolutionControl = ({
 
 const TrackNavControl = ({ trackId }: { trackId: MixTrack['id'] }) => {
   const navEvent = (effect: NavEvent) =>
-    audioEvent.emit('nav', { tracks: [trackId], effect })
+    audioEvent.emit(trackId!, 'nav', { effect })
 
   return (
     <ButtonGroup variant="text" color="inherit" disableRipple id="navControl">
@@ -312,10 +312,8 @@ const MixControl = ({
         const val = e.target.value as NavEvent
 
         setState(val)
-        audioEvent.emit('nav', {
-          tracks: [fromState?.id, toState?.id],
-          effect: val,
-        })
+        audioEvent.emit(fromState?.id!, 'nav', { effect: val })
+        audioEvent.emit(toState?.id!, 'nav', { effect: val })
       }}
     >
       {[
@@ -390,7 +388,7 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
 
     //setMixpointVal(newMixpoint)
 
-    audioEvent.emit('mixpoint', { trackId, mixpoint: newMixpoint })
+    audioEvent.emit(trackId, 'mixpoint', { mixpoint: newMixpoint })
   }
 
   return (
@@ -403,7 +401,7 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
       <TextField
         variant="outlined"
         startDecorator={
-          <Typography level="body2" color="neutral" sx={{ lineHeight: 0 }}>
+          <Typography textColor="#aaa" sx={{ fontSize: 12, lineHeight: 0 }}>
             Mixpoint
           </Typography>
         }

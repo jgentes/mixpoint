@@ -13,7 +13,7 @@ import {
 } from '~/api/dbHandlers'
 import TrackLoader from '~/components/tracks/TrackLoader'
 import { tableOps } from '~/utils/tableOps'
-import { openDrawerState } from '../layout/TrackDrawer'
+import { openDrawerState } from './TrackDrawer'
 
 const createColumnDefinitions = (): {
   dbKey: keyof Track

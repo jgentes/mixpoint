@@ -1,9 +1,9 @@
 import { Box } from '@mui/joy'
 import { getState, useLiveQuery } from '~/api/dbHandlers'
-import DrawerButton from '~/components/layout/DrawerButton'
-import Header from '~/components/layout/Header'
-
+import Header from '~/components/header/Header'
 import MixView from '~/components/mixes/MixView'
+import DrawerButton from '~/components/tracks/DrawerButton'
+import TrackDrawer from '~/components/tracks/TrackDrawer'
 import TrackTable from '~/components/tracks/TrackTable'
 
 const Mixes: React.FunctionComponent = () => {
@@ -28,6 +28,7 @@ const Mixes: React.FunctionComponent = () => {
         <TrackTable />
       )}
       {mixViewVisible ? <DrawerButton /> : null}
+      <TrackDrawer />
     </Box>
   )
 }

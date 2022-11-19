@@ -12,9 +12,8 @@ import { useSuperState } from '@superstate/react'
 import { useState } from 'react'
 import { processingState } from '~/api/audioHandlers'
 import { db, getState, useLiveQuery } from '~/api/dbHandlers'
-import Dropzone, { itemsDropped } from '~/components/Dropzone'
-import LeftNav from '~/components/layout/LeftNav'
-import { DrawerButton, openDrawerState } from '~/components/layout/TrackDrawer'
+import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
+import LeftNav from '~/components/tracks/LeftNav'
 import {
   EnhancedTableHead,
   EnhancedTableToolbar,
@@ -39,9 +38,6 @@ const TrackTable = () => {
 
   // Show loader while processing tracks
   useSuperState(processingState)
-
-  // Close drawer button
-  useSuperState(openDrawerState)
 
   // Allow drag & drop files / folders into the table
   const [dragOver, setDragOver] = useState(false)

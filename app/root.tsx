@@ -1,6 +1,7 @@
 // this file establishes the root component that renders all subsequent / child routes
 // it also injects top level styling, HTML meta tags, links, and javascript for browser rendering
-import PublicSansFont from '@fontsource/public-sans/index.css'
+import PublicSansFont from '@fontsource/public-sans/latin.css'
+
 import { CssVarsProvider } from '@mui/joy/styles'
 import { CssBaseline } from '@mui/material'
 import { LinksFunction, MetaFunction } from '@remix-run/node'
@@ -11,6 +12,9 @@ import { ClientOnly } from 'remix-utils'
 import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import { theme } from '~/theme'
+
+// to help identify failing builds
+console.clear()
 
 const meta: MetaFunction = () => {
   return {

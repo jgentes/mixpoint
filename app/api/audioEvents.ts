@@ -21,18 +21,23 @@ const audioEventTypes = [
   'offset',
   'nav',
   'mixpoint',
+  'destroy',
 ] as const
 type AudioEvent = typeof audioEventTypes[number]
 
 const audioEvent = {
-  on(event: AudioEvent, callback: Function) {
-    window.addEventListener(event, (e: CustomEventInit) => callback(e.detail))
+  on(trackId: number, callback: Function) {
+    window.addEventListener(String(trackId), (e: CustomEventInit) =>
+      callback(e.detail)
+    )
   },
-  emit(event: AudioEvent, data?: any) {
-    window.dispatchEvent(new CustomEvent(event, { detail: data }))
+  emit(trackId: number, event: AudioEvent, args?: any) {
+    window.dispatchEvent(
+      new CustomEvent(String(trackId), { detail: { event, args } })
+    )
   },
-  off(event: AudioEvent, callback: any) {
-    window.removeEventListener(event, callback)
+  off(trackId: number, callback: any) {
+    window.removeEventListener(String(trackId), callback)
   },
 }
 
@@ -60,27 +65,18 @@ const loadAudioEvents = async ({
   // Allow adjustment in skipLength, as this cannot be updated via wavesurfer
   let skipLength = waveform.skipLength
 
-  const scrollEvent = ({
-    trackId,
-    direction,
-  }: {
-    trackId: Track['id']
-    direction: 'up' | 'down'
-  }) => {
-    if (trackId == track.id)
-      direction == 'down'
-        ? waveform.skipBackward(skipLength)
-        : waveform.skipForward(skipLength)
+  const scrollEvent = ({ direction }: { direction: 'up' | 'down' }) => {
+    direction == 'down'
+      ? waveform.skipBackward(skipLength)
+      : waveform.skipForward(skipLength)
   }
 
   const beatResolutionEvent = async ({
-    trackId,
     beatResolution,
   }: {
-    trackId: Track['id']
     beatResolution: MixTrack['beatResolution']
   }): Promise<void> => {
-    if (!beatResolution || trackId !== track.id) return
+    if (!beatResolution) return
 
     // Adjust zoom
     switch (+beatResolution) {
@@ -110,13 +106,11 @@ const loadAudioEvents = async ({
   }
 
   const bpmEvent = ({
-    trackId,
     adjustedBpm,
   }: {
-    trackId: Track['id']
     adjustedBpm: MixTrack['adjustedBpm']
   }): void => {
-    if (!adjustedBpm || trackId !== track.id) return
+    if (!adjustedBpm) return
 
     // Update playback rate based on new bpm
     const playbackRate = adjustedBpm / (track.bpm || adjustedBpm)
@@ -127,14 +121,10 @@ const loadAudioEvents = async ({
   }
 
   const offsetEvent = async ({
-    trackId,
     adjustedOffset,
   }: {
-    trackId: Track['id']
     adjustedOffset: Track['adjustedOffset']
   }): Promise<void> => {
-    if (trackId !== track.id) return
-
     const newTrack = { ...track, adjustedOffset }
 
     // Rebuild regions
@@ -146,15 +136,7 @@ const loadAudioEvents = async ({
     putTracks([newTrack])
   }
 
-  const navEvent = ({
-    tracks,
-    effect,
-  }: {
-    tracks: Track['id'][]
-    effect: NavEvent
-  }): void => {
-    if (!tracks.includes(trackId)) return
-
+  const navEvent = ({ effect }: { effect: NavEvent }): void => {
     const mixpoint = waveform.playhead.playheadTime
 
     switch (effect) {
@@ -167,8 +149,7 @@ const loadAudioEvents = async ({
       case 'Set Mixpoint':
         waveform.pause()
 
-        audioEvent.emit('mixpoint', {
-          trackId: track.id,
+        audioEvent.emit(trackId, 'mixpoint', {
           mixpoint: tableOps.timeFormat(mixpoint),
         })
         break
@@ -186,14 +167,10 @@ const loadAudioEvents = async ({
   }
 
   const mixpointEvent = async ({
-    trackId,
     mixpoint,
   }: {
-    trackId: Track['id']
     mixpoint: string
   }): Promise<void> => {
-    if (trackId !== track.id) return
-
     const { mixpoint: prevMixpoint } = (await getMixTrack(trackId)) || {}
 
     if (mixpoint == prevMixpoint) return
@@ -204,13 +181,45 @@ const loadAudioEvents = async ({
     )
   }
 
-  // add event listeners
-  audioEvent.on('scroll', scrollEvent)
-  audioEvent.on('bpm', bpmEvent)
-  audioEvent.on('beatResolution', beatResolutionEvent)
-  audioEvent.on('offset', offsetEvent)
-  audioEvent.on('nav', navEvent)
-  audioEvent.on('mixpoint', mixpointEvent)
+  const destroyEvent = async (): Promise<void> => {
+    if (waveform) waveform.destroy()
+    audioEvent.off(trackId, waveformEffects)
+  }
+
+  const waveformEffects = ({
+    event,
+    args,
+  }: {
+    event: AudioEvent
+    args?: any
+  }) => {
+    switch (event) {
+      case 'scroll':
+        scrollEvent(args)
+        break
+      case 'beatResolution':
+        beatResolutionEvent(args)
+        break
+      case 'bpm':
+        bpmEvent(args)
+        break
+      case 'offset':
+        offsetEvent(args)
+        break
+      case 'nav':
+        navEvent(args)
+        break
+      case 'mixpoint':
+        mixpointEvent(args)
+        break
+      case 'destroy':
+        destroyEvent()
+        break
+    }
+  }
+
+  // add event listener
+  audioEvent.on(trackId, waveformEffects)
 }
 
 export type { AudioEvent, NavEvent }

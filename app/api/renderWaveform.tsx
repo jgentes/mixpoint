@@ -2,7 +2,7 @@ import { Card } from '@mui/joy'
 import { SxProps } from '@mui/joy/styles/types'
 import { useEffect, useRef, useState } from 'react'
 import { RegionParams } from 'wavesurfer.js/src/plugin/regions'
-import { loadAudioEvents } from '~/api/audioEvents'
+import { audioEvent, loadAudioEvents } from '~/api/audioEvents'
 import { db, FileStore, getMixTrack, MixTrack, Track } from '~/api/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
 import { tableOps } from '~/utils/tableOps'
@@ -200,11 +200,13 @@ const Waveform = ({
         beatResolution,
         mixpoint,
       })
+
+      if (waveform) loadAudioEvents({ trackId, waveform })
     }
 
     getAudio()
 
-    return () => waveform?.destroy()
+    return () => audioEvent.emit(trackId, 'destroy')
   }, [trackId])
 
   const {
@@ -269,8 +271,6 @@ const Waveform = ({
   })
 
   waveform?.on('destroy', () => waveform?.unAll())
-
-  if (waveform) loadAudioEvents({ trackId, waveform })
 
   return (
     <Card

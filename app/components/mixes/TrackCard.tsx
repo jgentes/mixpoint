@@ -1,97 +1,133 @@
 import { Card, Typography } from '@mui/joy'
-import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
+import { Box } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { getState, MixTrack, removeFromMix, Track } from '~/api/dbHandlers'
-import { openDrawerState } from '~/components/layout/TrackDrawer'
-import { BpmControl, MixpointControl } from '~/components/tracks/Controls'
+import { ClientOnly } from 'remix-utils'
+import { MixTrack, Track } from '~/api/dbHandlers'
+import { Waveform } from '~/api/renderWaveform'
+import {
+  BeatResolutionControl,
+  EjectControl,
+  OffsetControl,
+  TrackNavControl,
+} from '~/components/tracks/Controls'
+import Loader from '~/components/tracks/TrackLoader'
 import TrackName from '~/components/tracks/TrackName'
+import { errorHandler } from '~/utils/notifications'
 
-const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
-  const [playing, setPlaying] = useState(false)
+const TrackCard = ({
+  trackId,
+  beatResolution = 0.25,
+}: {
+  trackId: Track['id']
+  beatResolution: MixTrack['beatResolution']
+}) => {
+  if (!trackId) throw errorHandler('Please try uploading the track again.')
+
   const [analyzing, setAnalyzing] = useState(false)
-  const [bpmTimer, setBpmTimer] = useState<number>()
 
-  if (!trackId) return null
-
-  // const setMixPoint = async () => {
-  //   //const id = await addMix(mixState.tracks.map(t => t.id))
-  //   //await updateMixState({ ...mixState, mix: { id } })
-  // }
-
-  // const mixPointControl = (<div
-  //   style={{
-  //     display: 'flex',
-  //     flexWrap: 'nowrap',
-  //     justifyContent: 'space-evenly',
-  //     fontSize: '24px',
-  //     margin: '10px 2px',
-  //   }}
-  // >
-  //   {timeFormat(from?.mixPoint || 0)}
-  //   <MergeType
-  //     sx={{
-  //       alignSelf: 'center',
-  //       fontSize: 28,
-  //       transform: 'rotate(90deg)',
-  //     }}
-  //   />
-  //   {timeFormat(to?.mixPoint || 0)}
-  // </div>
-  // )
-
-  const overviewFooter = (
+  const trackFooter = (
     <Box
       sx={{
         display: 'flex',
         gap: 1,
-        my: 1,
+        mt: 1,
         alignItems: 'center',
         justifyContent: 'space-between',
       }}
     >
-      <MixpointControl trackId={trackId} />
-      <BpmControl trackId={trackId} />
+      <Box
+        id="track-title"
+        sx={{
+          display: 'flex',
+          gap: 1,
+          alignItems: 'center',
+          '--width': '200px',
+          maxWidth: 'calc(50% - ((var(--width) + 16px) / 2))', // center audio controls
+        }}
+      >
+        <EjectControl trackId={trackId} />
+        <Typography
+          sx={{
+            fontSize: 'sm',
+            fontWeight: 'md',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {TrackName(trackId)}
+        </Typography>
+      </Box>
+
+      <TrackNavControl trackId={trackId} />
+
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+          alignItems: 'center',
+          justifyContent: 'end',
+        }}
+      >
+        <OffsetControl trackId={trackId} />
+        <BeatResolutionControl
+          trackId={trackId}
+          beatResolution={beatResolution}
+        />
+      </Box>
     </Box>
   )
+
+  const loaderSx = {
+    p: 0,
+    border: '1px solid',
+    borderColor: 'action.focus',
+    borderRadius: 'sm',
+    borderBottom: 'none',
+    bgcolor: 'background.body',
+    overflow: 'hidden',
+    height: '80px',
+  }
 
   return (
     <Card
       variant="soft"
       sx={{
         p: 1,
-        flexGrow: 1,
         borderRadius: 'sm',
         border: '1px solid',
         borderColor: 'action.selected',
-        width: '30%', // this just restricts it from going too wide
       }}
     >
-      <Card
-        id={`overview-container_${trackId}`}
-        sx={{
-          p: 0,
-          border: '1px solid',
-          borderColor: 'action.focus',
-          borderRadius: 'sm',
-          bgcolor: 'background.body',
-          overflow: 'hidden',
-          height: '25px',
-        }}
-      />
+      <ClientOnly>
+        {() => (
+          <Waveform
+            trackId={trackId}
+            setAnalyzing={setAnalyzing}
+            sx={loaderSx}
+          />
+        )}
+      </ClientOnly>
 
-      {overviewFooter}
+      {trackFooter}
 
-      <Typography
-        sx={{
-          fontSize: 'sm',
-          fontWeight: 'md',
-          pl: '3px',
-        }}
-      >
-        {TrackName(trackId)}
-      </Typography>
+      {/* <audio id="eqAudio" />
+      <div id="eqCanvas" /> */}
+
+      {!analyzing ? null : (
+        <Card
+          sx={{
+            ...loaderSx,
+            zIndex: 2,
+            position: 'absolute',
+            inset: 8,
+          }}
+        >
+          <Loader style={{ margin: 'auto' }} />
+        </Card>
+      )}
     </Card>
   )
 }
 
-export default TrackCard
+export { TrackCard as default }

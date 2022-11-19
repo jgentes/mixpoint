@@ -10,8 +10,8 @@ import {
 
 import { Animation, JoinInner, RadioButtonUnchecked } from '@mui/icons-material'
 
-import Dropzone from '~/components/Dropzone'
-import { openDrawerState } from '~/components/layout/TrackDrawer'
+import Dropzone from '~/components/tracks/Dropzone'
+import { openDrawerState } from '~/components/tracks/TrackDrawer'
 
 const LeftNav = () => {
   return (

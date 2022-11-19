@@ -1,7 +1,7 @@
 import { Box, IconButton } from '@mui/joy'
 
-import DarkMode from '~/components/DarkMode'
-import Logo from '~/components/MixpointLogo'
+import DarkMode from '~/components/header/DarkMode'
+import Logo from '~/components/header/MixpointLogo'
 
 import { GitHub, Settings } from '@mui/icons-material'
 
