@@ -32,7 +32,7 @@ const TrackCard = ({
         gap: 1,
         mt: 1,
         alignItems: 'center',
-        justifyContent: 'space-between',
+        //justifyContent: 'space-between',
       }}
     >
       <Box
@@ -41,8 +41,8 @@ const TrackCard = ({
           display: 'flex',
           gap: 1,
           alignItems: 'center',
-          '--width': '200px',
-          maxWidth: 'calc(50% - ((var(--width) + 16px) / 2))', // center audio controls
+          flexBasis: 'calc(50% - ((200px + 16px) / 2))', // center audio controls
+          maxWidth: 'calc(50% - ((200px + 16px) / 2))',
         }}
       >
         <EjectControl trackId={trackId} />
@@ -66,7 +66,7 @@ const TrackCard = ({
           display: 'flex',
           gap: 1,
           alignItems: 'center',
-          justifyContent: 'end',
+          marginLeft: 'auto',
         }}
       >
         <OffsetControl trackId={trackId} />
