@@ -1,34 +1,10 @@
-import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material'
-import { Button } from '@mui/joy'
 import { Drawer } from '@mui/material'
 import { superstate } from '@superstate/core'
-import { useSuperState } from '@superstate/react'
 import TrackTable from '~/components//tracks/TrackTable'
 
 const openDrawerState = superstate(false)
 
-const DrawerButton = ({ direction }: { direction: 'up' | 'down' }) => (
-  <Button
-    variant="soft"
-    size="sm"
-    fullWidth
-    title={direction === 'up' ? 'Open drawer' : 'Close drawer'}
-    sx={{
-      position: 'fixed',
-      bottom: 0,
-      left: 0,
-      borderTop: '1px solid',
-      borderColor: 'divider',
-      borderRadius: 0,
-    }}
-    onClick={() => openDrawerState.set(direction == 'up' ? true : false)}
-  >
-    {direction == 'up' ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-  </Button>
-)
-
 const TrackDrawer = () => {
-  useSuperState(openDrawerState)
   return (
     <>
       <div
@@ -44,7 +20,6 @@ const TrackDrawer = () => {
             sx: {
               height: '80%',
               bgcolor: 'background.surface',
-              mb: openDrawerState.now() ? 3 : 0,
             },
             variant: 'outlined',
           }}
@@ -52,9 +27,8 @@ const TrackDrawer = () => {
           <TrackTable />
         </Drawer>
       </div>
-      <DrawerButton direction="up" />
     </>
   )
 }
 
-export { TrackDrawer as default, openDrawerState, DrawerButton }
+export { TrackDrawer as default, openDrawerState }

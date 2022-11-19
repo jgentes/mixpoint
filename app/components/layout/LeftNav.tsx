@@ -17,6 +17,7 @@ const LeftNav = () => {
   return (
     <Box
       component="nav"
+      height="100%"
       sx={{
         display: 'flex',
         flexDirection: 'column',

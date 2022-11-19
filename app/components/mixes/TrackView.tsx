@@ -1,6 +1,7 @@
 import { Card, Typography } from '@mui/joy'
 import { Box } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { ClientOnly } from 'remix-utils'
 import { audioEvent, loadAudioEvents } from '~/api/audioEvents'
 import { MixTrack, Track } from '~/api/dbHandlers'
 import { Waveform } from '~/api/renderWaveform'
@@ -13,7 +14,6 @@ import {
 import Loader from '~/components/tracks/TrackLoader'
 import TrackName from '~/components/tracks/TrackName'
 import { errorHandler } from '~/utils/notifications'
-import { ClientOnly } from 'remix-utils'
 
 const TrackView = ({
   trackId,
@@ -41,7 +41,7 @@ const TrackView = ({
           gap: 1,
           alignItems: 'center',
           '--width': '200px',
-          flexBasis: 'calc(50% - ((var(--width) + 16px) / 2))', // center audio controls
+          maxWidth: 'calc(50% - ((var(--width) + 16px) / 2))', // center audio controls
         }}
       >
         <EjectControl trackId={trackId} />

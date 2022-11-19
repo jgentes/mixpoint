@@ -31,7 +31,7 @@ const Header = () => (
         variant="outlined"
         color="primary"
         aria-label="Github"
-        title="Meet on Github"
+        title="Discuss on Github"
         onClick={() =>
           window.open('https://github.com/jgentes/mixpoint/discussions')
         }
