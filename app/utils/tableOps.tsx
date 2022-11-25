@@ -1,6 +1,6 @@
 import moment from 'moment'
 import { ChangeEvent, MouseEvent } from 'react'
-import { getTableState, tableState } from '~/api/appState'
+import { getTableState, setTableState, tableState } from '~/api/appState'
 import { db, getState, putState, Track } from '~/api/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
 
@@ -21,19 +21,17 @@ const sort = async (event: MouseEvent<unknown>, property: keyof Track) => {
 }
 
 const selectAll = async (event: ChangeEvent<HTMLInputElement>) => {
-  const [selected, setSelected] = tableState.selected()
-
-  if (!event.target.checked) return setSelected([])
+  if (!event.target.checked) return setTableState.selected([])
   const tracks = await db.tracks.toArray()
 
   const newSelected = tracks?.map(n => n.id)
-  setSelected(newSelected.filter(n => n) as number[])
+  setTableState.selected(newSelected.filter(n => n) as number[])
 }
 
 const rowClick = (event: MouseEvent<unknown>, id: Track['id']) => {
   if (!id) throw errorHandler('There was a problem selecting the row')
 
-  const [selected, setSelected] = tableState.selected()
+  const [selected] = getTableState.selected()
 
   const selectedIndex = selected.indexOf(id)
   let newSelected: readonly Track['id'][] = []
@@ -51,19 +49,16 @@ const rowClick = (event: MouseEvent<unknown>, id: Track['id']) => {
     )
   }
 
-  setSelected(newSelected.filter(n => n) as number[])
+  setTableState.selected(newSelected.filter(n => n) as number[])
 }
 
 const changePage = (event: unknown, newPage: number) => {
-  const [page, setPage] = tableState.page()
-  setPage(newPage)
+  setTableState.page(newPage)
 }
 
 const changeRows = (event: ChangeEvent<HTMLInputElement>) => {
-  const [rowsPerPage, setRowsPerPage] = tableState.rowsPerPage()
-  const [page, setPage] = tableState.page()
-  setRowsPerPage(parseInt(event.target.value, 10))
-  setPage(0)
+  setTableState.rowsPerPage(parseInt(event.target.value, 10))
+  setTableState.page(0)
 }
 
 const isSelected = (id: Track['id']) => {

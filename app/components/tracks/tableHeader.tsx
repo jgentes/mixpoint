@@ -18,7 +18,6 @@ import {
 import { alpha } from '@mui/material/styles'
 import { visuallyHidden } from '@mui/utils'
 import { ChangeEvent, MouseEvent, useMemo, useState } from 'react'
-import { tableState } from '~/api/appState'
 import { analyzeTracks } from '~/api/audioHandlers'
 import {
   AppState,
@@ -29,14 +28,13 @@ import {
   useLiveQuery,
 } from '~/api/dbHandlers'
 import { browseFile } from '~/api/fileHandlers'
-import { confirmModalState } from '~/components/ConfirmModal'
+import { tableState, setModalState } from '~/api/appState'
 import { createColumnDefinitions } from '~/components/tracks/tableColumns'
 
 // Toolbar is on top of the table, includes search, info, and button bar
 const EnhancedTableToolbar = (props: { numSelected: number }) => {
   const [search, setSearch] = tableState.search()
   const [selected, setSelected] = tableState.selected()
-  const [confirmModal, setConfirmModal] = confirmModalState()
 
   const { numSelected } = props
 
@@ -44,28 +42,37 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
   const dirtyTracks = useLiveQuery(() => getDirtyTracks(), [], [])
 
   const showRemoveTracksModal = () =>
-    setConfirmModal({
+    setModalState({
       openState: true,
+      headerText: 'Are you sure?',
       bodyText: `Removing tracks here will not delete them from your computer.`,
+      confirmColor: 'danger',
       confirmText: `Remove ${numSelected} track${numSelected > 1 ? 's' : ''}`,
       onConfirm: async () => {
-        setConfirmModal({ openState: false })
-        await removeTracks(selected)
+        setModalState.openState(false)
+        await removeTracks(selected as number[])
         setSelected([])
+      },
+      onCancel: async () => {
+        setModalState.openState(false)
       },
     })
 
   const showAnalyzeDirtyModal = () =>
-    setConfirmModal({
+    setModalState({
       openState: true,
+      headerText: 'Are you sure?',
       bodyText: `This will analyze ${dirtyTracks.length} track${
         dirtyTracks.length > 1 ? 's' : ''
       }.`,
       confirmColor: 'success',
       confirmText: `Analyze track${dirtyTracks.length > 1 ? 's' : ''}`,
       onConfirm: async () => {
-        setConfirmModal({ openState: false })
+        setModalState.openState(false)
         analyzeTracks(dirtyTracks)
+      },
+      onCancel: async () => {
+        setModalState.openState(false)
       },
     })
 

@@ -9,7 +9,7 @@ import {
   TrackState,
 } from '~/api/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
-import { timeFormat, convertToSecs } from '~/utils/tableOps'
+import { convertToSecs, timeFormat } from '~/utils/tableOps'
 import { calcRegions } from './renderWaveform'
 
 // Events are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
@@ -177,7 +177,6 @@ const loadAudioEvents = async ({
   }
 
   const destroyEvent = (): void => {
-    console.log('destroy')
     audioEvent.off(trackId, waveformEffects)
     if (waveform) waveform.destroy()
   }

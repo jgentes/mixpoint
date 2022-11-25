@@ -179,8 +179,7 @@ const Waveform = ({
 
       if (file) waveform.loadBlob(file)
 
-      console.log('beatres:', trackId, beatResolution)
-      //  waveform.zoom(beatResolution == 1 ? 80 : beatResolution == 0.5 ? 40 : 20)
+      waveform.zoom(beatResolution == 1 ? 80 : beatResolution == 0.5 ? 40 : 20)
 
       if (adjustedBpm)
         waveform.setPlaybackRate(adjustedBpm / (track?.bpm || adjustedBpm))
@@ -232,8 +231,6 @@ const Waveform = ({
     }
 
     getAudio()
-
-    //return () => audioEvent.emit(trackId, 'destroy')
   }, [trackId])
 
   return (

@@ -1,11 +1,11 @@
 import { WarningRounded } from '@mui/icons-material'
 import { Box, Button, Modal, ModalDialog, Typography } from '@mui/joy'
 import { Divider } from '@mui/material'
-import { confirmModalState } from '~/api/appState'
+import { modalState } from '~/api/appState'
 
 const ConfirmModal = () => {
-  const [confirmModal] = confirmModalState()
-  const [openState, setOpenState] = confirmModalState.openState()
+  const [confirmModal] = modalState()
+  const [openState, setOpenState] = modalState.openState()
 
   const closeModal = () => setOpenState(false)
 
@@ -63,4 +63,4 @@ const ConfirmModal = () => {
   )
 }
 
-export { ConfirmModal as default, confirmModalState }
+export { ConfirmModal as default }

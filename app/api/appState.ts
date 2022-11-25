@@ -2,23 +2,42 @@ import { ButtonProps } from '@mui/joy'
 import createStore from 'teaful'
 import { Track } from '~/api/dbHandlers'
 
-const { useStore: audioState, setStore: setAudioState } = createStore({
-  analyzing: [] as Track['id'][],
+type AudioStateProps = {
+  analyzing: Track['id'][]
+  processing: boolean
+}
+
+const initialAudioState: AudioStateProps = {
+  analyzing: [],
   processing: false,
-})
+}
+
+const { useStore: audioState, setStore: setAudioState } =
+  createStore(initialAudioState)
+
+type TableStateProps = {
+  search: string | number
+  selected: Track['id'][]
+  rowsPerPage: number
+  page: number
+  showButton: number | null
+  openDrawer: boolean
+}
+
+const initialTableState: TableStateProps = {
+  search: '',
+  selected: [],
+  rowsPerPage: 10,
+  page: 0,
+  showButton: null,
+  openDrawer: false,
+}
 
 const {
   getStore: getTableState,
   useStore: tableState,
   setStore: setTableState,
-} = createStore({
-  search: '' as string | number,
-  selected: [] as Track['id'][],
-  rowsPerPage: 10 as number,
-  page: 0 as number,
-  showButton: null as number | null,
-  openDrawer: false as boolean,
-})
+} = createStore(initialTableState)
 
 type ConfirmModalProps = Partial<{
   openState: boolean
@@ -30,14 +49,24 @@ type ConfirmModalProps = Partial<{
   onCancel: Function
 }>
 
-const { useStore: confirmModalState } = createStore({
+const confirmModal: ConfirmModalProps = {
   openState: false,
-} as ConfirmModalProps)
+}
 
-const { useStore: notificationState } = createStore({
-  message: '' as string | null,
-  varient: 'error' as 'success' | 'error' | 'warning' | 'info',
-})
+const { useStore: modalState, setStore: setModalState } =
+  createStore(confirmModal)
+
+type NotificationStateProps = {
+  message: string | null
+  variant: 'success' | 'error' | 'warning' | 'info'
+}
+
+const initialNotificationState: NotificationStateProps = {
+  message: '',
+  variant: 'error',
+}
+
+const { useStore: notificationState } = createStore(initialNotificationState)
 
 export {
   audioState,
@@ -45,6 +74,7 @@ export {
   tableState,
   getTableState,
   setTableState,
-  confirmModalState,
+  modalState,
+  setModalState,
   notificationState,
 }

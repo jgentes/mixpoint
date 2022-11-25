@@ -2,8 +2,7 @@ import { guess } from 'web-audio-beat-detector'
 import { putState, putTracks, Track } from '~/api/dbHandlers'
 import { getPermission } from '~/api/fileHandlers'
 
-import { audioState, tableState } from '~/api/appState'
-import { confirmModalState } from '~/components/ConfirmModal'
+import { setAudioState, setModalState, setTableState } from '~/api/appState'
 import { errorHandler } from '~/utils/notifications'
 
 // This is the main track processing workflow when files are added to the app
@@ -21,10 +20,6 @@ async function getTracksRecursively(
   handles: (FileSystemFileHandle | FileSystemDirectoryHandle)[]
 ): Promise<Partial<Track>[]> {
   const trackArray: Partial<Track>[] = []
-
-  const [processing, setProcessing] = audioState.processing()
-  const [modalState, setModalState] = confirmModalState()
-  const [openModal, setOpenModal] = confirmModalState.openState()
 
   // Change sort order to lastModified so new tracks are visible at the top
   await putState('app', { sortColumn: 'lastModified', sortDirection: 'desc' })
@@ -61,14 +56,14 @@ async function getTracksRecursively(
   const addTracksToDb = async () => {
     // Ensure we have id's for our tracks, add them to the DB with updated lastModified dates
     const updatedTracks = await putTracks(trackArray)
-    setProcessing(false)
+    setAudioState.processing(false)
     return updatedTracks
   }
 
   // Warn user if large number of tracks are added, this is due to memory leak in web audio api
   if (trackArray.length > 100) {
     // Show indicator inside empty table
-    setProcessing(true)
+    setAudioState.processing(true)
 
     setModalState({
       openState: true,
@@ -78,13 +73,13 @@ async function getTracksRecursively(
       confirmText: 'Continue',
       confirmColor: 'success',
       onConfirm: async () => {
-        setOpenModal(false)
+        setModalState.openState(false)
         const updatedTracks = await addTracksToDb()
         await analyzeTracks(updatedTracks)
       },
       onCancel: () => {
-        setOpenModal(false)
-        setProcessing(false)
+        setModalState.openState(false)
+        setAudioState.processing(false)
       },
     })
     return []
@@ -92,11 +87,11 @@ async function getTracksRecursively(
 }
 
 const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
-  const [analyzing, setAnalyzing] = audioState.analyzing()
-  const [page, setPage] = tableState.page()
-
   // Set analyzing state now to avoid tracks appearing with 'analyze' button
-  setAnalyzing([...analyzing, ...tracks.map(track => track.id)])
+  setAudioState.analyzing(analyzing => [
+    ...analyzing,
+    ...tracks.map(track => track.id),
+  ])
 
   // Return array of updated tracks
   const updatedTracks: Track[] = []
@@ -109,7 +104,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
         sortColumn: 'lastModified',
         sortDirection: 'desc',
       })
-      setPage(0)
+      setTableState.page(0)
       sorted = true
     }
 
@@ -133,7 +128,13 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
     await putTracks([updatedTrack])
 
     // Give Dexie a few ms to update the UI before removing analyzing state. This is to avoid the 'analyze' button appearing briefly.
-    setTimeout(() => setAnalyzing(analyzing.filter(id => id !== track.id)), 250)
+    setTimeout(
+      () =>
+        setAudioState.analyzing(analyzing =>
+          analyzing.filter(id => id !== track.id)
+        ),
+      250
+    )
   }
   return updatedTracks
 }
@@ -149,11 +150,9 @@ const getAudioDetails = async (
   duration: number
   sampleRate: number
 }> => {
-  const [analyzing, setAnalyzing] = audioState.analyzing()
-
   const file = await getPermission(track)
   if (!file) {
-    setAnalyzing([])
+    setAudioState.analyzing([])
     throw errorHandler('Permission to the file or folder was denied.') // this would be due to denial of permission (ie. clicked cancel)
   }
 
