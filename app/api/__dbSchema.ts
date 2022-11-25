@@ -42,45 +42,44 @@ const db = new MixpointDb()
 
 // Core data models (tracks, mixes, sets)
 
-interface Track {
-  id?: number
-  name?: string
-  fileHandle?: FileSystemFileHandle
-  dirHandle?: FileSystemDirectoryHandle
-  size?: number
-  type?: string // type of file as returned from fileHandle
-  lastModified?: Date
-  duration?: number
-  bpm?: number
-  sampleRate?: number
-  offset?: number // first beat as determined by bpm analysis
-  adjustedOffset?: number
-  mixpoints?: Mixpoint[]
-  sets?: Set['id'][]
-}
+type Track = Partial<{
+  id: number
+  name: string
+  fileHandle: FileSystemFileHandle
+  dirHandle: FileSystemDirectoryHandle
+  size: number
+  type: string // type of file as returned from fileHandle
+  lastModified: Date
+  duration: number
+  bpm: number
+  sampleRate: number
+  offset: number // first beat as determined by bpm analysis
+  adjustedOffset: number
+  mixpoints: Mixpoint[]
+  sets: Set['id'][]
+}>
 
 // a mixpoint is a point in time where the To track begins to overlay the From track.
 // a mixpoint is not the output of two tracks mixed together.
 
-interface Mixpoint {
+type Mixpoint = {
   timestamp: number
   mixes: Mix['id'][]
 }
 
 // a mix is a representation of the transition between tracks
 
-interface Mix {
+type Mix = {
   id: number
-  from: MixTrack
-  to: MixTrack
-  status: string // good | bad | unknown?
+  status: string // Todo: define good | bad | unknown?
   effects: {
     timestamp: number
     duration: number
   }[]
+  lastState: MixState
 }
 
-interface Set {
+type Set = {
   id: number
   mixIds: Mix['id'][]
 }
@@ -89,7 +88,7 @@ interface Set {
 // waveforms without prompting the user for permission to read the file from
 // disk, which cannot be done without interacting with the page first.
 // Each file is a few megabytes, so the cache must be limited.
-interface FileStore {
+type FileStore = {
   id: Track['id']
   file: File
 }
@@ -100,33 +99,33 @@ interface FileStore {
 // This allows easy undo/redo of state changes by using timestamps (primary key)
 // State tables are limited to STATE_ROW_LIMIT rows (arbitrarily 100)
 
-interface MixState {
-  date?: Date
-  from?: MixTrack
-  to?: MixTrack
-}
+type MixState = Partial<{
+  date: Date // current mix is most recent mixState
+  tracks: Track['id'][]
+  trackStates: TrackState[]
+}>
 
-interface SetState {
-  date?: Date
-  setId?: Set['id']
-}
+type SetState = Partial<{
+  date: Date
+  setId: Set['id']
+}>
 
-interface AppState {
-  date?: Date
-  sortDirection?: 'asc' | 'desc'
-  sortColumn?: keyof Track // track table order property
-}
+type AppState = Partial<{
+  date: Date
+  sortDirection: 'asc' | 'desc'
+  sortColumn: keyof Track // track table order property
+}>
 
-// Note MixTrack is not a table. Track states are contained in MixState
-interface MixTrack {
-  id?: Track['id']
-  adjustedBpm?: Track['bpm']
-  beatResolution?: 0.25 | 0.5 | 1
-  mixpoint?: string
-}
+// Note TrackState is not a table. Track states are contained in MixState
+type TrackState = Partial<{
+  id: Track['id']
+  adjustedBpm: Track['bpm']
+  beatResolution: 0.25 | 0.5 | 1
+  mixpoint: string
+}>
 
-// state getter and setter
-interface StateTypes {
+// For state getter and setter
+type StateTypes = {
   mix: MixState
   set: SetState
   app: AppState
@@ -151,7 +150,7 @@ export type {
   Track as __Track,
   Mix as __Mix,
   Set as __Set,
-  MixTrack as __MixTrack,
+  TrackState as __TrackState,
   MixState as __MixState,
   SetState as __SetState,
   AppState as __AppState,

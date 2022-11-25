@@ -1,16 +1,16 @@
 import { Card } from '@mui/joy'
 import { SxProps } from '@mui/joy/styles/types'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect } from 'react'
 import { RegionParams } from 'wavesurfer.js/src/plugin/regions'
+import { setAudioState } from '~/api/appState'
 import { audioEvent, loadAudioEvents } from '~/api/audioEvents'
-import { db, FileStore, getMixTrack, MixTrack, Track } from '~/api/dbHandlers'
+import { db, getTrackState, Track, TrackState } from '~/api/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
-import { tableOps } from '~/utils/tableOps'
+import { convertToSecs } from '~/utils/tableOps'
 import { analyzeTracks } from './audioHandlers'
 import { getPermission } from './fileHandlers'
 
-// Only load WaveSurfer in the browser
-//let Wave
+// Only load WaveSurfer on the
 let WaveSurfer: typeof import('wavesurfer.js'),
   PlayheadPlugin: typeof import('wavesurfer.js/src/plugin/playhead').default,
   CursorPlugin: typeof import('wavesurfer.js/src/plugin/cursor').default,
@@ -27,14 +27,14 @@ if (typeof document !== 'undefined') {
 
 const calcRegions = async (
   track: Track,
-  partialMixTrack: Partial<MixTrack> = {}
+  partialTrackState: Partial<TrackState> = {}
 ): Promise<{
   duration: Track['duration']
-  adjustedBpm: MixTrack['adjustedBpm']
+  adjustedBpm: TrackState['adjustedBpm']
   skipLength: number
-  beatResolution: MixTrack['beatResolution']
+  beatResolution: TrackState['beatResolution']
   regions: RegionParams[]
-  mixpoint: MixTrack['mixpoint']
+  mixpoint: TrackState['mixpoint']
 }> => {
   let { duration, offset, adjustedOffset, bpm } = track
 
@@ -48,9 +48,9 @@ const calcRegions = async (
 
   if (!duration) throw errorHandler(`Please try adding ${track.name} again.`)
 
-  const prevMixTrack = await getMixTrack(track.id)
-  const mixTrack = { ...prevMixTrack, ...partialMixTrack }
-  let { adjustedBpm, beatResolution = 0.25, mixpoint } = mixTrack
+  const prevTrackState = await getTrackState(track.id)
+  const TrackState = { ...prevTrackState, ...partialTrackState }
+  let { adjustedBpm, beatResolution = 0.25, mixpoint } = TrackState
 
   const beatInterval = 60 / (adjustedBpm || bpm || 1)
   let startPoint = adjustedOffset || offset || 0
@@ -84,31 +84,15 @@ const calcRegions = async (
 
 const Waveform = ({
   trackId,
-  setAnalyzing,
   sx,
 }: {
   trackId: Track['id']
-  setAnalyzing: Function
   sx: SxProps
 }): JSX.Element | null => {
   if (!trackId) throw errorHandler('No track to initialize.')
 
-  const [waveformProps, setWaveformProps] = useState<
-    Partial<{
-      track: Track | undefined
-      file: FileStore['file'] | null
-      waveform: WaveSurfer | null
-      duration: Track['duration']
-      adjustedBpm: MixTrack['adjustedBpm']
-      skipLength: number
-      beatResolution: MixTrack['beatResolution']
-      regions: RegionParams[]
-      mixpoint: MixTrack['mixpoint']
-    }>
-  >({})
-
   useEffect(() => {
-    // Retrieve track, file and region data, then set state in waveformProps
+    // Retrieve track, file and region data, then set state in waveProps
     const getAudio = async () => {
       const track = await db.tracks.get(trackId)
       if (!track) throw errorHandler('Could not retrieve track from database.')
@@ -116,7 +100,9 @@ const Waveform = ({
       const file = await getPermission(track)
       if (!file) throw errorHandler(`Please try adding ${track.name} again.`)
 
-      setAnalyzing(true)
+      setAudioState.analyzing(prev =>
+        prev.includes(trackId) ? prev : [...prev, trackId]
+      )
 
       const {
         duration,
@@ -189,88 +175,66 @@ const Waveform = ({
       //   let wave = new Wave(audioElement, canvasElement)
       // }
 
-      setWaveformProps({
-        track,
-        file,
-        waveform,
-        duration,
-        adjustedBpm,
-        skipLength,
-        regions,
-        beatResolution,
-        mixpoint,
+      loadAudioEvents({ trackId, waveform })
+
+      if (file) waveform.loadBlob(file)
+
+      console.log('beatres:', trackId, beatResolution)
+      //  waveform.zoom(beatResolution == 1 ? 80 : beatResolution == 0.5 ? 40 : 20)
+
+      if (adjustedBpm)
+        waveform.setPlaybackRate(adjustedBpm / (track?.bpm || adjustedBpm))
+
+      // Configure wavesurfer event listeners
+      waveform.on('ready', () => {
+        setAudioState.analyzing(prev => prev.filter(id => id !== trackId))
+
+        // Set playhead to mixpoint if it exists
+        const currentPlayhead = mixpoint
+          ? convertToSecs(mixpoint)
+          : regions?.[0].start
+
+        if (currentPlayhead) {
+          waveform.playhead.setPlayheadTime(currentPlayhead)
+          waveform.seekAndCenter(1 / (duration! / currentPlayhead))
+        }
       })
 
-      if (waveform) loadAudioEvents({ trackId, waveform })
+      waveform.on('region-dblclick', region => {
+        // Double click sets a mixpoint at current region
+        // waveform.play(region.start)
+        // waveform.playhead.setPlayheadTime(region.start)
+        // audioEvent.emit('mixpoint', { trackId: track.id, mixpoint: region.start })
+      })
+
+      waveform.on('region-click', region => {
+        if (waveform.isPlaying()) return waveform.pause()
+
+        // Time gets inconsistent at 14 digits so need to round here
+        const time = waveform.getCurrentTime().toFixed(3)
+        const clickInsideOfPlayheadRegion =
+          waveform.playhead.playheadTime.toFixed(3) == region.start.toFixed(3)
+        const cursorIsAtPlayhead =
+          time == waveform.playhead.playheadTime.toFixed(3)
+
+        if (cursorIsAtPlayhead && clickInsideOfPlayheadRegion) {
+          waveform.play()
+        } else if (clickInsideOfPlayheadRegion) {
+          // Take the user back to playhead
+          waveform.seekAndCenter(
+            1 / (duration! / waveform.playhead.playheadTime)
+          )
+        } else {
+          // Move playhead to new region (seek is somewhat disorienting)
+          waveform.playhead.setPlayheadTime(region.start)
+        }
+      })
     }
 
     getAudio()
 
-    return () => audioEvent.emit(trackId, 'destroy')
+    //return () => audioEvent.emit(trackId, 'destroy')
   }, [trackId])
-
-  const {
-    track,
-    file,
-    waveform,
-    duration,
-    adjustedBpm,
-    skipLength,
-    regions,
-    beatResolution,
-    mixpoint,
-  } = waveformProps
-
-  if (file) waveform?.loadBlob(file)
-
-  waveform?.zoom(beatResolution == 1 ? 80 : beatResolution == 0.5 ? 40 : 20)
-  if (adjustedBpm)
-    waveform?.setPlaybackRate(adjustedBpm / (track?.bpm || adjustedBpm))
-
-  // Configure wavesurfer event listeners
-  waveform?.on('ready', () => {
-    setAnalyzing(false)
-
-    // Set playhead to mixpoint if it exists
-    const currentPlayhead = mixpoint
-      ? tableOps.convertToSecs(mixpoint)
-      : regions?.[0].start
-
-    if (currentPlayhead) {
-      waveform?.playhead.setPlayheadTime(currentPlayhead)
-      waveform?.seekAndCenter(1 / (duration! / currentPlayhead))
-    }
-  })
-
-  waveform?.on('region-dblclick', region => {
-    // Double click sets a mixpoint at current region
-    // waveform?.play(region.start)
-    // waveform?.playhead.setPlayheadTime(region.start)
-    // audioEvent.emit('mixpoint', { trackId: track.id, mixpoint: region.start })
-  })
-
-  waveform?.on('region-click', region => {
-    if (waveform?.isPlaying()) return waveform?.pause()
-
-    // Time gets inconsistent at 14 digits so need to round here
-    const time = waveform?.getCurrentTime().toFixed(3)
-    const clickInsideOfPlayheadRegion =
-      waveform?.playhead.playheadTime.toFixed(3) == region.start.toFixed(3)
-    const cursorIsAtPlayhead =
-      time == waveform?.playhead.playheadTime.toFixed(3)
-
-    if (cursorIsAtPlayhead && clickInsideOfPlayheadRegion) {
-      waveform?.play()
-    } else if (clickInsideOfPlayheadRegion) {
-      // Take the user back to playhead
-      waveform?.seekAndCenter(1 / (duration! / waveform?.playhead.playheadTime))
-    } else {
-      // Move playhead to new region (seek is somewhat disorienting)
-      waveform?.playhead.setPlayheadTime(region.start)
-    }
-  })
-
-  waveform?.on('destroy', () => waveform?.unAll())
 
   return (
     <Card
@@ -279,11 +243,7 @@ const Waveform = ({
         ...sx,
         zIndex: 1,
       }}
-      onWheel={e =>
-        e.deltaY > 100
-          ? waveform?.skipBackward(skipLength)
-          : waveform?.skipForward(skipLength)
-      }
+      onWheel={e => audioEvent.emit(trackId, 'scroll', { up: e.deltaY > 0 })}
     />
   )
 }

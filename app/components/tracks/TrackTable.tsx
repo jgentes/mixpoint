@@ -7,37 +7,38 @@ import {
   TablePagination,
   TableRow,
 } from '@mui/material'
-import { superstate } from '@superstate/core'
-import { useSuperState } from '@superstate/react'
 import { useState } from 'react'
-import { processingState } from '~/api/audioHandlers'
+import { audioState, tableState } from '~/api/appState'
 import { db, getState, useLiveQuery } from '~/api/dbHandlers'
 import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
 import LeftNav from '~/components/tracks/LeftNav'
 import {
   EnhancedTableHead,
   EnhancedTableToolbar,
-  searchState,
 } from '~/components/tracks/tableHeader'
 import TableRows from '~/components/tracks/tableRows'
 import TrackLoader from '~/components/tracks/TrackLoader'
-import { tableOps } from '~/utils/tableOps'
-
-const pageState = superstate(0)
-const rowsPerPageState = superstate(10)
-const selectedState = superstate<number[]>([])
+import {
+  changePage,
+  changeRows,
+  formatMinutes,
+  getComparator,
+  isSelected,
+  selectAll,
+  sort,
+} from '~/utils/tableOps'
 
 const TrackTable = () => {
   // Re-render when page or selection changes
-  useSuperState(pageState)
-  useSuperState(rowsPerPageState)
-  useSuperState(selectedState)
+  const [page] = tableState.page()
+  const [rowsPerPage] = tableState.rowsPerPage()
+  const [selected] = tableState.selected()
 
   // Re-render when search query changes
-  useSuperState(searchState)
+  const [search] = tableState.search()
 
   // Show loader while processing tracks
-  useSuperState(processingState)
+  const [processing] = audioState.processing()
 
   // Allow drag & drop files / folders into the table
   const [dragOver, setDragOver] = useState(false)
@@ -48,17 +49,14 @@ const TrackTable = () => {
       db.tracks
         .filter(
           t =>
-            t.name
-              ?.toLowerCase()
-              .includes(`${searchState.now()}`.toLowerCase()) ||
-            t.bpm?.toString().includes(`${searchState.now()}`) ||
-            tableOps
-              .formatMinutes(t.duration! / 60)
+            t.name?.toLowerCase().includes(`${search}`.toLowerCase()) ||
+            t.bpm?.toString().includes(`${search}`) ||
+            formatMinutes(t.duration! / 60)
               .toString()
-              .includes(`${searchState.now()}`)
+              .includes(`${search}`)
         )
         .toArray(),
-    [searchState.now()],
+    [search],
     null
   )
 
@@ -68,12 +66,7 @@ const TrackTable = () => {
 
   // Avoid a layout jump when reaching the last page with empty rows
   const emptyRows =
-    pageState.now() > 0
-      ? Math.max(
-          0,
-          (1 + pageState.now()) * rowsPerPageState.now() - (tracks?.length || 0)
-        )
-      : 0
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - (tracks?.length || 0)) : 0
 
   return (
     tracks && (
@@ -111,7 +104,7 @@ const TrackTable = () => {
             onDragEnter={() => setDragOver(true)}
             onDragLeave={() => setDragOver(false)}
           >
-            <EnhancedTableToolbar numSelected={selectedState.now().length} />
+            <EnhancedTableToolbar numSelected={selected.length} />
             <TableContainer>
               <Table
                 aria-labelledby="tableTitle"
@@ -119,27 +112,23 @@ const TrackTable = () => {
                 padding="checkbox"
               >
                 <EnhancedTableHead
-                  numSelected={selectedState.now().length}
+                  numSelected={selected.length}
                   sortDirection={sortDirection}
                   sortColumn={sortColumn}
-                  onSelectAllClick={tableOps.selectAll}
-                  onRequestSort={tableOps.sort}
+                  onSelectAllClick={selectAll}
+                  onRequestSort={sort}
                   rowCount={tracks?.length || 0}
                 />
                 <TableBody>
                   {[...tracks]
                     .sort(
                       // @ts-ignore can't figure this one out
-                      tableOps.getComparator(sortDirection, sortColumn)
+                      getComparator(sortDirection, sortColumn)
                     )
-                    .slice(
-                      pageState.now() * rowsPerPageState.now(),
-                      pageState.now() * rowsPerPageState.now() +
-                        rowsPerPageState.now()
-                    )
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row, index) => {
                       // row.id is the track/mix/set id
-                      const isItemSelected = tableOps.isSelected(row.id)
+                      const isItemSelected = isSelected(row.id)
 
                       return (
                         <TableRows
@@ -161,7 +150,7 @@ const TrackTable = () => {
                 </TableBody>
               </Table>
             </TableContainer>
-            {tracks.length ? null : processingState.now() ? (
+            {tracks.length ? null : processing ? (
               <TrackLoader style={{ margin: '50px auto' }} />
             ) : (
               <div style={{ margin: 'auto', padding: '10px 20px 0' }}>
@@ -172,10 +161,10 @@ const TrackTable = () => {
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
               count={tracks.length || 0}
-              rowsPerPage={rowsPerPageState.now()}
-              page={pageState.now()}
-              onPageChange={tableOps.changePage}
-              onRowsPerPageChange={tableOps.changeRows}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={changePage}
+              onRowsPerPageChange={changeRows}
             />
           </Sheet>
         </Box>
@@ -184,4 +173,4 @@ const TrackTable = () => {
   )
 }
 
-export { TrackTable as default, pageState, rowsPerPageState, selectedState }
+export { TrackTable as default }

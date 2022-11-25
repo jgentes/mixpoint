@@ -1,6 +1,6 @@
-import { superstate } from '@superstate/core'
+import { notificationState } from '~/api/appState'
 
-const notificationState = superstate<Notification>({})
+//const [notification, setNotification] = notificationState()
 
 type Notification = {
   message?: string
@@ -12,10 +12,11 @@ const errorHandler = (error: Error | string) => {
 
   console.error(error)
 
-  notificationState.set({
-    message: error.message,
-    variant: 'error',
-  })
+  window.dispatchEvent(
+    new CustomEvent('notify', {
+      detail: { message: error.message, variant: 'error' },
+    })
+  )
 }
 
 export type { Notification }

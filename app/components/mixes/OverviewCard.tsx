@@ -1,7 +1,7 @@
 import { Card, Typography } from '@mui/joy'
 import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { getState, MixTrack, removeFromMix, Track } from '~/api/dbHandlers'
+import { getState, removeFromMix, Track, TrackState } from '~/api/dbHandlers'
 import { BpmControl, MixpointControl } from '~/components/tracks/Controls'
 import TrackName from '~/components/tracks/TrackName'
 

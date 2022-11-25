@@ -1,50 +1,28 @@
 import { WarningRounded } from '@mui/icons-material'
-import {
-  Box,
-  Button,
-  ButtonProps,
-  Modal,
-  ModalDialog,
-  Typography,
-} from '@mui/joy'
+import { Box, Button, Modal, ModalDialog, Typography } from '@mui/joy'
 import { Divider } from '@mui/material'
-import { superstate } from '@superstate/core'
-import { useSuperState } from '@superstate/react'
-
-interface ConfirmModalProps {
-  openState?: boolean
-  setOpenState?: Function
-  headerText?: string
-  bodyText?: string
-  confirmColor?: ButtonProps['color']
-  confirmText?: string
-  onConfirm?: Function
-  onCancel?: Function
-}
-
-const confirmModalState = superstate<ConfirmModalProps>({})
+import { confirmModalState } from '~/api/appState'
 
 const ConfirmModal = () => {
-  useSuperState(confirmModalState)
+  const [confirmModal] = confirmModalState()
+  const [openState, setOpenState] = confirmModalState.openState()
 
-  const closeModal = () =>
-    confirmModalState.set(prev => ({ ...prev, openState: false }))
+  const closeModal = () => setOpenState(false)
 
   const {
-    openState = false,
     headerText = 'Are you sure?',
     bodyText = '',
     confirmColor = 'danger',
     confirmText = 'Confirm',
     onConfirm = () => closeModal(),
     onCancel = () => closeModal(),
-  } = confirmModalState.now()
+  } = confirmModal
 
   return (
     <Modal
       aria-labelledby="alert-dialog-modal-title"
       aria-describedby="alert-dialog-modal-description"
-      open={openState}
+      open={openState || false}
       sx={{ alignItems: 'normal' }}
       onClose={() => closeModal()}
       disableEnforceFocus={true}

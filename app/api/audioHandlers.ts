@@ -1,14 +1,10 @@
-import { superstate } from '@superstate/core'
 import { guess } from 'web-audio-beat-detector'
-import { MixTrack, putState, putTracks, Track } from '~/api/dbHandlers'
+import { putState, putTracks, Track } from '~/api/dbHandlers'
 import { getPermission } from '~/api/fileHandlers'
 
+import { audioState, tableState } from '~/api/appState'
 import { confirmModalState } from '~/components/ConfirmModal'
-import { pageState } from '~/components/tracks/TrackTable'
 import { errorHandler } from '~/utils/notifications'
-
-const analyzingState = superstate<Track[]>([])
-const processingState = superstate<boolean>(false)
 
 // This is the main track processing workflow when files are added to the app
 const processTracks = async (
@@ -25,6 +21,10 @@ async function getTracksRecursively(
   handles: (FileSystemFileHandle | FileSystemDirectoryHandle)[]
 ): Promise<Partial<Track>[]> {
   const trackArray: Partial<Track>[] = []
+
+  const [processing, setProcessing] = audioState.processing()
+  const [modalState, setModalState] = confirmModalState()
+  const [openModal, setOpenModal] = confirmModalState.openState()
 
   // Change sort order to lastModified so new tracks are visible at the top
   await putState('app', { sortColumn: 'lastModified', sortDirection: 'desc' })
@@ -61,16 +61,16 @@ async function getTracksRecursively(
   const addTracksToDb = async () => {
     // Ensure we have id's for our tracks, add them to the DB with updated lastModified dates
     const updatedTracks = await putTracks(trackArray)
-    processingState.set(false)
+    setProcessing(false)
     return updatedTracks
   }
 
   // Warn user if large number of tracks are added, this is due to memory leak in web audio api
   if (trackArray.length > 100) {
     // Show indicator inside empty table
-    processingState.set(true)
+    setProcessing(true)
 
-    confirmModalState.set({
+    setModalState({
       openState: true,
       headerText: 'More than 100 tracks added',
       bodyText:
@@ -78,13 +78,13 @@ async function getTracksRecursively(
       confirmText: 'Continue',
       confirmColor: 'success',
       onConfirm: async () => {
-        confirmModalState.set({ openState: false })
+        setOpenModal(false)
         const updatedTracks = await addTracksToDb()
         await analyzeTracks(updatedTracks)
       },
       onCancel: () => {
-        confirmModalState.set({ openState: false })
-        processingState.set(false)
+        setOpenModal(false)
+        setProcessing(false)
       },
     })
     return []
@@ -92,8 +92,11 @@ async function getTracksRecursively(
 }
 
 const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
+  const [analyzing, setAnalyzing] = audioState.analyzing()
+  const [page, setPage] = tableState.page()
+
   // Set analyzing state now to avoid tracks appearing with 'analyze' button
-  analyzingState.set(prev => [...prev, ...tracks])
+  setAnalyzing([...analyzing, ...tracks.map(track => track.id)])
 
   // Return array of updated tracks
   const updatedTracks: Track[] = []
@@ -106,7 +109,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
         sortColumn: 'lastModified',
         sortDirection: 'desc',
       })
-      pageState.set(0)
+      setPage(0)
       sorted = true
     }
 
@@ -130,10 +133,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
     await putTracks([updatedTrack])
 
     // Give Dexie a few ms to update the UI before removing analyzing state. This is to avoid the 'analyze' button appearing briefly.
-    setTimeout(
-      () => analyzingState.set(prev => prev.filter(t => t.id !== track.id)),
-      250
-    )
+    setTimeout(() => setAnalyzing(analyzing.filter(id => id !== track.id)), 250)
   }
   return updatedTracks
 }
@@ -149,9 +149,11 @@ const getAudioDetails = async (
   duration: number
   sampleRate: number
 }> => {
+  const [analyzing, setAnalyzing] = audioState.analyzing()
+
   const file = await getPermission(track)
   if (!file) {
-    analyzingState.set([])
+    setAnalyzing([])
     throw errorHandler('Permission to the file or folder was denied.') // this would be due to denial of permission (ie. clicked cancel)
   }
 
@@ -184,57 +186,55 @@ const getAudioDetails = async (
   }
 }
 
-const createMix = async (mixTrackArray: MixTrack[]) => {
-  // this is slow, also look at https://github.com/jackedgson/crunker and https://github.com/audiojs/audio-buffer-utils
+// const createMix = async (TrackStateArray: TrackState[]) => {
+//   // this is slow, also look at https://github.com/jackedgson/crunker and https://github.com/audiojs/audio-buffer-utils
 
-  const [wave0, wave1] = [...mixTrackArray].map(track =>
-    track.waveformData?.toJSON()
-  )
+//   const [wave0, wave1] = [...TrackStateArray].map(track =>
+//     track.waveformData?.toJSON()
+//   )
 
-  const track0Duration =
-    (wave0 && (wave0.length / wave0.sample_rate) * wave0.samples_per_pixel) || 0
-  const track1Duration =
-    (wave1 &&
-      (wave1.length / wave1.sample_rate) * wave1.samples_per_pixel -
-        (mixTrackArray[0]?.mixPoint || 0) -
-        (mixTrackArray[1]?.mixPoint || 0)) ||
-    0
+//   const track0Duration =
+//     (wave0 && (wave0.length / wave0.sample_rate) * wave0.samples_per_pixel) || 0
+//   const track1Duration =
+//     (wave1 &&
+//       (wave1.length / wave1.sample_rate) * wave1.samples_per_pixel -
+//         (TrackStateArray[0]?.mixPoint || 0) -
+//         (TrackStateArray[1]?.mixPoint || 0)) ||
+//     0
 
-  const totalDuration = track0Duration + track1Duration
+//   const totalDuration = track0Duration + track1Duration
 
-  const arrayOfAudioBuffers = []
-  for (let t of mixTrackArray)
-    arrayOfAudioBuffers.push(await getAudioBuffer(t.file!))
+//   const arrayOfAudioBuffers = []
+//   for (let t of TrackStateArray)
+//     arrayOfAudioBuffers.push(await getAudioBuffer(t.file!))
 
-  var audioCtx = new AudioContext()
+//   var audioCtx = new AudioContext()
 
-  let finalMix = audioCtx.createBuffer(
-    2,
-    totalDuration * 48000,
-    arrayOfAudioBuffers[0].sampleRate
-  )
+//   let finalMix = audioCtx.createBuffer(
+//     2,
+//     totalDuration * 48000,
+//     arrayOfAudioBuffers[0].sampleRate
+//   )
 
-  for (let i = 0; i < arrayOfAudioBuffers.length; i++) {
-    // second loop for each channel ie. left and right
-    for (let channel = 0; channel < 2; channel++) {
-      //here we get a reference to the final mix buffer data
-      let buffer = finalMix.getChannelData(channel)
+//   for (let i = 0; i < arrayOfAudioBuffers.length; i++) {
+//     // second loop for each channel ie. left and right
+//     for (let channel = 0; channel < 2; channel++) {
+//       //here we get a reference to the final mix buffer data
+//       let buffer = finalMix.getChannelData(channel)
 
-      //last is loop for updating/summing the track buffer with the final mix buffer
-      for (let j = 0; j < arrayOfAudioBuffers[i].length; j++) {
-        buffer[j] += arrayOfAudioBuffers[i].getChannelData(channel)[j]
-      }
-    }
-  }
+//       //last is loop for updating/summing the track buffer with the final mix buffer
+//       for (let j = 0; j < arrayOfAudioBuffers[i].length; j++) {
+//         buffer[j] += arrayOfAudioBuffers[i].getChannelData(channel)[j]
+//       }
+//     }
+//   }
 
-  return finalMix
-}
+//   return finalMix
+// }
 
 export {
   processTracks,
   getAudioDetails,
-  createMix,
+  //createMix,
   analyzeTracks,
-  analyzingState,
-  processingState,
 }

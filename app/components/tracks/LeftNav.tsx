@@ -11,9 +11,11 @@ import {
 import { Animation, JoinInner, RadioButtonUnchecked } from '@mui/icons-material'
 
 import Dropzone from '~/components/tracks/Dropzone'
-import { openDrawerState } from '~/components/tracks/TrackDrawer'
+import { tableState } from '~/api/appState'
 
 const LeftNav = () => {
+  const [openDrawer, setOpenDrawer] = tableState.openDrawer()
+
   return (
     <Box
       component="nav"
@@ -57,8 +59,8 @@ const LeftNav = () => {
           >
             <ListItem>
               <ListItemButton
-                variant={openDrawerState ? 'soft' : undefined}
-                color={openDrawerState ? 'primary' : undefined}
+                variant={openDrawer ? 'soft' : undefined}
+                color={openDrawer ? 'primary' : undefined}
               >
                 <ListItemDecorator sx={{ color: 'inherit' }}>
                   <RadioButtonUnchecked

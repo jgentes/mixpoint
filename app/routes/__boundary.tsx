@@ -21,11 +21,12 @@ const Boundary = () => {
   const { enqueueSnackbar } = useSnackbar()
 
   useEffect(() => {
-    const unsubscribe = notificationState.subscribe(({ message, variant }) =>
-      enqueueSnackbar(message, { variant })
-    )
+    const notify = (e: CustomEventInit) =>
+      enqueueSnackbar(e.detail.message, { variant: e.detail.variant })
 
-    return () => unsubscribe()
+    window.addEventListener('notify', notify)
+
+    return () => window.removeEventListener('notify', notify)
   })
 
   return <Outlet />

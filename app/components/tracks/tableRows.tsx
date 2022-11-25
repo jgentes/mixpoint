@@ -7,13 +7,11 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
-import { superstate } from '@superstate/core'
 import { useEffect, useMemo, useState } from 'react'
+import { tableState } from '~/api/appState'
 import { Track } from '~/api/dbHandlers'
-import { tableOps } from '~/utils/tableOps'
+import { rowClick } from '~/utils/tableOps'
 import { createColumnDefinitions } from './tableColumns'
-
-const showButtonState = superstate<number | null>(null)
 
 const TableRows = ({
   row,
@@ -23,6 +21,7 @@ const TableRows = ({
   isItemSelected: boolean
 }) => {
   const [open, setOpen] = useState(false)
+  const [showButton, setShowButton] = tableState.showButton()
 
   // This is being done to refresh the 'Updated' column periodically
   const [, updateState] = useState({})
@@ -39,12 +38,12 @@ const TableRows = ({
       <TableRow
         hover
         selected={isItemSelected}
-        onMouseEnter={() => row.id && showButtonState.set(row.id)}
-        onMouseLeave={() => showButtonState.set(null)}
+        onMouseEnter={() => row.id && setShowButton(row.id)}
+        onMouseLeave={() => setShowButton(null)}
       >
         <TableCell
           padding="none"
-          onClick={event => tableOps.rowClick(event, row.id)}
+          onClick={event => rowClick(event, row.id)}
           role="checkbox"
           aria-checked={isItemSelected}
           tabIndex={-1}
@@ -110,4 +109,4 @@ const TableRows = ({
   )
 }
 
-export { TableRows as default, showButtonState }
+export { TableRows as default }

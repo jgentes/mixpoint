@@ -23,14 +23,16 @@ import { useEffect, useState } from 'react'
 import { audioEvent, AudioEvent, NavEvent } from '~/api/audioEvents'
 import {
   db,
-  getMixTrack,
   getState,
-  MixTrack,
+  getTrackState,
+  MixState,
   removeFromMix,
   Track,
+  TrackState,
   useLiveQuery,
 } from '~/api/dbHandlers'
-import { openDrawerState } from '~/components/tracks/TrackDrawer'
+
+import { tableState } from '~/api/appState'
 
 const NumberControl = ({
   trackId,
@@ -126,10 +128,11 @@ const NumberControl = ({
 }
 
 const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
+  const [openDrawer, setOpenDrawer] = tableState.openDrawer()
   const ejectTrack = async () => {
     // If this is not the last track in the mix, open drawer, otherwise the drawer will open automatically
-    const { from, to } = await getState('mix')
-    if (from?.id && to?.id) openDrawerState.set(true)
+    const { tracks = [] } = await getState('mix')
+    if (tracks.length > 1) setOpenDrawer(true)
 
     if (trackId) removeFromMix(trackId)
   }
@@ -142,7 +145,6 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
       onClick={() => ejectTrack()}
       sx={{
         borderRadius: 'sm',
-        //minHeight: 22,
       }}
     >
       <Eject titleAccess="Load Track" />
@@ -156,7 +158,7 @@ const BpmControl = ({ trackId }: { trackId: Track['id'] }) => {
   const { bpm } = useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
 
   const { adjustedBpm } =
-    useLiveQuery(() => getMixTrack(trackId), [trackId]) || {}
+    useLiveQuery(() => getTrackState(trackId), [trackId]) || {}
 
   return (
     <NumberControl
@@ -193,14 +195,11 @@ const OffsetControl = ({ trackId }: { trackId: Track['id'] }) => {
   )
 }
 
-const BeatResolutionControl = ({
-  trackId,
-  beatResolution,
-}: {
-  trackId: MixTrack['id']
-  beatResolution: MixTrack['beatResolution']
-}) => {
-  const changeBeatResolution = (beatResolution: MixTrack['beatResolution']) =>
+const BeatResolutionControl = ({ trackId }: { trackId: TrackState['id'] }) => {
+  const { beatResolution = 0.25 } =
+    useLiveQuery(() => getTrackState(trackId), [trackId]) || {}
+
+  const changeBeatResolution = (beatResolution: TrackState['beatResolution']) =>
     audioEvent.emit(trackId!, 'beatResolution', { beatResolution })
 
   return (
@@ -210,7 +209,7 @@ const BeatResolutionControl = ({
       value={beatResolution}
       variant="outlined"
       onChange={e =>
-        changeBeatResolution(+e.target.value as MixTrack['beatResolution'])
+        changeBeatResolution(+e.target.value as TrackState['beatResolution'])
       }
     >
       {[0.25, 0.5, 1].map(item => (
@@ -261,7 +260,7 @@ const BeatResolutionControl = ({
   )
 }
 
-const TrackNavControl = ({ trackId }: { trackId: MixTrack['id'] }) => {
+const TrackNavControl = ({ trackId }: { trackId: TrackState['id'] }) => {
   const navEvent = (effect: NavEvent) =>
     audioEvent.emit(trackId!, 'nav', { effect })
 
@@ -292,13 +291,7 @@ const TrackNavControl = ({ trackId }: { trackId: MixTrack['id'] }) => {
   )
 }
 
-const MixControl = ({
-  fromState,
-  toState,
-}: {
-  fromState?: MixTrack
-  toState?: MixTrack
-}) => {
+const MixControl = ({ tracks }: { tracks: MixState['tracks'] }) => {
   const [state, setState] = useState<NavEvent>('Go to Mixpoint')
 
   return (
@@ -312,8 +305,9 @@ const MixControl = ({
         const val = e.target.value as NavEvent
 
         setState(val)
-        audioEvent.emit(fromState?.id!, 'nav', { effect: val })
-        audioEvent.emit(toState?.id!, 'nav', { effect: val })
+        tracks?.forEach(trackId =>
+          audioEvent.emit(trackId!, 'nav', { effect: val })
+        )
       }}
     >
       {[
@@ -377,7 +371,8 @@ const MixControl = ({
 const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
 
-  const { mixpoint } = useLiveQuery(() => getMixTrack(trackId), [trackId]) || {}
+  const { mixpoint } =
+    useLiveQuery(() => getTrackState(trackId), [trackId]) || {}
 
   const [mixpointVal, setMixpointVal] = useState<string>('0:00.00')
 

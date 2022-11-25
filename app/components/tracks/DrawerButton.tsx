@@ -1,12 +1,11 @@
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material'
 import { Button } from '@mui/joy'
-import { useSuperState } from '@superstate/react'
-import { openDrawerState } from '~/components/tracks/TrackDrawer'
+import { tableState } from '~/api/appState'
 
 const DrawerButton = () => {
-  useSuperState(openDrawerState)
+  const [openDrawer, setOpenDrawer] = tableState.openDrawer()
 
-  const direction = openDrawerState.now() ? 'down' : 'up'
+  const direction = openDrawer ? 'down' : 'up'
 
   return (
     <Button
@@ -20,7 +19,7 @@ const DrawerButton = () => {
         borderColor: 'divider',
         borderRadius: 0,
       }}
-      onClick={() => openDrawerState.set(direction == 'up' ? true : false)}
+      onClick={() => setOpenDrawer(direction == 'up' ? true : false)}
     >
       {direction == 'up' ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
     </Button>

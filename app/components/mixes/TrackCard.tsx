@@ -1,8 +1,8 @@
 import { Card, Typography } from '@mui/joy'
 import { Box } from '@mui/material'
-import { useEffect, useState } from 'react'
 import { ClientOnly } from 'remix-utils'
-import { MixTrack, Track } from '~/api/dbHandlers'
+import { audioState } from '~/api/appState'
+import { Track } from '~/api/dbHandlers'
 import { Waveform } from '~/api/renderWaveform'
 import {
   BeatResolutionControl,
@@ -14,16 +14,11 @@ import Loader from '~/components/tracks/TrackLoader'
 import TrackName from '~/components/tracks/TrackName'
 import { errorHandler } from '~/utils/notifications'
 
-const TrackCard = ({
-  trackId,
-  beatResolution = 0.25,
-}: {
-  trackId: Track['id']
-  beatResolution: MixTrack['beatResolution']
-}) => {
+const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) throw errorHandler('Please try uploading the track again.')
 
-  const [analyzing, setAnalyzing] = useState(false)
+  const [analyzingTracks] = audioState.analyzing()
+  const analyzing = analyzingTracks.includes(trackId)
 
   const trackFooter = (
     <Box
@@ -32,7 +27,6 @@ const TrackCard = ({
         gap: 1,
         mt: 1,
         alignItems: 'center',
-        //justifyContent: 'space-between',
       }}
     >
       <Box
@@ -70,10 +64,7 @@ const TrackCard = ({
         }}
       >
         <OffsetControl trackId={trackId} />
-        <BeatResolutionControl
-          trackId={trackId}
-          beatResolution={beatResolution}
-        />
+        <BeatResolutionControl trackId={trackId} />
       </Box>
     </Box>
   )
@@ -100,13 +91,7 @@ const TrackCard = ({
       }}
     >
       <ClientOnly>
-        {() => (
-          <Waveform
-            trackId={trackId}
-            setAnalyzing={setAnalyzing}
-            sx={loaderSx}
-          />
-        )}
+        {() => <Waveform trackId={trackId} sx={loaderSx} />}
       </ClientOnly>
 
       {trackFooter}

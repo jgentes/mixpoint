@@ -8,11 +8,11 @@ import {
   __FileStore as FileStore,
   __Mix as Mix,
   __MixState as MixState,
-  __MixTrack as MixTrack,
   __Set as Set,
   __SetState as SetState,
   __StateTypes as StateTypes,
   __Track as Track,
+  __TrackState as TrackState,
 } from '~/api/__dbSchema'
 import { errorHandler } from '~/utils/notifications'
 
@@ -55,16 +55,7 @@ const putTracks = async (tracks: Partial<Track[]>): Promise<Track[]> => {
 }
 
 const removeTracks = async (ids: number[]): Promise<void> => {
-  // remove tracks from mixState if needed
-  const mixState = await getState('mix')
-  const from =
-    mixState.from?.id && ids.includes(mixState.from.id)
-      ? undefined
-      : mixState.from
-  const to =
-    mixState.to?.id && ids.includes(mixState.to.id) ? undefined : mixState.to
-
-  await putState('mix', { from, to })
+  for (const id of ids) await removeFromMix(id)
 
   await db.tracks.bulkDelete(ids)
 
@@ -111,68 +102,66 @@ const putState = async (
   })
 }
 
-const getMixTrack = async (trackId: Track['id']): Promise<MixTrack> => {
-  const mixState = await getState('mix')
-  const state =
-    mixState.from?.id == trackId
-      ? mixState.from
-      : mixState.to?.id == trackId
-      ? mixState.to
-      : {}
+const getTrackState = async (trackId: Track['id']): Promise<TrackState> => {
+  const { tracks = [], trackStates = [] } = await getState('mix')
+  const trackIndex = tracks.indexOf(trackId) ?? -1
 
-  return state || {}
+  return trackStates[trackIndex] || {}
 }
 
-const putMixTrack = async (
+// Update the state for an individual track in the mix, such as when offset is adjusted
+const putTrackState = async (
   trackId: Track['id'],
-  state: Partial<MixTrack>
+  state: Partial<TrackState>
 ): Promise<void> => {
-  const prevState = await getState('mix')
-  const isFromTrack = prevState.from?.id == trackId
-  if (!isFromTrack && prevState.to?.id !== trackId)
-    throw errorHandler('Track not found in mix state')
+  const { tracks = [], trackStates = [] } = await getState('mix')
+  const trackIndex = tracks.indexOf(trackId) ?? -1
 
-  const newState = { ...prevState[isFromTrack ? 'from' : 'to'], ...state }
+  if (trackIndex == -1) throw errorHandler('Track not found in mix state')
 
-  await db.mixState.put({
-    ...prevState,
-    ...{ [isFromTrack ? 'from' : 'to']: newState },
-    date: new Date(),
-  })
+  const newState = { ...(trackStates[trackIndex] || {}), ...state }
+  trackStates[trackIndex] = newState
+
+  await putState('mix', { tracks, trackStates })
 }
 
 const addToMix = async (track: Track) => {
-  let { from, to } = await getState('mix')
-
-  // store file for access on page refresh
+  // retrieve cached file or store file for access on page refresh, don't add if we don't have perms
   const file = await getPermission(track)
   if (!file) return
 
-  // order of operations: from -> to
-  const state = { id: track.id, file }
-  if (!from) from = state
-  else {
-    if (to?.id) await removeFromMix(to.id)
-    to = state
-  }
+  const { tracks = [], trackStates = [] } = await getState('mix')
 
-  await putState('mix', { from, to })
+  // limit 2 tracks in the mix for now
+  if (tracks.length > 1) audioEvent.emit(tracks[1]!, 'destroy')
+
+  const index = tracks.length > 0 ? 1 : 0
+  tracks[index] = track.id
+  trackStates[index] = { id: track.id }
+
+  await putState('mix', { tracks, trackStates })
 }
 
 const removeFromMix = async (id: Track['id']) => {
-  let { from, to } = await getState('mix')
+  if (id) audioEvent.emit(id, 'destroy')
 
-  from = from?.id == id ? undefined : from
-  to = to?.id == id ? undefined : to
+  const { tracks = [], trackStates = [] } = await getState('mix')
 
-  await putState('mix', { from, to })
+  const index = tracks.indexOf(id) ?? -1
+
+  if (index > -1) {
+    tracks.splice(index, 1)
+    trackStates.splice(index, 1)
+  }
+
+  await putState('mix', { tracks, trackStates })
 }
 
 export type {
   Track,
   Mix,
   Set,
-  MixTrack,
+  TrackState,
   MixState,
   SetState,
   AppState,
@@ -191,7 +180,7 @@ export {
   removeFromMix,
   getState,
   putState,
-  getMixTrack,
-  putMixTrack,
+  getTrackState,
+  putTrackState,
   storeFile,
 }

@@ -3,7 +3,8 @@ import { Box, Chip } from '@mui/joy'
 import { TableCellProps } from '@mui/material'
 import { SxProps } from '@mui/material/styles'
 import moment from 'moment'
-import { analyzeTracks, analyzingState } from '~/api/audioHandlers'
+import { audioState, setTableState } from '~/api/appState'
+import { analyzeTracks } from '~/api/audioHandlers'
 import {
   addToMix,
   getState,
@@ -12,8 +13,7 @@ import {
   useLiveQuery,
 } from '~/api/dbHandlers'
 import TrackLoader from '~/components/tracks/TrackLoader'
-import { tableOps } from '~/utils/tableOps'
-import { openDrawerState } from './TrackDrawer'
+import { formatMinutes, rowClick } from '~/utils/tableOps'
 
 const createColumnDefinitions = (): {
   dbKey: keyof Track
@@ -38,15 +38,22 @@ const createColumnDefinitions = (): {
 
   const addToMixHandler = async (t: Track) => {
     // if this is the first track in the mix, leave the drawer open
-    const { from, to } = await getState('mix')
-    if (!from?.id && !to?.id) openDrawerState.set(true)
-    addToMix(t)
+    const { tracks = [] } = await getState('mix')
+    if (!tracks.length) setTableState.openDrawer(true)
+
+    await addToMix(t)
   }
 
   const AddToMixButton = ({ track }: { track: Track }) => {
-    const { from, to } = useLiveQuery(() => getState('mix')) || {}
+    const [analyzingTracks] = audioState.analyzing()
 
-    const isInMix = from?.id === track.id || to?.id === track.id
+    const { tracks = [] } = useLiveQuery(() => getState('mix')) || {}
+
+    const isInMix = tracks.includes(track.id)
+
+    // Prevent user from adding a new track before previous added track finishes analyzing
+    const isBeingAnalyzed = tracks.some(id => analyzingTracks.includes(id))
+
     return (
       <Chip
         variant="outlined"
@@ -54,6 +61,7 @@ const createColumnDefinitions = (): {
         startDecorator={isInMix ? <Check /> : <Add />}
         color={isInMix ? 'success' : 'primary'}
         size="sm"
+        disabled={isBeingAnalyzed}
         sx={{
           maxHeight: '30px',
           alignSelf: 'center',
@@ -64,6 +72,19 @@ const createColumnDefinitions = (): {
       >
         {`Add${isInMix ? 'ed' : ' to Mix'}`}
       </Chip>
+    )
+  }
+
+  const BpmFormatter = (t: Track) => {
+    const [analyzingTracks] = audioState.analyzing()
+
+    return (
+      t.bpm?.toFixed(0) ||
+      (!analyzingTracks.some(id => id == t.id) ? (
+        analyzeButton(t)
+      ) : (
+        <TrackLoader style={{ margin: 'auto', height: '15px' }} />
+      ))
     )
   }
 
@@ -83,7 +104,7 @@ const createColumnDefinitions = (): {
             fontSize: '.85rem',
           }}
         >
-          <div onClick={event => tableOps.rowClick(event, t.id)}>
+          <div onClick={event => rowClick(event, t.id)}>
             {t.name?.replace(/\.[^/.]+$/, '') || 'Track name not found'}
           </div>
           <AddToMixButton track={t} />
@@ -96,15 +117,7 @@ const createColumnDefinitions = (): {
       align: 'center',
       padding: 'normal',
       width: '10%',
-      formatter: t =>
-        t.bpm?.toFixed(0) ||
-        (!analyzingState
-          .now()
-          .some(a => a.name == t.name && a.size == t.size) ? (
-          analyzeButton(t)
-        ) : (
-          <TrackLoader style={{ margin: 'auto', height: '15px' }} />
-        )),
+      formatter: BpmFormatter,
     },
     {
       dbKey: 'duration',
@@ -112,7 +125,7 @@ const createColumnDefinitions = (): {
       align: 'center',
       padding: 'normal',
       width: '10%',
-      formatter: t => t.duration && tableOps.formatMinutes(t.duration! / 60),
+      formatter: t => t.duration && formatMinutes(t.duration! / 60),
     },
     {
       dbKey: 'mixpoints',

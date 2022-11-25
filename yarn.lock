@@ -963,7 +963,7 @@
     pirates "^4.0.5"
     source-map-support "^0.5.16"
 
-"@babel/runtime@^7.10.1", "@babel/runtime@^7.12.5", "@babel/runtime@^7.18.3", "@babel/runtime@^7.19.0", "@babel/runtime@^7.19.4", "@babel/runtime@^7.20.1", "@babel/runtime@^7.5.5", "@babel/runtime@^7.7.6", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
+"@babel/runtime@^7.10.1", "@babel/runtime@^7.12.5", "@babel/runtime@^7.13.10", "@babel/runtime@^7.18.3", "@babel/runtime@^7.19.0", "@babel/runtime@^7.19.4", "@babel/runtime@^7.20.1", "@babel/runtime@^7.5.5", "@babel/runtime@^7.7.6", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
   version "7.20.1"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.20.1.tgz#1148bb33ab252b165a06698fde7576092a78b4a9"
   integrity sha512-mrzLkl6U9YLF8qpqI7TB82PESyEGjm/0Ly91jG575eVxMMlb8fYfOXFZIJ8XfLrJZQbm7dlKry2bJmXBUEkdFg==
@@ -1585,20 +1585,6 @@
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-4.6.0.tgz#3c7c9c46e678feefe7a2e5bb609d3dbd665ffb3f"
   integrity sha512-t09vSN3MdfsyCHoFcTRCH/iUtG7OJ0CsjzB8cjAmKc/va/kIgeDI/TxsigdncE/4be734m0cvIYwNaV4i2XqAw==
-
-"@superstate/core@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@superstate/core/-/core-0.1.0.tgz#7f0f657d08298c7b0b199e85dabaa3a6aabee145"
-  integrity sha512-AQPYDdd8MYZblK3LyRGp8g7QiknqUYCyZoxfcqkt5UX9vElP85vzWZQDe+K9muxjZxFwCbF+o3TC6RAUvcsrQQ==
-  dependencies:
-    fast-deep-equal "^3.1.3"
-
-"@superstate/react@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@superstate/react/-/react-0.1.0.tgz#fb0cb02b8ad3651287a8b698b78d58a235d2872b"
-  integrity sha512-tCf2FJ/2BN8ifjlXaH5YX/n8k+T+WnYqC3HbtvijusQKe7RqhasRKUpvp0fzDhH8k9fW+hXDplr6aE9jvX1mBw==
-  dependencies:
-    "@superstate/core" "^0.1.0"
 
 "@szmarczak/http-timer@^4.0.5":
   version "4.0.6"
@@ -3608,11 +3594,6 @@ fake-indexeddb@^4.0.0:
   integrity sha512-oCfWSJ/qvQn1XPZ8SHX6kY3zr1t+bN7faZ/lltGY0SBGhFOPXnWf0+pbO/MOAgfMx6khC2gK3S/bvAgQpuQHDQ==
   dependencies:
     realistic-structured-clone "^3.0.0"
-
-fast-deep-equal@^3.1.3:
-  version "3.1.3"
-  resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz#3a7d56b559d6cbc3eb512325244e619a65c6c525"
-  integrity sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==
 
 fast-glob@3.2.11:
   version "3.2.11"
@@ -6691,6 +6672,13 @@ signal-exit@^3.0.2:
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.7.tgz#a9a1767f8af84155114eaabd73f99273c8f59ad9"
   integrity sha512-wnD2ZE+l+SPC/uoS0vXeE9L1+0wuaMqKlfz9AMUo38JsyLSBWSFcHR1Rri62LZc12vLr1gb3jl7iwQhgwpAbGQ==
 
+simpler-state@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/simpler-state/-/simpler-state-1.2.0.tgz#fd78f0416e741d75b5b0ff70d8b0c46722e062c5"
+  integrity sha512-Gd6rlc3Rq0qQm78bGg+4qVJUvOPr874aN2LBxawQV71Q0f0Ub2HVqR4AUXnP26TgCL/PaQ/7yisbdJD8NJ8+oA==
+  dependencies:
+    "@babel/runtime" "^7.13.10"
+
 sirv@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/sirv/-/sirv-2.0.2.tgz#128b9a628d77568139cff85703ad5497c46a4760"
@@ -7027,6 +7015,11 @@ tar@^6.0.2:
     minizlib "^2.1.1"
     mkdirp "^1.0.3"
     yallist "^4.0.0"
+
+teaful@^0.11.1:
+  version "0.11.1"
+  resolved "https://registry.yarnpkg.com/teaful/-/teaful-0.11.1.tgz#9e176a8358b261d2a8a582bae24a605a718171c7"
+  integrity sha512-U1O0u+GsHI0b/6vcEDjSPYwAWX57WAOXG31KCzAMrV4rWqcy+j71F4jsHb5q9FYqdkQjH8Pi1fWJ1oO/dLAKdw==
 
 temp@^0.8.4:
   version "0.8.4"

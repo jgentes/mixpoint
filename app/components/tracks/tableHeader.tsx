@@ -17,9 +17,8 @@ import {
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import { visuallyHidden } from '@mui/utils'
-import { superstate } from '@superstate/core'
-import { useSuperState } from '@superstate/react'
 import { ChangeEvent, MouseEvent, useMemo, useState } from 'react'
+import { tableState } from '~/api/appState'
 import { analyzeTracks } from '~/api/audioHandlers'
 import {
   AppState,
@@ -32,14 +31,12 @@ import {
 import { browseFile } from '~/api/fileHandlers'
 import { confirmModalState } from '~/components/ConfirmModal'
 import { createColumnDefinitions } from '~/components/tracks/tableColumns'
-import { selectedState } from '~/components/tracks/TrackTable'
-
-// Broadcast search query
-const searchState = superstate<string | number>('')
 
 // Toolbar is on top of the table, includes search, info, and button bar
 const EnhancedTableToolbar = (props: { numSelected: number }) => {
-  useSuperState(searchState)
+  const [search, setSearch] = tableState.search()
+  const [selected, setSelected] = tableState.selected()
+  const [confirmModal, setConfirmModal] = confirmModalState()
 
   const { numSelected } = props
 
@@ -47,19 +44,19 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
   const dirtyTracks = useLiveQuery(() => getDirtyTracks(), [], [])
 
   const showRemoveTracksModal = () =>
-    confirmModalState.set({
+    setConfirmModal({
       openState: true,
       bodyText: `Removing tracks here will not delete them from your computer.`,
       confirmText: `Remove ${numSelected} track${numSelected > 1 ? 's' : ''}`,
       onConfirm: async () => {
-        confirmModalState.set({ openState: false })
-        await removeTracks(selectedState.now())
-        selectedState.set([])
+        setConfirmModal({ openState: false })
+        await removeTracks(selected)
+        setSelected([])
       },
     })
 
   const showAnalyzeDirtyModal = () =>
-    confirmModalState.set({
+    setConfirmModal({
       openState: true,
       bodyText: `This will analyze ${dirtyTracks.length} track${
         dirtyTracks.length > 1 ? 's' : ''
@@ -67,7 +64,7 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
       confirmColor: 'success',
       confirmText: `Analyze track${dirtyTracks.length > 1 ? 's' : ''}`,
       onConfirm: async () => {
-        confirmModalState.set({ openState: false })
+        setConfirmModal({ openState: false })
         analyzeTracks(dirtyTracks)
       },
     })
@@ -117,15 +114,15 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
         variant="soft"
         placeholder="Search..."
         startDecorator={<SearchRounded color="primary" />}
-        onChange={e => searchState.set(e.target.value)}
-        value={searchState.now()}
+        onChange={e => setSearch(e.target.value)}
+        value={search}
         endDecorator={
-          !searchState.now() ? null : (
+          !search ? null : (
             <IconButton
               variant="outlined"
               size="sm"
               color="neutral"
-              onClick={() => searchState.set('')}
+              onClick={() => setSearch('')}
             >
               <Clear />
             </IconButton>
@@ -237,4 +234,4 @@ const EnhancedTableHead = (props: {
   )
 }
 
-export { searchState, EnhancedTableToolbar, EnhancedTableHead }
+export { EnhancedTableToolbar, EnhancedTableHead }

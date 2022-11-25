@@ -1,19 +1,16 @@
 import { Drawer } from '@mui/material'
-import { superstate } from '@superstate/core'
-import { useSuperState } from '@superstate/react'
+import { tableState } from '~/api/appState'
 import TrackTable from '~/components//tracks/TrackTable'
 import DrawerButton from '~/components/tracks/DrawerButton'
 
-const openDrawerState = superstate(false)
-
 const TrackDrawer = () => {
-  useSuperState(openDrawerState)
+  const [openDrawer, setOpenDrawer] = tableState.openDrawer()
 
   return (
     <Drawer
       anchor="bottom"
-      open={openDrawerState.now()}
-      onClose={() => openDrawerState.set(false)}
+      open={openDrawer}
+      onClose={() => setOpenDrawer(false)}
       PaperProps={{
         sx: {
           height: '80%',
@@ -29,4 +26,4 @@ const TrackDrawer = () => {
   )
 }
 
-export { TrackDrawer as default, openDrawerState }
+export { TrackDrawer as default }

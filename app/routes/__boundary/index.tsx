@@ -7,10 +7,9 @@ import TrackDrawer from '~/components/tracks/TrackDrawer'
 import TrackTable from '~/components/tracks/TrackTable'
 
 const Mixes: React.FunctionComponent = () => {
-  const { from: fromState, to: toState } =
-    useLiveQuery(() => getState('mix')) || {}
+  const { tracks = [] } = useLiveQuery(() => getState('mix')) || {}
 
-  const mixViewVisible = fromState?.id || toState?.id
+  const mixViewVisible = !!tracks.length
 
   return (
     <Box
@@ -23,11 +22,13 @@ const Mixes: React.FunctionComponent = () => {
     >
       <Header />
       {mixViewVisible ? (
-        <MixView fromState={fromState!} toState={toState!} />
+        <>
+          <MixView />
+          <DrawerButton />
+        </>
       ) : (
         <TrackTable />
       )}
-      {mixViewVisible ? <DrawerButton /> : null}
       <TrackDrawer />
     </Box>
   )

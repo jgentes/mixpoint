@@ -1,49 +1,43 @@
 import { Box } from '@mui/joy'
-import { MixTrack } from '~/api/dbHandlers'
+import { Fragment } from 'react'
+import { getState, useLiveQuery } from '~/api/dbHandlers'
 import OverviewCard from '~/components/mixes/OverviewCard'
 import TrackCard from '~/components/mixes/TrackCard'
 import { MixControl } from '~/components/tracks/Controls'
 
-const MixView = ({
-  fromState,
-  toState,
-}: {
-  fromState: MixTrack
-  toState: MixTrack
-}) => (
-  <Box
-    sx={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 2,
-      p: 2,
-    }}
-  >
-    {!fromState?.id ? null : (
-      <TrackCard
-        trackId={fromState.id}
-        beatResolution={fromState.beatResolution}
-      />
-    )}
-    {!toState?.id ? null : (
-      <TrackCard trackId={toState.id} beatResolution={toState.beatResolution} />
-    )}
-    <div
-      style={{
+const MixView = () => {
+  const { tracks = [] } = useLiveQuery(() => getState('mix')) || {}
+
+  return (
+    <Box
+      sx={{
         display: 'flex',
-        flexDirection: 'row',
-        gap: 15,
+        flexDirection: 'column',
+        gap: 2,
+        p: 2,
       }}
     >
-      {!fromState?.id ? null : <OverviewCard trackId={fromState.id} />}
-
-      {!fromState?.id || !toState?.id ? null : (
-        <MixControl fromState={fromState} toState={toState} />
-      )}
-
-      {!toState?.id ? null : <OverviewCard trackId={toState.id} />}
-    </div>
-  </Box>
-)
+      {tracks.map((id, i) => (
+        <TrackCard trackId={id} key={i} />
+      ))}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 15,
+        }}
+      >
+        {tracks.map((id, i) => (
+          <Fragment key={i}>
+            <OverviewCard trackId={id} />
+            {tracks.length > 1 && i === 0 ? (
+              <MixControl tracks={tracks} />
+            ) : null}
+          </Fragment>
+        ))}
+      </div>
+    </Box>
+  )
+}
 
 export { MixView as default }

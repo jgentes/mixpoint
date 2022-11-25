@@ -2,14 +2,14 @@
 
 import {
   db,
-  getMixTrack,
-  MixTrack,
-  putMixTrack,
+  getTrackState,
   putTracks,
+  putTrackState,
   Track,
+  TrackState,
 } from '~/api/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
-import { tableOps } from '~/utils/tableOps'
+import { timeFormat, convertToSecs } from '~/utils/tableOps'
 import { calcRegions } from './renderWaveform'
 
 // Events are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
@@ -65,21 +65,18 @@ const loadAudioEvents = async ({
   // Allow adjustment in skipLength, as this cannot be updated via wavesurfer
   let skipLength = waveform.skipLength
 
-  const scrollEvent = ({ direction }: { direction: 'up' | 'down' }) => {
-    direction == 'down'
-      ? waveform.skipBackward(skipLength)
-      : waveform.skipForward(skipLength)
-  }
+  const scrollEvent = ({ up }: { up: boolean }) =>
+    up ? waveform.skipForward(skipLength) : waveform.skipBackward(skipLength)
 
   const beatResolutionEvent = async ({
     beatResolution,
   }: {
-    beatResolution: MixTrack['beatResolution']
+    beatResolution: TrackState['beatResolution']
   }): Promise<void> => {
     if (!beatResolution) return
 
     // Adjust zoom
-    switch (+beatResolution) {
+    switch (beatResolution) {
       case 0.25:
         waveform.zoom(20)
         break
@@ -102,13 +99,13 @@ const loadAudioEvents = async ({
     skipLength = newSkipLength
 
     // Update mixState
-    putMixTrack(trackId, { beatResolution })
+    putTrackState(trackId, { beatResolution })
   }
 
   const bpmEvent = ({
     adjustedBpm,
   }: {
-    adjustedBpm: MixTrack['adjustedBpm']
+    adjustedBpm: TrackState['adjustedBpm']
   }): void => {
     if (!adjustedBpm) return
 
@@ -117,7 +114,7 @@ const loadAudioEvents = async ({
     waveform.setPlaybackRate(playbackRate)
 
     // Update mixState
-    putMixTrack(trackId, { adjustedBpm })
+    putTrackState(trackId, { adjustedBpm })
   }
 
   const offsetEvent = async ({
@@ -150,7 +147,7 @@ const loadAudioEvents = async ({
         waveform.pause()
 
         audioEvent.emit(trackId, 'mixpoint', {
-          mixpoint: tableOps.timeFormat(mixpoint),
+          mixpoint: timeFormat(mixpoint),
         })
         break
       case 'Go to Mixpoint':
@@ -171,19 +168,18 @@ const loadAudioEvents = async ({
   }: {
     mixpoint: string
   }): Promise<void> => {
-    const { mixpoint: prevMixpoint } = (await getMixTrack(trackId)) || {}
+    const { mixpoint: prevMixpoint } = (await getTrackState(trackId)) || {}
 
     if (mixpoint == prevMixpoint) return
 
-    putMixTrack(trackId, { mixpoint })
-    waveform.seekAndCenter(
-      1 / (track.duration! / tableOps.convertToSecs(mixpoint))
-    )
+    putTrackState(trackId, { mixpoint })
+    waveform.seekAndCenter(1 / (track.duration! / convertToSecs(mixpoint)))
   }
 
-  const destroyEvent = async (): Promise<void> => {
-    if (waveform) waveform.destroy()
+  const destroyEvent = (): void => {
+    console.log('destroy')
     audioEvent.off(trackId, waveformEffects)
+    if (waveform) waveform.destroy()
   }
 
   const waveformEffects = ({

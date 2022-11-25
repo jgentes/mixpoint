@@ -13,9 +13,6 @@ import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import { theme } from '~/theme'
 
-// to help identify failing builds
-console.clear()
-
 const meta: MetaFunction = () => {
   return {
     title: 'Mixpoint',
