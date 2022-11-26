@@ -36,6 +36,13 @@ const MixView = () => {
           </Fragment>
         ))}
       </div>
+      <audio
+        controls
+        style={{ position: 'fixed', right: 0 }}
+        id="eqAudio"
+        src="/media/examples_player_audio_rave_digger.mp3"
+      />
+      <canvas height="200" width="200" id="eqCanvas" />
     </Box>
   )
 }

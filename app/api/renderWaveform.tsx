@@ -10,7 +10,7 @@ import { convertToSecs } from '~/utils/tableOps'
 import { analyzeTracks } from './audioHandlers'
 import { getPermission } from './fileHandlers'
 
-// Only load WaveSurfer on the
+// Only load WaveSurfer on the client
 let WaveSurfer: typeof import('wavesurfer.js'),
   PlayheadPlugin: typeof import('wavesurfer.js/src/plugin/playhead').default,
   CursorPlugin: typeof import('wavesurfer.js/src/plugin/cursor').default,
@@ -22,7 +22,6 @@ if (typeof document !== 'undefined') {
   CursorPlugin = require('wavesurfer.js/src/plugin/cursor').default
   RegionsPlugin = require('wavesurfer.js/src/plugin/regions').default
   MinimapPlugin = require('wavesurfer.js/src/plugin/minimap').default
-  //  Wave = require('@foobar404/wave').Wave
 }
 
 const calcRegions = async (
@@ -168,12 +167,6 @@ const Waveform = ({
           }),
         ],
       })
-
-      // if (typeof document !== undefined) {
-      //   let audioElement = document.getElementById('eqAudio')
-      //   let canvasElement = document.getElementById('eqCanvas')
-      //   let wave = new Wave(audioElement, canvasElement)
-      // }
 
       loadAudioEvents({ trackId, waveform })
 
