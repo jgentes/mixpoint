@@ -22,6 +22,7 @@ const audioEventTypes = [
   'nav',
   'mixpoint',
   'destroy',
+  'volumeMeter', // handled in VolumeMeter component
 ] as const
 type AudioEvent = typeof audioEventTypes[number]
 

@@ -96,9 +96,6 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
 
       {trackFooter}
 
-      {/* <audio id="eqAudio" />
-      <div id="eqCanvas" /> */}
-
       {!analyzing ? null : (
         <Card
           sx={{

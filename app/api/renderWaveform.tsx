@@ -168,7 +168,7 @@ const Waveform = ({
         ],
       })
 
-      loadAudioEvents({ trackId, waveform })
+      await loadAudioEvents({ trackId, waveform })
 
       if (file) waveform.loadBlob(file)
 
@@ -190,13 +190,6 @@ const Waveform = ({
           waveform.playhead.setPlayheadTime(currentPlayhead)
           waveform.seekAndCenter(1 / (duration! / currentPlayhead))
         }
-      })
-
-      waveform.on('region-dblclick', region => {
-        // Double click sets a mixpoint at current region
-        // waveform.play(region.start)
-        // waveform.playhead.setPlayheadTime(region.start)
-        // audioEvent.emit('mixpoint', { trackId: track.id, mixpoint: region.start })
       })
 
       waveform.on('region-click', region => {
@@ -221,6 +214,45 @@ const Waveform = ({
           waveform.playhead.setPlayheadTime(region.start)
         }
       })
+
+      let volumeMeterInterval: ReturnType<typeof setInterval> | number // placeholder for setInterval
+
+      const createVolumeMeter = () => {
+        const analyzer = waveform.backend.analyser
+        const bufferLength = analyzer.frequencyBinCount
+        const dataArray = new Uint8Array(bufferLength)
+
+        const caclculateVolume = () => {
+          analyzer.getByteFrequencyData(dataArray)
+
+          let sum = 0
+          for (const amplitude of dataArray) {
+            sum += amplitude * amplitude
+          }
+
+          const volume = Math.sqrt(sum / dataArray.length)
+          if (trackId)
+            audioEvent.emit(trackId, 'volumeMeter', {
+              volume,
+            })
+        }
+
+        waveform.on('play', () => {
+          // Slow down sampling to 10ms
+          if (volumeMeterInterval > -1) clearInterval(volumeMeterInterval)
+          volumeMeterInterval = setInterval(() => caclculateVolume(), 10)
+        })
+
+        waveform.on('pause', () => {
+          clearInterval(volumeMeterInterval)
+          // Set to zero on pause
+          audioEvent.emit(trackId, 'volumeMeter', {
+            volume: 0,
+          })
+        })
+      }
+
+      createVolumeMeter()
     }
 
     getAudio()

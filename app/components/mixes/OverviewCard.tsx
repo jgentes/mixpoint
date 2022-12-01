@@ -1,7 +1,13 @@
 import { Card, Typography } from '@mui/joy'
-import { Box, Button as ButtonGroupButton, ButtonGroup } from '@mui/material'
+import {
+  Box,
+  Button as ButtonGroupButton,
+  ButtonGroup,
+  LinearProgress,
+} from '@mui/material'
 import { useEffect, useState } from 'react'
 import { getState, removeFromMix, Track, TrackState } from '~/api/dbHandlers'
+import VolumeMeter from '~/components/mixes/VolumeMeter'
 import { BpmControl, MixpointControl } from '~/components/tracks/Controls'
 import TrackName from '~/components/tracks/TrackName'
 
@@ -75,8 +81,10 @@ const OverviewCard = ({ trackId }: { trackId: Track['id'] }) => {
           bgcolor: 'background.body',
           overflow: 'hidden',
           height: '25px',
+          zIndex: 1,
         }}
       />
+      <VolumeMeter trackId={trackId} />
 
       {overviewFooter}
 

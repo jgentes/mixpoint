@@ -64,6 +64,10 @@ const muiTheme = extendMuiTheme({
         '.wavesurfer-region': {
           borderLeft: '2px solid #0492f79e',
         },
+
+        '.MuiLinearProgress-bar': {
+          transition: 'none !important',
+        },
       },
     },
     MuiTable: {
