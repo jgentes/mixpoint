@@ -3,4 +3,5 @@ node_modules/
 build/
 dist/
 *.log
+todo.md
 web-audio-beat-detector/
