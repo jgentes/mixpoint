@@ -31,10 +31,10 @@ const VolumeMeter = ({ trackId }: { trackId: Track['id'] }) => {
       variant="determinate"
       value={100 - volume}
       sx={{
-        margin: '-1px 5px 0',
+        mx: '3px',
         zIndex: 0,
         transform: 'rotate(180deg)',
-        background: `linear-gradient(to left, rgba(30, 150, 0, .75) 30%, rgba(255, 242, 0, .75) 70%, rgba(255, 0, 0, .75) 99%)`,
+        background: `linear-gradient(to left, rgba(30, 150, 0, .75) 30%, rgba(255, 242, 0, .75) 80%, rgba(255, 0, 0, .75) 99%)`,
         '> span': {
           backgroundColor: '#0a1929bd',
         },

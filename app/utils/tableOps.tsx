@@ -102,6 +102,9 @@ const convertToSecs = (time: string): number => {
   return +minutes * 60 + +seconds + +`.${ms}`
 }
 
+// Round to two decimal places
+const roundTwo = (num: number): number => Math.round(num * 100) / 100
+
 export {
   sort,
   selectAll,
@@ -113,4 +116,5 @@ export {
   formatMinutes,
   timeFormat,
   convertToSecs,
+  roundTwo,
 }

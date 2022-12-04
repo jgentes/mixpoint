@@ -8,14 +8,14 @@ import {
   Track,
   TrackState,
 } from '~/api/dbHandlers'
+import { calcMarkers } from '~/api/waveformEvents'
 import { errorHandler } from '~/utils/notifications'
-import { convertToSecs, timeFormat } from '~/utils/tableOps'
-import { calcRegions } from './renderWaveform'
+import { convertToSecs, roundTwo, timeFormat } from '~/utils/tableOps'
 
-// Events are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
+// AudioEvents are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
 
 const audioEventTypes = [
-  'scroll',
+  'seek',
   'beatResolution',
   'bpm',
   'offset',
@@ -58,16 +58,33 @@ const loadAudioEvents = async ({
   waveform: WaveSurfer
 }): Promise<void> => {
   if (!trackId) return
-
   const track = await db.tracks.get(trackId)
   if (!track)
     throw errorHandler('Track not found while setting up audio events.')
 
-  // Allow adjustment in skipLength, as this cannot be updated via wavesurfer
-  let skipLength = waveform.skipLength
+  // Scroll to previous/next beat marker
+  const seekEvent = ({
+    time: startTime = waveform.getCurrentTime(),
+    direction,
+  }: {
+    time?: number
+    direction?: 'previous' | 'next'
+  }) => {
+    const { markers = [] } = waveform.markers || {}
 
-  const scrollEvent = ({ up }: { up: boolean }) =>
-    up ? waveform.skipForward(skipLength) : waveform.skipBackward(skipLength)
+    // Must round while trying to match time to marker, but this doesn't impact marker positions
+    const currentMarkerIndex = Math.round(startTime / waveform.skipLength)
+
+    const index =
+      currentMarkerIndex + (direction ? (direction == 'next' ? 1 : -1) : 0)
+    const { time } = markers[index] || {}
+
+    // Estimate that we're at the right time and move playhead (and center if using prev/next buttons)
+    if (time && (time > startTime + 0.005 || time < startTime - 0.005)) {
+      if (direction) waveform.skipForward(time - startTime)
+      else waveform.playhead.setPlayheadTime(time)
+    }
+  }
 
   const beatResolutionEvent = async ({
     beatResolution,
@@ -89,18 +106,10 @@ const loadAudioEvents = async ({
         break
     }
 
-    // Rebuild regions
-    waveform.regions.clear()
-    const { regions, skipLength: newSkipLength } = await calcRegions(track, {
-      beatResolution,
-    })
-    for (const region of regions) waveform.regions.add(region)
-
-    // Adjust skiplength
-    skipLength = newSkipLength
-
     // Update mixState
-    putTrackState(trackId, { beatResolution })
+    await putTrackState(trackId, { beatResolution })
+
+    calcMarkers(track, waveform)
   }
 
   const bpmEvent = ({
@@ -125,13 +134,10 @@ const loadAudioEvents = async ({
   }): Promise<void> => {
     const newTrack = { ...track, adjustedOffset }
 
-    // Rebuild regions
-    waveform.regions.clear()
-    const { regions } = await calcRegions(newTrack)
-    for (const region of regions) waveform.regions.add(region)
-
     // Update track
-    putTracks([newTrack])
+    await putTracks([newTrack])
+
+    calcMarkers(newTrack, waveform)
   }
 
   const navEvent = ({ effect }: { effect: NavEvent }): void => {
@@ -152,14 +158,14 @@ const loadAudioEvents = async ({
         })
         break
       case 'Go to Mixpoint':
-        waveform.seekAndCenter(1 / (track.duration! / mixpoint))
+        waveform.seekAndCenter(1 / (waveform.getDuration() / mixpoint))
         waveform.pause()
         break
       case 'Previous Beat Marker':
-        waveform.skipBackward(skipLength)
+        seekEvent({ direction: 'previous' })
         break
       case 'Next Beat Marker':
-        waveform.skipForward(skipLength)
+        seekEvent({ direction: 'next' })
         break
     }
   }
@@ -174,7 +180,9 @@ const loadAudioEvents = async ({
     if (mixpoint == prevMixpoint) return
 
     putTrackState(trackId, { mixpoint })
-    waveform.seekAndCenter(1 / (track.duration! / convertToSecs(mixpoint)))
+    waveform.seekAndCenter(
+      1 / (waveform.getDuration() / convertToSecs(mixpoint))
+    )
   }
 
   const destroyEvent = (): void => {
@@ -190,8 +198,8 @@ const loadAudioEvents = async ({
     args?: any
   }) => {
     switch (event) {
-      case 'scroll':
-        scrollEvent(args)
+      case 'seek':
+        seekEvent(args)
         break
       case 'beatResolution':
         beatResolutionEvent(args)

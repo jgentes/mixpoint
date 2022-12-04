@@ -51,7 +51,7 @@ const muiTheme = extendMuiTheme({
         '.wavesurfer-playhead': {
           width: 0,
           height: 0,
-          marginLeft: '5px',
+          marginLeft: '4px',
           borderStyle: 'solid',
           borderWidth: '7px 7px 0 7px',
           borderColor: '#0492f79e transparent transparent transparent',
@@ -66,7 +66,18 @@ const muiTheme = extendMuiTheme({
         },
 
         '.MuiLinearProgress-bar': {
+          // for the volume meter
           transition: 'none !important',
+        },
+
+        '.wavesurfer-marker': {
+          marginLeft: '4px',
+          borderLeft: '2px solid #0492f79e',
+          zIndex: 3,
+        },
+
+        '.wavesurfer-marker > *': {
+          display: 'none !important',
         },
       },
     },
