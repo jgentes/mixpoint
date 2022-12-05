@@ -10,7 +10,7 @@ import {
 } from '~/api/dbHandlers'
 import { calcMarkers } from '~/api/waveformEvents'
 import { errorHandler } from '~/utils/notifications'
-import { convertToSecs, roundTwo, timeFormat } from '~/utils/tableOps'
+import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
 // AudioEvents are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
 
@@ -72,8 +72,8 @@ const loadAudioEvents = async ({
   }) => {
     const { markers = [] } = waveform.markers || {}
 
-    // Must round while trying to match time to marker, but this doesn't impact marker positions
-    const currentMarkerIndex = Math.round(startTime / waveform.skipLength)
+    // Find the closest (left-most) marker to the current time
+    const currentMarkerIndex = Math.floor(startTime / waveform.skipLength)
 
     const index =
       currentMarkerIndex + (direction ? (direction == 'next' ? 1 : -1) : 0)
@@ -84,6 +84,21 @@ const loadAudioEvents = async ({
       if (direction) waveform.skipForward(time - startTime)
       else waveform.playhead.setPlayheadTime(time)
     }
+  }
+
+  const crossfadeEvent = () => {
+    // https://github.com/notthetup/smoothfade
+    // or
+    // from https://codepen.io/lukeandersen/pen/QEmwYG
+    // Fades between 0 (all source 1) and 1 (all source 2)
+    // CrossfadeSample.crossfade = function (element) {
+    //   var x = parseInt(element.value) / parseInt(element.max)
+    //   // Use an equal-power crossfading curve:
+    //   var gain1 = Math.cos(x * 0.5 * Math.PI)
+    //   var gain2 = Math.cos((1.0 - x) * 0.5 * Math.PI)
+    //   this.ctl1.gainNode.gain.value = gain1
+    //   this.ctl2.gainNode.gain.value = gain2
+    // }
   }
 
   const beatResolutionEvent = async ({

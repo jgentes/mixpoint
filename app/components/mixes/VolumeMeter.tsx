@@ -1,29 +1,11 @@
 import { LinearProgress } from '@mui/material'
-import { useEffect, useState } from 'react'
-import { audioEvent } from '~/api/audioEvents'
+import { volumeState } from '~/api/appState'
 import { Track } from '~/api/dbHandlers'
 
 const VolumeMeter = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
 
-  const [volume, setVolume] = useState(0)
-
-  const updateVolume = ({
-    event,
-    args,
-  }: {
-    event: string
-    args: { volume: number }
-  }) => {
-    if (event === 'volumeMeter') {
-      setVolume(args.volume)
-    }
-  }
-
-  useEffect(() => {
-    audioEvent.on(trackId, updateVolume)
-    return audioEvent.off(trackId, updateVolume)
-  })
+  const [volume = 0] = volumeState[trackId].volume()
 
   return (
     <LinearProgress

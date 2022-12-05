@@ -1,7 +1,5 @@
-import { MarkerParams } from 'wavesurfer.js/src/plugin/markers'
-import { RegionParams } from 'wavesurfer.js/src/plugin/regions'
 import WaveSurfer from 'wavesurfer.js/src/wavesurfer'
-import { setAudioState } from '~/api/appState'
+import { setAudioState, setVolumeState } from '~/api/appState'
 import { audioEvent } from '~/api/audioEvents'
 import { analyzeTracks } from '~/api/audioHandlers'
 import { db, getTrackState, Track, TrackState } from '~/api/dbHandlers'
@@ -147,17 +145,15 @@ const loadWaveformEvents = async ({
         sum += amplitude * amplitude
       }
 
-      const volume = Math.sqrt(sum / dataArray.length)
-      if (trackId)
-        audioEvent.emit(trackId, 'volumeMeter', {
-          volume,
-        })
+      const volume = Math.sqrt(sum / (dataArray.length + 1000))
+
+      setVolumeState({ [trackId]: { volume } })
     }
 
     waveform.on('play', () => {
       // Slow down sampling to 10ms
       if (volumeMeterInterval > -1) clearInterval(volumeMeterInterval)
-      volumeMeterInterval = setInterval(() => caclculateVolume(), 10)
+      volumeMeterInterval = setInterval(() => caclculateVolume(), 15)
 
       //todo change play button to pause button
     })
@@ -165,9 +161,7 @@ const loadWaveformEvents = async ({
     waveform.on('pause', () => {
       clearInterval(volumeMeterInterval)
       // Set to zero on pause
-      audioEvent.emit(trackId, 'volumeMeter', {
-        volume: 0,
-      })
+      setVolumeState({ [trackId]: { volume: 0 } })
     })
   }
 
