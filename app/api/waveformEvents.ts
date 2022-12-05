@@ -147,7 +147,7 @@ const loadWaveformEvents = async ({
 
       const volume = Math.sqrt(sum / (dataArray.length + 1000))
 
-      setVolumeState({ [trackId]: { volume } })
+      setVolumeState[trackId].volume(volume)
     }
 
     waveform.on('play', () => {
@@ -161,7 +161,7 @@ const loadWaveformEvents = async ({
     waveform.on('pause', () => {
       clearInterval(volumeMeterInterval)
       // Set to zero on pause
-      setVolumeState({ [trackId]: { volume: 0 } })
+      setVolumeState[trackId].volume(0)
     })
   }
 

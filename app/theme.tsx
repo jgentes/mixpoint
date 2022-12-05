@@ -54,16 +54,16 @@ const muiTheme = extendMuiTheme({
           marginLeft: '4px',
           borderStyle: 'solid',
           borderWidth: '7px 7px 0 7px',
-          borderColor: '#0492f79e transparent transparent transparent',
+          borderColor: '#0492f7c1 transparent transparent transparent',
         },
 
         '.wavesurfer-playhead svg, .wavesurfer-playhead div': {
           display: 'none',
         },
 
-        '.wavesurfer-region': {
-          borderLeft: '2px solid #0492f79e',
-        },
+        // '.wavesurfer-region': {
+        //   borderLeft: '2px solid #0492f79e',
+        // },
 
         '.MuiLinearProgress-bar': {
           // for the volume meter
@@ -72,7 +72,7 @@ const muiTheme = extendMuiTheme({
 
         '.wavesurfer-marker': {
           marginLeft: '4px',
-          borderLeft: '2px solid #0492f79e',
+          borderLeft: '2px solid #0492f7c1',
           zIndex: 3,
         },
 
