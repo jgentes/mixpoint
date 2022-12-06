@@ -114,6 +114,7 @@ const Waveform = ({
   return (
     <Card
       id={`zoomview-container_${trackId}`}
+      className="zoomview-container"
       sx={{
         ...sx,
         zIndex: 1,

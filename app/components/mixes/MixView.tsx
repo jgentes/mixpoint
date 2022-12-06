@@ -8,7 +8,7 @@ import { MixControl } from '~/components/tracks/Controls'
 const MixView = () => {
   const { tracks = [] } = useLiveQuery(() => getState('mix')) || {}
 
-  return (
+  return !tracks.length ? null : (
     <Box
       sx={{
         display: 'flex',

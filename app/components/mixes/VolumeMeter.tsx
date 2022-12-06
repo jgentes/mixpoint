@@ -18,7 +18,7 @@ const VolumeMeter = ({ trackId }: { trackId: Track['id'] }) => {
         transform: 'rotate(180deg)',
         background: `linear-gradient(to left, rgba(30, 150, 0, .75) 30%, rgba(255, 242, 0, .75) 80%, rgba(255, 0, 0, .75) 99%)`,
         '> span': {
-          backgroundColor: '#0a1929bd',
+          backgroundColor: 'background.body',
         },
       }}
     />

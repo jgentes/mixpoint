@@ -32,7 +32,7 @@ import {
   useLiveQuery,
 } from '~/api/dbHandlers'
 
-import { tableState } from '~/api/appState'
+import { audioState, tableState } from '~/api/appState'
 
 const NumberControl = ({
   trackId,
@@ -264,13 +264,19 @@ const TrackNavControl = ({ trackId }: { trackId: TrackState['id'] }) => {
   const navEvent = (effect: NavEvent) =>
     audioEvent.emit(trackId!, 'nav', { effect })
 
+  const [playing] = audioState.playing()
+  const isPlaying = playing.includes(trackId!)
+
   return (
     <ButtonGroup variant="text" color="inherit" disableRipple id="navControl">
       {[
         { val: 'Previous Beat Marker', icon: <SkipPrevious /> },
         { val: 'Go to Mixpoint', icon: <SettingsBackupRestore /> },
         { val: 'Set Mixpoint', icon: <Adjust /> },
-        { val: 'Play', icon: <PlayArrow /> },
+        {
+          val: isPlaying ? 'Pause' : 'Play',
+          icon: isPlaying ? <Pause /> : <PlayArrow />,
+        },
         { val: 'Next Beat Marker', icon: <SkipNext /> },
       ].map(item => (
         <Button

@@ -90,8 +90,27 @@ const loadWaveformEvents = async ({
   if (adjustedBpm)
     waveform.setPlaybackRate(adjustedBpm / (track?.bpm || adjustedBpm))
 
-  // Configure wavesurfer event listeners
-  waveform.on('ready', () => {
+  // Setup for volume meter
+  let volumeMeterInterval: ReturnType<typeof setInterval> | number // placeholder for setInterval
+  // @ts-ignore
+  const analyzer = waveform.backend.analyser
+  const bufferLength = analyzer.frequencyBinCount
+  const dataArray = new Uint8Array(bufferLength)
+
+  const caclculateVolume = () => {
+    analyzer.getByteFrequencyData(dataArray)
+
+    let sum = 0
+    for (const amplitude of dataArray) {
+      sum += amplitude * amplitude
+    }
+
+    const volume = Math.sqrt(sum / (dataArray.length + 1000))
+
+    setVolumeState[trackId].volume(volume)
+  }
+
+  const onReady = () => {
     setAudioState.analyzing(prev => prev.filter(id => id !== trackId))
 
     // Set playhead to mixpoint if it exists
@@ -103,69 +122,53 @@ const loadWaveformEvents = async ({
       waveform.playhead.setPlayheadTime(currentPlayhead)
       waveform.seekAndCenter(1 / (waveform.getDuration() / currentPlayhead))
     }
-  })
-
-  waveform.on('seek', () => audioEvent.emit(trackId, 'seek', {}))
-
-  waveform.on('region-click', region => {
-    if (waveform.isPlaying()) return waveform.pause()
-
-    // Time gets inconsistent at 14 digits so need to round here
-    const time = waveform.getCurrentTime().toFixed(3)
-    const clickInsideOfPlayheadRegion =
-      waveform.playhead.playheadTime.toFixed(3) == region.start.toFixed(3)
-    const cursorIsAtPlayhead = time == waveform.playhead.playheadTime.toFixed(3)
-
-    if (cursorIsAtPlayhead && clickInsideOfPlayheadRegion) {
-      waveform.play()
-    } else if (clickInsideOfPlayheadRegion) {
-      // Take the user back to playhead
-      waveform.seekAndCenter(
-        1 / (waveform.getDuration() / waveform.playhead.playheadTime)
-      )
-    } else {
-      // Move playhead to new region (seek is somewhat disorienting)
-      waveform.playhead.setPlayheadTime(region.start)
-    }
-  })
-
-  let volumeMeterInterval: ReturnType<typeof setInterval> | number // placeholder for setInterval
-
-  const createVolumeMeter = () => {
-    // @ts-ignore
-    const analyzer = waveform.backend.analyser
-    const bufferLength = analyzer.frequencyBinCount
-    const dataArray = new Uint8Array(bufferLength)
-
-    const caclculateVolume = () => {
-      analyzer.getByteFrequencyData(dataArray)
-
-      let sum = 0
-      for (const amplitude of dataArray) {
-        sum += amplitude * amplitude
-      }
-
-      const volume = Math.sqrt(sum / (dataArray.length + 1000))
-
-      setVolumeState[trackId].volume(volume)
-    }
-
-    waveform.on('play', () => {
-      // Slow down sampling to 10ms
-      if (volumeMeterInterval > -1) clearInterval(volumeMeterInterval)
-      volumeMeterInterval = setInterval(() => caclculateVolume(), 15)
-
-      //todo change play button to pause button
-    })
-
-    waveform.on('pause', () => {
-      clearInterval(volumeMeterInterval)
-      // Set to zero on pause
-      setVolumeState[trackId].volume(0)
-    })
   }
 
-  createVolumeMeter()
+  const onPlay = () => {
+    // Slow down sampling to 10ms
+    if (volumeMeterInterval > -1) clearInterval(volumeMeterInterval)
+    volumeMeterInterval = setInterval(() => caclculateVolume(), 15)
+
+    // Set play state, used to modify play button
+    setAudioState.playing(prev => [...prev, trackId])
+  }
+
+  const onPause = () => {
+    clearInterval(volumeMeterInterval)
+    // Set to zero on pause
+    setVolumeState[trackId].volume(0)
+
+    // Set play state, used to modify play button
+    setAudioState.playing(prev => prev.filter(id => id !== trackId))
+  }
+
+  // Initialize wavesurfer event listeners
+  waveform.on('ready', onReady)
+  waveform.on('play', onPlay)
+  waveform.on('pause', onPause)
+  waveform.on('seek', () => audioEvent.emit(trackId, 'seek', {}))
+
+  // waveform.on('region-click', region => {
+  //   if (waveform.isPlaying()) return waveform.pause()
+
+  //   // Time gets inconsistent at 14 digits so need to round here
+  //   const time = waveform.getCurrentTime().toFixed(3)
+  //   const clickInsideOfPlayheadRegion =
+  //     waveform.playhead.playheadTime.toFixed(3) == region.start.toFixed(3)
+  //   const cursorIsAtPlayhead = time == waveform.playhead.playheadTime.toFixed(3)
+
+  //   if (cursorIsAtPlayhead && clickInsideOfPlayheadRegion) {
+  //     waveform.play()
+  //   } else if (clickInsideOfPlayheadRegion) {
+  //     // Take the user back to playhead
+  //     waveform.seekAndCenter(
+  //       1 / (waveform.getDuration() / waveform.playhead.playheadTime)
+  //     )
+  //   } else {
+  //     // Move playhead to new region (seek is somewhat disorienting)
+  //     waveform.playhead.setPlayheadTime(region.start)
+  //   }
+  // })
 }
 
 export { loadWaveformEvents, calcMarkers }

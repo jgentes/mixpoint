@@ -72,12 +72,35 @@ const muiTheme = extendMuiTheme({
 
         '.wavesurfer-marker': {
           marginLeft: '4px',
-          borderLeft: '2px solid #0492f7c1',
+          borderLeft: '2px solid rgba(4, 146, 247, 0.757)',
           zIndex: 3,
         },
 
         '.wavesurfer-marker > *': {
           display: 'none !important',
+        },
+
+        '.zoomview-container > wave': {
+          scrollbarColor: 'rgba(4, 146, 247, 0.5)transparent' /* track thumb */,
+          scrollbarWidth: 'thin' /* none, thin, or auto */,
+
+          '&::-webkit-scrollbar': {
+            width: '20px',
+          },
+
+          '&::-webkit-scrollbar-corner, &::-webkit-scrollbar-track': {
+            backgroundColor: 'transparent',
+          },
+
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'rgba(4, 146, 247, 0.5)',
+            borderRadius: '20px',
+            border: '6px solid transparent',
+            backgroundClip: 'content-box',
+            '&:hover': {
+              backgroundColor: 'rgb(4, 146, 247)',
+            },
+          },
         },
       },
     },
