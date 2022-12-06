@@ -49,14 +49,6 @@ const calcMarkers = async (
   // Now that we have zerotime, move forward with markers based on the bpm
   waveform.markers.clear()
   for (let time = startPoint; time < duration; time += skipLength) {
-    // regions.push({
-    //   start: time,
-    //   end: time + skipLength,
-    //   color: 'rgba(255, 255, 255, 0)',
-    //   drag: false,
-    //   resize: false,
-    //   showTooltip: false,
-    // })
     waveform.markers.add({ time })
   }
   return {
@@ -147,28 +139,6 @@ const loadWaveformEvents = async ({
   waveform.on('play', onPlay)
   waveform.on('pause', onPause)
   waveform.on('seek', () => audioEvent.emit(trackId, 'seek', {}))
-
-  // waveform.on('region-click', region => {
-  //   if (waveform.isPlaying()) return waveform.pause()
-
-  //   // Time gets inconsistent at 14 digits so need to round here
-  //   const time = waveform.getCurrentTime().toFixed(3)
-  //   const clickInsideOfPlayheadRegion =
-  //     waveform.playhead.playheadTime.toFixed(3) == region.start.toFixed(3)
-  //   const cursorIsAtPlayhead = time == waveform.playhead.playheadTime.toFixed(3)
-
-  //   if (cursorIsAtPlayhead && clickInsideOfPlayheadRegion) {
-  //     waveform.play()
-  //   } else if (clickInsideOfPlayheadRegion) {
-  //     // Take the user back to playhead
-  //     waveform.seekAndCenter(
-  //       1 / (waveform.getDuration() / waveform.playhead.playheadTime)
-  //     )
-  //   } else {
-  //     // Move playhead to new region (seek is somewhat disorienting)
-  //     waveform.playhead.setPlayheadTime(region.start)
-  //   }
-  // })
 }
 
 export { loadWaveformEvents, calcMarkers }

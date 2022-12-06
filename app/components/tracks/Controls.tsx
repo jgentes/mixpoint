@@ -317,9 +317,9 @@ const MixControl = ({ tracks }: { tracks: MixState['tracks'] }) => {
         const val = e.target.value as NavEvent
 
         setState(val)
-        tracks?.forEach(trackId =>
+        tracks?.forEach(trackId => {
           audioEvent.emit(trackId!, 'nav', { effect: val })
-        )
+        })
       }}
     >
       {[

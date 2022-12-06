@@ -81,7 +81,8 @@ const muiTheme = extendMuiTheme({
         },
 
         '.zoomview-container > wave': {
-          scrollbarColor: 'rgba(4, 146, 247, 0.5)transparent' /* track thumb */,
+          scrollbarColor:
+            'rgba(4, 146, 247, 0.5) transparent' /* track thumb */,
           scrollbarWidth: 'thin' /* none, thin, or auto */,
 
           '&::-webkit-scrollbar': {
@@ -89,7 +90,8 @@ const muiTheme = extendMuiTheme({
           },
 
           '&::-webkit-scrollbar-corner, &::-webkit-scrollbar-track': {
-            backgroundColor: 'transparent',
+            borderTop: '1px solid var(--joy-palette-divider)',
+            backgroundColor: 'var(--joy-palette-background-surface)',
           },
 
           '&::-webkit-scrollbar-thumb': {

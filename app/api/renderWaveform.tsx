@@ -68,6 +68,7 @@ const Waveform = ({
         plugins: [
           PlayheadPlugin.create({
             returnOnPause: false,
+            moveOnSeek: false,
             draw: true,
           }),
           CursorPlugin.create({

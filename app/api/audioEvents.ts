@@ -63,11 +63,11 @@ const loadAudioEvents = async ({
 
   // Scroll to previous/next beat marker
   const seekEvent = ({
-    time: startTime = waveform.playhead.playheadTime,
+    time: startTime = waveform.getCurrentTime(),
     direction,
   }: {
     time?: number
-    direction?: 'previous' | 'next'
+    direction?: 'previous' | 'next' | 'none'
   }) => {
     const { markers = [] } = waveform.markers || {}
 
@@ -80,7 +80,8 @@ const loadAudioEvents = async ({
 
     // Estimate that we're at the right time and move playhead (and center if using prev/next buttons)
     if (time && (time > startTime + 0.005 || time < startTime - 0.005)) {
-      if (direction) waveform.skipForward(time - startTime)
+      if (direction)
+        waveform.skipForward(direction == 'none' ? 0 : time - startTime)
       else {
         waveform.playhead.setPlayheadTime(time)
         // Only update mixpoint if we're not scrolling with the mouse
@@ -158,8 +159,9 @@ const loadAudioEvents = async ({
     calcMarkers(newTrack, waveform)
   }
 
-  const navEvent = ({ effect }: { effect: NavEvent }): void => {
-    const mixpoint = waveform.playhead.playheadTime
+  const navEvent = async ({ effect }: { effect: NavEvent }): Promise<void> => {
+    // '0:01:00' converts to 1 using convertToSecs
+    const { mixpoint = '0:01:00' } = (await getTrackState(trackId)) || {}
 
     switch (effect) {
       case 'Play':
@@ -176,7 +178,9 @@ const loadAudioEvents = async ({
       //   })
       //   break
       case 'Go to Mixpoint':
-        waveform.seekAndCenter(1 / (waveform.getDuration() / mixpoint))
+        waveform.seekAndCenter(
+          1 / (waveform.getDuration() / convertToSecs(mixpoint))
+        )
         waveform.pause()
         break
       case 'Previous Beat Marker':
