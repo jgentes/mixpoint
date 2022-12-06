@@ -1,23 +1,12 @@
 import { Card, Typography } from '@mui/joy'
-import {
-  Box,
-  Button as ButtonGroupButton,
-  ButtonGroup,
-  LinearProgress,
-} from '@mui/material'
-import { useEffect, useState } from 'react'
-import { getState, removeFromMix, Track, TrackState } from '~/api/dbHandlers'
+import { Box } from '@mui/material'
+import { Track } from '~/api/dbHandlers'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import { BpmControl, MixpointControl } from '~/components/tracks/Controls'
+import Dropzone from '~/components/tracks/Dropzone'
 import TrackName from '~/components/tracks/TrackName'
 
 const OverviewCard = ({ trackId }: { trackId: Track['id'] }) => {
-  const [playing, setPlaying] = useState(false)
-  const [analyzing, setAnalyzing] = useState(false)
-  const [bpmTimer, setBpmTimer] = useState<number>()
-
-  if (!trackId) return null
-
   // const setMixPoint = async () => {
   //   //const id = await addMix(mixState.tracks.map(t => t.id))
   //   //await updateMixState({ ...mixState, mix: { id } })
@@ -71,32 +60,38 @@ const OverviewCard = ({ trackId }: { trackId: Track['id'] }) => {
         width: '30%', // this just restricts it from going too wide
       }}
     >
-      <Card
-        id={`overview-container_${trackId}`}
-        sx={{
-          p: 0,
-          border: '1px solid',
-          borderColor: 'action.focus',
-          borderRadius: 'sm',
-          bgcolor: 'background.body',
-          overflow: 'hidden',
-          height: '25px',
-          zIndex: 1,
-        }}
-      />
-      <VolumeMeter trackId={trackId} />
+      {!trackId ? (
+        <Dropzone />
+      ) : (
+        <>
+          <Card
+            id={`overview-container_${trackId}`}
+            sx={{
+              p: 0,
+              border: '1px solid',
+              borderColor: 'action.focus',
+              borderRadius: 'sm',
+              bgcolor: 'background.body',
+              overflow: 'hidden',
+              height: '25px',
+              zIndex: 1,
+            }}
+          />
+          <VolumeMeter trackId={trackId} />
 
-      {overviewFooter}
+          {overviewFooter}
 
-      <Typography
-        sx={{
-          fontSize: 'sm',
-          fontWeight: 'md',
-          pl: '3px',
-        }}
-      >
-        {TrackName(trackId)}
-      </Typography>
+          <Typography
+            sx={{
+              fontSize: 'sm',
+              fontWeight: 'md',
+              pl: '3px',
+            }}
+          >
+            {TrackName(trackId)}
+          </Typography>
+        </>
+      )}
     </Card>
   )
 }

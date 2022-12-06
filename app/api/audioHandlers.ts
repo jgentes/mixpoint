@@ -10,7 +10,7 @@ const processTracks = async (
   handles: (FileSystemFileHandle | FileSystemDirectoryHandle)[]
 ) => {
   const trackArray = await getTracksRecursively(handles)
-  await analyzeTracks(trackArray)
+  return await analyzeTracks(trackArray)
 }
 
 // The function iterates through file handles and collects the
@@ -124,8 +124,8 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
       sampleRate,
     }
 
-    updatedTracks.push(updatedTrack)
-    await putTracks([updatedTrack])
+    const [trackWithId] = await putTracks([updatedTrack])
+    updatedTracks.push(trackWithId)
 
     // Give Dexie a few ms to update the UI before removing analyzing state. This is to avoid the 'analyze' button appearing briefly.
     setTimeout(

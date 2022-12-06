@@ -56,7 +56,6 @@ const Waveform = ({
         barGap: 1,
         cursorColor: 'secondary.mainChannel',
         interact: true,
-        //skipLength,
         //@ts-ignore - author hasn't updated types for gradients
         waveColor: [
           'rgb(200, 165, 49)',

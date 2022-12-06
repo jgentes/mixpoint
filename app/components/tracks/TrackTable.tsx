@@ -153,7 +153,7 @@ const TrackTable = () => {
             {tracks.length ? null : processing ? (
               <TrackLoader style={{ margin: '50px auto' }} />
             ) : (
-              <div style={{ margin: 'auto', padding: '10px 20px 0' }}>
+              <div style={{ margin: 'auto', padding: '20px 20px 0' }}>
                 <Dropzone />
               </div>
             )}

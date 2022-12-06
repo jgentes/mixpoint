@@ -27,14 +27,10 @@ const MixView = () => {
           gap: 15,
         }}
       >
-        {tracks.map((id, i) => (
-          <Fragment key={i}>
-            <OverviewCard trackId={id} />
-            {tracks.length > 1 && i === 0 ? (
-              <MixControl tracks={tracks} />
-            ) : null}
-          </Fragment>
-        ))}
+        {/* Hardcoding 2 tracks for now */}
+        <OverviewCard trackId={tracks[0]} />
+        <MixControl tracks={tracks} />
+        <OverviewCard trackId={tracks[1]} />
       </div>
     </Box>
   )

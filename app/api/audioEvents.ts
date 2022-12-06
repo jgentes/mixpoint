@@ -63,7 +63,7 @@ const loadAudioEvents = async ({
 
   // Scroll to previous/next beat marker
   const seekEvent = ({
-    time: startTime = waveform.getCurrentTime(),
+    time: startTime = waveform.playhead.playheadTime,
     direction,
   }: {
     time?: number

@@ -1,4 +1,4 @@
-import { db, storeFile, Track } from '~/api/dbHandlers'
+import { addToMix, db, storeFile, Track } from '~/api/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
 import { processTracks } from './audioHandlers'
 
@@ -52,13 +52,18 @@ const getPermission = async (track: Track): Promise<File | null> => {
 }
 
 const browseFile = async () => {
-  const files: FileSystemFileHandle[] | never[] | undefined = await window
+  const files: FileSystemFileHandle[] | undefined = await window
     .showOpenFilePicker({ multiple: true })
     .catch(e => {
       if (e?.message?.includes('user aborted a request')) return []
     })
 
-  if (files) processTracks(files)
+  if (files) {
+    const tracks = (await processTracks(files)) || []
+
+    // Automatically add the track to the mix (usually because there is only 1 track in the mix)
+    if (tracks.length == 1) addToMix(tracks[0])
+  }
 }
 
 export { getPermission, browseFile }
