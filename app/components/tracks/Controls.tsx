@@ -304,79 +304,43 @@ const TrackNavControl = ({ trackId }: { trackId: TrackState['id'] }) => {
 }
 
 const MixControl = ({ tracks }: { tracks: MixState['tracks'] }) => {
-  const [state, setState] = useState<NavEvent>('Go to Mixpoint')
+  const [playing] = audioState.playing()
+  const isPlaying = playing.length
 
   return (
-    <RadioGroup
-      row
-      name="mixControl"
+    <ButtonGroup
+      color="inherit"
       variant="outlined"
-      value={state}
-      sx={{ height: 48 }}
-      onChange={e => {
-        const val = e.target.value as NavEvent
-
-        setState(val)
-        tracks?.forEach(trackId => {
-          audioEvent.emit(trackId!, 'nav', { effect: val })
-        })
-      }}
+      disableRipple
+      id="mixControl"
     >
       {[
         { val: 'Go to Mixpoint', icon: <SettingsBackupRestore /> },
         {
-          val: 'Pause',
-          icon: <Pause />,
+          val: isPlaying ? 'Pause' : 'Play',
+          icon: isPlaying ? <Pause /> : <PlayArrow />,
         },
-        { val: 'Play', icon: <PlayArrow /> },
       ].map(item => (
-        <Box
+        <Button
+          component="button"
+          onClick={e => {
+            const val = e.currentTarget.value as NavEvent
+            tracks?.forEach(trackId => {
+              audioEvent.emit(trackId!, 'nav', { effect: val })
+            })
+          }}
           key={item.val}
-          sx={theme => ({
-            position: 'relative',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: 48,
-            height: 48,
-            '&:not([data-first-child])': {
-              borderLeft: '1px solid',
-              borderColor: 'divider',
-              height: '99%',
-            },
-            [`&[data-first-child] .${radioClasses.action}`]: {
-              borderTopLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-              borderBottomLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-              bottom: '2px',
-              left: '-1px',
-            },
-            [`&[data-last-child] .${radioClasses.action}`]: {
-              borderTopRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-              borderBottomRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-              height: '101%',
-            },
-          })}
+          value={item.val}
+          title={item.val}
+          sx={{
+            '--Icon-color': 'var(--joy-palette-text-secondary)',
+            borderColor: 'var(--joy-palette-divider) !important',
+          }}
         >
-          <Radio
-            value={item.val}
-            disableIcon
-            overlay
-            label={item.icon}
-            variant={state == item.val ? 'soft' : 'plain'}
-            color="primary"
-            componentsProps={{
-              action: {
-                sx: {
-                  borderRadius: 0,
-                  transition: 'none',
-                },
-              },
-              label: { sx: { lineHeight: 0 } },
-            }}
-          />
-        </Box>
+          {item.icon}
+        </Button>
       ))}
-    </RadioGroup>
+    </ButtonGroup>
   )
 }
 
