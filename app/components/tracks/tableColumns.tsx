@@ -37,11 +37,12 @@ const createColumnDefinitions = (): {
   )
 
   const addToMixHandler = async (t: Track) => {
-    // if this is the first track in the mix, leave the drawer open
     const { tracks = [] } = await getState('mix')
-    if (!tracks.length) setTableState.openDrawer(true)
 
     await addToMix(t)
+
+    // if this is the first track in the mix, leave the drawer open
+    if (!tracks.length) setTableState.openDrawer(true)
   }
 
   const AddToMixButton = ({ track }: { track: Track }) => {

@@ -81,7 +81,11 @@ const loadAudioEvents = async ({
     // Estimate that we're at the right time and move playhead (and center if using prev/next buttons)
     if (time && (time > startTime + 0.005 || time < startTime - 0.005)) {
       if (direction) waveform.skipForward(time - startTime)
-      else waveform.playhead.setPlayheadTime(time)
+      else {
+        waveform.playhead.setPlayheadTime(time)
+        // Only update mixpoint if we're not scrolling with the mouse
+        putTrackState(trackId, { mixpoint: timeFormat(time) })
+      }
     }
   }
 
@@ -164,13 +168,13 @@ const loadAudioEvents = async ({
       case 'Pause':
         waveform.pause()
         break
-      case 'Set Mixpoint':
-        waveform.pause()
+      // case 'Set Mixpoint':
+      //   waveform.pause()
 
-        audioEvent.emit(trackId, 'mixpoint', {
-          mixpoint: timeFormat(mixpoint),
-        })
-        break
+      //   audioEvent.emit(trackId, 'mixpoint', {
+      //     mixpoint: timeFormat(mixpoint),
+      //   })
+      //   break
       case 'Go to Mixpoint':
         waveform.seekAndCenter(1 / (waveform.getDuration() / mixpoint))
         waveform.pause()

@@ -20,12 +20,18 @@ import {
 } from '@mui/joy'
 import { Button, ButtonGroup } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { audioEvent, AudioEvent, NavEvent } from '~/api/audioEvents'
+import {
+  audioEvent,
+  AudioEvent,
+  loadAudioEvents,
+  NavEvent,
+} from '~/api/audioEvents'
 import {
   db,
   getState,
   getTrackState,
   MixState,
+  putTrackState,
   removeFromMix,
   Track,
   TrackState,
@@ -272,7 +278,7 @@ const TrackNavControl = ({ trackId }: { trackId: TrackState['id'] }) => {
       {[
         { val: 'Previous Beat Marker', icon: <SkipPrevious /> },
         { val: 'Go to Mixpoint', icon: <SettingsBackupRestore /> },
-        { val: 'Set Mixpoint', icon: <Adjust /> },
+        //{ val: 'Set Mixpoint', icon: <Adjust /> },
         {
           val: isPlaying ? 'Pause' : 'Play',
           icon: isPlaying ? <Pause /> : <PlayArrow />,
@@ -387,9 +393,8 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
   const adjustMixpoint = async (newMixpoint: string) => {
     if (newMixpoint == mixpoint) return
 
-    //setMixpointVal(newMixpoint)
-
-    audioEvent.emit(trackId, 'mixpoint', { mixpoint: newMixpoint })
+    //audioEvent.emit(trackId, 'mixpoint', { mixpoint: newMixpoint })
+    //putTrackState(trackId, { mixpoint })
   }
 
   return (

@@ -35,8 +35,8 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
           display: 'flex',
           gap: 1,
           alignItems: 'center',
-          flexBasis: 'calc(50% - ((200px + 16px) / 2))', // center audio controls
-          maxWidth: 'calc(50% - ((200px + 16px) / 2))',
+          flexBasis: 'calc(50% - ((160px + 16px) / 2))', // center audio controls
+          maxWidth: 'calc(50% - ((160px + 16px) / 2))', // 160 is width of TrackNavControl
         }}
       >
         <EjectControl trackId={trackId} />
