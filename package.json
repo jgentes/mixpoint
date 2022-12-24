@@ -25,6 +25,7 @@
     "dexie-react-hooks": "^1.1.1",
     "jsdom": "^20.0.2",
     "moment": "^2.29.4",
+    "next": "^13.0.7",
     "notistack": "^2.0.5",
     "react": "^17",
     "react-dom": "^17",
