@@ -1,9 +1,8 @@
+import { getState, useLiveQuery } from '#/app/api/dbHandlers'
+import OverviewCard from '#/components/mixes/OverviewCard'
+import TrackCard from '#/components/mixes/TrackCard'
+import { MixControl } from '#/components/tracks/Controls'
 import { Box } from '@mui/joy'
-import { Fragment } from 'react'
-import { getState, useLiveQuery } from '~/api/dbHandlers'
-import OverviewCard from '~/components/mixes/OverviewCard'
-import TrackCard from '~/components/mixes/TrackCard'
-import { MixControl } from '~/components/tracks/Controls'
 
 const MixView = () => {
   const { tracks = [] } = useLiveQuery(() => getState('mix')) || {}

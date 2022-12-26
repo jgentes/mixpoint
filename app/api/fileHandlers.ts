@@ -1,5 +1,5 @@
-import { addToMix, db, storeFile, Track } from '~/api/dbHandlers'
-import { errorHandler } from '~/utils/notifications'
+import { addToMix, db, storeFile, Track } from '#/app/api/dbHandlers'
+import { errorHandler } from '#/app/utils/notifications'
 import { processTracks } from './audioHandlers'
 
 const _getFile = async (track: Track): Promise<File | null> => {

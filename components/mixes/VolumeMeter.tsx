@@ -1,6 +1,6 @@
+import { volumeState } from '#/app/api/appState'
+import { Track } from '#/app/api/dbHandlers'
 import { LinearProgress } from '@mui/material'
-import { volumeState } from '~/api/appState'
-import { Track } from '~/api/dbHandlers'
 
 const VolumeMeter = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null

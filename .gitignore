@@ -1,7 +1,34 @@
+# dependencies
 node_modules/
+/.pnp
+.pnp.js
+/.yarn
 .cache/
-build/
-dist/
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
 *.log
 todo.md
 web-audio-beat-detector/
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# local env files
+.env*
+!.env*.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo

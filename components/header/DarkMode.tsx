@@ -1,6 +1,8 @@
-import { ClientOnly } from 'remix-utils'
-import { useColorScheme, IconButton } from '@mui/joy'
+'use client'
+
 import { DarkModeRounded, LightModeRounded } from '@mui/icons-material'
+import { IconButton, useColorScheme } from '@mui/joy'
+import { Suspense } from 'react'
 
 const DarkMode = () => {
   const { mode, setMode } = useColorScheme()
@@ -22,15 +24,15 @@ const DarkMode = () => {
   )
 
   return (
-    <ClientOnly
+    <Suspense
       fallback={
         <IconButton variant="outlined" color="primary" size="sm">
           <LightModeRounded />
         </IconButton>
       }
     >
-      {() => <DarkModeButton />}
-    </ClientOnly>
+      <DarkModeButton />
+    </Suspense>
   )
 }
 

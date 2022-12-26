@@ -1,6 +1,6 @@
+import MixpointLogo from '#/app/components/MixpointLogo'
+import { render, screen } from '#/app/tests/testSetup'
 import { expect } from 'vitest'
-import MixpointLogo from '~/components/MixpointLogo'
-import { render, screen } from '~/tests/testSetup'
 
 beforeAll(() => render(<MixpointLogo />))
 

@@ -1,3 +1,17 @@
+'use client'
+
+import { setModalState, tableState } from '#/app/api/appState'
+import { analyzeTracks } from '#/app/api/audioHandlers'
+import {
+  AppState,
+  db,
+  getDirtyTracks,
+  removeTracks,
+  Track,
+  useLiveQuery,
+} from '#/app/api/dbHandlers'
+import { browseFile } from '#/app/api/fileHandlers'
+import { createColumnDefinitions } from '#/components/tracks/tableColumns'
 import { Add, Clear, Delete, SearchRounded } from '@mui/icons-material'
 import {
   Button,
@@ -18,18 +32,6 @@ import {
 import { alpha } from '@mui/material/styles'
 import { visuallyHidden } from '@mui/utils'
 import { ChangeEvent, MouseEvent, useMemo, useState } from 'react'
-import { analyzeTracks } from '~/api/audioHandlers'
-import {
-  AppState,
-  db,
-  getDirtyTracks,
-  removeTracks,
-  Track,
-  useLiveQuery,
-} from '~/api/dbHandlers'
-import { browseFile } from '~/api/fileHandlers'
-import { tableState, setModalState } from '~/api/appState'
-import { createColumnDefinitions } from '~/components/tracks/tableColumns'
 
 // Toolbar is on top of the table, includes search, info, and button bar
 const EnhancedTableToolbar = (props: { numSelected: number }) => {

@@ -1,8 +1,8 @@
 // This file handles application state that is not persisted through page refreshes, therefore not in IndexedDB
 
+import { Track } from '#/app/api/dbHandlers'
 import { ButtonProps } from '@mui/joy'
 import createStore from 'teaful'
-import { Track } from '~/api/dbHandlers'
 
 // AudioState captures whether audio is being analyzed, processed, or played
 const { useStore: audioState, setStore: setAudioState } = createStore<{

@@ -1,4 +1,21 @@
 import {
+  audioEvent,
+  AudioEvent,
+  loadAudioEvents,
+  NavEvent,
+} from '#/app/api/audioEvents'
+import {
+  db,
+  getState,
+  getTrackState,
+  MixState,
+  putTrackState,
+  removeFromMix,
+  Track,
+  TrackState,
+  useLiveQuery,
+} from '#/app/api/dbHandlers'
+import {
   Adjust,
   Eject,
   Pause,
@@ -20,25 +37,8 @@ import {
 } from '@mui/joy'
 import { Button, ButtonGroup } from '@mui/material'
 import { useEffect, useState } from 'react'
-import {
-  audioEvent,
-  AudioEvent,
-  loadAudioEvents,
-  NavEvent,
-} from '~/api/audioEvents'
-import {
-  db,
-  getState,
-  getTrackState,
-  MixState,
-  putTrackState,
-  removeFromMix,
-  Track,
-  TrackState,
-  useLiveQuery,
-} from '~/api/dbHandlers'
 
-import { audioState, tableState } from '~/api/appState'
+import { audioState, tableState } from '#/app/api/appState'
 
 const NumberControl = ({
   trackId,
@@ -253,7 +253,7 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackState['id'] }) => {
               fontSize: 12,
               color: 'text.secondary',
             }}
-            componentsProps={{
+            slotProps={{
               action: {
                 sx: { borderRadius: 0, transition: 'none' },
               },

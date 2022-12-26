@@ -1,10 +1,12 @@
+'use client'
+
+import { modalState } from '#/app/api/appState'
 import { WarningRounded } from '@mui/icons-material'
 import { Box, Button, Modal, ModalDialog, Typography } from '@mui/joy'
 import { Divider } from '@mui/material'
-import { modalState } from '~/api/appState'
 
 const ConfirmModal = () => {
-  const [confirmModal] = modalState()
+  const [confirmModal] = modalState() || {}
   const [openState, setOpenState] = modalState.openState()
 
   const closeModal = () => setOpenState(false)

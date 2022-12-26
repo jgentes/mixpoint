@@ -7,10 +7,11 @@ import {
   putTrackState,
   Track,
   TrackState,
-} from '~/api/dbHandlers'
-import { calcMarkers } from '~/api/waveformEvents'
-import { errorHandler } from '~/utils/notifications'
-import { convertToSecs, timeFormat } from '~/utils/tableOps'
+} from '#/app/api/dbHandlers'
+import { calcMarkers } from '#/app/api/waveformEvents'
+import { errorHandler } from '#/app/utils/notifications'
+import { convertToSecs, timeFormat } from '#/app/utils/tableOps'
+import { Console } from 'console'
 
 // AudioEvents are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
 

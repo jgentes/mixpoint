@@ -1,23 +1,37 @@
 {
   "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ES2020"],
+    "target": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "isolatedModules": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "resolveJsonModule": true,
-    "module": "NodeNext",
-    "moduleResolution": "node16",
-    "baseUrl": ".",
+    "module": "esnext",
+    "moduleResolution": "node",
     "noEmit": true,
-    "paths": {
-      "~/*": ["./app/*"]
-    },
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
     "strict": true,
-    "target": "ESNext",
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "#/*": ["./*"]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
-  "include": ["**/*.ts", "**/*.tsx", "remix.env.d.ts", "./global.d.ts"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "./global.d.ts"
+  ],
+  "exclude": ["node_modules"]
 }

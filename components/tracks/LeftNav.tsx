@@ -1,3 +1,5 @@
+'use client'
+
 import {
   Box,
   List,
@@ -10,8 +12,8 @@ import {
 
 import { Animation, JoinInner, RadioButtonUnchecked } from '@mui/icons-material'
 
-import Dropzone from '~/components/tracks/Dropzone'
-import { tableState } from '~/api/appState'
+import { tableState } from '#/app/api/appState'
+import Dropzone from '#/components/tracks/Dropzone'
 
 const LeftNav = () => {
   const [openDrawer, setOpenDrawer] = tableState.openDrawer()

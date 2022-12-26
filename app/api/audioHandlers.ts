@@ -1,9 +1,9 @@
+import { putState, putTracks, Track } from '#/app/api/dbHandlers'
+import { getPermission } from '#/app/api/fileHandlers'
 import { guess } from 'web-audio-beat-detector'
-import { putState, putTracks, Track } from '~/api/dbHandlers'
-import { getPermission } from '~/api/fileHandlers'
 
-import { setAudioState, setModalState, setTableState } from '~/api/appState'
-import { errorHandler } from '~/utils/notifications'
+import { setAudioState, setModalState, setTableState } from '#/app/api/appState'
+import { errorHandler } from '#/app/utils/notifications'
 
 // This is the main track processing workflow when files are added to the app
 const processTracks = async (

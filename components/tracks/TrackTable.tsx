@@ -1,3 +1,24 @@
+'use client'
+
+import { audioState, tableState } from '#/app/api/appState'
+import { db, getState, useLiveQuery } from '#/app/api/dbHandlers'
+import {
+  changePage,
+  changeRows,
+  formatMinutes,
+  getComparator,
+  isSelected,
+  selectAll,
+  sort,
+} from '#/app/utils/tableOps'
+import Dropzone, { itemsDropped } from '#/components/tracks/Dropzone'
+import LeftNav from '#/components/tracks/LeftNav'
+import {
+  EnhancedTableHead,
+  EnhancedTableToolbar,
+} from '#/components/tracks/tableHeader'
+import TableRows from '#/components/tracks/tableRows'
+import TrackLoader from '#/components/tracks/TrackLoader'
 import { Box, Sheet } from '@mui/joy'
 import {
   Table,
@@ -8,25 +29,6 @@ import {
   TableRow,
 } from '@mui/material'
 import { useState } from 'react'
-import { audioState, tableState } from '~/api/appState'
-import { db, getState, useLiveQuery } from '~/api/dbHandlers'
-import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
-import LeftNav from '~/components/tracks/LeftNav'
-import {
-  EnhancedTableHead,
-  EnhancedTableToolbar,
-} from '~/components/tracks/tableHeader'
-import TableRows from '~/components/tracks/tableRows'
-import TrackLoader from '~/components/tracks/TrackLoader'
-import {
-  changePage,
-  changeRows,
-  formatMinutes,
-  getComparator,
-  isSelected,
-  selectAll,
-  sort,
-} from '~/utils/tableOps'
 
 const TrackTable = () => {
   // Re-render when page or selection changes

@@ -1,5 +1,5 @@
+import { db, Track } from '#/app/api/dbHandlers'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, Track } from '~/api/dbHandlers'
 
 const TrackName = (trackId: Track['id']) => {
   if (!trackId) return null

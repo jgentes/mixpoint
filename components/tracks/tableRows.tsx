@@ -1,3 +1,6 @@
+import { tableState } from '#/app/api/appState'
+import { Track } from '#/app/api/dbHandlers'
+import { rowClick } from '#/app/utils/tableOps'
 import { Card, Checkbox } from '@mui/joy'
 import {
   Collapse,
@@ -8,9 +11,6 @@ import {
   TableRow,
 } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
-import { tableState } from '~/api/appState'
-import { Track } from '~/api/dbHandlers'
-import { rowClick } from '~/utils/tableOps'
 import { createColumnDefinitions } from './tableColumns'
 
 const TableRows = ({

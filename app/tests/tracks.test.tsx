@@ -1,8 +1,8 @@
+import Dropzone from '#/app/components/Dropzone'
+import { render, screen } from '#/app/tests/testSetup'
 import '@testing-library/jest-dom'
 import { waitFor } from '@testing-library/react'
-import { expect, assert, test } from 'vitest'
-import Dropzone from '~/components/Dropzone'
-import { render, screen } from '~/tests/testSetup'
+import { assert, expect, test } from 'vitest'
 
 test('Dropzone is visible', () => {
   render(<Dropzone />)

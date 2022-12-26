@@ -1,5 +1,5 @@
+import InitialLoader from '#/components/InitialLoader'
 import { useParams } from '@remix-run/react'
-import InitialLoader from '~/components/InitialLoader'
 
 const notFound = () => {
   const url = useParams()?.['*']

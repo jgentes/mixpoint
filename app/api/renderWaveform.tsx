@@ -1,11 +1,13 @@
+'use client'
+
+import { setAudioState } from '#/app/api/appState'
+import { audioEvent, loadAudioEvents } from '#/app/api/audioEvents'
+import { db, Track } from '#/app/api/dbHandlers'
+import { loadWaveformEvents } from '#/app/api/waveformEvents'
+import { errorHandler } from '#/app/utils/notifications'
 import { Card } from '@mui/joy'
 import { SxProps } from '@mui/joy/styles/types'
 import { useEffect } from 'react'
-import { setAudioState } from '~/api/appState'
-import { audioEvent, loadAudioEvents } from '~/api/audioEvents'
-import { db, Track } from '~/api/dbHandlers'
-import { loadWaveformEvents } from '~/api/waveformEvents'
-import { errorHandler } from '~/utils/notifications'
 import { getPermission } from './fileHandlers'
 
 // Only load WaveSurfer on the client

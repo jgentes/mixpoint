@@ -1,10 +1,10 @@
+import { Track } from '#/app/api/dbHandlers'
+import VolumeMeter from '#/components/mixes/VolumeMeter'
+import { BpmControl, MixpointControl } from '#/components/tracks/Controls'
+import Dropzone from '#/components/tracks/Dropzone'
+import TrackName from '#/components/tracks/TrackName'
 import { Card, Typography } from '@mui/joy'
 import { Box } from '@mui/material'
-import { Track } from '~/api/dbHandlers'
-import VolumeMeter from '~/components/mixes/VolumeMeter'
-import { BpmControl, MixpointControl } from '~/components/tracks/Controls'
-import Dropzone from '~/components/tracks/Dropzone'
-import TrackName from '~/components/tracks/TrackName'
 
 const OverviewCard = ({ trackId }: { trackId: Track['id'] }) => {
   // const setMixPoint = async () => {

@@ -1,18 +1,17 @@
-import { Card, Typography } from '@mui/joy'
-import { Box } from '@mui/material'
-import { ClientOnly } from 'remix-utils'
-import { audioState } from '~/api/appState'
-import { Track } from '~/api/dbHandlers'
-import Waveform from '~/api/renderWaveform'
+import { audioState } from '#/app/api/appState'
+import { Track } from '#/app/api/dbHandlers'
+import Waveform from '#/app/api/renderWaveform'
+import { errorHandler } from '#/app/utils/notifications'
 import {
   BeatResolutionControl,
   EjectControl,
   OffsetControl,
   TrackNavControl,
-} from '~/components/tracks/Controls'
-import Loader from '~/components/tracks/TrackLoader'
-import TrackName from '~/components/tracks/TrackName'
-import { errorHandler } from '~/utils/notifications'
+} from '#/components/tracks/Controls'
+import Loader from '#/components/tracks/TrackLoader'
+import TrackName from '#/components/tracks/TrackName'
+import { Card, Typography } from '@mui/joy'
+import { Box } from '@mui/material'
 
 const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) throw errorHandler('Please try uploading the track again.')
@@ -90,9 +89,7 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
         borderColor: 'action.selected',
       }}
     >
-      <ClientOnly>
-        {() => <Waveform trackId={trackId} sx={loaderSx} />}
-      </ClientOnly>
+      <Waveform trackId={trackId} sx={loaderSx} />
 
       {trackFooter}
 

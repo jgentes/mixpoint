@@ -1,7 +1,6 @@
 // This file provides a few helper functions for interacting with the database
-import { useLiveQuery } from 'dexie-react-hooks'
-import { audioEvent } from '~/api/audioEvents'
-import { getPermission } from '~/api/fileHandlers'
+import { audioEvent } from '#/app/api/audioEvents'
+import { getPermission } from '#/app/api/fileHandlers'
 import {
   __AppState as AppState,
   __db as db,
@@ -13,8 +12,9 @@ import {
   __StateTypes as StateTypes,
   __Track as Track,
   __TrackState as TrackState,
-} from '~/api/__dbSchema'
-import { errorHandler } from '~/utils/notifications'
+} from '#/app/api/__dbSchema'
+import { errorHandler } from '#/app/utils/notifications'
+import { useLiveQuery } from 'dexie-react-hooks'
 
 const FILE_STORE_LIMIT = 50
 

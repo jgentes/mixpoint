@@ -1,10 +1,10 @@
+import { setAudioState, setVolumeState } from '#/app/api/appState'
+import { audioEvent } from '#/app/api/audioEvents'
+import { analyzeTracks } from '#/app/api/audioHandlers'
+import { db, getTrackState, Track, TrackState } from '#/app/api/dbHandlers'
+import { errorHandler } from '#/app/utils/notifications'
+import { convertToSecs } from '#/app/utils/tableOps'
 import WaveSurfer from 'wavesurfer.js/src/wavesurfer'
-import { setAudioState, setVolumeState } from '~/api/appState'
-import { audioEvent } from '~/api/audioEvents'
-import { analyzeTracks } from '~/api/audioHandlers'
-import { db, getTrackState, Track, TrackState } from '~/api/dbHandlers'
-import { errorHandler } from '~/utils/notifications'
-import { convertToSecs } from '~/utils/tableOps'
 
 // WaveformEvents are emitted by interaction with the Waveform, such as seek, region interactions, etc, as opposed to external button events handled by AudioEvents
 
@@ -138,7 +138,8 @@ const loadWaveformEvents = async ({
   waveform.on('ready', onReady)
   waveform.on('play', onPlay)
   waveform.on('pause', onPause)
-  waveform.on('seek', () => audioEvent.emit(trackId, 'seek', {}))
+  waveform.on('seek', () => console.log('seek'))
+  //waveform.on('seek', () => audioEvent.emit(trackId, 'seek', {}))
 }
 
 export { loadWaveformEvents, calcMarkers }
