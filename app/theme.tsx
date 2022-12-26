@@ -232,7 +232,7 @@ const joyTheme = extendJoyTheme({
           dark: '#0059B2',
           contrastText: 'rgba(0, 0, 0, 0.87)',
         },
-        divider: 'rgba(194, 224, 255, 0.08)',
+        divider: '#c2e0ff14',
         background: {
           body: '#001E3C',
           surface: '#0A1929',

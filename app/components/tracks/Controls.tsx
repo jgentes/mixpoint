@@ -230,7 +230,7 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackState['id'] }) => {
             height: 24,
             '&:not([data-first-child])': {
               borderLeft: '1px solid',
-              borderColor: 'divider',
+              borderColor: theme.palette.divider,
             },
             [`&[data-first-child] .${radioClasses.action}`]: {
               borderTopLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
@@ -291,10 +291,10 @@ const TrackNavControl = ({ trackId }: { trackId: TrackState['id'] }) => {
           key={item.val}
           value={item.val}
           title={item.val}
-          sx={{
-            '--Icon-color': 'var(--joy-palette-text-secondary)',
-            borderColor: 'var(--joy-palette-divider) !important',
-          }}
+          sx={theme => ({
+            '--Icon-color': theme.palette.text.secondary,
+            borderColor: 'transparent !important',
+          })}
         >
           {item.icon}
         </Button>
@@ -332,30 +332,33 @@ const MixControl = ({ tracks }: { tracks: MixState['tracks'] }) => {
       ].map(item => (
         <Box
           key={item.val}
-          sx={theme => ({
-            position: 'relative',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: 48,
-            height: 48,
-            '&:not([data-first-child])': {
-              borderLeft: '1px solid',
-              borderColor: 'divider',
-              height: '99%',
-            },
-            [`&[data-first-child] .${radioClasses.action}`]: {
-              borderTopLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-              borderBottomLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-              bottom: '2px',
-              left: '-1px',
-            },
-            [`&[data-last-child] .${radioClasses.action}`]: {
-              borderTopRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-              borderBottomRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-              height: '101%',
-            },
-          })}
+          sx={theme => {
+            console.log(theme)
+            return {
+              position: 'relative',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: 48,
+              height: 48,
+              '&:not([data-first-child])': {
+                borderLeft: '1px solid',
+                borderColor: `${theme.palette.divider} !important`,
+                height: '99%',
+              },
+              [`&[data-first-child] .${radioClasses.action}`]: {
+                borderTopLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+                borderBottomLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+                bottom: '2px',
+                left: '-1px',
+              },
+              [`&[data-last-child] .${radioClasses.action}`]: {
+                borderTopRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+                borderBottomRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+                height: '101%',
+              },
+            }
+          }}
         >
           <Radio
             value={item.val}
