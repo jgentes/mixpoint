@@ -1,9 +1,9 @@
 import { Card, Typography } from '@mui/joy'
 import { Box } from '@mui/material'
 import { ClientOnly } from 'remix-utils'
-import { audioState } from '~/api/appState'
 import { Track } from '~/api/dbHandlers'
 import Waveform from '~/api/renderWaveform'
+import { audioState } from '~/api/uiState'
 import {
   BeatResolutionControl,
   EjectControl,

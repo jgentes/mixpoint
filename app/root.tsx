@@ -5,13 +5,29 @@ import PublicSansFont from '@fontsource/public-sans/latin.css'
 import { CssVarsProvider } from '@mui/joy/styles'
 import { CssBaseline } from '@mui/material'
 import { LinksFunction, MetaFunction } from '@remix-run/node'
-import { Links, LiveReload, Meta, Outlet, Scripts } from '@remix-run/react'
+import {
+  Links,
+  LiveReload,
+  Meta,
+  Outlet,
+  Scripts,
+  useLoaderData,
+} from '@remix-run/react'
 import { SnackbarProvider } from 'notistack'
 import { useEffect, useState } from 'react'
 import { ClientOnly } from 'remix-utils'
 import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import { theme } from '~/theme'
+
+const loader = async () => {
+  return {
+    ENV: {
+      BANANA_API_KEY: process.env.BANANA_API_KEY,
+      BANANA_MODEL_KEY: process.env.BANANA_MODEL_KEY,
+    },
+  }
+}
 
 const meta: MetaFunction = () => {
   return {
@@ -31,18 +47,27 @@ const links: LinksFunction = () => [
   { rel: 'stylesheet', href: PublicSansFont },
 ]
 
-const HtmlDoc = ({ children }: { children: React.ReactNode }) => (
-  <html lang="en">
-    <head>
-      <Meta />
-      <Links />
-    </head>
-    <body>
-      <LiveReload />
-      {children}
-    </body>
-  </html>
-)
+const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
+  const data = useLoaderData<typeof loader>()
+  return (
+    <html lang="en">
+      <head>
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <LiveReload />
+        {children}
+        <script
+          // https://remix.run/docs/en/v1/guides/envvars
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
+          }}
+        />
+      </body>
+    </html>
+  )
+}
 
 const ThemeLoader = ({ noSplash }: { noSplash?: boolean }) => {
   const [loading, setLoading] = useState(true)
@@ -80,4 +105,4 @@ const App = () => (
   </HtmlDoc>
 )
 
-export { App as default, ThemeLoader, meta, links }
+export { loader, App as default, ThemeLoader, meta, links }

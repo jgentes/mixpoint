@@ -3,7 +3,6 @@ import { Box, Chip } from '@mui/joy'
 import { TableCellProps } from '@mui/material'
 import { SxProps } from '@mui/material/styles'
 import moment from 'moment'
-import { audioState, setTableState } from '~/api/appState'
 import { analyzeTracks } from '~/api/audioHandlers'
 import {
   addToMix,
@@ -12,6 +11,7 @@ import {
   Track,
   useLiveQuery,
 } from '~/api/dbHandlers'
+import { audioState, setTableState } from '~/api/uiState'
 import TrackLoader from '~/components/tracks/TrackLoader'
 import { formatMinutes, rowClick } from '~/utils/tableOps'
 

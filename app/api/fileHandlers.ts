@@ -66,4 +66,8 @@ const browseFile = async () => {
   }
 }
 
+const getStemDir = () => {
+  // Has the user specified a stemDir?
+}
+
 export { getPermission, browseFile }

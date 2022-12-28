@@ -10,8 +10,8 @@ import {
 
 import { Animation, JoinInner, RadioButtonUnchecked } from '@mui/icons-material'
 
+import { tableState } from '~/api/uiState'
 import Dropzone from '~/components/tracks/Dropzone'
-import { tableState } from '~/api/appState'
 
 const LeftNav = () => {
   const [openDrawer, setOpenDrawer] = tableState.openDrawer()

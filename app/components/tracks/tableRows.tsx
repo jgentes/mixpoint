@@ -8,8 +8,8 @@ import {
   TableRow,
 } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
-import { tableState } from '~/api/appState'
 import { Track } from '~/api/dbHandlers'
+import { tableState } from '~/api/uiState'
 import { rowClick } from '~/utils/tableOps'
 import { createColumnDefinitions } from './tableColumns'
 

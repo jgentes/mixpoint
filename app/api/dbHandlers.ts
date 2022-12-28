@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { audioEvent } from '~/api/audioEvents'
 import { getPermission } from '~/api/fileHandlers'
 import {
-  __AppState as AppState,
+  __UserState as UserState,
   __db as db,
   __FileStore as FileStore,
   __Mix as Mix,
@@ -164,7 +164,7 @@ export type {
   TrackState,
   MixState,
   SetState,
-  AppState,
+  UserState,
   StateTypes,
   FileStore,
 }

@@ -5,3 +5,4 @@ dist/
 *.log
 todo.md
 web-audio-beat-detector/
+.env

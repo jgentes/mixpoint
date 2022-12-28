@@ -1,7 +1,7 @@
 import { WarningRounded } from '@mui/icons-material'
 import { Box, Button, Modal, ModalDialog, Typography } from '@mui/joy'
 import { Divider } from '@mui/material'
-import { modalState } from '~/api/appState'
+import { modalState } from '~/api/uiState'
 
 const ConfirmModal = () => {
   const [confirmModal] = modalState()

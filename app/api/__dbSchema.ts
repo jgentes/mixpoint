@@ -13,7 +13,7 @@ class MixpointDb extends Dexie {
   sets: Dexie.Table<Set, number>
   mixState: Dexie.Table<MixState>
   setState: Dexie.Table<SetState>
-  appState: Dexie.Table<AppState>
+  userState: Dexie.Table<UserState>
   fileStore: Dexie.Table<FileStore>
 
   constructor() {
@@ -24,7 +24,7 @@ class MixpointDb extends Dexie {
       sets: '++id, mixes',
       mixState: 'date',
       setState: 'date',
-      appState: 'date',
+      UserState: 'date',
       fileStore: 'id',
     })
 
@@ -33,7 +33,7 @@ class MixpointDb extends Dexie {
     this.sets = this.table('sets')
     this.mixState = this.table('mixState')
     this.setState = this.table('setState')
-    this.appState = this.table('appState')
+    this.userState = this.table('UserState')
     this.fileStore = this.table('fileStore')
   }
 }
@@ -110,10 +110,12 @@ type SetState = Partial<{
   setId: Set['id']
 }>
 
-type AppState = Partial<{
+type UserState = Partial<{
   date: Date
   sortDirection: 'asc' | 'desc'
   sortColumn: keyof Track // track table order property
+  stemDir: string // local folder on file system to store stems
+  stemDirHandle: FileSystemDirectoryHandle
 }>
 
 // Note TrackState is not a table. Track states are contained in MixState
@@ -128,7 +130,7 @@ type TrackState = Partial<{
 type StateTypes = {
   mix: MixState
   set: SetState
-  app: AppState
+  user: UserState
 }
 
 // db hooks to limit the number of rows in a state table
@@ -142,7 +144,7 @@ const createHooks = (table: keyof StateTypes) => {
   })
 }
 
-const tables = ['mix', 'set', 'app'] as const
+const tables = ['mix', 'set', 'user'] as const
 tables.forEach(table => createHooks(table))
 
 // Avoid having two files export same type names
@@ -153,7 +155,7 @@ export type {
   TrackState as __TrackState,
   MixState as __MixState,
   SetState as __SetState,
-  AppState as __AppState,
+  UserState as __UserState,
   StateTypes as __StateTypes,
   FileStore as __FileStore,
 }

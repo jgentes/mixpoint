@@ -20,7 +20,7 @@ import { visuallyHidden } from '@mui/utils'
 import { ChangeEvent, MouseEvent, useMemo, useState } from 'react'
 import { analyzeTracks } from '~/api/audioHandlers'
 import {
-  AppState,
+  UserState,
   db,
   getDirtyTracks,
   removeTracks,
@@ -28,7 +28,7 @@ import {
   useLiveQuery,
 } from '~/api/dbHandlers'
 import { browseFile } from '~/api/fileHandlers'
-import { tableState, setModalState } from '~/api/appState'
+import { setModalState, tableState } from '~/api/uiState'
 import { createColumnDefinitions } from '~/components/tracks/tableColumns'
 
 // Toolbar is on top of the table, includes search, info, and button bar
@@ -175,8 +175,8 @@ const EnhancedTableHead = (props: {
   numSelected: number
   onRequestSort: (event: MouseEvent<unknown>, property: keyof Track) => void
   onSelectAllClick: (event: ChangeEvent<HTMLInputElement>) => void
-  sortDirection: AppState['sortDirection']
-  sortColumn: AppState['sortColumn']
+  sortDirection: UserState['sortDirection']
+  sortColumn: UserState['sortColumn']
   rowCount: number
 }) => {
   const {

@@ -1,8 +1,8 @@
 import WaveSurfer from 'wavesurfer.js/src/wavesurfer'
-import { setAudioState, setVolumeState } from '~/api/appState'
 import { audioEvent } from '~/api/audioEvents'
 import { analyzeTracks } from '~/api/audioHandlers'
 import { db, getTrackState, Track, TrackState } from '~/api/dbHandlers'
+import { setAudioState, setVolumeState } from '~/api/uiState'
 import { errorHandler } from '~/utils/notifications'
 import { convertToSecs } from '~/utils/tableOps'
 

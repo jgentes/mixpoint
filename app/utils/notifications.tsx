@@ -1,4 +1,4 @@
-import { notificationState } from '~/api/appState'
+import { notificationState } from '~/api/uiState'
 
 //const [notification, setNotification] = notificationState()
 

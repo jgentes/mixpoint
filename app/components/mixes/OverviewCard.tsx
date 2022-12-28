@@ -1,10 +1,11 @@
-import { Card, Typography } from '@mui/joy'
+import { Button, Card, Typography } from '@mui/joy'
 import { Box } from '@mui/material'
-import { Track } from '~/api/dbHandlers'
+import { db, Track } from '~/api/dbHandlers'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import { BpmControl, MixpointControl } from '~/components/tracks/Controls'
 import Dropzone from '~/components/tracks/Dropzone'
 import TrackName from '~/components/tracks/TrackName'
+import { errorHandler } from '~/utils/notifications'
 
 const OverviewCard = ({ trackId }: { trackId: Track['id'] }) => {
   // const setMixPoint = async () => {
@@ -32,6 +33,48 @@ const OverviewCard = ({ trackId }: { trackId: Track['id'] }) => {
   //   {timeFormat(to?.mixPoint || 0)}
   // </div>
   // )
+
+  const GetStemsButton = () => {
+    if (!trackId) return null
+
+    // TODO: remove env vars from here !important
+    const postBody = {
+      apiKey: window.ENV.BANANA_API_KEY,
+      modelKey: window.ENV.BANANA_MODEL_KEY,
+      modelInputs: {
+        file: {
+          mime: '@file/mpeg',
+          name: 'song.mp3',
+          data: '', // base64 encoded file
+        },
+      },
+    }
+
+    const getStem = async () => {
+      const { file } = (await db.fileStore.get(trackId)) || {}
+      console.log('file:', file)
+      if (!file)
+        throw errorHandler('No file found for track, try re-adding it.')
+
+      // const res = await fetch('https://api.banana.dev/start/v4', {
+      //   method: 'post',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(postBody),
+      // })
+
+      // if (!res.ok) {
+      //   const message = `An error has occurred: ${res.status} - ${res.statusText}`
+      //   throw errorHandler(message)
+      // }
+
+      // const data = await res.json()
+      // console.log(data)
+    }
+
+    return <Button onClick={getStem}>Get stems</Button>
+  }
 
   const overviewFooter = (
     <Box
@@ -80,6 +123,8 @@ const OverviewCard = ({ trackId }: { trackId: Track['id'] }) => {
           <VolumeMeter trackId={trackId} />
 
           {overviewFooter}
+
+          <GetStemsButton />
 
           <Typography
             sx={{

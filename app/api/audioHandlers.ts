@@ -2,7 +2,7 @@ import { guess } from 'web-audio-beat-detector'
 import { putState, putTracks, Track } from '~/api/dbHandlers'
 import { getPermission } from '~/api/fileHandlers'
 
-import { setAudioState, setModalState, setTableState } from '~/api/appState'
+import { setAudioState, setModalState, setTableState } from '~/api/uiState'
 import { errorHandler } from '~/utils/notifications'
 
 // This is the main track processing workflow when files are added to the app
@@ -22,7 +22,7 @@ async function getTracksRecursively(
   const trackArray: Partial<Track>[] = []
 
   // Change sort order to lastModified so new tracks are visible at the top
-  await putState('app', { sortColumn: 'lastModified', sortDirection: 'desc' })
+  await putState('user', { sortColumn: 'lastModified', sortDirection: 'desc' })
 
   const filesToTracks = async (
     fileOrDirectoryHandle: FileSystemFileHandle | FileSystemDirectoryHandle,
@@ -100,7 +100,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
   for (const track of tracks) {
     if (!sorted) {
       // Change sort order to lastModified so new tracks are visible at the top
-      await putState('app', {
+      await putState('user', {
         sortColumn: 'lastModified',
         sortDirection: 'desc',
       })

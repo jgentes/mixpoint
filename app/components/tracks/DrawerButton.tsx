@@ -1,6 +1,6 @@
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material'
 import { Button } from '@mui/joy'
-import { tableState } from '~/api/appState'
+import { tableState } from '~/api/uiState'
 
 const DrawerButton = () => {
   const [openDrawer, setOpenDrawer] = tableState.openDrawer()

@@ -38,7 +38,7 @@ import {
   useLiveQuery,
 } from '~/api/dbHandlers'
 
-import { audioState, tableState } from '~/api/appState'
+import { audioState, tableState } from '~/api/uiState'
 
 const NumberControl = ({
   trackId,
