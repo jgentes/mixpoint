@@ -333,7 +333,6 @@ const MixControl = ({ tracks }: { tracks: MixState['tracks'] }) => {
         <Box
           key={item.val}
           sx={theme => {
-            console.log(theme)
             return {
               position: 'relative',
               display: 'flex',

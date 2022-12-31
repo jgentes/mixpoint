@@ -114,8 +114,7 @@ type UserState = Partial<{
   date: Date
   sortDirection: 'asc' | 'desc'
   sortColumn: keyof Track // track table order property
-  stemDir: string // local folder on file system to store stems
-  stemDirHandle: FileSystemDirectoryHandle
+  stemsDirHandle: FileSystemDirectoryHandle // local folder on file system to store stems
 }>
 
 // Note TrackState is not a table. Track states are contained in MixState

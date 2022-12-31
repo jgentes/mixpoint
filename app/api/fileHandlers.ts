@@ -1,4 +1,11 @@
-import { addToMix, db, storeFile, Track } from '~/api/dbHandlers'
+import {
+  addToMix,
+  db,
+  getState,
+  putState,
+  storeFile,
+  Track,
+} from '~/api/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
 import { processTracks } from './audioHandlers'
 
@@ -66,8 +73,43 @@ const browseFile = async () => {
   }
 }
 
-const getStemDir = () => {
-  // Has the user specified a stemDir?
+const getStemsDirHandle = async (): Promise<
+  FileSystemDirectoryHandle | undefined
+> => {
+  const { stemsDirHandle } = await getState('user')
+
+  if (stemsDirHandle) {
+    // check if we have permission
+    if (
+      (await stemsDirHandle.queryPermission({ mode: 'readwrite' })) ===
+      'granted'
+    ) {
+      return stemsDirHandle
+    } else {
+      // no permission, so ask for it
+      if (
+        (await stemsDirHandle.requestPermission({ mode: 'readwrite' })) ===
+        'granted'
+      ) {
+        return stemsDirHandle
+      }
+    }
+  }
+
+  // no dirHandle, or permission was denied, so ask for a new one
+  const newStemsDirHandle = await window.showDirectoryPicker({
+    startIn: stemsDirHandle,
+    id: 'stemsDir',
+    mode: 'readwrite',
+  })
+
+  if (
+    (await newStemsDirHandle.queryPermission({ mode: 'readwrite' })) ===
+    'granted'
+  ) {
+    await putState('user', { stemsDirHandle: newStemsDirHandle })
+    return newStemsDirHandle
+  }
 }
 
-export { getPermission, browseFile }
+export { getPermission, browseFile, getStemsDirHandle }
