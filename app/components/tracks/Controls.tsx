@@ -1,5 +1,4 @@
 import {
-  Adjust,
   Eject,
   Pause,
   PlayArrow,
@@ -20,18 +19,12 @@ import {
 } from '@mui/joy'
 import { Button, ButtonGroup } from '@mui/material'
 import { useEffect, useState } from 'react'
-import {
-  audioEvent,
-  AudioEvent,
-  loadAudioEvents,
-  NavEvent,
-} from '~/api/audioEvents'
+import { audioEvent, AudioEvent, NavEvent } from '~/api/audioEvents'
 import {
   db,
   getState,
   getTrackState,
   MixState,
-  putTrackState,
   removeFromMix,
   Track,
   TrackState,
@@ -39,6 +32,18 @@ import {
 } from '~/api/dbHandlers'
 
 import { audioState, tableState } from '~/api/uiState'
+import { timeFormat } from '~/utils/tableOps'
+
+const inputText = (text: string) => {
+  return (
+    <Typography
+      textColor="#888"
+      sx={{ fontSize: 12, lineHeight: 0, cursor: 'default' }}
+    >
+      {text}
+    </Typography>
+  )
+}
 
 const NumberControl = ({
   trackId,
@@ -94,7 +99,7 @@ const NumberControl = ({
         lineHeight: 0,
       }}
     >
-      {text}
+      {inputText(text)}
       {valDiff ? <Replay sx={{ ml: 0.5 }} /> : ''}
     </Link>
   )
@@ -173,7 +178,7 @@ const BpmControl = ({ trackId }: { trackId: Track['id'] }) => {
       adjustedVal={adjustedBpm}
       toFixedVal={1}
       title="Reset BPM"
-      text="BPM"
+      text="BPM:"
       emitEvent="bpm"
       propName="adjustedBpm"
       width={112}
@@ -194,7 +199,7 @@ const OffsetControl = ({ trackId }: { trackId: Track['id'] }) => {
       adjustedVal={adjustedOffset}
       toFixedVal={2}
       title="Reset Beat Offset"
-      text="Beat Offset"
+      text="Beat Offset:"
       emitEvent="offset"
       propName="adjustedOffset"
     />
@@ -385,6 +390,9 @@ const MixControl = ({ tracks }: { tracks: MixState['tracks'] }) => {
 const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
 
+  const { duration } =
+    useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
+
   const { mixpoint } =
     useLiveQuery(() => getTrackState(trackId), [trackId]) || {}
 
@@ -408,19 +416,17 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
     >
       <TextField
         variant="outlined"
-        startDecorator={
-          <Typography textColor="#aaa" sx={{ fontSize: 12, lineHeight: 0 }}>
-            Mixpoint
-          </Typography>
-        }
+        startDecorator={inputText('Mixpoint:')}
+        endDecorator={inputText(`/ ${timeFormat(duration || 0).slice(0, -3)}`)}
         value={mixpointVal}
         onChange={e => setMixpointVal(e.target.value)}
         onBlur={() => adjustMixpoint(mixpointVal)}
         sx={{
-          width: 144,
+          width: 160,
           '& div': {
             minHeight: '24px',
             borderColor: 'action.disabled',
+            '--Input-gap': '4px',
           },
           '& input': {
             textAlign: 'right',

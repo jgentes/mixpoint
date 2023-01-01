@@ -4,9 +4,12 @@ import { ClientOnly } from 'remix-utils'
 import { Track } from '~/api/dbHandlers'
 import Waveform from '~/api/renderWaveform'
 import { audioState } from '~/api/uiState'
+import VolumeMeter from '~/components/mixes/VolumeMeter'
 import {
   BeatResolutionControl,
+  BpmControl,
   EjectControl,
+  MixpointControl,
   OffsetControl,
   TrackNavControl,
 } from '~/components/tracks/Controls'
@@ -30,7 +33,6 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
       }}
     >
       <Box
-        id="track-title"
         sx={{
           display: 'flex',
           gap: 1,
@@ -39,22 +41,9 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
           maxWidth: 'calc(50% - ((160px + 16px) / 2))', // 160 is width of TrackNavControl
         }}
       >
-        <EjectControl trackId={trackId} />
-        <Typography
-          sx={{
-            fontSize: 'sm',
-            fontWeight: 'md',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
-          {TrackName(trackId)}
-        </Typography>
+        <BpmControl trackId={trackId} />
       </Box>
-
       <TrackNavControl trackId={trackId} />
-
       <Box
         sx={{
           display: 'flex',
@@ -77,8 +66,43 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
     borderBottom: 'none',
     bgcolor: 'background.body',
     overflow: 'hidden',
-    height: '80px',
+    zIndex: 1,
   }
+
+  const trackHeader = (
+    <Box
+      sx={{
+        display: 'flex',
+        gap: 1,
+        mb: 1,
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}
+    >
+      <Box
+        id="track-title"
+        sx={{
+          display: 'flex',
+          gap: 1,
+          alignItems: 'center',
+        }}
+      >
+        <EjectControl trackId={trackId} />
+        <Typography
+          sx={{
+            fontSize: 'sm',
+            fontWeight: 'md',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {TrackName(trackId)}
+        </Typography>
+      </Box>
+      <MixpointControl trackId={trackId} />
+    </Box>
+  )
 
   return (
     <Card
@@ -90,9 +114,23 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
         borderColor: 'action.selected',
       }}
     >
+      {trackHeader}
       <ClientOnly>
-        {() => <Waveform trackId={trackId} sx={loaderSx} />}
+        {() => (
+          <Waveform trackId={trackId} sx={{ ...loaderSx, height: '80px' }} />
+        )}
       </ClientOnly>
+
+      <Card
+        id={`overview-container_${trackId}`}
+        sx={{
+          ...loaderSx,
+          height: '25px',
+          mt: 1,
+        }}
+      />
+
+      <VolumeMeter trackId={trackId} />
 
       {trackFooter}
 
@@ -102,7 +140,7 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
             ...loaderSx,
             zIndex: 2,
             position: 'absolute',
-            inset: 8,
+            inset: '40px 8px calc(100% - 120px) 8px',
           }}
         >
           <Loader style={{ margin: 'auto' }} />

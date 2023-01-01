@@ -89,12 +89,13 @@ const muiTheme = extendMuiTheme({
           },
 
           '&::-webkit-scrollbar-corner, &::-webkit-scrollbar-track': {
-            backgroundColor: 'transparent',
+            borderTop: '1px solid var(--joy-palette-divider)',
+            backgroundColor: 'var(--joy-palette-background-surface)',
           },
 
           '&::-webkit-scrollbar-thumb': {
             backgroundColor: 'rgba(4, 146, 247, 0.5)',
-            borderRadius: '20px',
+            borderRadius: '10px',
             border: '6px solid transparent',
             backgroundClip: 'content-box',
             '&:hover': {
