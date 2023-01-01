@@ -1,4 +1,5 @@
-import { Button, Card, Typography } from '@mui/joy'
+import { VolumeUp } from '@mui/icons-material'
+import { Button, Card, Grid, Slider, Typography } from '@mui/joy'
 import { Box } from '@mui/material'
 import { stemAudio } from '~/api/bananaDev'
 import { Track } from '~/api/dbHandlers'
@@ -34,13 +35,67 @@ const OverviewCard = ({ trackId }: { trackId: Track['id'] }) => {
   // </div>
   // )
 
+  const StemPlayer = ({ stemType }: { stemType: string }) => {
+    return (
+      <>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            my: 1,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 'xs',
+              fontWeight: 'md',
+              pl: '3px',
+              width: '57px',
+            }}
+          >
+            {stemType}
+          </Typography>
+          <Slider
+            aria-label={stemType}
+            defaultValue={100}
+            step={5}
+            marks={[0, 25, 50, 75, 100].map(v => ({ value: v }))}
+            variant="soft"
+            size={'sm'}
+            sx={{
+              padding: '10px 0',
+            }}
+          />
+          <VolumeUp />
+        </Box>
+      </>
+    )
+  }
+
+  const StemControls = () => {
+    if (!trackId) return null
+
+    return (
+      <>
+        {['Drums', 'Bass', 'Vocals', 'Melody'].map(v => (
+          <StemPlayer key={v} stemType={v} />
+        ))}
+      </>
+    )
+  }
+
   const GetStemsButton = () => {
     if (!trackId) return null
 
     return (
-      <Button onClick={() => stemAudio(trackId)}>
-        Choose folder to save stems
-      </Button>
+      <>
+        <Button onClick={() => stemAudio(trackId)}>
+          Choose folder to save stems
+        </Button>
+        <StemControls />
+      </>
     )
   }
 
