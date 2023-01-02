@@ -4,7 +4,7 @@ const convertWav = (
   onProgress: Function,
   onError: Function
 ) => {
-  const mp3Worker = new Worker('/mp3encoder.js')
+  const mp3Worker = new Worker('/workers/mp3encoder.js')
 
   const fileReader = new FileReader()
 
