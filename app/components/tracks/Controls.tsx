@@ -6,6 +6,8 @@ import {
   SettingsBackupRestore,
   SkipNext,
   SkipPrevious,
+  VolumeOff,
+  VolumeUp,
 } from '@mui/icons-material'
 import {
   Box,
@@ -14,6 +16,7 @@ import {
   Radio,
   radioClasses,
   RadioGroup,
+  Slider,
   TextField,
   Typography,
 } from '@mui/joy'
@@ -440,6 +443,72 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
   )
 }
 
+const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
+  if (!trackId) return null
+
+  const StemPlayer = ({ stemType }: { stemType: string }) => {
+    const [volume, setVolume] = useState(100)
+    const [muted, setMuted] = useState(false)
+
+    return (
+      <>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: 'xs',
+              fontWeight: 'md',
+              pl: '3px',
+              width: '57px',
+            }}
+          >
+            {stemType}
+          </Typography>
+          <Slider
+            aria-label={stemType}
+            defaultValue={100}
+            step={5}
+            marks={[0, 25, 50, 75, 100].map(v => ({ value: v }))}
+            valueLabelDisplay="auto"
+            variant="soft"
+            size={'sm'}
+            onChange={(_, v) => setVolume(v as number)}
+            disabled={muted}
+            sx={{
+              padding: '15px 0',
+            }}
+          />
+          {!volume || muted ? (
+            <VolumeOff
+              sx={{ color: 'text.secondary' }}
+              onClick={() => setMuted(false)}
+            />
+          ) : (
+            <VolumeUp
+              sx={{ color: 'text.secondary' }}
+              onClick={() => setMuted(true)}
+            />
+          )}
+        </Box>
+      </>
+    )
+  }
+
+  return (
+    <Box sx={{ my: 1 }}>
+      {['Drums', 'Bass', 'Vocals', 'Melody'].map(v => (
+        <StemPlayer key={v} stemType={v} />
+      ))}
+    </Box>
+  )
+}
+
 export {
   BpmControl,
   OffsetControl,
@@ -448,4 +517,5 @@ export {
   MixControl,
   MixpointControl,
   TrackNavControl,
+  StemControls,
 }

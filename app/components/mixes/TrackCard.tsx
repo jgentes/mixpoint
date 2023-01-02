@@ -1,7 +1,7 @@
 import { Card, Typography } from '@mui/joy'
 import { Box } from '@mui/material'
 import { ClientOnly } from 'remix-utils'
-import { Track } from '~/api/dbHandlers'
+import { getTrackName, Track, useLiveQuery } from '~/api/dbHandlers'
 import Waveform from '~/api/renderWaveform'
 import { audioState } from '~/api/uiState'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
@@ -14,7 +14,6 @@ import {
   TrackNavControl,
 } from '~/components/tracks/Controls'
 import Loader from '~/components/tracks/TrackLoader'
-import TrackName from '~/components/tracks/TrackName'
 import { errorHandler } from '~/utils/notifications'
 
 const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
@@ -22,6 +21,8 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
 
   const [analyzingTracks] = audioState.analyzing()
   const analyzing = analyzingTracks.includes(trackId)
+
+  const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
 
   const trackFooter = (
     <Box
@@ -97,7 +98,7 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
             textOverflow: 'ellipsis',
           }}
         >
-          {TrackName(trackId)}
+          {trackName}
         </Typography>
       </Box>
       <MixpointControl trackId={trackId} />

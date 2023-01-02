@@ -3,7 +3,6 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { audioEvent } from '~/api/audioEvents'
 import { getPermission } from '~/api/fileHandlers'
 import {
-  __UserState as UserState,
   __db as db,
   __FileStore as FileStore,
   __Mix as Mix,
@@ -13,6 +12,7 @@ import {
   __StateTypes as StateTypes,
   __Track as Track,
   __TrackState as TrackState,
+  __UserState as UserState,
 } from '~/api/__dbSchema'
 import { errorHandler } from '~/utils/notifications'
 
@@ -109,6 +109,14 @@ const getTrackState = async (trackId: Track['id']): Promise<TrackState> => {
   return trackStates[trackIndex] || {}
 }
 
+const getTrackName = async (trackId: Track['id']) => {
+  if (!trackId) return null
+
+  let { name } = (await db.tracks.get(trackId)) || {}
+
+  return name?.slice(0, -4) || 'Loading...'
+}
+
 // Update the state for an individual track in the mix, such as when offset is adjusted
 const putTrackState = async (
   trackId: Track['id'],
@@ -181,6 +189,7 @@ export {
   getState,
   putState,
   getTrackState,
+  getTrackName,
   putTrackState,
   storeFile,
 }

@@ -89,6 +89,10 @@ const loadAudioEvents = async ({
     }
   }
 
+  const playStems = () => {
+    // create a new audio context
+  }
+
   const crossfadeEvent = () => {
     // https://github.com/notthetup/smoothfade
     // or

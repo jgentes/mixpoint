@@ -1,6 +1,12 @@
 import { guess } from 'web-audio-beat-detector'
-import { putState, putTracks, Track } from '~/api/dbHandlers'
-import { getPermission } from '~/api/fileHandlers'
+import {
+  getTrackName,
+  putState,
+  putTracks,
+  Track,
+  useLiveQuery,
+} from '~/api/dbHandlers'
+import { getPermission, getStemsDirHandle } from '~/api/fileHandlers'
 
 import { setAudioState, setModalState, setTableState } from '~/api/uiState'
 import { errorHandler } from '~/utils/notifications'
@@ -185,6 +191,58 @@ const getAudioDetails = async (
   }
 }
 
+const getStemContexts = async (
+  trackId: Track['id']
+): Promise<AudioBufferSourceNode[] | undefined | void> => {
+  if (!trackId) return
+
+  const stemsDirHandle = await getStemsDirHandle()
+  if (!stemsDirHandle)
+    return errorHandler(
+      'There was a problem accessing the stems folder - please try setting it again.'
+    )
+
+  const trackName = await getTrackName(trackId)
+
+  const directoryName = `${trackName} - stems`
+
+  // Get a FileHandle for the MP3 file
+  const trackDirHandle = await stemsDirHandle.getDirectoryHandle(directoryName)
+
+  const sources = []
+  const stems = ['drums', 'bass', 'vocals', 'other']
+
+  for (const stem of stems) {
+    // Create an AudioContext
+    const audioContext = new AudioContext()
+
+    // get a FileHandle for the MP3 file
+    const fileHandle = await trackDirHandle.getFileHandle(`${stem}.mp3`)
+
+    // Get a File object for the MP3 file
+    const file = await fileHandle.getFile()
+
+    // Read the file as an ArrayBuffer
+    const arrayBuffer = await file.arrayBuffer()
+
+    // Decode the audio data
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
+
+    // Create a sound source
+    const source = audioContext.createBufferSource()
+
+    // Set the buffer
+    source.buffer = audioBuffer
+
+    // Connect the source to the context's destination (the speakers)
+    source.connect(audioContext.destination)
+
+    sources.push(source)
+  }
+
+  return sources
+}
+
 // const createMix = async (TrackStateArray: TrackState[]) => {
 //   // this is slow, also look at https://github.com/jackedgson/crunker and https://github.com/audiojs/audio-buffer-utils
 
@@ -235,5 +293,6 @@ export {
   processTracks,
   getAudioDetails,
   //createMix,
+  getStemContexts,
   analyzeTracks,
 }
