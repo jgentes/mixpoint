@@ -115,7 +115,7 @@ const stemAudio = async (trackId: Track['id']) => {
     //@ts-ignore
     modelKey: window.ENV.BANANA_MODEL_KEY,
     modelInputs: {
-      fineTuned: true,
+      fineTuned: false,
       file: {
         name: file.name,
         data: fileBase64,
@@ -170,14 +170,17 @@ const stemAudio = async (trackId: Track['id']) => {
 
       await writer.write(file)
       await writer.close()
+
+      console.log(`Stem saved: ${filename.split('.')[0]} - ${name}`)
     }
 
     if (!startBody.modelInputs.mp3) {
       convertWav(
         audioBlob,
         finalize,
-        (progress: string) =>
-          console.log(`${name}:`, `${(Number(progress) * 100).toFixed(1)}%`),
+        (progress: string) => {
+          //console.log(`${name}:`, `${(Number(progress) * 100).toFixed(1)}%`)
+        },
         (error: string) => errorHandler(error)
       )
     } else finalize(audioBlob)

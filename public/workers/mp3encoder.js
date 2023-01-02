@@ -1,7 +1,6 @@
 ;(function () {
   'use strict'
 
-  console.log('MP3 conversion worker started.')
   importScripts('/workers/lame.min.js')
 
   let mp3Encoder,
