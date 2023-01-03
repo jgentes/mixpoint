@@ -5,9 +5,11 @@ import {
   getTrackState,
   putState,
   putTracks,
+  Stem,
+  StemCache,
   Track,
   TrackState,
-} from '~/api/dbHandlers'
+} from '~/api/db/dbHandlers'
 import { getPermission, getStemsDirHandle } from '~/api/fileHandlers'
 
 import { setAudioState, setModalState, setTableState } from '~/api/uiState'
@@ -257,36 +259,51 @@ const calcMarkers = async (
 const getStemContext = async (
   trackId: Track['id']
 ): Promise<
-  | { stemContext: AudioContext; stemBuffers: AudioBufferSourceNode[] }
+  | {
+      stemContext: AudioContext
+      stemBuffers: Partial<{ [key in Stem]: AudioBufferSourceNode }>
+    }
   | undefined
   | void
 > => {
   if (!trackId) return
 
-  const stemsDirHandle = await getStemsDirHandle()
-  if (!stemsDirHandle)
-    return errorHandler(
-      'There was a problem accessing the stems folder - please try setting it again.'
+  let { files } = (await db.stemCache.get(trackId)) || {}
+
+  if (!files) {
+    const stemsDirHandle = await getStemsDirHandle()
+    if (!stemsDirHandle)
+      return errorHandler(
+        'There was a problem accessing the stems folder - please try setting it again.'
+      )
+
+    const trackName = await getTrackName(trackId)
+
+    const directoryName = `${trackName} - stems`
+
+    // Get a FileHandle for the MP3 file
+    const trackDirHandle = await stemsDirHandle.getDirectoryHandle(
+      directoryName
     )
 
-  const trackName = await getTrackName(trackId)
+    const stemFiles = {} as Partial<StemCache['files']>
+    for (const stem of ['bass', 'drums', 'vocals', 'other']) {
+      // get a FileHandle for the MP3 file
+      const fileHandle = await trackDirHandle.getFileHandle(`${stem}.mp3`)
 
-  const directoryName = `${trackName} - stems`
+      // Get a File object for the MP3 file
+      const file = await fileHandle.getFile()
 
-  // Get a FileHandle for the MP3 file
-  const trackDirHandle = await stemsDirHandle.getDirectoryHandle(directoryName)
+      stemFiles[stem as Stem] = file
+    }
+
+    files = stemFiles as StemCache['files']
+  }
 
   const stemContext = new AudioContext()
-  const stemBuffers: AudioBufferSourceNode[] = []
-  const stems = ['drums', 'bass', 'vocals', 'other']
+  const stemBuffers: Partial<{ [key in Stem]: AudioBufferSourceNode }> = {}
 
-  for (const stem of stems) {
-    // get a FileHandle for the MP3 file
-    const fileHandle = await trackDirHandle.getFileHandle(`${stem}.mp3`)
-
-    // Get a File object for the MP3 file
-    const file = await fileHandle.getFile()
-
+  for (const [stem, file] of Object.entries(files)) {
     // Read the file as an ArrayBuffer
     const arrayBuffer = await file.arrayBuffer()
 
@@ -311,7 +328,7 @@ const getStemContext = async (
     // connect the gain node to the destination
     gainNode.connect(stemContext.destination)
 
-    stemBuffers.push(source)
+    stemBuffers[stem as Stem] = source
   }
 
   return { stemContext, stemBuffers }

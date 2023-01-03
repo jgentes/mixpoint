@@ -20,13 +20,13 @@ import { visuallyHidden } from '@mui/utils'
 import { ChangeEvent, MouseEvent, useMemo, useState } from 'react'
 import { analyzeTracks } from '~/api/audioHandlers'
 import {
-  UserState,
   db,
   getDirtyTracks,
   removeTracks,
   Track,
   useLiveQuery,
-} from '~/api/dbHandlers'
+  UserState,
+} from '~/api/db/dbHandlers'
 import { browseFile } from '~/api/fileHandlers'
 import { setModalState, tableState } from '~/api/uiState'
 import { createColumnDefinitions } from '~/components/tracks/tableColumns'

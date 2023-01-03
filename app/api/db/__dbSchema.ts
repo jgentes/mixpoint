@@ -14,7 +14,8 @@ class MixpointDb extends Dexie {
   mixState: Dexie.Table<MixState>
   setState: Dexie.Table<SetState>
   userState: Dexie.Table<UserState>
-  fileStore: Dexie.Table<FileStore>
+  trackCache: Dexie.Table<TrackCache>
+  stemCache: Dexie.Table<StemCache>
 
   constructor() {
     super('MixpointDb')
@@ -25,7 +26,8 @@ class MixpointDb extends Dexie {
       mixState: 'date',
       setState: 'date',
       UserState: 'date',
-      fileStore: 'id',
+      trackCache: 'id',
+      stemCache: 'id',
     })
 
     this.tracks = this.table('tracks')
@@ -34,7 +36,8 @@ class MixpointDb extends Dexie {
     this.mixState = this.table('mixState')
     this.setState = this.table('setState')
     this.userState = this.table('UserState')
-    this.fileStore = this.table('fileStore')
+    this.trackCache = this.table('trackCache')
+    this.stemCache = this.table('stemCache')
   }
 }
 
@@ -84,13 +87,23 @@ type Set = {
   mixIds: Mix['id'][]
 }
 
-// The FileStore provides a cache for file data. This allows the app to render
+// The TrackCache provides a cache for file data. This allows the app to render
 // waveforms without prompting the user for permission to read the file from
 // disk, which cannot be done without interacting with the page first.
 // Each file is a few megabytes, so the cache must be limited.
-type FileStore = {
+type TrackCache = {
   id: Track['id']
   file: File
+}
+
+const stems = ['drums', 'bass', 'vocals', 'other'] as const
+type Stem = typeof stems[number]
+
+// The StemCache is similar to trackCache but for reading stems
+// without user interaction after refreshing the page
+type StemCache = {
+  id: Track['id']
+  files: { [key in Stem]: File }
 }
 
 // State tables
@@ -156,6 +169,8 @@ export type {
   SetState as __SetState,
   UserState as __UserState,
   StateTypes as __StateTypes,
-  FileStore as __FileStore,
+  TrackCache as __TrackCache,
+  StemCache as __StemCache,
+  Stem as __Stem,
 }
 export { db as __db }

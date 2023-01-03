@@ -8,7 +8,7 @@ import {
   TableRow,
 } from '@mui/material'
 import { useState } from 'react'
-import { db, getState, useLiveQuery } from '~/api/dbHandlers'
+import { db, getState, useLiveQuery } from '~/api/db/dbHandlers'
 import { audioState, tableState } from '~/api/uiState'
 import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
 import LeftNav from '~/components/tracks/LeftNav'

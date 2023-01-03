@@ -1,7 +1,7 @@
 import { Card, Typography } from '@mui/joy'
 import { Box } from '@mui/material'
 import { ClientOnly } from 'remix-utils'
-import { getTrackName, Track, useLiveQuery } from '~/api/dbHandlers'
+import { getTrackName, Track, useLiveQuery } from '~/api/db/dbHandlers'
 import Waveform from '~/api/renderWaveform'
 import { audioState } from '~/api/uiState'
 import VolumeMeter from '~/components/mixes/VolumeMeter'

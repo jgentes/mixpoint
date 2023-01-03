@@ -8,10 +8,11 @@ import {
   Track,
   TrackState,
   updateTrack,
-} from '~/api/dbHandlers'
+} from '~/api/db/dbHandlers'
 import { setAudioState, setVolumeState } from '~/api/uiState'
 import { errorHandler } from '~/utils/notifications'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
+import { eventHandler } from './eventHandler'
 
 // WaveformEvents are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
 
@@ -32,21 +33,7 @@ type NavEvent =
   | 'Previous Beat Marker'
   | 'Next Beat Marker'
 
-const waveformEvent = {
-  on(trackId: number, callback: Function) {
-    window.addEventListener(String(trackId), (e: CustomEventInit) =>
-      callback(e.detail)
-    )
-  },
-  emit(trackId: number, event: WaveformEvent, args?: any) {
-    window.dispatchEvent(
-      new CustomEvent(String(trackId), { detail: { event, args } })
-    )
-  },
-  off(trackId: number, callback: any) {
-    window.removeEventListener(String(trackId), callback)
-  },
-}
+const waveformEvent = eventHandler<WaveformEvent>()
 
 // WaveformEvents are emitted by interaction with the Waveform, such as seek, region interactions, etc, as opposed to external controls
 const initWaveformEvents = async ({

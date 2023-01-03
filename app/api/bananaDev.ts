@@ -1,4 +1,4 @@
-import { db, Track } from '~/api/dbHandlers'
+import { db, StemCache, storeStems, Track } from '~/api/db/dbHandlers'
 import { getStemsDirHandle } from '~/api/fileHandlers'
 import { convertWav } from '~/api/mp3Converter'
 import { errorHandler } from '~/utils/notifications'
@@ -91,7 +91,7 @@ const checkForStems = async (
 
 const stemAudio = async (trackId: Track['id']) => {
   // retrieve file from cache
-  const { file } = (await db.fileStore.get(trackId)) || {}
+  const { file } = (await db.trackCache.get(trackId)) || {}
   if (!file) throw errorHandler('No file found for track, try re-adding it.')
 
   // ensure we have access to a directory to save the stems
@@ -149,7 +149,9 @@ const stemAudio = async (trackId: Track['id']) => {
 
   const stemType = `audio/${startBody.modelInputs.mp3 ? 'mp3' : 'wav'}`
 
-  // save stems to audio dir
+  // create object for stem cache
+  const stemCache: Partial<StemCache['files']> = {}
+
   for (const { name, data } of stems) {
     const rename = `${name.slice(0, -4)}.mp3`
     const stemFile = await audioDirHandle.getFileHandle(rename, {
@@ -178,7 +180,11 @@ const stemAudio = async (trackId: Track['id']) => {
       await writer.close()
 
       console.log(`Stem saved: ${filename.split('.')[0]} - ${rename}`)
+      stemCache[name.slice(0, -4) as Stems] = file
     }
+
+    // store stems in cache
+    storeStems(trackId, stemCache as StemCache['files'])
 
     if (!startBody.modelInputs.mp3) {
       convertWav(

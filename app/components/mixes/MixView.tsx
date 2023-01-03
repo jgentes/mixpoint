@@ -1,6 +1,6 @@
 import { Box } from '@mui/joy'
-import { getState, useLiveQuery } from '~/api/dbHandlers'
-import OverviewCard from '~/components/mixes/OverviewCard'
+import { getState, useLiveQuery } from '~/api/db/dbHandlers'
+import StemsCard from '~/components/mixes/StemsCard'
 import TrackCard from '~/components/mixes/TrackCard'
 import { MixControl } from '~/components/tracks/Controls'
 
@@ -27,9 +27,9 @@ const MixView = () => {
         }}
       >
         {/* Hardcoding 2 tracks for now */}
-        <OverviewCard trackId={tracks[0]} />
+        <StemsCard trackId={tracks[0]} />
         <MixControl tracks={tracks} />
-        <OverviewCard trackId={tracks[1]} />
+        <StemsCard trackId={tracks[1]} />
       </div>
     </Box>
   )

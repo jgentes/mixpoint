@@ -1,6 +1,6 @@
 import { Box } from '@mui/joy'
 import { useEffect } from 'react'
-import { getState, useLiveQuery } from '~/api/dbHandlers'
+import { getState, useLiveQuery } from '~/api/db/dbHandlers'
 import { setTableState } from '~/api/uiState'
 import Header from '~/components/header/Header'
 import MixView from '~/components/mixes/MixView'

@@ -1,32 +1,45 @@
 // This file provides a few helper functions for interacting with the database
 import { useLiveQuery } from 'dexie-react-hooks'
-import { waveformEvent } from '~/api/waveformEvents'
-import { getPermission } from '~/api/fileHandlers'
 import {
   __db as db,
-  __FileStore as FileStore,
   __Mix as Mix,
   __MixState as MixState,
   __Set as Set,
   __SetState as SetState,
   __StateTypes as StateTypes,
+  __Stem as Stem,
+  __StemCache as StemCache,
   __Track as Track,
+  __TrackCache as TrackCache,
   __TrackState as TrackState,
   __UserState as UserState,
-} from '~/api/__dbSchema'
+} from '~/api/db/__dbSchema'
+import { waveformEvent } from '~/api/events/waveformEvents'
+import { getPermission } from '~/api/fileHandlers'
 import { errorHandler } from '~/utils/notifications'
 
-const FILE_STORE_LIMIT = 50
+const CACHE_LIMIT = 25
 
-const storeFile = async (id: Track['id'], file: File) => {
+const storeTrack = async (id: TrackCache['id'], file: TrackCache['file']) => {
   // Enforce database limit
-  const count = await db.fileStore.count()
-  if (count > FILE_STORE_LIMIT) {
-    const oldest = await db.fileStore.orderBy('id').first()
-    if (oldest) db.fileStore.delete(oldest.id)
+  const count = await db.trackCache.count()
+  if (count > CACHE_LIMIT) {
+    const oldest = await db.trackCache.orderBy('id').first()
+    if (oldest) db.trackCache.delete(oldest.id)
   }
 
-  await db.fileStore.put({ id, file })
+  await db.trackCache.put({ id, file })
+}
+
+const storeStems = async (id: StemCache['id'], files: StemCache['files']) => {
+  // Enforce database limit
+  const count = await db.stemCache.count()
+  if (count > CACHE_LIMIT) {
+    const oldest = await db.stemCache.orderBy('id').first()
+    if (oldest) db.stemCache.delete(oldest.id)
+  }
+
+  await db.stemCache.put({ id, files })
 }
 
 const updateTrack = async (
@@ -76,7 +89,7 @@ const removeTracks = async (ids: number[]): Promise<void> => {
   await db.tracks.bulkDelete(ids)
 
   // Ensure we delete the file cache when a track is deleted
-  await db.fileStore.bulkDelete(ids)
+  await db.trackCache.bulkDelete(ids)
 }
 // const addMix = async (
 //   trackIds: Track['id'][],
@@ -190,7 +203,9 @@ export type {
   SetState,
   UserState,
   StateTypes,
-  FileStore,
+  TrackCache,
+  StemCache,
+  Stem,
 }
 export {
   db,
@@ -208,5 +223,6 @@ export {
   getTrackState,
   getTrackName,
   putTrackState,
-  storeFile,
+  storeTrack,
+  storeStems,
 }

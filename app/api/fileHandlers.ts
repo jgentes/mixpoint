@@ -3,9 +3,9 @@ import {
   db,
   getState,
   putState,
-  storeFile,
+  storeTrack,
   Track,
-} from '~/api/dbHandlers'
+} from '~/api/db/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
 import { processTracks } from './audioHandlers'
 
@@ -25,7 +25,7 @@ const _getFile = async (track: Track): Promise<File | null> => {
   }
 
   // Cache the file
-  if (file) await storeFile(track.id, file)
+  if (file) await storeTrack(track.id, file)
 
   // In the case perms aren't granted, return null - we need to request permission
   return file
@@ -38,7 +38,7 @@ const _getFile = async (track: Track): Promise<File | null> => {
  */
 const getPermission = async (track: Track): Promise<File | null> => {
   // First see if we have the file in the cache
-  const cache = await db.fileStore.get(track.id)
+  const cache = await db.trackCache.get(track.id)
   if (cache) return cache.file
 
   // Check perms, directory handle is preferred over file handle
