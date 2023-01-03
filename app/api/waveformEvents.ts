@@ -1,72 +1,55 @@
-import WaveSurfer from 'wavesurfer.js/src/wavesurfer'
-import { audioEvent } from '~/api/audioEvents'
-import { analyzeTracks } from '~/api/audioHandlers'
-import { db, getTrackState, Track, TrackState } from '~/api/dbHandlers'
+// This file allows events to be received which need access to the waveform, rather than passing waveform around
+
+import { calcMarkers } from '~/api/audioHandlers'
+import {
+  db,
+  getTrackState,
+  putTrackState,
+  Track,
+  TrackState,
+  updateTrack,
+} from '~/api/dbHandlers'
 import { setAudioState, setVolumeState } from '~/api/uiState'
 import { errorHandler } from '~/utils/notifications'
-import { convertToSecs } from '~/utils/tableOps'
+import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
-// WaveformEvents are emitted by interaction with the Waveform, such as seek, region interactions, etc, as opposed to external button events handled by AudioEvents
+// WaveformEvents are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
 
-// CalcMarkers can be called independently for changes in beat offset or beat resolution
-const calcMarkers = async (
-  track: Track,
-  waveform: WaveSurfer
-): Promise<{
-  adjustedBpm: TrackState['adjustedBpm']
-  beatResolution: TrackState['beatResolution']
-  mixpoint: TrackState['mixpoint']
-}> => {
-  let { duration, offset, adjustedOffset, bpm } = track
+type WaveformEvent =
+  | 'seek'
+  | 'beatResolution'
+  | 'bpm'
+  | 'offset'
+  | 'nav'
+  | 'mixpoint'
+  | 'destroy'
 
-  // isNaN check here to allow for zero values
-  const valsMissing = !duration || isNaN(Number(bpm)) || isNaN(Number(offset))
+type NavEvent =
+  | 'Play'
+  | 'Pause'
+  | 'Set Mixpoint'
+  | 'Go to Mixpoint'
+  | 'Previous Beat Marker'
+  | 'Next Beat Marker'
 
-  if (valsMissing) {
-    const analyzedTracks = await analyzeTracks([track])
-    ;({ duration, bpm, offset } = analyzedTracks[0])
-  }
-
-  if (!duration) throw errorHandler(`Please try adding ${track.name} again.`)
-
-  let {
-    adjustedBpm,
-    beatResolution = 0.25,
-    mixpoint,
-  } = await getTrackState(track.id)
-
-  const beatInterval = 60 / (adjustedBpm || bpm || 1)
-  const skipLength = beatInterval * (1 / beatResolution)
-
-  // SkipLength is used while calculating nearest Marker during seek events
-  waveform.skipLength = skipLength
-
-  let startPoint = adjustedOffset || offset || 0
-
-  // Work backward from initialPeak to start of track (zerotime) based on bpm
-  while (startPoint - beatInterval > 0) startPoint -= beatInterval
-
-  // Now that we have zerotime, move forward with markers based on the bpm
-  waveform.markers.clear()
-  for (let time = startPoint; time < duration; time += skipLength) {
-    // regions.push({
-    //   start: time,
-    //   end: time + skipLength,
-    //   color: 'rgba(255, 255, 255, 0)',
-    //   drag: false,
-    //   resize: false,
-    //   showTooltip: false,
-    // })
-    waveform.markers.add({ time })
-  }
-  return {
-    adjustedBpm,
-    beatResolution,
-    mixpoint,
-  }
+const waveformEvent = {
+  on(trackId: number, callback: Function) {
+    window.addEventListener(String(trackId), (e: CustomEventInit) =>
+      callback(e.detail)
+    )
+  },
+  emit(trackId: number, event: WaveformEvent, args?: any) {
+    window.dispatchEvent(
+      new CustomEvent(String(trackId), { detail: { event, args } })
+    )
+  },
+  off(trackId: number, callback: any) {
+    window.removeEventListener(String(trackId), callback)
+  },
 }
 
-const loadWaveformEvents = async ({
+// WaveformEvents are emitted by interaction with the Waveform, such as seek, region interactions, etc, as opposed to external controls
+const initWaveformEvents = async ({
   trackId,
   waveform,
 }: {
@@ -74,79 +57,213 @@ const loadWaveformEvents = async ({
   waveform: WaveSurfer
 }): Promise<void> => {
   if (!trackId) return
-  const track = await db.tracks.get(trackId)
-  if (!track)
-    throw errorHandler('Track not found while setting up waveform events.')
-
-  const { adjustedBpm, beatResolution, mixpoint } = await calcMarkers(
-    track,
-    waveform
-  )
-
-  // Adjust zoom based on previous mixState
-  waveform.zoom(beatResolution == 1 ? 80 : beatResolution == 0.5 ? 40 : 20)
-
-  // Adjust bpm if set in mixState
-  if (adjustedBpm)
-    waveform.setPlaybackRate(adjustedBpm / (track?.bpm || adjustedBpm))
 
   // Setup for volume meter
   let volumeMeterInterval: ReturnType<typeof setInterval> | number // placeholder for setInterval
+
   // @ts-ignore
   const analyzer = waveform.backend.analyser
   const bufferLength = analyzer.frequencyBinCount
   const dataArray = new Uint8Array(bufferLength)
 
-  const caclculateVolume = () => {
-    analyzer.getByteFrequencyData(dataArray)
+  const { adjustedBpm, beatResolution, mixpoint } =
+    (await calcMarkers(trackId, waveform)) || {}
 
-    let sum = 0
-    for (const amplitude of dataArray) {
-      sum += amplitude * amplitude
-    }
+  // Adjust zoom based on previous mixState
+  waveform.zoom(beatResolution == 1 ? 80 : beatResolution == 0.5 ? 40 : 20)
 
-    const volume = Math.sqrt(sum / (dataArray.length + 1000))
-
-    setVolumeState[trackId].volume(volume)
+  // Adjust bpm if set in mixState
+  if (adjustedBpm) {
+    const { bpm } = (await db.tracks.get(trackId)) || {}
+    waveform.setPlaybackRate(adjustedBpm / (bpm || adjustedBpm))
   }
 
-  const onReady = () => {
-    setAudioState.analyzing(prev => prev.filter(id => id !== trackId))
+  const waveformEvents = {
+    caclculateVolume: () => {
+      analyzer.getByteFrequencyData(dataArray)
 
-    // Set playhead to mixpoint if it exists
-    const currentPlayhead = mixpoint
-      ? convertToSecs(mixpoint)
-      : waveform.markers.markers?.[0].time || 0
+      let sum = 0
+      for (const amplitude of dataArray) {
+        sum += amplitude * amplitude
+      }
 
-    if (currentPlayhead) {
-      waveform.playhead.setPlayheadTime(currentPlayhead)
-      waveform.seekAndCenter(1 / (waveform.getDuration() / currentPlayhead))
-    }
-  }
+      const volume = Math.sqrt(sum / (dataArray.length + 1000))
 
-  const onPlay = () => {
-    // Slow down sampling to 10ms
-    if (volumeMeterInterval > -1) clearInterval(volumeMeterInterval)
-    volumeMeterInterval = setInterval(() => caclculateVolume(), 15)
+      setVolumeState[trackId].volume(volume)
+    },
+    onReady: () => {
+      setAudioState.analyzing(prev => prev.filter(id => id !== trackId))
 
-    // Set play state, used to modify play button
-    setAudioState.playing(prev => [...prev, trackId])
-  }
+      // Set playhead to mixpoint if it exists
+      const currentPlayhead = mixpoint
+        ? convertToSecs(mixpoint)
+        : waveform.markers.markers?.[0].time || 0
 
-  const onPause = () => {
-    clearInterval(volumeMeterInterval)
-    // Set to zero on pause
-    setVolumeState[trackId].volume(0)
+      if (currentPlayhead) {
+        waveform.playhead.setPlayheadTime(currentPlayhead)
+        waveform.seekAndCenter(1 / (waveform.getDuration() / currentPlayhead))
+      }
+    },
+    onPlay: () => {
+      // Slow down sampling to 10ms
+      if (volumeMeterInterval > -1) clearInterval(volumeMeterInterval)
+      volumeMeterInterval = setInterval(
+        () => waveformEvents.caclculateVolume(),
+        15
+      )
 
-    // Set play state, used to modify play button
-    setAudioState.playing(prev => prev.filter(id => id !== trackId))
+      // Set play state, used to modify play button
+      setAudioState.playing(prev => [...prev, trackId])
+    },
+    onPause: () => {
+      clearInterval(volumeMeterInterval)
+      // Set to zero on pause
+      setVolumeState[trackId].volume(0)
+
+      // Set play state, used to modify play button
+      setAudioState.playing(prev => prev.filter(id => id !== trackId))
+    },
+    // Scroll to previous/next beat marker
+    seek: ({
+      time: startTime = waveform.playhead.playheadTime,
+      direction,
+    }: {
+      time?: number
+      direction?: 'previous' | 'next'
+    }) => {
+      const { markers = [] } = waveform.markers || {}
+
+      // Find the closest (left-most) marker to the current time
+      const currentMarkerIndex = Math.floor(startTime / waveform.skipLength)
+
+      const index =
+        currentMarkerIndex + (direction ? (direction == 'next' ? 1 : -1) : 0)
+      const { time } = markers[index] || {}
+
+      // Estimate that we're at the right time and move playhead (and center if using prev/next buttons)
+      if (time && (time > startTime + 0.005 || time < startTime - 0.005)) {
+        if (direction) waveform.skipForward(time - startTime)
+        else {
+          waveform.playhead.setPlayheadTime(time)
+          // Only update mixpoint if we're not scrolling with the mouse
+          putTrackState(trackId, { mixpoint: timeFormat(time) })
+        }
+      }
+    },
+    crossfade: () => {
+      // https://github.com/notthetup/smoothfade
+      // or
+      // from https://codepen.io/lukeandersen/pen/QEmwYG
+      // Fades between 0 (all source 1) and 1 (all source 2)
+      // CrossfadeSample.crossfade = function (element) {
+      //   var x = parseInt(element.value) / parseInt(element.max)
+      //   // Use an equal-power crossfading curve:
+      //   var gain1 = Math.cos(x * 0.5 * Math.PI)
+      //   var gain2 = Math.cos((1.0 - x) * 0.5 * Math.PI)
+      //   this.ctl1.gainNode.gain.value = gain1
+      //   this.ctl2.gainNode.gain.value = gain2
+      // }
+    },
+    beatResolution: async ({
+      beatResolution,
+    }: {
+      beatResolution: TrackState['beatResolution']
+    }): Promise<void> => {
+      if (!beatResolution) return
+
+      // Adjust zoom
+      switch (beatResolution) {
+        case 0.25:
+          waveform.zoom(20)
+          break
+        case 0.5:
+          waveform.zoom(40)
+          break
+        case 1:
+          waveform.zoom(80)
+          break
+      }
+
+      // Update mixState
+      await putTrackState(trackId, { beatResolution })
+
+      calcMarkers(trackId, waveform)
+    },
+    bpm: async ({
+      adjustedBpm,
+    }: {
+      adjustedBpm: TrackState['adjustedBpm']
+    }): Promise<void> => {
+      if (!adjustedBpm) return
+
+      const { bpm } = (await db.tracks.get(trackId)) || {}
+
+      // Update playback rate based on new bpm
+      const playbackRate = adjustedBpm / (bpm || adjustedBpm)
+      waveform.setPlaybackRate(playbackRate)
+
+      // Update mixState
+      putTrackState(trackId, { adjustedBpm })
+    },
+    offset: async ({
+      adjustedOffset,
+    }: {
+      adjustedOffset: Track['adjustedOffset']
+    }): Promise<void> => {
+      await updateTrack(trackId, { adjustedOffset })
+
+      calcMarkers(trackId, waveform)
+    },
+    nav: ({ effect }: { effect: NavEvent }): void => {
+      const mixpoint = waveform.playhead.playheadTime
+
+      switch (effect) {
+        case 'Play':
+          waveform.playPause()
+          break
+        case 'Pause':
+          waveform.pause()
+          break
+        // case 'Set Mixpoint':
+        //   waveform.pause()
+
+        //   waveformEvent.emit(trackId, 'mixpoint', {
+        //     mixpoint: timeFormat(mixpoint),
+        //   })
+        //   break
+        case 'Go to Mixpoint':
+          waveform.seekAndCenter(1 / (waveform.getDuration() / mixpoint))
+          waveform.pause()
+          break
+        case 'Previous Beat Marker':
+          waveformEvents.seek({ direction: 'previous' })
+          break
+        case 'Next Beat Marker':
+          waveformEvents.seek({ direction: 'next' })
+          break
+      }
+    },
+    mixpoint: async ({ mixpoint }: { mixpoint: string }): Promise<void> => {
+      const { mixpoint: prevMixpoint } = (await getTrackState(trackId)) || {}
+
+      if (mixpoint == prevMixpoint) return
+
+      putTrackState(trackId, { mixpoint })
+      waveform.seekAndCenter(
+        1 / (waveform.getDuration() / convertToSecs(mixpoint))
+      )
+    },
+    destroy: (): void => {
+      waveformEvent.off(trackId, waveformEventHandler)
+      if (waveform) waveform.destroy()
+    },
   }
 
   // Initialize wavesurfer event listeners
-  waveform.on('ready', onReady)
-  waveform.on('play', onPlay)
-  waveform.on('pause', onPause)
-  waveform.on('seek', () => audioEvent.emit(trackId, 'seek', {}))
+  waveform.on('ready', waveformEvents.onReady)
+  waveform.on('play', waveformEvents.onPlay)
+  waveform.on('pause', waveformEvents.onPause)
+  waveform.on('seek', () => waveformEvent.emit(trackId, 'seek', {}))
 
   // waveform.on('region-click', region => {
   //   if (waveform.isPlaying()) return waveform.pause()
@@ -169,6 +286,18 @@ const loadWaveformEvents = async ({
   //     waveform.playhead.setPlayheadTime(region.start)
   //   }
   // })
+
+  const waveformEventHandler = ({
+    event,
+    args,
+  }: {
+    event: WaveformEvent
+    args?: any
+  }) => waveformEvents[event](args)
+
+  // add event listener
+  waveformEvent.on(trackId, waveformEventHandler)
 }
 
-export { loadWaveformEvents, calcMarkers }
+export type { WaveformEvent, NavEvent }
+export { waveformEvent, initWaveformEvents }

@@ -1,10 +1,12 @@
 import { guess } from 'web-audio-beat-detector'
 import {
+  db,
   getTrackName,
+  getTrackState,
   putState,
   putTracks,
   Track,
-  useLiveQuery,
+  TrackState,
 } from '~/api/dbHandlers'
 import { getPermission, getStemsDirHandle } from '~/api/fileHandlers'
 
@@ -191,9 +193,74 @@ const getAudioDetails = async (
   }
 }
 
-const getStemContexts = async (
+// CalcMarkers can be called independently for changes in beat offset or beat resolution
+const calcMarkers = async (
+  trackId: Track['id'],
+  waveform: WaveSurfer
+): Promise<{
+  adjustedBpm: TrackState['adjustedBpm']
+  beatResolution: TrackState['beatResolution']
+  mixpoint: TrackState['mixpoint']
+} | void> => {
+  if (!trackId) return
+
+  const track = (await db.tracks.get(trackId)) || {}
+  let { duration, offset, adjustedOffset, bpm } = track
+
+  // isNaN check here to allow for zero values
+  const valsMissing = !duration || isNaN(Number(bpm)) || isNaN(Number(offset))
+
+  if (valsMissing) {
+    const analyzedTracks = await analyzeTracks([track])
+    ;({ duration, bpm, offset } = analyzedTracks[0])
+  }
+
+  if (!duration) throw errorHandler(`Please try adding ${track.name} again.`)
+
+  let {
+    adjustedBpm,
+    beatResolution = 0.25,
+    mixpoint,
+  } = await getTrackState(trackId)
+
+  const beatInterval = 60 / (adjustedBpm || bpm || 1)
+  const skipLength = beatInterval * (1 / beatResolution)
+
+  // SkipLength is used while calculating nearest Marker during seek events
+  waveform.skipLength = skipLength
+
+  let startPoint = adjustedOffset || offset || 0
+
+  // Work backward from initialPeak to start of track (zerotime) based on bpm
+  while (startPoint - beatInterval > 0) startPoint -= beatInterval
+
+  // Now that we have zerotime, move forward with markers based on the bpm
+  waveform.markers.clear()
+  for (let time = startPoint; time < duration; time += skipLength) {
+    // regions.push({
+    //   start: time,
+    //   end: time + skipLength,
+    //   color: 'rgba(255, 255, 255, 0)',
+    //   drag: false,
+    //   resize: false,
+    //   showTooltip: false,
+    // })
+    waveform.markers.add({ time })
+  }
+  return {
+    adjustedBpm,
+    beatResolution,
+    mixpoint,
+  }
+}
+
+const getStemContext = async (
   trackId: Track['id']
-): Promise<AudioBufferSourceNode[] | undefined | void> => {
+): Promise<
+  | { stemContext: AudioContext; stemBuffers: AudioBufferSourceNode[] }
+  | undefined
+  | void
+> => {
   if (!trackId) return
 
   const stemsDirHandle = await getStemsDirHandle()
@@ -209,13 +276,11 @@ const getStemContexts = async (
   // Get a FileHandle for the MP3 file
   const trackDirHandle = await stemsDirHandle.getDirectoryHandle(directoryName)
 
-  const sources = []
+  const stemContext = new AudioContext()
+  const stemBuffers: AudioBufferSourceNode[] = []
   const stems = ['drums', 'bass', 'vocals', 'other']
 
   for (const stem of stems) {
-    // Create an AudioContext
-    const audioContext = new AudioContext()
-
     // get a FileHandle for the MP3 file
     const fileHandle = await trackDirHandle.getFileHandle(`${stem}.mp3`)
 
@@ -226,21 +291,30 @@ const getStemContexts = async (
     const arrayBuffer = await file.arrayBuffer()
 
     // Decode the audio data
-    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
+    const audioBuffer = await stemContext.decodeAudioData(arrayBuffer)
 
-    // Create a sound source
-    const source = audioContext.createBufferSource()
+    // Create a source node in the primary audioContext
+    const source = stemContext.createBufferSource()
 
     // Set the buffer
     source.buffer = audioBuffer
 
-    // Connect the source to the context's destination (the speakers)
-    source.connect(audioContext.destination)
+    // create a GainNode
+    const gainNode = stemContext.createGain()
 
-    sources.push(source)
+    // Connect the source to the context's destination (the speakers)
+    source.connect(gainNode)
+
+    // set the gain of the gain node
+    gainNode.gain.value = 0.8
+
+    // connect the gain node to the destination
+    gainNode.connect(stemContext.destination)
+
+    stemBuffers.push(source)
   }
 
-  return sources
+  return { stemContext, stemBuffers }
 }
 
 // const createMix = async (TrackStateArray: TrackState[]) => {
@@ -293,6 +367,7 @@ export {
   processTracks,
   getAudioDetails,
   //createMix,
-  getStemContexts,
+  getStemContext,
   analyzeTracks,
+  calcMarkers,
 }

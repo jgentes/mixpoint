@@ -1,5 +1,5 @@
 import { Button, Card, Typography } from '@mui/joy'
-import { getStemContexts } from '~/api/audioHandlers'
+import { getStemContext } from '~/api/audioHandlers'
 import { stemAudio } from '~/api/bananaDev'
 import { getTrackName, Track, useLiveQuery } from '~/api/dbHandlers'
 import { StemControls } from '~/components/tracks/Controls'
@@ -38,7 +38,7 @@ const OverviewCard = ({ trackId }: { trackId: Track['id'] }) => {
     if (!trackId) return null
 
     const stemHandler = async () => {
-      const stemContexts = await getStemContexts(trackId)
+      const stemContexts = await getStemContext(trackId)
 
       console.log('stemContexts', stemContexts)
     }

@@ -77,10 +77,13 @@ const checkForStems = async (
     longPoll: true,
   }
 
-  const { modelOutputs } = (await sendPost(
+  const { message, modelOutputs } = (await sendPost(
     CHECK_ENDPOINT,
     checkRquest
   )) as BananaCheckResponse
+
+  if (message.includes('error') || (message == 'success' && !modelOutputs))
+    throw errorHandler('Error generating stems: ' + message)
 
   // if we don't have modelOutputs, we need to keep polling
   return modelOutputs || (await checkForStems(callID))
@@ -134,6 +137,8 @@ const stemAudio = async (trackId: Track['id']) => {
 
   const { name: filename, data: stems } = modelOutputs[0]
 
+  console.log(`Received stems for ${filename}, converting to mp3...`)
+
   // create a new dir with name of audio file
   const audioDirHandle = await dirHandle.getDirectoryHandle(
     `${filename.split('.')[0]} - stems`,
@@ -146,7 +151,8 @@ const stemAudio = async (trackId: Track['id']) => {
 
   // save stems to audio dir
   for (const { name, data } of stems) {
-    const stemFile = await audioDirHandle.getFileHandle(name, {
+    const rename = `${name.slice(0, -4)}.mp3`
+    const stemFile = await audioDirHandle.getFileHandle(rename, {
       create: true,
     })
     const writer = await stemFile.createWritable()
@@ -164,14 +170,14 @@ const stemAudio = async (trackId: Track['id']) => {
 
     const finalize = async (blob: Blob) => {
       // create a file from the blob
-      const file = new File([blob], `${name.slice(0, -4)}.mp3`, {
+      const file = new File([blob], rename, {
         type: 'audio/mp3',
       })
 
       await writer.write(file)
       await writer.close()
 
-      console.log(`Stem saved: ${filename.split('.')[0]} - ${name}`)
+      console.log(`Stem saved: ${filename.split('.')[0]} - ${rename}`)
     }
 
     if (!startBody.modelInputs.mp3) {
@@ -179,7 +185,7 @@ const stemAudio = async (trackId: Track['id']) => {
         audioBlob,
         finalize,
         (progress: string) => {
-          //console.log(`${name}:`, `${(Number(progress) * 100).toFixed(1)}%`)
+          //console.log(`${rename}:`, `${(Number(progress) * 100).toFixed(1)}%`)
         },
         (error: string) => errorHandler(error)
       )

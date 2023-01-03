@@ -1,6 +1,6 @@
 // This file provides a few helper functions for interacting with the database
 import { useLiveQuery } from 'dexie-react-hooks'
-import { audioEvent } from '~/api/audioEvents'
+import { waveformEvent } from '~/api/waveformEvents'
 import { getPermission } from '~/api/fileHandlers'
 import {
   __db as db,
@@ -27,6 +27,22 @@ const storeFile = async (id: Track['id'], file: File) => {
   }
 
   await db.fileStore.put({ id, file })
+}
+
+const updateTrack = async (
+  trackId: Track['id'],
+  keyvals: Partial<Track>
+): Promise<Track> => {
+  if (!trackId) throw errorHandler('No track id provided')
+
+  const track = await db.tracks.get(trackId)
+  if (!track) throw errorHandler('No track found, try re-adding it.')
+
+  const updatedTrack = { ...track, ...keyvals }
+
+  await db.tracks.put(updatedTrack)
+
+  return updatedTrack
 }
 
 const putTracks = async (tracks: Partial<Track[]>): Promise<Track[]> => {
@@ -141,7 +157,7 @@ const addToMix = async (track: Track) => {
   const { tracks = [], trackStates = [] } = await getState('mix')
 
   // limit 2 tracks in the mix for now
-  if (tracks.length > 1) audioEvent.emit(tracks[1]!, 'destroy')
+  if (tracks.length > 1) waveformEvent.emit(tracks[1]!, 'destroy')
 
   const index = tracks.length > 0 ? 1 : 0
   tracks[index] = track.id
@@ -151,7 +167,7 @@ const addToMix = async (track: Track) => {
 }
 
 const removeFromMix = async (id: Track['id']) => {
-  if (id) audioEvent.emit(id, 'destroy')
+  if (id) waveformEvent.emit(id, 'destroy')
 
   const { tracks = [], trackStates = [] } = await getState('mix')
 
@@ -179,6 +195,7 @@ export type {
 export {
   db,
   useLiveQuery,
+  updateTrack,
   putTracks,
   removeTracks,
   getDirtyTracks,

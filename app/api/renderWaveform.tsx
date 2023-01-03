@@ -1,10 +1,9 @@
 import { Card } from '@mui/joy'
 import { SxProps } from '@mui/joy/styles/types'
 import { useEffect } from 'react'
-import { audioEvent, loadAudioEvents } from '~/api/audioEvents'
+import { waveformEvent, initWaveformEvents } from '~/api/waveformEvents'
 import { db, Track } from '~/api/dbHandlers'
 import { setAudioState } from '~/api/uiState'
-import { loadWaveformEvents } from '~/api/waveformEvents'
 import { errorHandler } from '~/utils/notifications'
 import { getPermission } from './fileHandlers'
 
@@ -104,8 +103,7 @@ const Waveform = ({
 
       if (file) waveform.loadBlob(file)
 
-      await loadAudioEvents({ trackId, waveform })
-      await loadWaveformEvents({ trackId, waveform })
+      await initWaveformEvents({ trackId, waveform }) // wavesurfer event handlers
     }
 
     getAudio()
@@ -120,7 +118,7 @@ const Waveform = ({
         zIndex: 1,
       }}
       onWheel={e =>
-        audioEvent.emit(trackId, 'seek', {
+        waveformEvent.emit(trackId, 'seek', {
           direction: e.deltaY > 0 ? 'next' : 'previous',
         })
       }

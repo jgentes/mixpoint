@@ -10,7 +10,6 @@ const convertWav = (
 
   fileReader.onload = e => {
     mp3Worker.postMessage({ cmd: 'init' })
-
     mp3Worker.postMessage({ cmd: 'encode', rawInput: e?.target?.result })
     mp3Worker.postMessage({ cmd: 'finish' })
 

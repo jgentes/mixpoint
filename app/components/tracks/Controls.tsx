@@ -22,7 +22,7 @@ import {
 } from '@mui/joy'
 import { Button, ButtonGroup } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { audioEvent, AudioEvent, NavEvent } from '~/api/audioEvents'
+import { waveformEvent, WaveformEvent, NavEvent } from '~/api/waveformEvents'
 import {
   db,
   getState,
@@ -67,7 +67,7 @@ const NumberControl = ({
   title: string
   text: string
   width?: number
-  emitEvent: AudioEvent
+  emitEvent: WaveformEvent
   propName: string
   styles?: object
 }) => {
@@ -86,7 +86,7 @@ const NumberControl = ({
 
     setInputVal(newVal)
 
-    audioEvent.emit(trackId!, emitEvent, { [propName]: newVal })
+    waveformEvent.emit(trackId!, emitEvent, { [propName]: newVal })
   }
 
   const ResetValLink = () => (
@@ -214,7 +214,7 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackState['id'] }) => {
     useLiveQuery(() => getTrackState(trackId), [trackId]) || {}
 
   const changeBeatResolution = (beatResolution: TrackState['beatResolution']) =>
-    audioEvent.emit(trackId!, 'beatResolution', { beatResolution })
+    waveformEvent.emit(trackId!, 'beatResolution', { beatResolution })
 
   return (
     <RadioGroup
@@ -276,7 +276,7 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackState['id'] }) => {
 
 const TrackNavControl = ({ trackId }: { trackId: TrackState['id'] }) => {
   const navEvent = (effect: NavEvent) =>
-    audioEvent.emit(trackId!, 'nav', { effect })
+    waveformEvent.emit(trackId!, 'nav', { effect })
 
   const [playing] = audioState.playing()
   const isPlaying = playing.includes(trackId!)
@@ -326,7 +326,7 @@ const MixControl = ({ tracks }: { tracks: MixState['tracks'] }) => {
 
         setState(val)
         tracks?.forEach(trackId =>
-          audioEvent.emit(trackId!, 'nav', { effect: val })
+          waveformEvent.emit(trackId!, 'nav', { effect: val })
         )
       }}
     >
@@ -406,7 +406,7 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
   const adjustMixpoint = async (newMixpoint: string) => {
     if (newMixpoint == mixpoint) return
 
-    //audioEvent.emit(trackId, 'mixpoint', { mixpoint: newMixpoint })
+    //waveformEvent.emit(trackId, 'mixpoint', { mixpoint: newMixpoint })
     //putTrackState(trackId, { mixpoint })
   }
 
@@ -425,7 +425,7 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
         onChange={e => setMixpointVal(e.target.value)}
         onBlur={() => adjustMixpoint(mixpointVal)}
         sx={{
-          width: 160,
+          width: 175,
           '& div': {
             minHeight: '24px',
             borderColor: 'action.disabled',
