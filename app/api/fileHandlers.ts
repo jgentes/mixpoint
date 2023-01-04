@@ -112,4 +112,53 @@ const getStemsDirHandle = async (): Promise<
   }
 }
 
-export { getPermission, browseFile, getStemsDirHandle }
+type StemState = 'selectStemDir' | 'grantStemDirAccess' | 'getStems' | 'ready'
+
+const validateTrackStemAccess = async (
+  trackId: Track['id']
+): Promise<StemState> => {
+  if (!trackId) return 'selectStemDir'
+
+  // See if we have stems in cache
+  const cache = await db.stemCache.get(trackId)
+  if (cache) return 'ready'
+
+  // do we have a stem dir defined?
+  const { stemsDirHandle } = await getState('user')
+  if (!stemsDirHandle) return 'selectStemDir'
+
+  // do we have access to the stem dir?
+  try {
+    const stemDirAccess = await stemsDirHandle.queryPermission({
+      mode: 'readwrite',
+    })
+    if (stemDirAccess !== 'granted') return 'grantStemDirAccess'
+  } catch (e) {
+    // directory doesn't exist
+    return 'selectStemDir'
+  }
+
+  const { name } = (await db.tracks.get(trackId)) || {}
+  if (!name) return 'getStems'
+
+  // does the stem dir for this track exist?
+  let trackStemDirHandle
+  try {
+    trackStemDirHandle = await stemsDirHandle.getDirectoryHandle(
+      `${name.split('.')[0]} - stems`
+    )
+  } catch (e) {
+    // directory doesn't exist
+    return 'getStems'
+  }
+
+  // are there at least 4 files in the dir?
+  const stemFiles = trackStemDirHandle.keys()
+  console.log(stemFiles)
+
+  // ready!
+  return 'ready'
+}
+
+export type { StemState }
+export { getPermission, browseFile, getStemsDirHandle, validateTrackStemAccess }

@@ -23,11 +23,6 @@ import {
 import { Button, ButtonGroup } from '@mui/material'
 import { useEffect, useState } from 'react'
 import {
-  waveformEvent,
-  WaveformEvent,
-  NavEvent,
-} from '~/api/events/waveformEvents'
-import {
   db,
   getState,
   getTrackState,
@@ -37,6 +32,11 @@ import {
   TrackState,
   useLiveQuery,
 } from '~/api/db/dbHandlers'
+import {
+  NavEvent,
+  waveformEvent,
+  WaveformEvent,
+} from '~/api/events/waveformEvents'
 
 import { audioState, tableState } from '~/api/uiState'
 import { timeFormat } from '~/utils/tableOps'

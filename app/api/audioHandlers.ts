@@ -260,20 +260,20 @@ const getStemContext = async (
   trackId: Track['id']
 ): Promise<
   | {
-      stemContext: AudioContext
-      stemBuffers: Partial<{ [key in Stem]: AudioBufferSourceNode }>
+      stemContext: AudioContext | null
+      stemBuffers: Partial<{ [key in Stem]: AudioBufferSourceNode }> | null
     }
   | undefined
-  | void
 > => {
   if (!trackId) return
 
+  // Get files from cache or from file system
   let { files } = (await db.stemCache.get(trackId)) || {}
 
   if (!files) {
     const stemsDirHandle = await getStemsDirHandle()
     if (!stemsDirHandle)
-      return errorHandler(
+      throw errorHandler(
         'There was a problem accessing the stems folder - please try setting it again.'
       )
 
@@ -282,14 +282,25 @@ const getStemContext = async (
     const directoryName = `${trackName} - stems`
 
     // Get a FileHandle for the MP3 file
-    const trackDirHandle = await stemsDirHandle.getDirectoryHandle(
-      directoryName
-    )
+    let trackDirHandle
+    try {
+      trackDirHandle = await stemsDirHandle.getDirectoryHandle(directoryName)
+    } catch (e) {
+      // directory doesn't exist
+      return
+    }
 
     const stemFiles = {} as Partial<StemCache['files']>
     for (const stem of ['bass', 'drums', 'vocals', 'other']) {
       // get a FileHandle for the MP3 file
-      const fileHandle = await trackDirHandle.getFileHandle(`${stem}.mp3`)
+      let fileHandle
+      try {
+        fileHandle = await trackDirHandle.getFileHandle(`${stem}.mp3`)
+      } catch (e) {
+        // file doesn't exist
+        console.log('file not found:', `${stem}.mp3`)
+        return
+      }
 
       // Get a File object for the MP3 file
       const file = await fileHandle.getFile()
@@ -317,20 +328,20 @@ const getStemContext = async (
     source.buffer = audioBuffer
 
     // create a GainNode
-    const gainNode = stemContext.createGain()
+    //const gainNode = stemContext.createGain()
 
     // Connect the source to the context's destination (the speakers)
-    source.connect(gainNode)
+    //source.connect(gainNode)
 
     // set the gain of the gain node
-    gainNode.gain.value = 0.8
+    //gainNode.gain.value = 1
 
     // connect the gain node to the destination
-    gainNode.connect(stemContext.destination)
-
+    //gainNode.connect(stemContext.destination)
+    source.connect(stemContext.destination)
     stemBuffers[stem as Stem] = source
   }
-
+  console.log(stemContext, stemBuffers)
   return { stemContext, stemBuffers }
 }
 

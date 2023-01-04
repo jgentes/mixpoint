@@ -39,6 +39,9 @@ const storeStems = async (id: StemCache['id'], files: StemCache['files']) => {
     if (oldest) db.stemCache.delete(oldest.id)
   }
 
+  const cache = await db.stemCache.get(id)
+  if (cache?.files) files = { ...cache.files, ...files }
+
   await db.stemCache.put({ id, files })
 }
 

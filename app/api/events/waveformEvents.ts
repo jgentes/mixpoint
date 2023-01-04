@@ -275,12 +275,15 @@ const initWaveformEvents = async ({
   // })
 
   const waveformEventHandler = ({
-    event,
+    type,
     args,
   }: {
-    event: WaveformEvent
+    type: WaveformEvent
     args?: any
-  }) => waveformEvents[event](args)
+  }) => {
+    console.log('event', type, 'args:', args)
+    waveformEvents[type](args)
+  }
 
   // add event listener
   waveformEvent.on(trackId, waveformEventHandler)

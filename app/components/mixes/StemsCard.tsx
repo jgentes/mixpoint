@@ -1,90 +1,79 @@
-import { Button, Card, Typography } from '@mui/joy'
+import { PlayArrow } from '@mui/icons-material'
+import { Box, Button, Card, Typography } from '@mui/joy'
 import { useEffect, useState } from 'react'
 import { getStemContext } from '~/api/audioHandlers'
 import { stemAudio } from '~/api/bananaDev'
 import {
   db,
+  getState,
   getTrackName,
   StemCache,
   Track,
   useLiveQuery,
 } from '~/api/db/dbHandlers'
-import { initStemEvents } from '~/api/events/stemEvents'
-import { getStemsDirHandle } from '~/api/fileHandlers'
+import { initStemEvents, stemEvent } from '~/api/events/stemEvents'
+import {
+  getStemsDirHandle,
+  StemState,
+  validateTrackStemAccess,
+} from '~/api/fileHandlers'
 import { StemControls } from '~/components/tracks/Controls'
 import Dropzone from '~/components/tracks/Dropzone'
 import { errorHandler } from '~/utils/notifications'
 
 const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
-  type StemState = 'unknown' | 'needFolder' | 'needStems' | 'ready'
-  const [stems, setStems] = useState<StemCache['files']>([])
-  const [stemState, setStemState] = useState<StemState>('unknown')
+  const [stemState, setStemState] = useState<StemState>()
 
+  // check stems on disk to determine component state
   useEffect(() => {
-    const checkStemState = async () => {
-      // do we have stems in cache for this track?
-      const { files } = (await db.stemCache.get(trackId)) || {}
-      if (files) {
-        initStemEvents(trackId, files)
-        setStems(files)
-      }
-      // if not, then do we have a stems folder defined?
-      // ensure we have access to a directory to save the stems
-      const dirHandle = await getStemsDirHandle()
-      if (!dirHandle) {
-        // this would be due to denial of permission (ie. clicked cancel)
-        throw errorHandler('Permission to the file or folder was denied.')
-      }
+    const getState = async () => {
+      const stemStatus = await validateTrackStemAccess(trackId)
+      setStemState(stemStatus)
+
+      // if we're ready, initialize stem event handlers
+      if (stemStatus == 'ready') initStemEvents(trackId)
     }
-    checkStemState()
-    // have we initialized the stems event listeners?
-  })
 
-  // const setMixPoint = async () => {
-  //   //const id = await addMix(mixState.tracks.map(t => t.id))
-  //   //await updateMixState({ ...mixState, mix: { id } })
-  // }
+    if (trackId) getState()
 
-  // const mixPointControl = (<div
-  //   style={{
-  //     display: 'flex',
-  //     flexWrap: 'nowrap',
-  //     justifyContent: 'space-evenly',
-  //     fontSize: '24px',
-  //     margin: '10px 2px',
-  //   }}
-  // >
-  //   {timeFormat(from?.mixPoint || 0)}
-  //   <MergeType
-  //     sx={{
-  //       alignSelf: 'center',
-  //       fontSize: 28,
-  //       transform: 'rotate(90deg)',
-  //     }}
-  //   />
-  //   {timeFormat(to?.mixPoint || 0)}
-  // </div>
-  // )
+    return () => stemEvent.emit(`${trackId}-stems`, 'destroy')
+  }, [trackId])
 
   const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
 
-  const GetStemAudioButton = () => {
-    const stemHandler = async () => {
-      const stemContexts = await getStemContext(trackId)
+  console.log('StemsCard', stemState)
+  const getStemsDir = async () => {
+    const dirHandle = await getStemsDirHandle()
+    if (!dirHandle) {
+      // this would be due to denial of permission (ie. clicked cancel)
+      throw errorHandler('Permission to the file or folder was denied.')
+    } else setStemState('getStems')
+  }
 
-      console.log('stemContexts', stemContexts)
-    }
+  const stemHandler = () => {
+    console.log('clicked get stems')
 
-    return <Button onClick={() => stemHandler()}>Grab stems</Button>
+    if (stemState == 'getStems') return stemAudio(trackId)
+
+    getStemsDir()
   }
 
   const GetStemsButton = () => (
-    <>
-      <Button onClick={() => stemAudio(trackId)}>
-        Choose folder to save stems
-      </Button>
-      <StemControls trackId={trackId} />
-    </>
+    <Button
+      variant="soft"
+      color={
+        stemState == 'selectStemDir' || 'grantStemDirAccess'
+          ? 'warning'
+          : 'success'
+      }
+      onClick={() => stemHandler()}
+    >
+      {stemState == 'selectStemDir'
+        ? 'Set stems folder'
+        : stemState == 'grantStemDirAccess'
+        ? 'Provide folder access'
+        : 'Get stems'}
+    </Button>
   )
 
   return (
@@ -103,17 +92,29 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
         <Dropzone />
       ) : (
         <>
-          <GetStemsButton />
-          <GetStemAudioButton />
-          <Typography
-            sx={{
-              fontSize: 'sm',
-              fontWeight: 'md',
-              pl: '3px',
-            }}
-          >
-            {trackName}
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Typography
+              sx={{
+                fontSize: 'sm',
+                fontWeight: 'md',
+                pl: '3px',
+              }}
+            >
+              {trackName}
+            </Typography>
+            {stemState != 'ready' ? null : (
+              <PlayArrow
+                onClick={() =>
+                  stemEvent.emit(`${trackId}-stems`, 'play', { stem: 'all' })
+                }
+              />
+            )}
+          </Box>
+          {stemState !== 'ready' ? (
+            <GetStemsButton />
+          ) : (
+            <StemControls trackId={trackId} />
+          )}
         </>
       )}
     </Card>

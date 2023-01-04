@@ -1,16 +1,16 @@
 const eventHandler = <T>() => ({
-  on(trackId: number, callback: Function) {
-    window.addEventListener(String(trackId), (e: CustomEventInit) =>
+  on(event: number | string, callback: Function) {
+    window.addEventListener(String(event), (e: CustomEventInit) =>
       callback(e.detail)
     )
   },
-  emit(trackId: number, event: T, args?: any) {
+  emit(event: number | string, type: T, args?: any) {
     window.dispatchEvent(
-      new CustomEvent(String(trackId), { detail: { event, args } })
+      new CustomEvent(String(event), { detail: { type, args } })
     )
   },
-  off(trackId: number, callback: any) {
-    window.removeEventListener(String(trackId), callback)
+  off(event: number | string, callback: any) {
+    window.removeEventListener(String(event), callback)
   },
 })
 

@@ -2,44 +2,50 @@ import { getStemContext } from '~/api/audioHandlers'
 import { Track } from '~/api/db/dbHandlers'
 import { eventHandler } from './eventHandler'
 
-type StemEvent = 'play'
+type StemEvent = 'play' | 'destroy'
 
 const stemEvent = eventHandler<StemEvent>()
 
-const initStemEvents = async ({
-  trackId,
-  audioStems,
-}: {
-  trackId: Track['id']
-  audioStems: AudioContext[]
-}): Promise<void> => {
+const initStemEvents = async (trackId: Track['id']): Promise<void> => {
   if (!trackId) return
 
-  const { stemContext, stemBuffers } = (await getStemContext(trackId)) || {}
-
-  if (!stemContext || !stemBuffers) return
+  let { stemContext, stemBuffers } = (await getStemContext(trackId)) || {}
 
   const stemEvents = {
-    play: ({}) => {
-      window.setTimeout(() => {
-        const startTime = stemContext.currentTime
-        for (const source of stemBuffers) {
-          source.start(startTime)
-        }
-      }, 0)
+    play: ({
+      stem,
+    }: {
+      stem: 'bass' | 'drums' | 'vocals' | 'other' | 'all'
+    }) => {
+      if (!stemContext || !stemBuffers) return
+      if (stem == 'all') {
+        window.setTimeout(() => {
+          const startTime = stemContext?.currentTime
+          for (const buffer of Object.values(stemBuffers!)) {
+            buffer.start(startTime)
+          }
+        }, 0)
+      }
+    },
+    destroy: () => {
+      stemContext = null
+      stemBuffers = null
     },
   }
 
   const stemEventHandler = ({
-    event,
+    type,
     args,
   }: {
-    event: StemEvent
+    type: StemEvent
     args?: any
-  }) => stemEvents[event](args)
+  }) => {
+    console.log('stemEventHandler', type, args)
+    stemEvents[type](args)
+  }
 
   // add event listener
-  stemEvent.on(trackId, stemEventHandler)
+  stemEvent.on(`${trackId}-stems`, stemEventHandler)
 }
 
 export { stemEvent, initStemEvents }

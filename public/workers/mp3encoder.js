@@ -47,7 +47,7 @@
       }
     }
 
-    mp3Encoder = new lamejs.Mp3Encoder(wav.channels, wav.sampleRate, 44100)
+    mp3Encoder = new lamejs.Mp3Encoder(wav.channels, wav.sampleRate, 320)
 
     let remaining = samplesLeft.length
     for (let i = 0; remaining >= maxSamples; i += maxSamples) {

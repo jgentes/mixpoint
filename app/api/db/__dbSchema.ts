@@ -101,9 +101,10 @@ type Stem = typeof stems[number]
 
 // The StemCache is similar to trackCache but for reading stems
 // without user interaction after refreshing the page
+// Files can be partial because we cache one file at a time
 type StemCache = {
   id: Track['id']
-  files: { [key in Stem]: File }
+  files: Partial<{ [key in Stem]: File }>
 }
 
 // State tables
