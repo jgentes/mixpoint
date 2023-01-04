@@ -103,6 +103,8 @@ const Waveform = ({
 
       if (file) waveform.loadBlob(file)
 
+      waveform.setMute(true)
+
       await initWaveformEvents({ trackId, waveform }) // wavesurfer event handlers
     }
 

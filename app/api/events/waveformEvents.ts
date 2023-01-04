@@ -9,6 +9,7 @@ import {
   TrackState,
   updateTrack,
 } from '~/api/db/dbHandlers'
+import { stemEvent } from '~/api/events/stemEvents'
 import { setAudioState, setVolumeState } from '~/api/uiState'
 import { errorHandler } from '~/utils/notifications'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
@@ -92,6 +93,10 @@ const initWaveformEvents = async ({
       }
     },
     onPlay: () => {
+      stemEvent.emit(`${trackId}-stems`, 'play', {
+        offset: waveform.getCurrentTime(),
+      })
+
       // Slow down sampling to 10ms
       if (volumeMeterInterval > -1) clearInterval(volumeMeterInterval)
       volumeMeterInterval = setInterval(
@@ -103,6 +108,8 @@ const initWaveformEvents = async ({
       setAudioState.playing(prev => [...prev, trackId])
     },
     onPause: () => {
+      stemEvent.emit(`${trackId}-stems`, 'pause')
+
       clearInterval(volumeMeterInterval)
       // Set to zero on pause
       setVolumeState[trackId].volume(0)

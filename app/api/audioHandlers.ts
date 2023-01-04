@@ -7,6 +7,7 @@ import {
   putTracks,
   Stem,
   StemCache,
+  storeStems,
   Track,
   TrackState,
 } from '~/api/db/dbHandlers'
@@ -260,8 +261,7 @@ const getStemContext = async (
   trackId: Track['id']
 ): Promise<
   | {
-      stemContext: AudioContext | null
-      stemBuffers: Partial<{ [key in Stem]: AudioBufferSourceNode }> | null
+      stemBuffers: Partial<{ [key in Stem]: AudioBuffer }> | null
     }
   | undefined
 > => {
@@ -306,13 +306,16 @@ const getStemContext = async (
       const file = await fileHandle.getFile()
 
       stemFiles[stem as Stem] = file
+
+      // store stem in cache
+      storeStems(trackId, { [stem]: file })
     }
 
     files = stemFiles as StemCache['files']
   }
 
   const stemContext = new AudioContext()
-  const stemBuffers: Partial<{ [key in Stem]: AudioBufferSourceNode }> = {}
+  const stemBuffers: Partial<{ [key in Stem]: AudioBuffer }> = {}
 
   for (const [stem, file] of Object.entries(files)) {
     // Read the file as an ArrayBuffer
@@ -321,28 +324,11 @@ const getStemContext = async (
     // Decode the audio data
     const audioBuffer = await stemContext.decodeAudioData(arrayBuffer)
 
-    // Create a source node in the primary audioContext
-    const source = stemContext.createBufferSource()
-
-    // Set the buffer
-    source.buffer = audioBuffer
-
-    // create a GainNode
-    //const gainNode = stemContext.createGain()
-
-    // Connect the source to the context's destination (the speakers)
-    //source.connect(gainNode)
-
-    // set the gain of the gain node
-    //gainNode.gain.value = 1
-
-    // connect the gain node to the destination
-    //gainNode.connect(stemContext.destination)
-    source.connect(stemContext.destination)
-    stemBuffers[stem as Stem] = source
+    stemBuffers[stem as Stem] = audioBuffer
   }
-  console.log(stemContext, stemBuffers)
-  return { stemContext, stemBuffers }
+  console.log(stemContext)
+  stemContext.close()
+  return { stemBuffers }
 }
 
 // const createMix = async (TrackStateArray: TrackState[]) => {
