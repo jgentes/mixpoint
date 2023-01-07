@@ -1,8 +1,8 @@
 import {
   addToMix,
   db,
-  getState,
-  putState,
+  getStore,
+  putStore,
   Stem,
   storeTrack,
   Track,
@@ -78,7 +78,7 @@ const browseFile = async () => {
 const getStemsDirHandle = async (): Promise<
   FileSystemDirectoryHandle | undefined
 > => {
-  const { stemsDirHandle } = await getState('user')
+  const { stemsDirHandle } = await getStore('user')
 
   if (stemsDirHandle) {
     // check if we have permission
@@ -109,7 +109,7 @@ const getStemsDirHandle = async (): Promise<
     (await newStemsDirHandle.queryPermission({ mode: 'readwrite' })) ===
     'granted'
   ) {
-    await putState('user', { stemsDirHandle: newStemsDirHandle })
+    await putStore('user', { stemsDirHandle: newStemsDirHandle })
     return newStemsDirHandle
   }
 }
@@ -126,7 +126,7 @@ const validateTrackStemAccess = async (
   if (stems) return 'ready'
 
   // do we have a stem dir defined?
-  const { stemsDirHandle } = await getState('user')
+  const { stemsDirHandle } = await getStore('user')
   if (!stemsDirHandle) return 'selectStemDir'
 
   // do we have access to the stem dir?

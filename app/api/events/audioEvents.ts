@@ -3,10 +3,10 @@
 import { calcMarkers } from '~/api/audioHandlers'
 import {
   db,
-  getTrackState,
-  putTrackState,
+  getTrackStore,
+  putTrackStore,
   Track,
-  TrackState,
+  TrackStore,
   updateTrack,
 } from '~/api/db/dbHandlers'
 import { setAudioState, setWaveformState } from '~/api/uiState'
@@ -57,10 +57,10 @@ const initAudioEvents = async ({
   const { adjustedBpm, beatResolution, mixpointTime } =
     (await calcMarkers(trackId, waveform)) || {}
 
-  // Adjust zoom based on previous mixState
+  // Adjust zoom based on previous mixStore
   waveform.zoom(beatResolution == 1 ? 80 : beatResolution == 0.5 ? 40 : 20)
 
-  // Adjust bpm if set in mixState
+  // Adjust bpm if set in mixStore
   if (adjustedBpm) {
     const { bpm } = (await db.tracks.get(trackId)) || {}
     waveform.setPlaybackRate(adjustedBpm / (bpm || adjustedBpm))
@@ -223,7 +223,7 @@ const initAudioEvents = async ({
     beatResolution: async ({
       beatResolution,
     }: {
-      beatResolution: TrackState['beatResolution']
+      beatResolution: TrackStore['beatResolution']
     }): Promise<void> => {
       if (!beatResolution) return
 
@@ -240,15 +240,15 @@ const initAudioEvents = async ({
           break
       }
 
-      // Update mixState
-      await putTrackState(trackId, { beatResolution })
+      // Update mixStore
+      await putTrackStore(trackId, { beatResolution })
 
       calcMarkers(trackId, waveform)
     },
     bpm: async ({
       adjustedBpm,
     }: {
-      adjustedBpm: TrackState['adjustedBpm']
+      adjustedBpm: TrackStore['adjustedBpm']
     }): Promise<void> => {
       if (!adjustedBpm) return
 
@@ -258,8 +258,8 @@ const initAudioEvents = async ({
       const playbackRate = adjustedBpm / (bpm || adjustedBpm)
       waveform.setPlaybackRate(playbackRate)
 
-      // Update mixState
-      putTrackState(trackId, { adjustedBpm })
+      // Update mixStore
+      putTrackStore(trackId, { adjustedBpm })
     },
     offset: async ({
       adjustedOffset,
@@ -277,7 +277,7 @@ const initAudioEvents = async ({
       effect: NavEvent
       context: AudioContext
     }): Promise<void> => {
-      const { mixpointTime } = (await getTrackState(trackId)) || {}
+      const { mixpointTime } = (await getTrackStore(trackId)) || {}
 
       switch (effect) {
         case 'Play':
@@ -311,7 +311,7 @@ const initAudioEvents = async ({
       const newMixpoint = convertToSecs(mixpoint)
       if (newMixpoint == mixpointTime) return
 
-      putTrackState(trackId, { mixpointTime: newMixpoint })
+      putTrackStore(trackId, { mixpointTime: newMixpoint })
       waveform.seekAndCenter(1 / (waveform.getDuration() / newMixpoint))
     },
     destroy: (): void => {

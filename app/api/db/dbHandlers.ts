@@ -3,15 +3,15 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import {
   __db as db,
   __Mix as Mix,
-  __MixState as MixState,
+  __MixStore as MixStore,
   __Set as Set,
-  __SetState as SetState,
-  __StateTypes as StateTypes,
+  __SetStore as SetStore,
   __Stem as Stem,
+  __StoreTypes as StoreTypes,
   __Track as Track,
   __TrackCache as TrackCache,
-  __TrackState as TrackState,
-  __UserState as UserState,
+  __TrackStore as TrackStore,
+  __UserStore as UserStore,
 } from '~/api/db/__dbSchema'
 import { audioEvent } from '~/api/events/audioEvents'
 import { getPermission } from '~/api/fileHandlers'
@@ -110,33 +110,33 @@ const removeMix = async (id: number): Promise<void> => await db.mixes.delete(id)
 // state getter and setter
 
 // this function is a work of typescript wizardry
-const getState = async <T extends keyof StateTypes>(
+const getStore = async <T extends keyof StoreTypes>(
   table: T,
-  key?: keyof StateTypes[T]
-): Promise<Partial<StateTypes[T]>> => {
+  key?: keyof StoreTypes[T]
+): Promise<Partial<StoreTypes[T]>> => {
   const state =
-    ((await db[`${table}State`].orderBy('date').last()) as StateTypes[T]) || {}
-  return key ? ({ [key]: state[key] } as Partial<StateTypes[T]>) : state
+    ((await db[`${table}Store`].orderBy('date').last()) as StoreTypes[T]) || {}
+  return key ? ({ [key]: state[key] } as Partial<StoreTypes[T]>) : state
 }
 
-const putState = async (
-  table: keyof StateTypes,
-  state: Partial<StateTypes[typeof table]>
+const putStore = async (
+  table: keyof StoreTypes,
+  state: Partial<StoreTypes[typeof table]>
 ): Promise<void> => {
-  const prevState = await getState(table)
+  const prevState = await getStore(table)
 
-  await db[`${table}State`].put({
+  await db[`${table}Store`].put({
     ...prevState,
     ...state,
     date: new Date(),
   })
 }
 
-const getTrackState = async (trackId: Track['id']): Promise<TrackState> => {
-  const { tracks = [], trackStates = [] } = await getState('mix')
+const getTrackStore = async (trackId: Track['id']): Promise<TrackStore> => {
+  const { tracks = [], trackStores = [] } = await getStore('mix')
   const trackIndex = tracks.indexOf(trackId) ?? -1
 
-  return trackStates[trackIndex] || {}
+  return trackStores[trackIndex] || {}
 }
 
 const getTrackName = async (trackId: Track['id']) => {
@@ -148,19 +148,19 @@ const getTrackName = async (trackId: Track['id']) => {
 }
 
 // Update the state for an individual track in the mix, such as when offset is adjusted
-const putTrackState = async (
+const putTrackStore = async (
   trackId: Track['id'],
-  state: Partial<TrackState>
+  state: Partial<TrackStore>
 ): Promise<void> => {
-  const { tracks = [], trackStates = [] } = await getState('mix')
+  const { tracks = [], trackStores = [] } = await getStore('mix')
   const trackIndex = tracks.indexOf(trackId) ?? -1
 
   if (trackIndex == -1) throw errorHandler('Track not found in mix state')
 
-  const newState = { ...(trackStates[trackIndex] || {}), ...state }
-  trackStates[trackIndex] = newState
+  const newState = { ...(trackStores[trackIndex] || {}), ...state }
+  trackStores[trackIndex] = newState
 
-  await putState('mix', { tracks, trackStates })
+  await putStore('mix', { tracks, trackStores })
 }
 
 const addToMix = async (track: Track) => {
@@ -168,42 +168,42 @@ const addToMix = async (track: Track) => {
   const file = await getPermission(track)
   if (!file) return
 
-  const { tracks = [], trackStates = [] } = await getState('mix')
+  const { tracks = [], trackStores = [] } = await getStore('mix')
 
   // limit 2 tracks in the mix for now
   if (tracks.length > 1) audioEvent.emit(tracks[1]!, 'destroy')
 
   const index = tracks.length > 0 ? 1 : 0
   tracks[index] = track.id
-  trackStates[index] = { id: track.id }
+  trackStores[index] = { id: track.id }
 
-  await putState('mix', { tracks, trackStates })
+  await putStore('mix', { tracks, trackStores })
 }
 
 const removeFromMix = async (id: Track['id']) => {
   if (id) audioEvent.emit(id, 'destroy')
 
-  const { tracks = [], trackStates = [] } = await getState('mix')
+  const { tracks = [], trackStores = [] } = await getStore('mix')
 
   const index = tracks.indexOf(id) ?? -1
 
   if (index > -1) {
     tracks.splice(index, 1)
-    trackStates.splice(index, 1)
+    trackStores.splice(index, 1)
   }
 
-  await putState('mix', { tracks, trackStates })
+  await putStore('mix', { tracks, trackStores })
 }
 
 export type {
   Track,
   Mix,
   Set,
-  TrackState,
-  MixState,
-  SetState,
-  UserState,
-  StateTypes,
+  TrackStore,
+  MixStore,
+  SetStore,
+  UserStore,
+  StoreTypes,
   TrackCache,
   Stem,
 }
@@ -218,10 +218,10 @@ export {
   removeMix,
   addToMix,
   removeFromMix,
-  getState,
-  putState,
-  getTrackState,
+  getStore,
+  putStore,
+  getTrackStore,
   getTrackName,
-  putTrackState,
+  putTrackStore,
   storeTrack,
 }

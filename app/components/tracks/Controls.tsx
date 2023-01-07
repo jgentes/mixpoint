@@ -25,12 +25,12 @@ import { Button, ButtonGroup } from '@mui/material'
 import { useEffect, useState } from 'react'
 import {
   db,
-  getState,
-  getTrackState,
-  MixState,
+  getStore,
+  getTrackStore,
+  MixStore,
   removeFromMix,
   Track,
-  TrackState,
+  TrackStore,
   useLiveQuery,
 } from '~/api/db/dbHandlers'
 import { audioEvent, AudioEvent, NavEvent } from '~/api/events/audioEvents'
@@ -146,7 +146,7 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
   const [openDrawer, setOpenDrawer] = tableState.openDrawer()
   const ejectTrack = async () => {
     // If this is not the last track in the mix, open drawer, otherwise the drawer will open automatically
-    const { tracks = [] } = await getState('mix')
+    const { tracks = [] } = await getStore('mix')
     if (tracks.length > 1) setOpenDrawer(true)
 
     if (trackId) removeFromMix(trackId)
@@ -173,7 +173,7 @@ const BpmControl = ({ trackId }: { trackId: Track['id'] }) => {
   const { bpm } = useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
 
   const { adjustedBpm } =
-    useLiveQuery(() => getTrackState(trackId), [trackId]) || {}
+    useLiveQuery(() => getTrackStore(trackId), [trackId]) || {}
 
   return (
     <NumberControl
@@ -210,11 +210,11 @@ const OffsetControl = ({ trackId }: { trackId: Track['id'] }) => {
   )
 }
 
-const BeatResolutionControl = ({ trackId }: { trackId: TrackState['id'] }) => {
+const BeatResolutionControl = ({ trackId }: { trackId: TrackStore['id'] }) => {
   const { beatResolution = 0.25 } =
-    useLiveQuery(() => getTrackState(trackId), [trackId]) || {}
+    useLiveQuery(() => getTrackStore(trackId), [trackId]) || {}
 
-  const changeBeatResolution = (beatResolution: TrackState['beatResolution']) =>
+  const changeBeatResolution = (beatResolution: TrackStore['beatResolution']) =>
     audioEvent.emit(trackId!, 'beatResolution', { beatResolution })
 
   return (
@@ -224,7 +224,7 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackState['id'] }) => {
       value={beatResolution}
       variant="outlined"
       onChange={e =>
-        changeBeatResolution(+e.target.value as TrackState['beatResolution'])
+        changeBeatResolution(+e.target.value as TrackStore['beatResolution'])
       }
     >
       {[0.25, 0.5, 1].map(item => (
@@ -275,7 +275,7 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackState['id'] }) => {
   )
 }
 
-const TrackNavControl = ({ trackId }: { trackId: TrackState['id'] }) => {
+const TrackNavControl = ({ trackId }: { trackId: TrackStore['id'] }) => {
   const navEvent = (effect: NavEvent) =>
     audioEvent.emit(trackId!, 'nav', { effect })
 
@@ -312,7 +312,7 @@ const TrackNavControl = ({ trackId }: { trackId: TrackState['id'] }) => {
   )
 }
 
-const MixControl = ({ tracks }: { tracks: MixState['tracks'] }) => {
+const MixControl = ({ tracks }: { tracks: MixStore['tracks'] }) => {
   const [state, setState] = useState<NavEvent>('Go to Mixpoint')
   const [waveform] = waveformState[1].waveform()
 
@@ -400,7 +400,7 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
     useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
 
   const { mixpointTime } =
-    useLiveQuery(() => getTrackState(trackId), [trackId]) || {}
+    useLiveQuery(() => getTrackStore(trackId), [trackId]) || {}
 
   const [mixpointVal, setMixpointVal] = useState<string>('0:00.00')
 

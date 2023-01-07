@@ -8,7 +8,7 @@ import {
   TableRow,
 } from '@mui/material'
 import { useState } from 'react'
-import { db, getState, useLiveQuery } from '~/api/db/dbHandlers'
+import { db, getStore, useLiveQuery } from '~/api/db/dbHandlers'
 import { tableState } from '~/api/uiState'
 import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
 import LeftNav from '~/components/tracks/LeftNav'
@@ -62,7 +62,7 @@ const TrackTable = () => {
 
   // Retrieve sort state from database
   const { sortDirection = 'desc', sortColumn = 'lastModified' } =
-    useLiveQuery(() => getState('user')) || {}
+    useLiveQuery(() => getStore('user')) || {}
 
   // Avoid a layout jump when reaching the last page with empty rows
   const emptyRows =

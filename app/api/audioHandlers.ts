@@ -2,14 +2,14 @@ import { guess } from 'web-audio-beat-detector'
 import {
   db,
   getTrackName,
-  getTrackState,
-  putState,
+  getTrackStore,
+  putStore,
   putTracks,
   Stem,
-  TrackCache,
   storeTrack,
   Track,
-  TrackState,
+  TrackCache,
+  TrackStore,
 } from '~/api/db/dbHandlers'
 import { getPermission, getStemsDirHandle } from '~/api/fileHandlers'
 
@@ -33,7 +33,7 @@ async function getTracksRecursively(
   const trackArray: Partial<Track>[] = []
 
   // Change sort order to lastModified so new tracks are visible at the top
-  await putState('user', { sortColumn: 'lastModified', sortDirection: 'desc' })
+  await putStore('user', { sortColumn: 'lastModified', sortDirection: 'desc' })
 
   const filesToTracks = async (
     fileOrDirectoryHandle: FileSystemFileHandle | FileSystemDirectoryHandle,
@@ -111,7 +111,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
   for (const track of tracks) {
     if (!sorted) {
       // Change sort order to lastModified so new tracks are visible at the top
-      await putState('user', {
+      await putStore('user', {
         sortColumn: 'lastModified',
         sortDirection: 'desc',
       })
@@ -201,9 +201,9 @@ const calcMarkers = async (
   trackId: Track['id'],
   waveform: WaveSurfer
 ): Promise<{
-  adjustedBpm: TrackState['adjustedBpm']
-  beatResolution: TrackState['beatResolution']
-  mixpointTime: TrackState['mixpointTime']
+  adjustedBpm: TrackStore['adjustedBpm']
+  beatResolution: TrackStore['beatResolution']
+  mixpointTime: TrackStore['mixpointTime']
 } | void> => {
   if (!trackId) return
 
@@ -224,7 +224,7 @@ const calcMarkers = async (
     adjustedBpm,
     beatResolution = 0.25,
     mixpointTime,
-  } = await getTrackState(trackId)
+  } = await getTrackStore(trackId)
 
   const beatInterval = 60 / (adjustedBpm || bpm || 1)
   const skipLength = beatInterval * (1 / beatResolution)
@@ -331,10 +331,10 @@ const getStemBuffers = async (
   return { stemBuffers }
 }
 
-// const createMix = async (TrackStateArray: TrackState[]) => {
+// const createMix = async (TrackStoreArray: TrackStore[]) => {
 //   // this is slow, also look at https://github.com/jackedgson/crunker and https://github.com/audiojs/audio-buffer-utils
 
-//   const [wave0, wave1] = [...TrackStateArray].map(track =>
+//   const [wave0, wave1] = [...TrackStoreArray].map(track =>
 //     track.waveformData?.toJSON()
 //   )
 
@@ -343,14 +343,14 @@ const getStemBuffers = async (
 //   const track1Duration =
 //     (wave1 &&
 //       (wave1.length / wave1.sample_rate) * wave1.samples_per_pixel -
-//         (TrackStateArray[0]?.mixPoint || 0) -
-//         (TrackStateArray[1]?.mixPoint || 0)) ||
+//         (TrackStoreArray[0]?.mixPoint || 0) -
+//         (TrackStoreArray[1]?.mixPoint || 0)) ||
 //     0
 
 //   const totalDuration = track0Duration + track1Duration
 
 //   const arrayOfAudioBuffers = []
-//   for (let t of TrackStateArray)
+//   for (let t of TrackStoreArray)
 //     arrayOfAudioBuffers.push(await getAudioBuffer(t.file!))
 
 //   var audioCtx = new AudioContext()
