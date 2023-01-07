@@ -1,14 +1,14 @@
 import moment from 'moment'
 import { ChangeEvent, MouseEvent } from 'react'
-import { db, getStore, putStore, Track } from '~/api/db/dbHandlers'
+import { db, getPrefs, putStore, Track } from '~/api/db/dbHandlers'
 import { getTableState, setTableState, tableState } from '~/api/uiState'
 import { errorHandler } from '~/utils/notifications'
 
 const sort = async (event: MouseEvent<unknown>, property: keyof Track) => {
-  const { sortDirection } = (await getStore('user', 'sortDirection')) || {
+  const { sortDirection } = (await getPrefs('user', 'sortDirection')) || {
     sortDirection: 'desc',
   }
-  const { sortColumn } = (await getStore('user', 'sortColumn')) || {
+  const { sortColumn } = (await getPrefs('user', 'sortColumn')) || {
     sortColumn: 'lastModified',
   }
 

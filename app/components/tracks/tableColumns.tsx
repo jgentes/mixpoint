@@ -6,7 +6,7 @@ import moment from 'moment'
 import { analyzeTracks } from '~/api/audioHandlers'
 import {
   addToMix,
-  getStore,
+  getPrefs,
   removeFromMix,
   Track,
   useLiveQuery,
@@ -37,7 +37,7 @@ const createColumnDefinitions = (): {
   )
 
   const addToMixHandler = async (t: Track) => {
-    const { tracks = [] } = await getStore('mix')
+    const { tracks = [] } = await getPrefs('mix')
 
     await addToMix(t)
 
@@ -48,7 +48,7 @@ const createColumnDefinitions = (): {
   const AddToMixButton = ({ track }: { track: Track }) => {
     const [analyzingTracks] = audioState.analyzing()
 
-    const { tracks = [] } = useLiveQuery(() => getStore('mix')) || {}
+    const { tracks = [] } = useLiveQuery(() => getPrefs('mix')) || {}
 
     const isInMix = tracks.includes(track.id)
 

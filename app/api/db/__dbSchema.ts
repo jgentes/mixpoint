@@ -11,9 +11,9 @@ class MixpointDb extends Dexie {
   tracks: Dexie.Table<Track, number>
   mixes: Dexie.Table<Mix, number>
   sets: Dexie.Table<Set, number>
-  mixStore: Dexie.Table<MixStore>
-  setStore: Dexie.Table<SetStore>
-  userStore: Dexie.Table<UserStore>
+  mixPrefs: Dexie.Table<MixPrefs>
+  setPrefs: Dexie.Table<SetPrefs>
+  userPrefs: Dexie.Table<UserPrefs>
   trackCache: Dexie.Table<TrackCache>
 
   constructor() {
@@ -22,18 +22,18 @@ class MixpointDb extends Dexie {
       tracks: '++id, name, bpm, [name+size]',
       mixes: '++id, tracks',
       sets: '++id, mixes',
-      mixStore: 'date',
-      setStore: 'date',
-      userStore: 'date',
+      mixPrefs: 'date',
+      setPrefs: 'date',
+      userPrefs: 'date',
       trackCache: 'id',
     })
 
     this.tracks = this.table('tracks')
     this.mixes = this.table('mixes')
     this.sets = this.table('sets')
-    this.mixStore = this.table('mixStore')
-    this.setStore = this.table('setStore')
-    this.userStore = this.table('userStore')
+    this.mixPrefs = this.table('mixPrefs')
+    this.setPrefs = this.table('setPrefs')
+    this.userPrefs = this.table('userPrefs')
     this.trackCache = this.table('trackCache')
   }
 }
@@ -76,7 +76,7 @@ type Mix = {
     timestamp: number
     duration: number
   }[]
-  lastState: MixStore
+  lastState: MixPrefs
 }
 
 type Set = {
@@ -103,26 +103,26 @@ type TrackCache = {
 // This allows easy undo/redo of state changes by using timestamps (primary key)
 // State tables are limited to STATE_ROW_LIMIT rows (arbitrarily 100)
 
-type MixStore = Partial<{
-  date: Date // current mix is most recent mixStore
+type MixPrefs = Partial<{
+  date: Date // current mix is most recent mixPrefs
   tracks: Track['id'][]
-  trackStores: TrackStore[]
+  trackPrefss: TrackPrefs[]
 }>
 
-type SetStore = Partial<{
+type SetPrefs = Partial<{
   date: Date
   setId: Set['id']
 }>
 
-type UserStore = Partial<{
+type UserPrefs = Partial<{
   date: Date
   sortDirection: 'asc' | 'desc'
   sortColumn: keyof Track // track table order property
   stemsDirHandle: FileSystemDirectoryHandle // local folder on file system to store stems
 }>
 
-// Note TrackStore is not a table. Track states are contained in MixStore
-type TrackStore = Partial<{
+// Note TrackPrefs is not a table. Track states are contained in MixPrefs
+type TrackPrefs = Partial<{
   id: Track['id']
   adjustedBpm: Track['bpm']
   beatResolution: 0.25 | 0.5 | 1
@@ -131,18 +131,18 @@ type TrackStore = Partial<{
 
 // For state getter and setter
 type StoreTypes = {
-  mix: MixStore
-  set: SetStore
-  user: UserStore
+  mix: MixPrefs
+  set: SetPrefs
+  user: UserPrefs
 }
 
 // db hooks to limit the number of rows in a state table
 const createHooks = (table: keyof StoreTypes) => {
-  db[`${table}Store`].hook('creating', async () => {
-    const count = await db[`${table}Store`].count()
+  db[`${table}Prefs`].hook('creating', async () => {
+    const count = await db[`${table}Prefs`].count()
     if (count > STATE_ROW_LIMIT) {
-      const oldest = await db[`${table}Store`].orderBy('date').first()
-      if (oldest) db[`${table}Store`].delete(oldest.date)
+      const oldest = await db[`${table}Prefs`].orderBy('date').first()
+      if (oldest) db[`${table}Prefs`].delete(oldest.date)
     }
   })
 }
@@ -155,10 +155,10 @@ export type {
   Track as __Track,
   Mix as __Mix,
   Set as __Set,
-  TrackStore as __TrackStore,
-  MixStore as __MixStore,
-  SetStore as __SetStore,
-  UserStore as __UserStore,
+  TrackPrefs as __TrackPrefs,
+  MixPrefs as __MixPrefs,
+  SetPrefs as __SetPrefs,
+  UserPrefs as __UserPrefs,
   StoreTypes as __StoreTypes,
   TrackCache as __TrackCache,
   Stem as __Stem,

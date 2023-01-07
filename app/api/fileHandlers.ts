@@ -1,7 +1,7 @@
 import {
   addToMix,
   db,
-  getStore,
+  getPrefs,
   putStore,
   Stem,
   storeTrack,
@@ -78,7 +78,7 @@ const browseFile = async () => {
 const getStemsDirHandle = async (): Promise<
   FileSystemDirectoryHandle | undefined
 > => {
-  const { stemsDirHandle } = await getStore('user')
+  const { stemsDirHandle } = await getPrefs('user')
 
   if (stemsDirHandle) {
     // check if we have permission
@@ -126,7 +126,7 @@ const validateTrackStemAccess = async (
   if (stems) return 'ready'
 
   // do we have a stem dir defined?
-  const { stemsDirHandle } = await getStore('user')
+  const { stemsDirHandle } = await getPrefs('user')
   if (!stemsDirHandle) return 'selectStemDir'
 
   // do we have access to the stem dir?

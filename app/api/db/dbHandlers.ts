@@ -3,15 +3,15 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import {
   __db as db,
   __Mix as Mix,
-  __MixStore as MixStore,
+  __MixPrefs as MixPrefs,
   __Set as Set,
-  __SetStore as SetStore,
+  __SetPrefs as SetPrefs,
   __Stem as Stem,
   __StoreTypes as StoreTypes,
   __Track as Track,
   __TrackCache as TrackCache,
-  __TrackStore as TrackStore,
-  __UserStore as UserStore,
+  __TrackPrefs as TrackPrefs,
+  __UserPrefs as UserPrefs,
 } from '~/api/db/__dbSchema'
 import { audioEvent } from '~/api/events/audioEvents'
 import { getPermission } from '~/api/fileHandlers'
@@ -110,12 +110,12 @@ const removeMix = async (id: number): Promise<void> => await db.mixes.delete(id)
 // state getter and setter
 
 // this function is a work of typescript wizardry
-const getStore = async <T extends keyof StoreTypes>(
+const getPrefs = async <T extends keyof StoreTypes>(
   table: T,
   key?: keyof StoreTypes[T]
 ): Promise<Partial<StoreTypes[T]>> => {
   const state =
-    ((await db[`${table}Store`].orderBy('date').last()) as StoreTypes[T]) || {}
+    ((await db[`${table}Prefs`].orderBy('date').last()) as StoreTypes[T]) || {}
   return key ? ({ [key]: state[key] } as Partial<StoreTypes[T]>) : state
 }
 
@@ -123,20 +123,20 @@ const putStore = async (
   table: keyof StoreTypes,
   state: Partial<StoreTypes[typeof table]>
 ): Promise<void> => {
-  const prevState = await getStore(table)
+  const prevState = await getPrefs(table)
 
-  await db[`${table}Store`].put({
+  await db[`${table}Prefs`].put({
     ...prevState,
     ...state,
     date: new Date(),
   })
 }
 
-const getTrackStore = async (trackId: Track['id']): Promise<TrackStore> => {
-  const { tracks = [], trackStores = [] } = await getStore('mix')
+const getTrackPrefs = async (trackId: Track['id']): Promise<TrackPrefs> => {
+  const { tracks = [], trackPrefss = [] } = await getPrefs('mix')
   const trackIndex = tracks.indexOf(trackId) ?? -1
 
-  return trackStores[trackIndex] || {}
+  return trackPrefss[trackIndex] || {}
 }
 
 const getTrackName = async (trackId: Track['id']) => {
@@ -148,19 +148,19 @@ const getTrackName = async (trackId: Track['id']) => {
 }
 
 // Update the state for an individual track in the mix, such as when offset is adjusted
-const putTrackStore = async (
+const putTrackPrefs = async (
   trackId: Track['id'],
-  state: Partial<TrackStore>
+  state: Partial<TrackPrefs>
 ): Promise<void> => {
-  const { tracks = [], trackStores = [] } = await getStore('mix')
+  const { tracks = [], trackPrefss = [] } = await getPrefs('mix')
   const trackIndex = tracks.indexOf(trackId) ?? -1
 
   if (trackIndex == -1) throw errorHandler('Track not found in mix state')
 
-  const newState = { ...(trackStores[trackIndex] || {}), ...state }
-  trackStores[trackIndex] = newState
+  const newState = { ...(trackPrefss[trackIndex] || {}), ...state }
+  trackPrefss[trackIndex] = newState
 
-  await putStore('mix', { tracks, trackStores })
+  await putStore('mix', { tracks, trackPrefss })
 }
 
 const addToMix = async (track: Track) => {
@@ -168,41 +168,41 @@ const addToMix = async (track: Track) => {
   const file = await getPermission(track)
   if (!file) return
 
-  const { tracks = [], trackStores = [] } = await getStore('mix')
+  const { tracks = [], trackPrefss = [] } = await getPrefs('mix')
 
   // limit 2 tracks in the mix for now
   if (tracks.length > 1) audioEvent.emit(tracks[1]!, 'destroy')
 
   const index = tracks.length > 0 ? 1 : 0
   tracks[index] = track.id
-  trackStores[index] = { id: track.id }
+  trackPrefss[index] = { id: track.id }
 
-  await putStore('mix', { tracks, trackStores })
+  await putStore('mix', { tracks, trackPrefss })
 }
 
 const removeFromMix = async (id: Track['id']) => {
   if (id) audioEvent.emit(id, 'destroy')
 
-  const { tracks = [], trackStores = [] } = await getStore('mix')
+  const { tracks = [], trackPrefss = [] } = await getPrefs('mix')
 
   const index = tracks.indexOf(id) ?? -1
 
   if (index > -1) {
     tracks.splice(index, 1)
-    trackStores.splice(index, 1)
+    trackPrefss.splice(index, 1)
   }
 
-  await putStore('mix', { tracks, trackStores })
+  await putStore('mix', { tracks, trackPrefss })
 }
 
 export type {
   Track,
   Mix,
   Set,
-  TrackStore,
-  MixStore,
-  SetStore,
-  UserStore,
+  TrackPrefs,
+  MixPrefs,
+  SetPrefs,
+  UserPrefs,
   StoreTypes,
   TrackCache,
   Stem,
@@ -218,10 +218,10 @@ export {
   removeMix,
   addToMix,
   removeFromMix,
-  getStore,
+  getPrefs,
   putStore,
-  getTrackStore,
+  getTrackPrefs,
   getTrackName,
-  putTrackStore,
+  putTrackPrefs,
   storeTrack,
 }

@@ -2,14 +2,14 @@ import { guess } from 'web-audio-beat-detector'
 import {
   db,
   getTrackName,
-  getTrackStore,
+  getTrackPrefs,
   putStore,
   putTracks,
   Stem,
   storeTrack,
   Track,
   TrackCache,
-  TrackStore,
+  TrackPrefs,
 } from '~/api/db/dbHandlers'
 import { getPermission, getStemsDirHandle } from '~/api/fileHandlers'
 
@@ -201,9 +201,9 @@ const calcMarkers = async (
   trackId: Track['id'],
   waveform: WaveSurfer
 ): Promise<{
-  adjustedBpm: TrackStore['adjustedBpm']
-  beatResolution: TrackStore['beatResolution']
-  mixpointTime: TrackStore['mixpointTime']
+  adjustedBpm: TrackPrefs['adjustedBpm']
+  beatResolution: TrackPrefs['beatResolution']
+  mixpointTime: TrackPrefs['mixpointTime']
 } | void> => {
   if (!trackId) return
 
@@ -224,7 +224,7 @@ const calcMarkers = async (
     adjustedBpm,
     beatResolution = 0.25,
     mixpointTime,
-  } = await getTrackStore(trackId)
+  } = await getTrackPrefs(trackId)
 
   const beatInterval = 60 / (adjustedBpm || bpm || 1)
   const skipLength = beatInterval * (1 / beatResolution)
@@ -331,10 +331,10 @@ const getStemBuffers = async (
   return { stemBuffers }
 }
 
-// const createMix = async (TrackStoreArray: TrackStore[]) => {
+// const createMix = async (TrackPrefsArray: TrackPrefs[]) => {
 //   // this is slow, also look at https://github.com/jackedgson/crunker and https://github.com/audiojs/audio-buffer-utils
 
-//   const [wave0, wave1] = [...TrackStoreArray].map(track =>
+//   const [wave0, wave1] = [...TrackPrefsArray].map(track =>
 //     track.waveformData?.toJSON()
 //   )
 
@@ -343,14 +343,14 @@ const getStemBuffers = async (
 //   const track1Duration =
 //     (wave1 &&
 //       (wave1.length / wave1.sample_rate) * wave1.samples_per_pixel -
-//         (TrackStoreArray[0]?.mixPoint || 0) -
-//         (TrackStoreArray[1]?.mixPoint || 0)) ||
+//         (TrackPrefsArray[0]?.mixPoint || 0) -
+//         (TrackPrefsArray[1]?.mixPoint || 0)) ||
 //     0
 
 //   const totalDuration = track0Duration + track1Duration
 
 //   const arrayOfAudioBuffers = []
-//   for (let t of TrackStoreArray)
+//   for (let t of TrackPrefsArray)
 //     arrayOfAudioBuffers.push(await getAudioBuffer(t.file!))
 
 //   var audioCtx = new AudioContext()

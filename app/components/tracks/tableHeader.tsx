@@ -25,7 +25,7 @@ import {
   removeTracks,
   Track,
   useLiveQuery,
-  UserStore,
+  UserPrefs,
 } from '~/api/db/dbHandlers'
 import { browseFile } from '~/api/fileHandlers'
 import { setModalState, tableState } from '~/api/uiState'
@@ -175,8 +175,8 @@ const EnhancedTableHead = (props: {
   numSelected: number
   onRequestSort: (event: MouseEvent<unknown>, property: keyof Track) => void
   onSelectAllClick: (event: ChangeEvent<HTMLInputElement>) => void
-  sortDirection: UserStore['sortDirection']
-  sortColumn: UserStore['sortColumn']
+  sortDirection: UserPrefs['sortDirection']
+  sortColumn: UserPrefs['sortColumn']
   rowCount: number
 }) => {
   const {

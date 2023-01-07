@@ -1,10 +1,10 @@
 import { Box } from '@mui/joy'
-import { MixStore } from '~/api/db/dbHandlers'
+import { MixPrefs } from '~/api/db/dbHandlers'
 import StemsCard from '~/components/mixes/StemsCard'
 import TrackCard from '~/components/mixes/TrackCard'
 import { MixControl } from '~/components/tracks/Controls'
 
-const MixView = ({ tracks }: { tracks: MixStore['tracks'] }) => {
+const MixView = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
   if (!tracks?.length) return null
 
   return (
