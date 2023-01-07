@@ -1,4 +1,4 @@
-import { db, StemCache, storeStems, Track } from '~/api/db/dbHandlers'
+import { db, storeTrack, Track } from '~/api/db/dbHandlers'
 import { getStemsDirHandle } from '~/api/fileHandlers'
 import { convertWav } from '~/api/mp3Converter'
 import { errorHandler } from '~/utils/notifications'
@@ -185,7 +185,7 @@ const stemAudio = async (trackId: Track['id']) => {
       console.log(`Stem saved: ${filename.split('.')[0]} - ${rename}`)
 
       // store stem in cache
-      storeStems(trackId, { [name.slice(0, -4) as Stems]: file })
+      storeTrack({ id: trackId, stems: { [name.slice(0, -4) as Stems]: file } })
     }
 
     if (!startBody.modelInputs.mp3) {

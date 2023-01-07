@@ -5,14 +5,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "msedge",
-      "request": "attach",
-      "port": 9222,
       "name": "Debug MixPoint",
+      "request": "launch",
+      "type": "msedge",
       "url": "http://localhost:3000",
-      "webRoot": "${workspaceFolder}/src",
       "preLaunchTask": "yarn dev",
-      "smartStep": true,
+      "webRoot": "${workspaceFolder}/src",
       "skipFiles": [
         "<node_internals>/**/*.js",
         "${workspaceFolder}/node_modules/**/*.js"

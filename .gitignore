@@ -1,8 +1,7 @@
-node_modules/
-.cache/
-build/
-dist/
+**/node_modules/
+**/.cache/
+**/build/
+**/dist/
 *.log
 todo.md
-web-audio-beat-detector/
 .env

@@ -2,17 +2,15 @@
 
 import { ButtonProps } from '@mui/joy'
 import createStore from 'teaful'
-import { Track } from '~/api/dbHandlers'
+import { Track } from '~/api/db/dbHandlers'
 
 // AudioState captures whether audio is being analyzed, processed, or played
 const { useStore: audioState, setStore: setAudioState } = createStore<{
   analyzing: Track['id'][]
   playing: Track['id'][]
-  processing: boolean
 }>({
   analyzing: [],
   playing: [],
-  processing: false,
 })
 
 // TableState captures the state of the table, such as search value, which which rows are selected and track drawer open/closed state
@@ -27,6 +25,7 @@ const {
   page: number
   showButton: number | null
   openDrawer: boolean
+  processing: boolean
 }>({
   search: '',
   selected: [],
@@ -34,6 +33,7 @@ const {
   page: 0,
   showButton: null,
   openDrawer: false,
+  processing: false,
 })
 
 // ModalState is a generic handler for various modals, usually when doing something significant like deleting tracks
@@ -60,8 +60,8 @@ const { useStore: notificationState } = createStore<{
   variant: 'error',
 })
 
-const { useStore: volumeState, setStore: setVolumeState } = createStore<{
-  [trackId: string]: { volume: number }
+const { useStore: waveformState, setStore: setWaveformState } = createStore<{
+  [trackId: string]: { waveform: WaveSurfer; volume: number }
 }>({})
 
 export {
@@ -73,6 +73,6 @@ export {
   modalState,
   setModalState,
   notificationState,
-  volumeState,
-  setVolumeState,
+  waveformState,
+  setWaveformState,
 }

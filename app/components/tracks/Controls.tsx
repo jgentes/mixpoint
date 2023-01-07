@@ -1,4 +1,5 @@
 import {
+  Adjust,
   Eject,
   Pause,
   PlayArrow,
@@ -32,14 +33,10 @@ import {
   TrackState,
   useLiveQuery,
 } from '~/api/db/dbHandlers'
-import {
-  NavEvent,
-  waveformEvent,
-  WaveformEvent,
-} from '~/api/events/waveformEvents'
+import { audioEvent, AudioEvent, NavEvent } from '~/api/events/audioEvents'
 
-import { audioState, tableState } from '~/api/uiState'
-import { timeFormat } from '~/utils/tableOps'
+import { audioState, tableState, waveformState } from '~/api/uiState'
+import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
 const inputText = (text: string) => {
   return (
@@ -71,7 +68,7 @@ const NumberControl = ({
   title: string
   text: string
   width?: number
-  emitEvent: WaveformEvent
+  emitEvent: AudioEvent
   propName: string
   styles?: object
 }) => {
@@ -90,7 +87,7 @@ const NumberControl = ({
 
     setInputVal(newVal)
 
-    waveformEvent.emit(trackId!, emitEvent, { [propName]: newVal })
+    audioEvent.emit(trackId!, emitEvent, { [propName]: newVal })
   }
 
   const ResetValLink = () => (
@@ -188,7 +185,7 @@ const BpmControl = ({ trackId }: { trackId: Track['id'] }) => {
       text="BPM:"
       emitEvent="bpm"
       propName="adjustedBpm"
-      width={112}
+      width={115}
     />
   )
 }
@@ -218,7 +215,7 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackState['id'] }) => {
     useLiveQuery(() => getTrackState(trackId), [trackId]) || {}
 
   const changeBeatResolution = (beatResolution: TrackState['beatResolution']) =>
-    waveformEvent.emit(trackId!, 'beatResolution', { beatResolution })
+    audioEvent.emit(trackId!, 'beatResolution', { beatResolution })
 
   return (
     <RadioGroup
@@ -280,7 +277,7 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackState['id'] }) => {
 
 const TrackNavControl = ({ trackId }: { trackId: TrackState['id'] }) => {
   const navEvent = (effect: NavEvent) =>
-    waveformEvent.emit(trackId!, 'nav', { effect })
+    audioEvent.emit(trackId!, 'nav', { effect })
 
   const [playing] = audioState.playing()
   const isPlaying = playing.includes(trackId!)
@@ -290,7 +287,7 @@ const TrackNavControl = ({ trackId }: { trackId: TrackState['id'] }) => {
       {[
         { val: 'Previous Beat Marker', icon: <SkipPrevious /> },
         { val: 'Go to Mixpoint', icon: <SettingsBackupRestore /> },
-        //{ val: 'Set Mixpoint', icon: <Adjust /> },
+        { val: 'Set Mixpoint', icon: <Adjust /> },
         {
           val: isPlaying ? 'Pause' : 'Play',
           icon: isPlaying ? <Pause /> : <PlayArrow />,
@@ -317,6 +314,7 @@ const TrackNavControl = ({ trackId }: { trackId: TrackState['id'] }) => {
 
 const MixControl = ({ tracks }: { tracks: MixState['tracks'] }) => {
   const [state, setState] = useState<NavEvent>('Go to Mixpoint')
+  const [waveform] = waveformState[1].waveform()
 
   return (
     <RadioGroup
@@ -329,9 +327,10 @@ const MixControl = ({ tracks }: { tracks: MixState['tracks'] }) => {
         const val = e.target.value as NavEvent
 
         setState(val)
-        tracks?.forEach(trackId =>
-          waveformEvent.emit(trackId!, 'nav', { effect: val })
-        )
+        if (!tracks?.length) return
+
+        //audioEvent.emit('playAll')
+        waveform.play()
       }}
     >
       {[
@@ -400,18 +399,17 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
   const { duration } =
     useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
 
-  const { mixpoint } =
+  const { mixpointTime } =
     useLiveQuery(() => getTrackState(trackId), [trackId]) || {}
 
   const [mixpointVal, setMixpointVal] = useState<string>('0:00.00')
 
-  useEffect(() => setMixpointVal(mixpoint || '0:00.00'), [mixpoint])
+  useEffect(() => setMixpointVal(timeFormat(mixpointTime || 0)), [mixpointTime])
 
   const adjustMixpoint = async (newMixpoint: string) => {
-    if (newMixpoint == mixpoint) return
+    if (convertToSecs(newMixpoint) == mixpointTime) return
 
-    //waveformEvent.emit(trackId, 'mixpoint', { mixpoint: newMixpoint })
-    //putTrackState(trackId, { mixpoint })
+    audioEvent.emit(trackId, 'setMixpoint', { mixpoint: newMixpoint })
   }
 
   return (
@@ -488,6 +486,7 @@ const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
               padding: '15px 0',
             }}
           />
+          <audio id={`${trackId}-${stemType.toLowerCase()}`} />
           {!volume || muted ? (
             <VolumeOff
               sx={{ color: 'text.secondary' }}

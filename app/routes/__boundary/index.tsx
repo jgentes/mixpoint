@@ -1,6 +1,6 @@
 import { Box } from '@mui/joy'
-import { useEffect } from 'react'
-import { getState, useLiveQuery } from '~/api/db/dbHandlers'
+import { useEffect, useState } from 'react'
+import { db, getState, MixState, useLiveQuery } from '~/api/db/dbHandlers'
 import { setTableState } from '~/api/uiState'
 import Header from '~/components/header/Header'
 import MixView from '~/components/mixes/MixView'
@@ -9,9 +9,9 @@ import TrackDrawer from '~/components/tracks/TrackDrawer'
 import TrackTable from '~/components/tracks/TrackTable'
 
 const Mixes: React.FunctionComponent = () => {
-  const { tracks = [] } = useLiveQuery(() => getState('mix')) || {}
+  const { tracks } = useLiveQuery(() => getState('mix', 'tracks')) || {}
 
-  const mixViewVisible = !!tracks.length
+  const mixViewVisible = !!tracks?.length
 
   useEffect(() => {
     if (!mixViewVisible) setTableState.openDrawer(false)
@@ -29,7 +29,7 @@ const Mixes: React.FunctionComponent = () => {
       <Header />
       {mixViewVisible ? (
         <>
-          <MixView />
+          <MixView tracks={tracks} />
           <DrawerButton />
         </>
       ) : (

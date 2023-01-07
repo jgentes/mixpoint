@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import { useState } from 'react'
 import { db, getState, useLiveQuery } from '~/api/db/dbHandlers'
-import { audioState, tableState } from '~/api/uiState'
+import { tableState } from '~/api/uiState'
 import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
 import LeftNav from '~/components/tracks/LeftNav'
 import {
@@ -38,7 +38,7 @@ const TrackTable = () => {
   const [search] = tableState.search()
 
   // Show loader while processing tracks
-  const [processing] = audioState.processing()
+  const [processing] = tableState.processing()
 
   // Allow drag & drop files / folders into the table
   const [dragOver, setDragOver] = useState(false)

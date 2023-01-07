@@ -1,17 +1,9 @@
 import { PlayArrow } from '@mui/icons-material'
 import { Box, Button, Card, Typography } from '@mui/joy'
 import { useEffect, useState } from 'react'
-import { getStemContext } from '~/api/audioHandlers'
 import { stemAudio } from '~/api/bananaDev'
-import {
-  db,
-  getState,
-  getTrackName,
-  StemCache,
-  Track,
-  useLiveQuery,
-} from '~/api/db/dbHandlers'
-import { initStemEvents, stemEvent } from '~/api/events/stemEvents'
+import { db, getTrackName, Track, useLiveQuery } from '~/api/db/dbHandlers'
+import { audioEvent } from '~/api/events/audioEvents'
 import {
   getStemsDirHandle,
   StemState,
@@ -24,19 +16,31 @@ import { errorHandler } from '~/utils/notifications'
 const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
   const [stemState, setStemState] = useState<StemState>()
 
+  const checkStemStatus = async () => await validateTrackStemAccess(trackId)
+
   // check stems on disk to determine component state
   useEffect(() => {
-    const getState = async () => {
-      const stemStatus = await validateTrackStemAccess(trackId)
+    const initStems = async () => {
+      const stemStatus = await checkStemStatus()
       setStemState(stemStatus)
 
       // if we're ready, initialize stem event handlers
-      if (stemStatus == 'ready') initStemEvents(trackId)
+      if (stemStatus == 'ready') {
+        const { stems } = (await db.trackCache.get(trackId)) || {}
+
+        if (stems) {
+          for (let [stem, file] of Object.entries(stems)) {
+            if (stem == 'other') stem = 'melody'
+            const elem = document.getElementById(
+              `${trackId}-${stem}`
+            ) as HTMLAudioElement
+            elem.src = URL.createObjectURL(file)
+          }
+        }
+      }
     }
 
-    if (trackId) getState()
-
-    return () => stemEvent.emit(`${trackId}-stems`, 'destroy')
+    if (trackId) initStems()
   }, [trackId])
 
   const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
@@ -47,7 +51,9 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
     if (!dirHandle) {
       // this would be due to denial of permission (ie. clicked cancel)
       throw errorHandler('Permission to the file or folder was denied.')
-    } else setStemState('getStems')
+    }
+    const stemStatus = await checkStemStatus()
+    setStemState(stemStatus)
   }
 
   const stemHandler = () => {
@@ -103,11 +109,7 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
               {trackName}
             </Typography>
             {stemState != 'ready' ? null : (
-              <PlayArrow
-                onClick={() =>
-                  stemEvent.emit(`${trackId}-stems`, 'play', { stem: 'all' })
-                }
-              />
+              <PlayArrow onClick={() => audioEvent.emit(trackId, 'play')} />
             )}
           </Box>
           {stemState !== 'ready' ? (

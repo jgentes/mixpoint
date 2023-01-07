@@ -8,19 +8,31 @@ import {
   __SetState as SetState,
   __StateTypes as StateTypes,
   __Stem as Stem,
-  __StemCache as StemCache,
   __Track as Track,
   __TrackCache as TrackCache,
   __TrackState as TrackState,
   __UserState as UserState,
 } from '~/api/db/__dbSchema'
-import { waveformEvent } from '~/api/events/waveformEvents'
+import { audioEvent } from '~/api/events/audioEvents'
 import { getPermission } from '~/api/fileHandlers'
 import { errorHandler } from '~/utils/notifications'
 
 const CACHE_LIMIT = 25
 
-const storeTrack = async (id: TrackCache['id'], file: TrackCache['file']) => {
+const storeTrack = async ({
+  id,
+  file,
+  stems,
+}: {
+  id: TrackCache['id']
+  file?: TrackCache['file']
+  stems?: TrackCache['stems']
+}) => {
+  // Retrieve any existing cache data
+  const cache = await db.trackCache.get(id)
+  if (!file) file = cache?.file
+  if (cache?.stems) stems = { ...cache.stems, ...stems }
+
   // Enforce database limit
   const count = await db.trackCache.count()
   if (count > CACHE_LIMIT) {
@@ -28,21 +40,7 @@ const storeTrack = async (id: TrackCache['id'], file: TrackCache['file']) => {
     if (oldest) db.trackCache.delete(oldest.id)
   }
 
-  await db.trackCache.put({ id, file })
-}
-
-const storeStems = async (id: StemCache['id'], files: StemCache['files']) => {
-  // Enforce database limit
-  const count = await db.stemCache.count()
-  if (count > CACHE_LIMIT) {
-    const oldest = await db.stemCache.orderBy('id').first()
-    if (oldest) db.stemCache.delete(oldest.id)
-  }
-
-  const cache = await db.stemCache.get(id)
-  if (cache?.files) files = { ...cache.files, ...files }
-
-  await db.stemCache.put({ id, files })
+  await db.trackCache.put({ id, file, stems })
 }
 
 const updateTrack = async (
@@ -173,7 +171,7 @@ const addToMix = async (track: Track) => {
   const { tracks = [], trackStates = [] } = await getState('mix')
 
   // limit 2 tracks in the mix for now
-  if (tracks.length > 1) waveformEvent.emit(tracks[1]!, 'destroy')
+  if (tracks.length > 1) audioEvent.emit(tracks[1]!, 'destroy')
 
   const index = tracks.length > 0 ? 1 : 0
   tracks[index] = track.id
@@ -183,7 +181,7 @@ const addToMix = async (track: Track) => {
 }
 
 const removeFromMix = async (id: Track['id']) => {
-  if (id) waveformEvent.emit(id, 'destroy')
+  if (id) audioEvent.emit(id, 'destroy')
 
   const { tracks = [], trackStates = [] } = await getState('mix')
 
@@ -207,7 +205,6 @@ export type {
   UserState,
   StateTypes,
   TrackCache,
-  StemCache,
   Stem,
 }
 export {
@@ -227,5 +224,4 @@ export {
   getTrackName,
   putTrackState,
   storeTrack,
-  storeStems,
 }

@@ -98,7 +98,7 @@ const timeFormat = (seconds: number): string =>
 
 // Convert time string to ms
 const convertToSecs = (time: string): number => {
-  const [minutes, seconds, ms] = time.split(/[:.]/)
+  const [minutes = 0, seconds = 0, ms = 0] = time.split(/[:.]/)
   return +minutes * 60 + +seconds + +`.${ms}`
 }
 

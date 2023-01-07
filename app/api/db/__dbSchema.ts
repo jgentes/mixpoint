@@ -15,7 +15,6 @@ class MixpointDb extends Dexie {
   setState: Dexie.Table<SetState>
   userState: Dexie.Table<UserState>
   trackCache: Dexie.Table<TrackCache>
-  stemCache: Dexie.Table<StemCache>
 
   constructor() {
     super('MixpointDb')
@@ -25,9 +24,8 @@ class MixpointDb extends Dexie {
       sets: '++id, mixes',
       mixState: 'date',
       setState: 'date',
-      UserState: 'date',
+      userState: 'date',
       trackCache: 'id',
-      stemCache: 'id',
     })
 
     this.tracks = this.table('tracks')
@@ -35,9 +33,8 @@ class MixpointDb extends Dexie {
     this.sets = this.table('sets')
     this.mixState = this.table('mixState')
     this.setState = this.table('setState')
-    this.userState = this.table('UserState')
+    this.userState = this.table('userState')
     this.trackCache = this.table('trackCache')
-    this.stemCache = this.table('stemCache')
   }
 }
 
@@ -91,20 +88,13 @@ type Set = {
 // waveforms without prompting the user for permission to read the file from
 // disk, which cannot be done without interacting with the page first.
 // Each file is a few megabytes, so the cache must be limited.
-type TrackCache = {
-  id: Track['id']
-  file: File
-}
-
 const stems = ['drums', 'bass', 'vocals', 'other'] as const
 type Stem = typeof stems[number]
 
-// The StemCache is similar to trackCache but for reading stems
-// without user interaction after refreshing the page
-// Files can be partial because we cache one file at a time
-type StemCache = {
+type TrackCache = {
   id: Track['id']
-  files: Partial<{ [key in Stem]: File }>
+  file?: File
+  stems?: Partial<{ [key in Stem]: File }>
 }
 
 // State tables
@@ -136,7 +126,7 @@ type TrackState = Partial<{
   id: Track['id']
   adjustedBpm: Track['bpm']
   beatResolution: 0.25 | 0.5 | 1
-  mixpoint: string
+  mixpointTime: number // seconds
 }>
 
 // For state getter and setter
@@ -171,7 +161,6 @@ export type {
   UserState as __UserState,
   StateTypes as __StateTypes,
   TrackCache as __TrackCache,
-  StemCache as __StemCache,
   Stem as __Stem,
 }
 export { db as __db }

@@ -3,8 +3,10 @@ import {
   db,
   getState,
   putState,
+  Stem,
   storeTrack,
   Track,
+  TrackCache,
 } from '~/api/db/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
 import { processTracks } from './audioHandlers'
@@ -25,7 +27,7 @@ const _getFile = async (track: Track): Promise<File | null> => {
   }
 
   // Cache the file
-  if (file) await storeTrack(track.id, file)
+  if (file) await storeTrack({ id: track.id, file })
 
   // In the case perms aren't granted, return null - we need to request permission
   return file
@@ -39,7 +41,7 @@ const _getFile = async (track: Track): Promise<File | null> => {
 const getPermission = async (track: Track): Promise<File | null> => {
   // First see if we have the file in the cache
   const cache = await db.trackCache.get(track.id)
-  if (cache) return cache.file
+  if (cache?.file) return cache.file
 
   // Check perms, directory handle is preferred over file handle
   const file = await _getFile(track)
@@ -120,8 +122,8 @@ const validateTrackStemAccess = async (
   if (!trackId) return 'selectStemDir'
 
   // See if we have stems in cache
-  const cache = await db.stemCache.get(trackId)
-  if (cache) return 'ready'
+  const { stems } = (await db.trackCache.get(trackId)) || {}
+  if (stems) return 'ready'
 
   // do we have a stem dir defined?
   const { stemsDirHandle } = await getState('user')
@@ -153,8 +155,16 @@ const validateTrackStemAccess = async (
   }
 
   // are there at least 4 files in the dir?
-  const stemFiles = trackStemDirHandle.keys()
-  console.log(stemFiles)
+  const localStems: TrackCache['stems'] = {}
+  for await (const [name, fileHandle] of trackStemDirHandle.entries()) {
+    const file = (await fileHandle.getFile(name)) as File
+    localStems[name.slice(0, -4) as Stem] = file
+  }
+
+  if (Object.keys(localStems).length < 4) return 'getStems'
+
+  // cache the stems
+  await storeTrack({ id: trackId, stems: localStems })
 
   // ready!
   return 'ready'

@@ -9,22 +9,23 @@ import {
   TrackState,
   updateTrack,
 } from '~/api/db/dbHandlers'
-import { stemEvent } from '~/api/events/stemEvents'
-import { setAudioState, setVolumeState } from '~/api/uiState'
+import { setAudioState, setWaveformState } from '~/api/uiState'
 import { errorHandler } from '~/utils/notifications'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
 import { eventHandler } from './eventHandler'
 
-// WaveformEvents are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
+// audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
 
-type WaveformEvent =
+type AudioEvent =
   | 'seek'
   | 'beatResolution'
   | 'bpm'
   | 'offset'
   | 'nav'
-  | 'mixpoint'
+  | 'setMixpoint'
   | 'destroy'
+  | 'play'
+  | 'pause'
 
 type NavEvent =
   | 'Play'
@@ -34,10 +35,9 @@ type NavEvent =
   | 'Previous Beat Marker'
   | 'Next Beat Marker'
 
-const waveformEvent = eventHandler<WaveformEvent>()
+const audioEvent = eventHandler<AudioEvent>()
 
-// WaveformEvents are emitted by interaction with the Waveform, such as seek, region interactions, etc, as opposed to external controls
-const initWaveformEvents = async ({
+const initAudioEvents = async ({
   trackId,
   waveform,
 }: {
@@ -54,7 +54,7 @@ const initWaveformEvents = async ({
   const bufferLength = analyzer.frequencyBinCount
   const dataArray = new Uint8Array(bufferLength)
 
-  const { adjustedBpm, beatResolution, mixpoint } =
+  const { adjustedBpm, beatResolution, mixpointTime } =
     (await calcMarkers(trackId, waveform)) || {}
 
   // Adjust zoom based on previous mixState
@@ -66,53 +66,117 @@ const initWaveformEvents = async ({
     waveform.setPlaybackRate(adjustedBpm / (bpm || adjustedBpm))
   }
 
-  const waveformEvents = {
-    caclculateVolume: () => {
-      analyzer.getByteFrequencyData(dataArray)
+  // for stems
+  let sourceNodes: MediaElementAudioSourceNode[] = []
 
-      let sum = 0
-      for (const amplitude of dataArray) {
-        sum += amplitude * amplitude
-      }
+  // const audioElements = ['bass', 'drums', 'vocals', 'melody'].map(
+  //   stem => document.getElementById(`${trackId}-${stem}`) as HTMLAudioElement
+  // )
 
-      const volume = Math.sqrt(sum / (dataArray.length + 1000))
+  const stemEvents = {
+    play: ({
+      context = new AudioContext(),
+      offset = 0,
+    }: {
+      context?: AudioContext
+      offset?: number
+    }) => {
+      // Build the audioContext every time because once started (played),
+      // it must be closed and recreated before it can be started again
 
-      setVolumeState[trackId].volume(volume)
+      // use setTimeout to ensure synchronized start time of all stems
+      window.setTimeout(() => {
+        for (const audioElement of audioElements) {
+          audioElement.currentTime = context.currentTime + offset
+          if (!sourceNodes.length) {
+            const source = context.createMediaElementSource(audioElement)
+            source.connect(context.destination)
+            sourceNodes.push(source)
+          }
+          audioElement.play()
+        }
+      }, 0)
     },
+    pause: () => {
+      for (const audioElement of audioElements) {
+        audioElement.pause()
+      }
+    },
+  }
+
+  const caclculateVolume = () => {
+    analyzer.getByteFrequencyData(dataArray)
+
+    let sum = 0
+    for (const amplitude of dataArray) {
+      sum += amplitude * amplitude
+    }
+
+    const volume = Math.sqrt(sum / (dataArray.length + 1000))
+
+    setWaveformState[trackId].volume(volume)
+  }
+
+  const audioEvents = {
     onReady: () => {
       setAudioState.analyzing(prev => prev.filter(id => id !== trackId))
 
       // Set playhead to mixpoint if it exists
-      const currentPlayhead = mixpoint
-        ? convertToSecs(mixpoint)
-        : waveform.markers.markers?.[0].time || 0
+      const currentPlayhead =
+        mixpointTime || waveform.markers.markers?.[0].time || 0
 
       if (currentPlayhead) {
         waveform.playhead.setPlayheadTime(currentPlayhead)
         waveform.seekAndCenter(1 / (waveform.getDuration() / currentPlayhead))
       }
     },
-    onPlay: () => {
-      stemEvent.emit(`${trackId}-stems`, 'play', {
-        offset: waveform.getCurrentTime(),
+    play: ({ offset }: { offset?: number }) => {
+      stemEvents.play({
+        offset,
       })
 
-      // Slow down sampling to 10ms
+      waveform.play()
+
+      // Slow down sampling to 12ms
       if (volumeMeterInterval > -1) clearInterval(volumeMeterInterval)
-      volumeMeterInterval = setInterval(
-        () => waveformEvents.caclculateVolume(),
-        15
-      )
+      volumeMeterInterval = setInterval(caclculateVolume, 12.5)
 
       // Set play state, used to modify play button
       setAudioState.playing(prev => [...prev, trackId])
     },
-    onPause: () => {
-      stemEvent.emit(`${trackId}-stems`, 'pause')
+    playAll: () => {
+      const audioElements1 = ['bass', 'drums', 'vocals', 'melody'].map(
+        stem => document.getElementById(`1-${stem}`) as HTMLAudioElement
+      )
+
+      const audioElements2 = ['bass', 'drums', 'vocals', 'melody'].map(
+        stem => document.getElementById(`2-${stem}`) as HTMLAudioElement
+      )
+
+      const context = new AudioContext()
+
+      const audioElements = [...audioElements1, ...audioElements2]
+      console.log(audioElements)
+      window.setTimeout(() => {
+        for (const audioElement of audioElements) {
+          audioElement.currentTime = context.currentTime + 0
+          if (!sourceNodes.length) {
+            const source = context.createMediaElementSource(audioElement)
+            source.connect(context.destination)
+            sourceNodes.push(source)
+          }
+          audioElement.play()
+        }
+      }, 0)
+    },
+    pause: () => {
+      stemEvents.pause()
+
+      waveform.pause()
 
       clearInterval(volumeMeterInterval)
       // Set to zero on pause
-      setVolumeState[trackId].volume(0)
+      setWaveformState[trackId].volume(0)
 
       // Set play state, used to modify play button
       setAudioState.playing(prev => prev.filter(id => id !== trackId))
@@ -139,8 +203,6 @@ const initWaveformEvents = async ({
         if (direction) waveform.skipForward(time - startTime)
         else {
           waveform.playhead.setPlayheadTime(time)
-          // Only update mixpoint if we're not scrolling with the mouse
-          putTrackState(trackId, { mixpoint: timeFormat(time) })
         }
       }
     },
@@ -208,56 +270,59 @@ const initWaveformEvents = async ({
 
       calcMarkers(trackId, waveform)
     },
-    nav: ({ effect }: { effect: NavEvent }): void => {
-      const mixpoint = waveform.playhead.playheadTime
+    nav: async ({
+      effect,
+      context,
+    }: {
+      effect: NavEvent
+      context: AudioContext
+    }): Promise<void> => {
+      const { mixpointTime } = (await getTrackState(trackId)) || {}
 
       switch (effect) {
         case 'Play':
-          waveform.playPause()
+          audioEvents.play({})
           break
         case 'Pause':
-          waveform.pause()
+          audioEvents.pause()
           break
-        // case 'Set Mixpoint':
-        //   waveform.pause()
+        case 'Set Mixpoint':
+          audioEvents.pause()
 
-        //   waveformEvent.emit(trackId, 'mixpoint', {
-        //     mixpoint: timeFormat(mixpoint),
-        //   })
-        //   break
+          audioEvents.setMixpoint({
+            mixpoint: timeFormat(waveform.playhead.playheadTime),
+          })
+          break
         case 'Go to Mixpoint':
-          waveform.seekAndCenter(1 / (waveform.getDuration() / mixpoint))
-          waveform.pause()
+          waveform.seekAndCenter(
+            mixpointTime ? 1 / (waveform.getDuration() / mixpointTime) : 0
+          )
+          audioEvents.play({})
           break
         case 'Previous Beat Marker':
-          waveformEvents.seek({ direction: 'previous' })
+          audioEvents.seek({ direction: 'previous' })
           break
         case 'Next Beat Marker':
-          waveformEvents.seek({ direction: 'next' })
+          audioEvents.seek({ direction: 'next' })
           break
       }
     },
-    mixpoint: async ({ mixpoint }: { mixpoint: string }): Promise<void> => {
-      const { mixpoint: prevMixpoint } = (await getTrackState(trackId)) || {}
+    setMixpoint: async ({ mixpoint }: { mixpoint: string }): Promise<void> => {
+      const newMixpoint = convertToSecs(mixpoint)
+      if (newMixpoint == mixpointTime) return
 
-      if (mixpoint == prevMixpoint) return
-
-      putTrackState(trackId, { mixpoint })
-      waveform.seekAndCenter(
-        1 / (waveform.getDuration() / convertToSecs(mixpoint))
-      )
+      putTrackState(trackId, { mixpointTime: newMixpoint })
+      waveform.seekAndCenter(1 / (waveform.getDuration() / newMixpoint))
     },
     destroy: (): void => {
-      waveformEvent.off(trackId, waveformEventHandler)
+      audioEvent.off(trackId, audioEventHandler)
       if (waveform) waveform.destroy()
     },
   }
 
   // Initialize wavesurfer event listeners
-  waveform.on('ready', waveformEvents.onReady)
-  waveform.on('play', waveformEvents.onPlay)
-  waveform.on('pause', waveformEvents.onPause)
-  waveform.on('seek', () => waveformEvent.emit(trackId, 'seek', {}))
+  waveform.on('ready', audioEvents.onReady)
+  waveform.on('seek', audioEvents.seek)
 
   // waveform.on('region-click', region => {
   //   if (waveform.isPlaying()) return waveform.pause()
@@ -281,20 +346,17 @@ const initWaveformEvents = async ({
   //   }
   // })
 
-  const waveformEventHandler = ({
+  const audioEventHandler = ({
     type,
     args,
   }: {
-    type: WaveformEvent
+    type: AudioEvent
     args?: any
-  }) => {
-    console.log('event', type, 'args:', args)
-    waveformEvents[type](args)
-  }
+  }) => audioEvents[type](args || {})
 
   // add event listener
-  waveformEvent.on(trackId, waveformEventHandler)
+  audioEvent.on(trackId, audioEventHandler)
 }
 
-export type { WaveformEvent, NavEvent }
-export { waveformEvent, initWaveformEvents }
+export type { AudioEvent, NavEvent }
+export { audioEvent, initAudioEvents }

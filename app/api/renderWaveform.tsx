@@ -2,10 +2,14 @@ import { Card } from '@mui/joy'
 import { SxProps } from '@mui/joy/styles/types'
 import { useEffect } from 'react'
 import { db, Track } from '~/api/db/dbHandlers'
-import { initWaveformEvents, waveformEvent } from '~/api/events/waveformEvents'
-import { setAudioState } from '~/api/uiState'
+import {
+  AudioEvent,
+  audioEvent,
+  initAudioEvents,
+} from '~/api/events/audioEvents'
+import { setAudioState, setWaveformState } from '~/api/uiState'
 import { errorHandler } from '~/utils/notifications'
-import { getPermission } from './fileHandlers'
+import { getPermission, validateTrackStemAccess } from './fileHandlers'
 
 // Only load WaveSurfer on the client
 let WaveSurfer: typeof import('wavesurfer.js'),
@@ -55,6 +59,7 @@ const Waveform = ({
         barGap: 1,
         cursorColor: 'secondary.mainChannel',
         interact: true,
+        closeAudioContext: true,
         //@ts-ignore - author hasn't updated types for gradients
         waveColor: [
           'rgb(200, 165, 49)',
@@ -101,11 +106,16 @@ const Waveform = ({
         ],
       })
 
+      setWaveformState[trackId].waveform(waveform)
+
       if (file) waveform.loadBlob(file)
 
-      waveform.setMute(true)
+      // if stems are available, mute waveform and use stems for playback
+      if ((await validateTrackStemAccess(trackId)) == 'ready') {
+        waveform.setMute(true)
+      }
 
-      await initWaveformEvents({ trackId, waveform }) // wavesurfer event handlers
+      await initAudioEvents({ trackId, waveform }) // wavesurfer event handlers
     }
 
     getAudio()
@@ -120,7 +130,7 @@ const Waveform = ({
         zIndex: 1,
       }}
       onWheel={e =>
-        waveformEvent.emit(trackId, 'seek', {
+        audioEvent.emit(trackId, 'seek', {
           direction: e.deltaY > 0 ? 'next' : 'previous',
         })
       }

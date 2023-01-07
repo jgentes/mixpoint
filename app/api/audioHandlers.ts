@@ -6,8 +6,8 @@ import {
   putState,
   putTracks,
   Stem,
-  StemCache,
-  storeStems,
+  TrackCache,
+  storeTrack,
   Track,
   TrackState,
 } from '~/api/db/dbHandlers'
@@ -67,14 +67,14 @@ async function getTracksRecursively(
   const addTracksToDb = async () => {
     // Ensure we have id's for our tracks, add them to the DB with updated lastModified dates
     const updatedTracks = await putTracks(trackArray)
-    setAudioState.processing(false)
+    setTableState.processing(false)
     return updatedTracks
   }
 
   // Warn user if large number of tracks are added, this is due to memory leak in web audio api
   if (trackArray.length > 100) {
     // Show indicator inside empty table
-    setAudioState.processing(true)
+    setTableState.processing(true)
 
     setModalState({
       openState: true,
@@ -90,7 +90,7 @@ async function getTracksRecursively(
       },
       onCancel: () => {
         setModalState.openState(false)
-        setAudioState.processing(false)
+        setTableState.processing(false)
       },
     })
     return []
@@ -203,7 +203,7 @@ const calcMarkers = async (
 ): Promise<{
   adjustedBpm: TrackState['adjustedBpm']
   beatResolution: TrackState['beatResolution']
-  mixpoint: TrackState['mixpoint']
+  mixpointTime: TrackState['mixpointTime']
 } | void> => {
   if (!trackId) return
 
@@ -223,7 +223,7 @@ const calcMarkers = async (
   let {
     adjustedBpm,
     beatResolution = 0.25,
-    mixpoint,
+    mixpointTime,
   } = await getTrackState(trackId)
 
   const beatInterval = 60 / (adjustedBpm || bpm || 1)
@@ -253,11 +253,11 @@ const calcMarkers = async (
   return {
     adjustedBpm,
     beatResolution,
-    mixpoint,
+    mixpointTime,
   }
 }
 
-const getStemContext = async (
+const getStemBuffers = async (
   trackId: Track['id']
 ): Promise<
   | {
@@ -268,9 +268,9 @@ const getStemContext = async (
   if (!trackId) return
 
   // Get files from cache or from file system
-  let { files } = (await db.stemCache.get(trackId)) || {}
+  let { stems } = (await db.trackCache.get(trackId)) || {}
 
-  if (!files) {
+  if (!stems) {
     const stemsDirHandle = await getStemsDirHandle()
     if (!stemsDirHandle)
       throw errorHandler(
@@ -290,7 +290,7 @@ const getStemContext = async (
       return
     }
 
-    const stemFiles = {} as Partial<StemCache['files']>
+    const stemFiles: TrackCache['stems'] = {}
     for (const stem of ['bass', 'drums', 'vocals', 'other']) {
       // get a FileHandle for the MP3 file
       let fileHandle
@@ -308,16 +308,16 @@ const getStemContext = async (
       stemFiles[stem as Stem] = file
 
       // store stem in cache
-      storeStems(trackId, { [stem]: file })
+      storeTrack({ id: trackId, stems: { [stem]: file } })
     }
 
-    files = stemFiles as StemCache['files']
+    stems = stemFiles
   }
 
   const stemContext = new AudioContext()
   const stemBuffers: Partial<{ [key in Stem]: AudioBuffer }> = {}
 
-  for (const [stem, file] of Object.entries(files)) {
+  for (const [stem, file] of Object.entries(stems)) {
     // Read the file as an ArrayBuffer
     const arrayBuffer = await file.arrayBuffer()
 
@@ -326,7 +326,7 @@ const getStemContext = async (
 
     stemBuffers[stem as Stem] = audioBuffer
   }
-  console.log(stemContext)
+
   stemContext.close()
   return { stemBuffers }
 }
@@ -381,7 +381,7 @@ export {
   processTracks,
   getAudioDetails,
   //createMix,
-  getStemContext,
+  getStemBuffers,
   analyzeTracks,
   calcMarkers,
 }

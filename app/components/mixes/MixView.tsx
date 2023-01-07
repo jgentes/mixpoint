@@ -1,13 +1,13 @@
 import { Box } from '@mui/joy'
-import { getState, useLiveQuery } from '~/api/db/dbHandlers'
+import { MixState } from '~/api/db/dbHandlers'
 import StemsCard from '~/components/mixes/StemsCard'
 import TrackCard from '~/components/mixes/TrackCard'
 import { MixControl } from '~/components/tracks/Controls'
 
-const MixView = () => {
-  const { tracks = [] } = useLiveQuery(() => getState('mix')) || {}
+const MixView = ({ tracks }: { tracks: MixState['tracks'] }) => {
+  if (!tracks?.length) return null
 
-  return !tracks.length ? null : (
+  return (
     <Box
       sx={{
         display: 'flex',
