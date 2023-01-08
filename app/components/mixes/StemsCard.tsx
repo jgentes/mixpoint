@@ -1,14 +1,20 @@
-import { PlayArrow } from '@mui/icons-material'
 import { Box, Button, Card, Typography } from '@mui/joy'
 import { useEffect, useState } from 'react'
+import { audioEvents } from '~/api/audioEvents'
 import { stemAudio } from '~/api/bananaDev'
-import { db, getTrackName, Track, useLiveQuery } from '~/api/db/dbHandlers'
-import { audioEvent } from '~/api/events/audioEvents'
+import {
+  db,
+  getTrackName,
+  Stem,
+  Track,
+  useLiveQuery,
+} from '~/api/db/dbHandlers'
 import {
   getStemsDirHandle,
   StemState,
   validateTrackStemAccess,
 } from '~/api/fileHandlers'
+import { setAudioState } from '~/api/uiState'
 import { StemControls } from '~/components/tracks/Controls'
 import Dropzone from '~/components/tracks/Dropzone'
 import { errorHandler } from '~/utils/notifications'
@@ -16,15 +22,19 @@ import { errorHandler } from '~/utils/notifications'
 const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
   const [stemState, setStemState] = useState<StemState>()
 
+  const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
+
   const checkStemStatus = async () => await validateTrackStemAccess(trackId)
 
   // check stems on disk to determine component state
   useEffect(() => {
+    if (!trackId) return
+
     const initStems = async () => {
       const stemStatus = await checkStemStatus()
       setStemState(stemStatus)
 
-      // if we're ready, initialize stem event handlers
+      // if stems exist, connect them to audio elements
       if (stemStatus == 'ready') {
         const { stems } = (await db.trackCache.get(trackId)) || {}
 
@@ -35,15 +45,18 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
               `${trackId}-${stem}`
             ) as HTMLAudioElement
             elem.src = URL.createObjectURL(file)
+
+            // store audioElemnts into uiState
+            setAudioState[trackId].audioElements[stem as Stem](elem)
           }
         }
+        // mute the waveform and use stems for playback instead
+        audioEvents(trackId).mute()
       }
     }
 
-    if (trackId) initStems()
+    initStems()
   }, [trackId])
-
-  const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
 
   console.log('StemsCard', stemState)
   const getStemsDir = async () => {
@@ -108,9 +121,6 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
             >
               {trackName}
             </Typography>
-            {stemState != 'ready' ? null : (
-              <PlayArrow onClick={() => audioEvent.emit(trackId, 'play')} />
-            )}
           </Box>
           {stemState !== 'ready' ? (
             <GetStemsButton />

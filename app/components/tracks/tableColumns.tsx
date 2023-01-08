@@ -11,7 +11,7 @@ import {
   Track,
   useLiveQuery,
 } from '~/api/db/dbHandlers'
-import { audioState, setTableState } from '~/api/uiState'
+import { tableState, setTableState } from '~/api/uiState'
 import TrackLoader from '~/components/tracks/TrackLoader'
 import { formatMinutes, rowClick } from '~/utils/tableOps'
 
@@ -46,7 +46,7 @@ const createColumnDefinitions = (): {
   }
 
   const AddToMixButton = ({ track }: { track: Track }) => {
-    const [analyzingTracks] = audioState.analyzing()
+    const [analyzingTracks] = tableState.analyzing()
 
     const { tracks = [] } = useLiveQuery(() => getPrefs('mix')) || {}
 
@@ -77,7 +77,7 @@ const createColumnDefinitions = (): {
   }
 
   const BpmFormatter = (t: Track) => {
-    const [analyzingTracks] = audioState.analyzing()
+    const [analyzingTracks] = tableState.analyzing()
 
     return (
       t.bpm?.toFixed(0) ||

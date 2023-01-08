@@ -2,16 +2,22 @@
 
 import { ButtonProps } from '@mui/joy'
 import createStore from 'teaful'
-import { Track } from '~/api/db/dbHandlers'
+import { Stem, Track } from '~/api/db/dbHandlers'
 
 // AudioState captures whether audio is being analyzed, processed, or played
-const { useStore: audioState, setStore: setAudioState } = createStore<{
-  analyzing: Track['id'][]
-  playing: Track['id'][]
-}>({
-  analyzing: [],
-  playing: [],
-})
+const {
+  getStore: getAudioState,
+  useStore: audioState,
+  setStore: setAudioState,
+} = createStore<{
+  [trackId: string]: {
+    waveform: WaveSurfer
+    playing: boolean
+    volume: number
+    volumeMeterInterval: ReturnType<typeof setInterval> | number
+    audioElements: { [key in Stem]: HTMLAudioElement }
+  }
+}>({})
 
 // TableState captures the state of the table, such as search value, which which rows are selected and track drawer open/closed state
 const {
@@ -26,6 +32,7 @@ const {
   showButton: number | null
   openDrawer: boolean
   processing: boolean
+  analyzing: Track['id'][]
 }>({
   search: '',
   selected: [],
@@ -34,6 +41,7 @@ const {
   showButton: null,
   openDrawer: false,
   processing: false,
+  analyzing: [],
 })
 
 // ModalState is a generic handler for various modals, usually when doing something significant like deleting tracks
@@ -60,11 +68,8 @@ const { useStore: notificationState } = createStore<{
   variant: 'error',
 })
 
-const { useStore: waveformState, setStore: setWaveformState } = createStore<{
-  [trackId: string]: { waveform: WaveSurfer; volume: number }
-}>({})
-
 export {
+  getAudioState,
   audioState,
   setAudioState,
   tableState,
@@ -73,6 +78,4 @@ export {
   modalState,
   setModalState,
   notificationState,
-  waveformState,
-  setWaveformState,
 }

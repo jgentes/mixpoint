@@ -1,11 +1,11 @@
 import { LinearProgress } from '@mui/material'
 import { Track } from '~/api/db/dbHandlers'
-import { waveformState } from '~/api/uiState'
+import { audioState } from '~/api/uiState'
 
 const VolumeMeter = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
 
-  const [volume = 0] = waveformState[trackId].volume()
+  const [volume = 0] = audioState[trackId].volume()
 
   return (
     <LinearProgress

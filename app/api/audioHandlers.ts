@@ -99,7 +99,7 @@ async function getTracksRecursively(
 
 const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
   // Set analyzing state now to avoid tracks appearing with 'analyze' button
-  setAudioState.analyzing(analyzing => [
+  setTableState.analyzing(analyzing => [
     ...analyzing,
     ...tracks.map(track => track.id),
   ])
@@ -141,7 +141,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
     // Give Dexie a few ms to update the UI before removing analyzing state. This is to avoid the 'analyze' button appearing briefly.
     setTimeout(
       () =>
-        setAudioState.analyzing(analyzing =>
+      setTableState.analyzing(analyzing =>
           analyzing.filter(id => id !== track.id)
         ),
       250
@@ -163,7 +163,7 @@ const getAudioDetails = async (
 }> => {
   const file = await getPermission(track)
   if (!file) {
-    setAudioState.analyzing([])
+    setTableState.analyzing([])
     throw errorHandler('Permission to the file or folder was denied.') // this would be due to denial of permission (ie. clicked cancel)
   }
 

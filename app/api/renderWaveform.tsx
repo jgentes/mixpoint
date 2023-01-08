@@ -1,13 +1,9 @@
 import { Card } from '@mui/joy'
 import { SxProps } from '@mui/joy/styles/types'
 import { useEffect } from 'react'
+import { audioEvents } from '~/api/audioEvents'
 import { db, Track } from '~/api/db/dbHandlers'
-import {
-  AudioEvent,
-  audioEvent,
-  initAudioEvents,
-} from '~/api/events/audioEvents'
-import { setAudioState, setWaveformState } from '~/api/uiState'
+import { setAudioState, setTableState } from '~/api/uiState'
 import { errorHandler } from '~/utils/notifications'
 import { getPermission, validateTrackStemAccess } from './fileHandlers'
 
@@ -37,19 +33,21 @@ const Waveform = ({
   if (!trackId) throw errorHandler('No track to initialize.')
 
   useEffect(() => {
-    // Retrieve track, file and region data, then set state in waveProps
-    const getAudio = async () => {
+    let waveform: WaveSurfer
+
+    // Retrieve track, file and region data, then store waveform in audioState
+    const initWaveform = async () => {
       const track = await db.tracks.get(trackId)
       if (!track) throw errorHandler('Could not retrieve track from database.')
 
       const file = await getPermission(track)
       if (!file) throw errorHandler(`Please try adding ${track.name} again.`)
 
-      setAudioState.analyzing(prev =>
+      setTableState.analyzing(prev =>
         prev.includes(trackId) ? prev : [...prev, trackId]
       )
 
-      const waveform = WaveSurfer.create({
+      waveform = WaveSurfer.create({
         container: `#zoomview-container_${trackId}`,
         scrollParent: true,
         fillParent: false,
@@ -106,19 +104,22 @@ const Waveform = ({
         ],
       })
 
-      setWaveformState[trackId].waveform(waveform)
+      setAudioState[trackId].waveform(waveform)
 
       if (file) waveform.loadBlob(file)
 
-      // if stems are available, mute waveform and use stems for playback
-      if ((await validateTrackStemAccess(trackId)) == 'ready') {
-        waveform.setMute(true)
-      }
+      // initialize audio events
+      const waveformEvents = audioEvents(trackId)
+      waveformEvents.init()
 
-      await initAudioEvents({ trackId, waveform }) // wavesurfer event handlers
+      // Initialize wavesurfer event listeners
+      waveform.on('ready', waveformEvents.onReady)
+      waveform.on('seek', waveformEvents.onSeek)
     }
 
-    getAudio()
+    initWaveform()
+
+    return () => waveform.destroy()
   }, [trackId])
 
   return (
@@ -130,9 +131,7 @@ const Waveform = ({
         zIndex: 1,
       }}
       onWheel={e =>
-        audioEvent.emit(trackId, 'seek', {
-          direction: e.deltaY > 0 ? 'next' : 'previous',
-        })
+        audioEvents(trackId).seek(undefined, e.deltaY > 0 ? 'next' : 'previous')
       }
     />
   )

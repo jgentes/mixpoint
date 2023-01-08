@@ -3,7 +3,7 @@ import { Box } from '@mui/material'
 import { ClientOnly } from 'remix-utils'
 import { getTrackName, Track, useLiveQuery } from '~/api/db/dbHandlers'
 import Waveform from '~/api/renderWaveform'
-import { audioState } from '~/api/uiState'
+import { tableState } from '~/api/uiState'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import {
   BeatResolutionControl,
@@ -19,7 +19,7 @@ import { errorHandler } from '~/utils/notifications'
 const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) throw errorHandler('Please try uploading the track again.')
 
-  const [analyzingTracks] = audioState.analyzing()
+  const [analyzingTracks] = tableState.analyzing()
   const analyzing = analyzingTracks.includes(trackId)
 
   const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])

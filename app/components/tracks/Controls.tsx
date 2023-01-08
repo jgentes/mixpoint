@@ -23,6 +23,7 @@ import {
 } from '@mui/joy'
 import { Button, ButtonGroup } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { AudioEvent, audioEvents, NavEvent } from '~/api/audioEvents'
 import {
   db,
   getPrefs,
@@ -33,9 +34,8 @@ import {
   TrackPrefs,
   useLiveQuery,
 } from '~/api/db/dbHandlers'
-import { audioEvent, AudioEvent, NavEvent } from '~/api/events/audioEvents'
 
-import { audioState, tableState, waveformState } from '~/api/uiState'
+import { audioState, getAudioState, tableState } from '~/api/uiState'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
 const inputText = (text: string) => {
@@ -68,7 +68,7 @@ const NumberControl = ({
   title: string
   text: string
   width?: number
-  emitEvent: AudioEvent
+  emitEvent: 'bpm' | 'offset'
   propName: string
   styles?: object
 }) => {
@@ -87,7 +87,7 @@ const NumberControl = ({
 
     setInputVal(newVal)
 
-    audioEvent.emit(trackId!, emitEvent, { [propName]: newVal })
+    audioEvents(trackId)[emitEvent](newVal)
   }
 
   const ResetValLink = () => (
@@ -215,7 +215,7 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
     useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
 
   const changeBeatResolution = (beatResolution: TrackPrefs['beatResolution']) =>
-    audioEvent.emit(trackId!, 'beatResolution', { beatResolution })
+    audioEvents(trackId!).beatResolution(beatResolution)
 
   return (
     <RadioGroup
@@ -276,11 +276,9 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
 }
 
 const TrackNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
-  const navEvent = (effect: NavEvent) =>
-    audioEvent.emit(trackId!, 'nav', { effect })
+  const navEvent = (effect: NavEvent) => audioEvents(trackId!).nav(effect)
 
-  const [playing] = audioState.playing()
-  const isPlaying = playing.includes(trackId!)
+  const [isPlaying] = audioState[trackId!].playing()
 
   return (
     <ButtonGroup variant="text" color="inherit" disableRipple id="navControl">
@@ -314,7 +312,7 @@ const TrackNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
 
 const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
   const [state, setState] = useState<NavEvent>('Go to Mixpoint')
-  const [waveform] = waveformState[1].waveform()
+  const [waveform] = getAudioState[1].waveform()
 
   return (
     <RadioGroup
@@ -329,8 +327,7 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
         setState(val)
         if (!tracks?.length) return
 
-        //audioEvent.emit('playAll')
-        waveform.play()
+        //audioEvents(tracks[0].id).playAll()
       }}
     >
       {[
@@ -409,7 +406,7 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
   const adjustMixpoint = async (newMixpoint: string) => {
     if (convertToSecs(newMixpoint) == mixpointTime) return
 
-    audioEvent.emit(trackId, 'setMixpoint', { mixpoint: newMixpoint })
+    audioEvents(trackId).setMixpoint(newMixpoint)
   }
 
   return (

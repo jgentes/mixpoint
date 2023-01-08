@@ -1,5 +1,6 @@
 // This file provides a few helper functions for interacting with the database
 import { useLiveQuery } from 'dexie-react-hooks'
+import { audioEvents } from '~/api/audioEvents'
 import {
   __db as db,
   __Mix as Mix,
@@ -13,7 +14,6 @@ import {
   __TrackPrefs as TrackPrefs,
   __UserPrefs as UserPrefs,
 } from '~/api/db/__dbSchema'
-import { audioEvent } from '~/api/events/audioEvents'
 import { getPermission } from '~/api/fileHandlers'
 import { errorHandler } from '~/utils/notifications'
 
@@ -171,7 +171,7 @@ const addToMix = async (track: Track) => {
   const { tracks = [], trackPrefss = [] } = await getPrefs('mix')
 
   // limit 2 tracks in the mix for now
-  if (tracks.length > 1) audioEvent.emit(tracks[1]!, 'destroy')
+  // removing because destroy should occur on renderwaveform component unmount  if (tracks.length > 1) audioEvent.emit(tracks[1]!, 'destroy')
 
   const index = tracks.length > 0 ? 1 : 0
   tracks[index] = track.id
@@ -181,7 +181,7 @@ const addToMix = async (track: Track) => {
 }
 
 const removeFromMix = async (id: Track['id']) => {
-  if (id) audioEvent.emit(id, 'destroy')
+  // removing because destroy should occur on renderwaveform component unmount   if (id) audioEvent.emit(id, 'destroy')
 
   const { tracks = [], trackPrefss = [] } = await getPrefs('mix')
 
