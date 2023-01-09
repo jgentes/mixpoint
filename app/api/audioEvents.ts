@@ -5,32 +5,15 @@ import {
   db,
   getTrackPrefs,
   putTrackPrefs,
+  Stem,
   Track,
   TrackPrefs,
   updateTrack,
 } from '~/api/db/dbHandlers'
-import { validateTrackStemAccess } from '~/api/fileHandlers'
 import { getAudioState, setAudioState, setTableState } from '~/api/uiState'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
-import { eventHandler } from './eventHandler'
 
 // audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
-
-type AudioEvent =
-  | 'init'
-  | 'onReady'
-  | 'play'
-  | 'playAll'
-  | 'pause'
-  | 'mute'
-  | 'crossfade'
-  | 'seek'
-  | 'beatResolution'
-  | 'bpm'
-  | 'offset'
-  | 'nav'
-  | 'setMixpoint'
-  | 'seekMixpoint'
 
 type NavEvent =
   | 'Play'
@@ -39,30 +22,6 @@ type NavEvent =
   | 'Go to Mixpoint'
   | 'Previous Beat Marker'
   | 'Next Beat Marker'
-
-//const audioEvent = eventHandler<AudioEvent>()
-
-// waveform.on('region-click', region => {
-//   if (waveform.isPlaying()) return waveform.pause()
-
-//   // Time gets inconsistent at 14 digits so need to round here
-//   const time = waveform.getCurrentTime().toFixed(3)
-//   const clickInsideOfPlayheadRegion =
-//     waveform.playhead.playheadTime.toFixed(3) == region.start.toFixed(3)
-//   const cursorIsAtPlayhead = time == waveform.playhead.playheadTime.toFixed(3)
-
-//   if (cursorIsAtPlayhead && clickInsideOfPlayheadRegion) {
-//     waveform.play()
-//   } else if (clickInsideOfPlayheadRegion) {
-//     // Take the user back to playhead
-//     waveform.seekAndCenter(
-//       1 / (waveform.getDuration() / waveform.playhead.playheadTime)
-//     )
-//   } else {
-//     // Move playhead to new region (seek is somewhat disorienting)
-//     waveform.playhead.setPlayheadTime(region.start)
-//   }
-// })
 
 const caclculateVolume = (analyzer: AnalyserNode, dataArray: Uint8Array) => {
   analyzer.getByteFrequencyData(dataArray)
@@ -126,17 +85,17 @@ const audioEvents = (trackId: Track['id']) => {
 
         // use setTimeout to ensure synchronized start time of all stems
         window.setTimeout(() => {
-          for (const audioElement of Object.values(audioElements)) {
-            audioElement.currentTime = context.currentTime + offset
+          for (const { element } of Object.values(audioElements)) {
+            element.currentTime = context.currentTime + offset
             // only one mediaElementSource can be connected, so try/catch here
             let source
             try {
-              source = context.createMediaElementSource(audioElement)
+              source = context.createMediaElementSource(element)
               source.connect(context.destination)
             } catch (e) {
               // source already connected
             }
-            audioElement.play()
+            element.play()
           }
         }, 0)
       }
@@ -146,8 +105,8 @@ const audioEvents = (trackId: Track['id']) => {
       // Slow down sampling to 12ms
       if (volumeMeterInterval > -1) clearInterval(volumeMeterInterval)
       const newInterval = setInterval(() => {
-        const volume = caclculateVolume(analyzer, dataArray)
-        setAudioState[trackId!].volume(volume)
+        const volumeMeter = caclculateVolume(analyzer, dataArray)
+        setAudioState[trackId!].volumeMeter(volumeMeter)
       }, 12.5)
 
       setAudioState[trackId!](prev => ({
@@ -162,32 +121,32 @@ const audioEvents = (trackId: Track['id']) => {
       // collect all audioElements
       let audioElements: HTMLAudioElement[] = []
       Object.keys(audioState).forEach(trackId => {
-        for (const audioElement of Object.values(
+        for (const { element } of Object.values(
           audioState[trackId].audioElements
         )) {
-          audioElements.push(audioElement)
+          audioElements.push(element)
         }
       })
 
       const context = new AudioContext()
 
       window.setTimeout(() => {
-        for (const audioElement of audioElements) {
-          audioElement.currentTime = context.currentTime + offset
+        for (const { element } of audioElements) {
+          element.currentTime = context.currentTime + offset
           if (!sourceNodes.length) {
-            const source = context.createMediaElementSource(audioElement)
+            const source = context.createMediaElementSource(element)
             source.connect(context.destination)
             sourceNodes.push(source)
           }
-          audioElement.play()
+          element.play()
         }
       }, 0)
     },
     pause() {
       const [audioElements] = getAudioState[trackId!].audioElements()
       if (audioElements) {
-        for (const audioElement of Object.values(audioElements)) {
-          audioElement.pause()
+        for (const { element } of Object.values(audioElements)) {
+          element.pause()
         }
       }
 
@@ -326,13 +285,37 @@ const audioEvents = (trackId: Track['id']) => {
         waveform.seekAndCenter(1 / (waveform.getDuration() / mixpointTime))
       events.play()
     },
-    // destroy(): void {
-    //   if (waveform) waveform.destroy()
-    // },
+    stemVolume(stem: Stem, volume: number) {
+      // update element volume
+      const [element] =
+        getAudioState[trackId!].audioElements[stem as Stem].element()
+      if (element) element.volume = volume / 100
+
+      // set volume in state, which in turn will update components (volume sliders)
+      setAudioState[trackId!].audioElements[stem as Stem].volume(volume)
+    },
+    stemMuteToggle(stem: Stem, mute: boolean) {
+      const [audioElement] =
+        getAudioState[trackId!].audioElements[stem as Stem]()
+      const { element, volume } = audioElement || {}
+
+      // update element volume (not volume in state)
+      if (element) element.volume = mute ? 0 : (volume || 100) / 100
+
+      // set muted in state, which in turn will update components (volume sliders)
+      setAudioState[trackId!].audioElements[stem as Stem].mute(mute)
+    },
+    stemSoloToggle(stem: Stem, solo: boolean) {
+      const [stems] = getAudioState[trackId!].audioElements()
+
+      for (const s of Object.keys(stems)) {
+        if (s != stem) events.stemMuteToggle(s as Stem, solo)
+      }
+    },
   }
 
   return events
 }
 
-export type { AudioEvent, NavEvent }
+export type { NavEvent }
 export { audioEvents }

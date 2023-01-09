@@ -14,7 +14,7 @@ import {
   StemState,
   validateTrackStemAccess,
 } from '~/api/fileHandlers'
-import { setAudioState } from '~/api/uiState'
+import { AudioElements, setAudioState } from '~/api/uiState'
 import { StemControls } from '~/components/tracks/Controls'
 import Dropzone from '~/components/tracks/Dropzone'
 import { errorHandler } from '~/utils/notifications'
@@ -39,16 +39,22 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
         const { stems } = (await db.trackCache.get(trackId)) || {}
 
         if (stems) {
+          const audioElements: AudioElements = {}
+
           for (let [stem, file] of Object.entries(stems)) {
-            if (stem == 'other') stem = 'melody'
             const elem = document.getElementById(
               `${trackId}-${stem}`
             ) as HTMLAudioElement
             elem.src = URL.createObjectURL(file)
 
             // store audioElemnts into uiState
-            setAudioState[trackId].audioElements[stem as Stem](elem)
+            audioElements[stem as Stem] = {
+              element: elem,
+              volume: 100,
+              mute: false,
+            }
           }
+          setAudioState[trackId].audioElements(audioElements)
         }
         // mute the waveform and use stems for playback instead
         audioEvents(trackId).mute()
@@ -58,7 +64,6 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
     initStems()
   }, [trackId])
 
-  console.log('StemsCard', stemState)
   const getStemsDir = async () => {
     const dirHandle = await getStemsDirHandle()
     if (!dirHandle) {
@@ -79,7 +84,7 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
 
   const GetStemsButton = () => (
     <Button
-      variant="soft"
+      variant='soft'
       color={
         stemState == 'selectStemDir' || 'grantStemDirAccess'
           ? 'warning'
@@ -97,7 +102,7 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
 
   return (
     <Card
-      variant="soft"
+      variant='soft'
       sx={{
         p: 1,
         flexGrow: 1,

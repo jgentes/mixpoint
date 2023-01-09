@@ -5,13 +5,13 @@ import { audioState } from '~/api/uiState'
 const VolumeMeter = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
 
-  const [volume = 0] = audioState[trackId].volume()
+  const [volumeMeter = 0] = audioState[trackId].volumeMeter()
 
   return (
     <LinearProgress
       id={`volume-container_${trackId}`}
       variant="determinate"
-      value={100 - volume}
+      value={100 - volumeMeter}
       sx={{
         mx: '3px',
         zIndex: 0,

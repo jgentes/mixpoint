@@ -1,6 +1,8 @@
 import {
   Adjust,
   Eject,
+  Headset,
+  HeadsetOff,
   Pause,
   PlayArrow,
   Replay,
@@ -22,14 +24,15 @@ import {
   Typography,
 } from '@mui/joy'
 import { Button, ButtonGroup } from '@mui/material'
-import { useEffect, useState } from 'react'
-import { AudioEvent, audioEvents, NavEvent } from '~/api/audioEvents'
+import { useEffect, useRef, useState } from 'react'
+import { audioEvents, NavEvent } from '~/api/audioEvents'
 import {
   db,
   getPrefs,
   getTrackPrefs,
   MixPrefs,
   removeFromMix,
+  Stem,
   Track,
   TrackPrefs,
   useLiveQuery,
@@ -41,7 +44,7 @@ import { convertToSecs, timeFormat } from '~/utils/tableOps'
 const inputText = (text: string) => {
   return (
     <Typography
-      textColor="#888"
+      textColor='#888'
       sx={{ fontSize: 12, lineHeight: 0, cursor: 'default' }}
     >
       {text}
@@ -92,9 +95,9 @@ const NumberControl = ({
 
   const ResetValLink = () => (
     <Link
-      underline="none"
+      underline='none'
       onClick={() => adjustVal()}
-      color="neutral"
+      color='neutral'
       title={title}
       disabled={!valDiff}
       sx={{
@@ -117,7 +120,7 @@ const NumberControl = ({
       }}
     >
       <TextField
-        variant="outlined"
+        variant='outlined'
         startDecorator={<ResetValLink />}
         value={inputVal}
         onChange={e => setInputVal(e.target.value)}
@@ -154,15 +157,15 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
 
   return (
     <Chip
-      variant="outlined"
-      color="primary"
-      size="sm"
+      variant='outlined'
+      color='primary'
+      size='sm'
       onClick={() => ejectTrack()}
       sx={{
         borderRadius: 'sm',
       }}
     >
-      <Eject titleAccess="Load Track" />
+      <Eject titleAccess='Load Track' />
     </Chip>
   )
 }
@@ -181,10 +184,10 @@ const BpmControl = ({ trackId }: { trackId: Track['id'] }) => {
       val={bpm}
       adjustedVal={adjustedBpm}
       toFixedVal={1}
-      title="Reset BPM"
-      text="BPM:"
-      emitEvent="bpm"
-      propName="adjustedBpm"
+      title='Reset BPM'
+      text='BPM:'
+      emitEvent='bpm'
+      propName='adjustedBpm'
       width={115}
     />
   )
@@ -202,10 +205,10 @@ const OffsetControl = ({ trackId }: { trackId: Track['id'] }) => {
       val={offset}
       adjustedVal={adjustedOffset}
       toFixedVal={2}
-      title="Reset Beat Offset"
-      text="Beat Offset:"
-      emitEvent="offset"
-      propName="adjustedOffset"
+      title='Reset Beat Offset'
+      text='Beat Offset:'
+      emitEvent='offset'
+      propName='adjustedOffset'
     />
   )
 }
@@ -220,9 +223,9 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
   return (
     <RadioGroup
       row
-      name="beatResolution"
+      name='beatResolution'
       value={beatResolution}
-      variant="outlined"
+      variant='outlined'
       onChange={e =>
         changeBeatResolution(+e.target.value as TrackPrefs['beatResolution'])
       }
@@ -257,7 +260,7 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
             overlay
             label={`${item * 100}%`}
             variant={beatResolution == item ? 'outlined' : 'plain'}
-            color="primary"
+            color='primary'
             sx={{
               fontSize: 12,
               color: 'text.secondary',
@@ -281,7 +284,7 @@ const TrackNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
   const [isPlaying] = audioState[trackId!].playing()
 
   return (
-    <ButtonGroup variant="text" color="inherit" disableRipple id="navControl">
+    <ButtonGroup variant='text' color='inherit' disableRipple id='navControl'>
       {[
         { val: 'Previous Beat Marker', icon: <SkipPrevious /> },
         { val: 'Go to Mixpoint', icon: <SettingsBackupRestore /> },
@@ -293,7 +296,7 @@ const TrackNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
         { val: 'Next Beat Marker', icon: <SkipNext /> },
       ].map(item => (
         <Button
-          component="button"
+          component='button'
           onClick={e => navEvent(e.currentTarget.value as NavEvent)}
           key={item.val}
           value={item.val}
@@ -317,8 +320,8 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
   return (
     <RadioGroup
       row
-      name="mixControl"
-      variant="outlined"
+      name='mixControl'
+      variant='outlined'
       value={state}
       sx={{ height: 48 }}
       onChange={e => {
@@ -373,7 +376,7 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
             overlay
             label={item.icon}
             variant={state == item.val ? 'soft' : 'plain'}
-            color="primary"
+            color='primary'
             componentsProps={{
               action: {
                 sx: {
@@ -417,7 +420,7 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
       }}
     >
       <TextField
-        variant="outlined"
+        variant='outlined'
         startDecorator={inputText('Mixpoint:')}
         endDecorator={inputText(`/ ${timeFormat(duration || 0).slice(0, -3)}`)}
         value={mixpointVal}
@@ -445,65 +448,89 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
 const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
 
-  const StemPlayer = ({ stemType }: { stemType: string }) => {
-    const [volume, setVolume] = useState(100)
-    const [muted, setMuted] = useState(false)
+  const audioEvent = audioEvents(trackId)
+
+  const StemPlayer = ({ stemType }: { stemType: Stem }) => {
+    const stemRef = useRef<HTMLAudioElement>(null)
+
+    const [audioElement] = audioState[trackId].audioElements[stemType]()
+    const { volume = 100, mute = false } = audioElement || {}
+
+    const [solo, setSolo] = useState(false)
+
+    const toggleSolo = () => {
+      audioEvent.stemSoloToggle(stemType, !solo)
+      setSolo(!solo)
+    }
 
     return (
-      <>
-        <Box
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography
           sx={{
-            display: 'flex',
-            gap: 2,
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            fontSize: 'xs',
+            fontWeight: 'md',
+            pl: '3px',
+            width: '60px',
           }}
         >
-          <Typography
-            sx={{
-              fontSize: 'xs',
-              fontWeight: 'md',
-              pl: '3px',
-              width: '57px',
-            }}
-          >
-            {stemType}
-          </Typography>
-          <Slider
-            aria-label={stemType}
-            defaultValue={100}
-            step={5}
-            marks={[0, 25, 50, 75, 100].map(v => ({ value: v }))}
-            valueLabelDisplay="auto"
-            variant="soft"
-            size={'sm'}
-            onChange={(_, v) => setVolume(v as number)}
-            disabled={muted}
-            sx={{
-              padding: '15px 0',
-            }}
+          {stemType[0].toUpperCase() + stemType.slice(1).toLowerCase()}
+        </Typography>
+        <Slider
+          aria-label={stemType}
+          value={volume}
+          min={0}
+          max={100}
+          step={5}
+          marks={[0, 25, 50, 75, 100].map(v => ({ value: v }))}
+          valueLabelDisplay='auto'
+          variant='soft'
+          size={'sm'}
+          onChange={(_, volume) =>
+            audioEvent.stemVolume(stemType, volume as number)
+          }
+          disabled={mute}
+          sx={{
+            padding: '15px 0',
+            mr: 1,
+          }}
+        />
+        <audio id={`${trackId}-${stemType.toLowerCase()}`} ref={stemRef} />
+        <Headset
+          fontSize='small'
+          sx={{
+            color: solo ? 'text.primary' : 'action.disabled',
+            cursor: 'pointer',
+          }}
+          onClick={() => toggleSolo()}
+        />
+        {!volume || mute ? (
+          <VolumeOff
+            fontSize='small'
+            sx={{ color: 'text.secondary', cursor: 'pointer' }}
+            onClick={() => audioEvent.stemMuteToggle(stemType, false)}
           />
-          <audio id={`${trackId}-${stemType.toLowerCase()}`} />
-          {!volume || muted ? (
-            <VolumeOff
-              sx={{ color: 'text.secondary' }}
-              onClick={() => setMuted(false)}
-            />
-          ) : (
-            <VolumeUp
-              sx={{ color: 'text.secondary' }}
-              onClick={() => setMuted(true)}
-            />
-          )}
-        </Box>
-      </>
+        ) : (
+          <VolumeUp
+            fontSize='small'
+            sx={{ color: 'text.secondary', cursor: 'pointer' }}
+            onClick={() => audioEvent.stemMuteToggle(stemType, true)}
+          />
+        )}
+      </Box>
     )
   }
 
   return (
     <Box sx={{ my: 1 }}>
-      {['Drums', 'Bass', 'Vocals', 'Melody'].map(v => (
-        <StemPlayer key={v} stemType={v} />
+      {['bass', 'drums', 'vocals', 'other'].map(v => (
+        <StemPlayer key={v} stemType={v as Stem} />
       ))}
     </Box>
   )

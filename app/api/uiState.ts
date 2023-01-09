@@ -4,6 +4,14 @@ import { ButtonProps } from '@mui/joy'
 import createStore from 'teaful'
 import { Stem, Track } from '~/api/db/dbHandlers'
 
+type AudioElements = Partial<{
+  [key in Stem]: Partial<{
+    element: HTMLAudioElement
+    volume: number
+    mute: boolean
+  }>
+}>
+
 // AudioState captures whether audio is being analyzed, processed, or played
 const {
   getStore: getAudioState,
@@ -13,9 +21,9 @@ const {
   [trackId: string]: {
     waveform: WaveSurfer
     playing: boolean
-    volume: number
+    volumeMeter: number
     volumeMeterInterval: ReturnType<typeof setInterval> | number
-    audioElements: { [key in Stem]: HTMLAudioElement }
+    audioElements: AudioElements
   }
 }>({})
 
@@ -68,6 +76,7 @@ const { useStore: notificationState } = createStore<{
   variant: 'error',
 })
 
+export type { AudioElements }
 export {
   getAudioState,
   audioState,

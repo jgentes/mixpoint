@@ -5,7 +5,7 @@ import { audioEvents } from '~/api/audioEvents'
 import { db, Track } from '~/api/db/dbHandlers'
 import { setAudioState, setTableState } from '~/api/uiState'
 import { errorHandler } from '~/utils/notifications'
-import { getPermission, validateTrackStemAccess } from './fileHandlers'
+import { getPermission } from './fileHandlers'
 
 // Only load WaveSurfer on the client
 let WaveSurfer: typeof import('wavesurfer.js'),

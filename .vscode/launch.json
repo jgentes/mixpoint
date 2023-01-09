@@ -6,9 +6,10 @@
   "configurations": [
     {
       "name": "Debug MixPoint",
-      "request": "launch",
+      "request": "attach", // launch
       "type": "msedge",
-      "url": "http://localhost:3000",
+      "url": "http://localhost:3000/*",
+      "port": 9222, // remove if launch
       "preLaunchTask": "yarn dev",
       "webRoot": "${workspaceFolder}/src",
       "skipFiles": [

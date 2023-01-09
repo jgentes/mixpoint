@@ -3,7 +3,6 @@
 import { Outlet } from '@remix-run/react'
 import { useSnackbar, VariantType } from 'notistack'
 import { useEffect } from 'react'
-import { notificationState } from '~/utils/notifications'
 
 import InitialLoader from '~/components/InitialLoader'
 
