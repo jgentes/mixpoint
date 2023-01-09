@@ -15,14 +15,6 @@ import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
 // audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
 
-type NavEvent =
-  | 'Play'
-  | 'Pause'
-  | 'Set Mixpoint'
-  | 'Go to Mixpoint'
-  | 'Previous Beat Marker'
-  | 'Next Beat Marker'
-
 const caclculateVolume = (analyzer: AnalyserNode, dataArray: Uint8Array) => {
   analyzer.getByteFrequencyData(dataArray)
 
@@ -35,10 +27,10 @@ const caclculateVolume = (analyzer: AnalyserNode, dataArray: Uint8Array) => {
 }
 
 const audioEvents = (trackId: Track['id']) => {
-  let [waveform] = getAudioState[trackId!].waveform()
-  let sourceNodes = []
+  const [audioState] = getAudioState[trackId!]()
+  const { waveform, audioElements } = audioState || {}
 
-  const events = {
+  return {
     async init() {
       const { adjustedBpm, beatResolution } =
         (await calcMarkers(trackId, waveform)) || {}
@@ -66,19 +58,11 @@ const audioEvents = (trackId: Track['id']) => {
         waveform.seekAndCenter(1 / (waveform.getDuration() / currentPlayhead))
       }
     },
-    play(offset: number = waveform.getCurrentTime()) {
-      // Setup for volume meter
-      const [volumeMeterInterval] =
-        getAudioState[trackId!].volumeMeterInterval()
-
-      // @ts-ignore
-      const analyzer = waveform.backend.analyser
-      const bufferLength = analyzer.frequencyBinCount
-      const dataArray = new Uint8Array(bufferLength)
+    play(offset: number = audioState.waveform.getCurrentTime()) {
+      const { volumeMeterInterval } = audioState
 
       // Build the audioContext every time because once started (played),
       // it must be closed and recreated before it can be started again
-      const [audioElements] = getAudioState[trackId!].audioElements()
 
       if (audioElements) {
         const context = new AudioContext()
@@ -86,6 +70,8 @@ const audioEvents = (trackId: Track['id']) => {
         // use setTimeout to ensure synchronized start time of all stems
         window.setTimeout(() => {
           for (const { element } of Object.values(audioElements)) {
+            if (!element) continue
+
             element.currentTime = context.currentTime + offset
             // only one mediaElementSource can be connected, so try/catch here
             let source
@@ -102,6 +88,13 @@ const audioEvents = (trackId: Track['id']) => {
 
       waveform.play()
 
+      // Setup for volume meter
+
+      // @ts-ignore
+      const analyzer = waveform.backend.analyser
+      const bufferLength = analyzer.frequencyBinCount
+      const dataArray = new Uint8Array(bufferLength)
+
       // Slow down sampling to 12ms
       if (volumeMeterInterval > -1) clearInterval(volumeMeterInterval)
       const newInterval = setInterval(() => {
@@ -116,8 +109,6 @@ const audioEvents = (trackId: Track['id']) => {
       }))
     },
     playAll(offset: number = waveform.getCurrentTime()) {
-      const [audioState] = getAudioState()
-
       // collect all audioElements
       let audioElements: HTMLAudioElement[] = []
       Object.keys(audioState).forEach(trackId => {
@@ -143,23 +134,22 @@ const audioEvents = (trackId: Track['id']) => {
       }, 0)
     },
     pause() {
-      const [audioElements] = getAudioState[trackId!].audioElements()
+      const { volumeMeterInterval } = audioState
+
       if (audioElements) {
         for (const { element } of Object.values(audioElements)) {
-          element.pause()
+          if (element) element.pause()
         }
       }
 
       waveform.pause()
 
-      const [volumeMeterInterval] =
-        getAudioState[trackId!].volumeMeterInterval()
       clearInterval(volumeMeterInterval)
 
       setAudioState[trackId!](prev => ({
         ...prev,
         volumeMeterInterval: -1,
-        volume: 0,
+        volumeMeter: 0,
         playing: false,
       }))
     },
@@ -168,9 +158,10 @@ const audioEvents = (trackId: Track['id']) => {
     },
     // Scroll to previous/next beat marker
     seek(
-      startTime: number = waveform.getCurrentTime(),
+      startTime: number = audioState.waveform.getCurrentTime(),
       direction?: 'previous' | 'next'
     ) {
+      const { playing } = audioState
       const { markers = [] } = waveform.markers || {}
 
       // Find the closest (left-most) marker to the current time
@@ -188,9 +179,12 @@ const audioEvents = (trackId: Track['id']) => {
           waveform.playhead.setPlayheadTime(time)
         }
       }
+      // if the audio is playing, restart playing on seek to new time
+
+      if (playing) audioEvents(trackId).play(waveform.playhead.playheadTime)
     },
     onSeek(percentageTime: number) {
-      events.seek(waveform.getDuration() * percentageTime)
+      audioEvents(trackId).seek(waveform.getDuration() * percentageTime)
     },
     crossfade() {
       // https://github.com/notthetup/smoothfade
@@ -246,30 +240,10 @@ const audioEvents = (trackId: Track['id']) => {
 
       calcMarkers(trackId, waveform)
     },
-    async nav(effect: NavEvent) {
-      switch (effect) {
-        case 'Play':
-          events.play()
-          break
-        case 'Pause':
-          events.pause()
-          break
-        case 'Set Mixpoint':
-          events.setMixpoint(timeFormat(waveform.playhead.playheadTime))
-          break
-        case 'Go to Mixpoint':
-          events.seekMixpoint()
-          break
-        case 'Previous Beat Marker':
-          events.seek(undefined, 'previous')
-          break
-        case 'Next Beat Marker':
-          events.seek(undefined, 'next')
-          break
-      }
-    },
-    async setMixpoint(mixpoint: string): Promise<void> {
-      events.pause()
+    async setMixpoint(
+      mixpoint: string = timeFormat(waveform.playhead.playheadTime)
+    ): Promise<void> {
+      audioEvents(trackId).pause()
 
       const { mixpointTime } = (await getTrackPrefs(trackId)) || {}
 
@@ -281,22 +255,21 @@ const audioEvents = (trackId: Track['id']) => {
     },
     async seekMixpoint() {
       const { mixpointTime } = (await getTrackPrefs(trackId)) || {}
+
       if (mixpointTime)
         waveform.seekAndCenter(1 / (waveform.getDuration() / mixpointTime))
-      events.play()
+      audioEvents(trackId).play()
     },
     stemVolume(stem: Stem, volume: number) {
       // update element volume
-      const [element] =
-        getAudioState[trackId!].audioElements[stem as Stem].element()
+      const element = audioElements[stem as Stem]?.element
       if (element) element.volume = volume / 100
 
       // set volume in state, which in turn will update components (volume sliders)
       setAudioState[trackId!].audioElements[stem as Stem].volume(volume)
     },
     stemMuteToggle(stem: Stem, mute: boolean) {
-      const [audioElement] =
-        getAudioState[trackId!].audioElements[stem as Stem]()
+      const audioElement = audioElements[stem as Stem]
       const { element, volume } = audioElement || {}
 
       // update element volume (not volume in state)
@@ -306,16 +279,11 @@ const audioEvents = (trackId: Track['id']) => {
       setAudioState[trackId!].audioElements[stem as Stem].mute(mute)
     },
     stemSoloToggle(stem: Stem, solo: boolean) {
-      const [stems] = getAudioState[trackId!].audioElements()
-
-      for (const s of Object.keys(stems)) {
-        if (s != stem) events.stemMuteToggle(s as Stem, solo)
+      for (const s of Object.keys(audioElements)) {
+        if (s != stem) audioEvents(trackId).stemMuteToggle(s as Stem, solo)
       }
     },
   }
-
-  return events
 }
 
-export type { NavEvent }
 export { audioEvents }

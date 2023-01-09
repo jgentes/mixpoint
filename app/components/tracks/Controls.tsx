@@ -25,7 +25,7 @@ import {
 } from '@mui/joy'
 import { Button, ButtonGroup } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
-import { audioEvents, NavEvent } from '~/api/audioEvents'
+import { audioEvents } from '~/api/audioEvents'
 import {
   db,
   getPrefs,
@@ -279,7 +279,28 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
 }
 
 const TrackNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
-  const navEvent = (effect: NavEvent) => audioEvents(trackId!).nav(effect)
+  const navEvent = (nav: string) => {
+    switch (nav) {
+      case 'Play':
+        audioEvents(trackId).play()
+        break
+      case 'Pause':
+        audioEvents(trackId).pause()
+        break
+      case 'Set Mixpoint':
+        audioEvents(trackId).setMixpoint()
+        break
+      case 'Go to Mixpoint':
+        audioEvents(trackId).seekMixpoint()
+        break
+      case 'Previous Beat Marker':
+        audioEvents(trackId).seek(undefined, 'previous')
+        break
+      case 'Next Beat Marker':
+        audioEvents(trackId).seek(undefined, 'next')
+        break
+    }
+  }
 
   const [isPlaying] = audioState[trackId!].playing()
 
@@ -297,7 +318,7 @@ const TrackNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
       ].map(item => (
         <Button
           component='button'
-          onClick={e => navEvent(e.currentTarget.value as NavEvent)}
+          onClick={e => navEvent(e.currentTarget.value)}
           key={item.val}
           value={item.val}
           title={item.val}
@@ -314,7 +335,7 @@ const TrackNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
 }
 
 const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
-  const [state, setState] = useState<NavEvent>('Go to Mixpoint')
+  const [state, setState] = useState('Go to Mixpoint')
   const [waveform] = getAudioState[1].waveform()
 
   return (
@@ -325,7 +346,7 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
       value={state}
       sx={{ height: 48 }}
       onChange={e => {
-        const val = e.target.value as NavEvent
+        const val = e.target.value
 
         setState(val)
         if (!tracks?.length) return
@@ -448,8 +469,6 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
 const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
 
-  const audioEvent = audioEvents(trackId)
-
   const StemPlayer = ({ stemType }: { stemType: Stem }) => {
     const stemRef = useRef<HTMLAudioElement>(null)
 
@@ -459,7 +478,7 @@ const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
     const [solo, setSolo] = useState(false)
 
     const toggleSolo = () => {
-      audioEvent.stemSoloToggle(stemType, !solo)
+      audioEvents(trackId).stemSoloToggle(stemType, !solo)
       setSolo(!solo)
     }
 
@@ -493,12 +512,12 @@ const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
           variant='soft'
           size={'sm'}
           onChange={(_, volume) =>
-            audioEvent.stemVolume(stemType, volume as number)
+            audioEvents(trackId).stemVolume(stemType, volume as number)
           }
           disabled={mute}
           sx={{
             padding: '15px 0',
-            mr: 1,
+            mr: '4px',
           }}
         />
         <audio id={`${trackId}-${stemType.toLowerCase()}`} ref={stemRef} />
@@ -514,13 +533,13 @@ const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
           <VolumeOff
             fontSize='small'
             sx={{ color: 'text.secondary', cursor: 'pointer' }}
-            onClick={() => audioEvent.stemMuteToggle(stemType, false)}
+            onClick={() => audioEvents(trackId).stemMuteToggle(stemType, false)}
           />
         ) : (
           <VolumeUp
             fontSize='small'
             sx={{ color: 'text.secondary', cursor: 'pointer' }}
-            onClick={() => audioEvent.stemMuteToggle(stemType, true)}
+            onClick={() => audioEvents(trackId).stemMuteToggle(stemType, true)}
           />
         )}
       </Box>
