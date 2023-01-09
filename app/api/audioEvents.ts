@@ -1,7 +1,14 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform around
 
+import { PlayArrow } from '@mui/icons-material'
 import preventClick from 'wavesurfer.js/src/util/prevent-click'
-import { getAudioState, setAudioState, setTableState } from '~/api/appState'
+import {
+  AudioElements,
+  AudioState,
+  getAudioState,
+  setAudioState,
+  setTableState,
+} from '~/api/appState'
 import { calcMarkers } from '~/api/audioHandlers'
 import {
   db,
@@ -28,12 +35,17 @@ const _caclculateVolume = (analyzer: AnalyserNode, dataArray: Uint8Array) => {
   return Math.sqrt(sum / (dataArray.length + 1000))
 }
 
-const audioEvents = (trackId: Track['id']) => {
-  const [audioState] = getAudioState[trackId!]()
-  const { waveform, audioElements } = audioState || {}
+const audioEvents = (trackId?: Track['id']) => {
+  let audioState: AudioState, waveform: WaveSurfer, audioElements: AudioElements
+
+  if (trackId) {
+    ;[audioState] = getAudioState[trackId]()
+    if (audioState.waveform) ({ waveform } = audioState)
+    if (audioState.audioElements) ({ audioElements } = audioState)
+  }
 
   return {
-    async init() {
+    init: async () => {
       const { adjustedBpm, beatResolution } =
         (await calcMarkers(trackId, waveform)) || {}
 
@@ -46,7 +58,8 @@ const audioEvents = (trackId: Track['id']) => {
         waveform.setPlaybackRate(adjustedBpm / (bpm || adjustedBpm))
       }
     },
-    async onReady() {
+
+    onReady: async () => {
       setTableState.analyzing(prev => prev.filter(id => id !== trackId))
 
       const { mixpointTime } = await getTrackPrefs(trackId)
@@ -60,10 +73,10 @@ const audioEvents = (trackId: Track['id']) => {
         waveform.seekAndCenter(1 / (waveform.getDuration() / currentPlayhead))
       }
     },
-    _playStems(startTime: number) {
+
+    _playStems: (startTime: number) => {
       // pull audio elements from audioState and synchronize playback
       if (!audioElements) return
-
       const elementArray = Object.values(audioElements || {}).map(
         ({ element }) => element!
       )
@@ -74,24 +87,35 @@ const audioEvents = (trackId: Track['id']) => {
 
       // use setTimeout to ensure synchronized start time of all stems
       window.setTimeout(() => {
-        for (const element of elementArray) {
+        for (const [stem, { element }] of Object.entries(audioElements)) {
           if (!element) continue
 
-          element.currentTime = context.currentTime + startTime
+          element.currentTime = startTime ?? context.currentTime
           // only one mediaElementSource can be connected, so try/catch here
-          let source
+          let source: MediaElementAudioSourceNode,
+            gainNode: GainNode | undefined
           try {
             source = context.createMediaElementSource(element)
-            source.connect(context.destination)
+            gainNode = context.createGain()
+            gainNode.connect(context.destination)
+            source.connect(gainNode)
           } catch (e) {
             // source already connected
           }
+
           element.play()
+
+          // store gainNode for future control via crossfader
+          if (gainNode)
+            setAudioState[trackId!].audioElements[stem as Stem].gainNode(
+              gainNode
+            )
         }
       }, 0)
     },
-    _playWaveform(startTime: number) {
-      const { volumeMeterInterval } = audioState || {}
+
+    _playWaveform: (startTime: number) => {
+      const { volumeMeterInterval = -1 } = audioState || {}
 
       waveform.play(startTime)
 
@@ -119,11 +143,13 @@ const audioEvents = (trackId: Track['id']) => {
         playing: true,
       }))
     },
-    play(offset: number = audioState.waveform.getCurrentTime()) {
+
+    play: (offset: number = waveform.getCurrentTime()) => {
       audioEvents(trackId)._playStems(offset)
       audioEvents(trackId)._playWaveform(offset)
     },
-    pause() {
+
+    pause: () => {
       const { volumeMeterInterval } = audioState
 
       if (audioElements) {
@@ -143,14 +169,24 @@ const audioEvents = (trackId: Track['id']) => {
         playing: false,
       }))
     },
-    mute() {
+
+    nudge: (direction: 'backward' | 'forward') => {
+      const nudgeVal = 0.005
+      const offset =
+        waveform.getCurrentTime() +
+        (direction == 'backward' ? -nudgeVal : nudgeVal)
+      audioEvents(trackId).play(offset)
+    },
+
+    mute: () => {
       waveform.setMute(true)
     },
+
     // Scroll to previous/next beat marker
-    seek(
-      startTime: number = audioState.waveform.getCurrentTime(),
+    seek: (
+      startTime: number = waveform.getCurrentTime(),
       direction?: 'previous' | 'next'
-    ) {
+    ) => {
       const { playing } = audioState
       const { markers = [] } = waveform.markers || {}
 
@@ -169,30 +205,59 @@ const audioEvents = (trackId: Track['id']) => {
           waveform.playhead.setPlayheadTime(time)
         }
       }
-      // if the audio is playing, restart playing on seek to new time
 
+      // if the audio is playing, restart playing when seeking to new time
       if (playing) audioEvents(trackId).play(waveform.playhead.playheadTime)
     },
-    onSeek(percentageTime: number) {
+
+    seekMixpoint: async () => {
+      const { mixpointTime = 0 } = (await getTrackPrefs(trackId)) || {}
+      const { playing } = audioState
+
+      const time =
+        mixpointTime > 0 ? 1 / (waveform.getDuration() / mixpointTime) : 0
+
+      waveform.seekAndCenter(time)
+
+      if (playing) audioEvents(trackId).play(mixpointTime)
+    },
+
+    onSeek: (percentageTime: number) => {
       audioEvents(trackId).seek(waveform.getDuration() * percentageTime)
     },
-    crossfade() {
-      // https://github.com/notthetup/smoothfade
-      // or
-      // from https://codepen.io/lukeandersen/pen/QEmwYG
-      // Fades between 0 (all source 1) and 1 (all source 2)
-      // CrossfadeSample.crossfade = function (element) {
-      //   var x = parseInt(element.value) / parseInt(element.max)
-      //   // Use an equal-power crossfading curve:
-      //   var gain1 = Math.cos(x * 0.5 * Math.PI)
-      //   var gain2 = Math.cos((1.0 - x) * 0.5 * Math.PI)
-      //   this.ctl1.gainNode.gain.value = gain1
-      //   this.ctl2.gainNode.gain.value = gain2
-      // }
+
+    crossfade: async (sliderVal: number) => {
+      const { tracks = [] } = await getPrefs('mix', 'tracks')
+
+      const [audioState] = getAudioState()
+
+      const updateGain = (trackId: number, gain: number) => {
+        const { audioElements } = audioState[trackId]
+        if (!audioElements) return
+
+        for (const stem of Object.keys(audioElements)) {
+          if (audioElements[stem as Stem]?.gainNode) {
+            audioElements[stem as Stem]!.gainNode!.gain.value = gain
+          }
+        }
+      }
+
+      const sliderPercent = sliderVal / 100
+
+      // Use an equal-power crossfading curve:
+      const gains = [
+        Math.cos(sliderPercent * 0.5 * Math.PI),
+        Math.cos((1.0 - sliderPercent) * 0.5 * Math.PI),
+      ]
+
+      tracks.forEach((track, i) => {
+        if (track) updateGain(track, gains[i])
+      })
     },
-    async beatResolution(
+
+    beatResolution: async (
       beatResolution: TrackPrefs['beatResolution']
-    ): Promise<void> {
+    ): Promise<void> => {
       if (!beatResolution) return
 
       // Adjust zoom
@@ -213,26 +278,40 @@ const audioEvents = (trackId: Track['id']) => {
 
       calcMarkers(trackId, waveform)
     },
-    async bpm(adjustedBpm: TrackPrefs['adjustedBpm']): Promise<void> {
+
+    bpm: async (adjustedBpm: TrackPrefs['adjustedBpm']): Promise<void> => {
       if (!adjustedBpm) return
 
       const { bpm } = (await db.tracks.get(trackId!)) || {}
 
-      // Update playback rate based on new bpm
       const playbackRate = adjustedBpm / (bpm || adjustedBpm)
+
+      // Update waveform playback rate
       waveform.setPlaybackRate(playbackRate)
+
+      // update stem playback rate
+      if (audioElements) {
+        const elementArray = Object.values(audioElements || {}).map(
+          ({ element }) => element!
+        )
+        for (const element of elementArray) {
+          element.playbackRate = playbackRate
+        }
+      }
 
       // Update mixPrefs
       putTrackPrefs(trackId, { adjustedBpm })
     },
+
     offset: async (adjustedOffset: Track['adjustedOffset']): Promise<void> => {
       await updateTrack(trackId, { adjustedOffset })
 
       calcMarkers(trackId, waveform)
     },
-    async setMixpoint(
+
+    setMixpoint: async (
       mixpoint: string = timeFormat(waveform.playhead.playheadTime)
-    ): Promise<void> {
+    ): Promise<void> => {
       audioEvents(trackId).pause()
 
       const { mixpointTime } = (await getTrackPrefs(trackId)) || {}
@@ -243,14 +322,8 @@ const audioEvents = (trackId: Track['id']) => {
       putTrackPrefs(trackId, { mixpointTime: newMixpoint })
       waveform.seekAndCenter(1 / (waveform.getDuration() / newMixpoint))
     },
-    async seekMixpoint() {
-      const { mixpointTime } = (await getTrackPrefs(trackId)) || {}
 
-      if (mixpointTime)
-        waveform.seekAndCenter(1 / (waveform.getDuration() / mixpointTime))
-      audioEvents(trackId).play()
-    },
-    stemVolume(stem: Stem, volume: number) {
+    stemVolume: (stem: Stem, volume: number) => {
       // update element volume
       const element = audioElements[stem as Stem]?.element
       if (element) element.volume = volume / 100
@@ -258,7 +331,8 @@ const audioEvents = (trackId: Track['id']) => {
       // set volume in state, which in turn will update components (volume sliders)
       setAudioState[trackId!].audioElements[stem as Stem].volume(volume)
     },
-    stemMuteToggle(stem: Stem, mute: boolean) {
+
+    stemMuteToggle: (stem: Stem, mute: boolean) => {
       const audioElement = audioElements[stem as Stem]
       const { element, volume } = audioElement || {}
 
@@ -268,7 +342,8 @@ const audioEvents = (trackId: Track['id']) => {
       // set muted in state, which in turn will update components (volume sliders)
       setAudioState[trackId!].audioElements[stem as Stem].mute(mute)
     },
-    stemSoloToggle(stem: Stem, solo: boolean) {
+
+    stemSoloToggle: (stem: Stem, solo: boolean) => {
       for (const s of Object.keys(audioElements)) {
         if (s != stem) audioEvents(trackId).stemMuteToggle(s as Stem, solo)
       }

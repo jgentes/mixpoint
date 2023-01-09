@@ -2,7 +2,8 @@ import {
   Adjust,
   Eject,
   Headset,
-  HeadsetOff,
+  KeyboardDoubleArrowLeft,
+  KeyboardDoubleArrowRight,
   Pause,
   PlayArrow,
   Replay,
@@ -38,7 +39,7 @@ import {
   useLiveQuery,
 } from '~/api/db/dbHandlers'
 
-import { audioState, getAudioState, tableState } from '~/api/appState'
+import { audioState, setAudioState, tableState } from '~/api/appState'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
 const inputText = (text: string) => {
@@ -278,20 +279,11 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
   )
 }
 
-const TrackNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
+const MixpointNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
   const navEvent = (nav: string) => {
     switch (nav) {
-      case 'Play':
-        audioEvents(trackId).play()
-        break
-      case 'Pause':
-        audioEvents(trackId).pause()
-        break
       case 'Set Mixpoint':
         audioEvents(trackId).setMixpoint()
-        break
-      case 'Go to Mixpoint':
-        audioEvents(trackId).seekMixpoint()
         break
       case 'Previous Beat Marker':
         audioEvents(trackId).seek(undefined, 'previous')
@@ -302,19 +294,24 @@ const TrackNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
     }
   }
 
-  const [isPlaying] = audioState[trackId!].playing()
-
   return (
-    <ButtonGroup variant='text' color='inherit' disableRipple id='navControl'>
+    <ButtonGroup
+      variant='text'
+      color='inherit'
+      disableRipple
+      id='navControl'
+      sx={{ '.MuiButtonGroup-grouped': { minWidth: '30px' } }}
+    >
       {[
-        { val: 'Previous Beat Marker', icon: <SkipPrevious /> },
-        { val: 'Go to Mixpoint', icon: <SettingsBackupRestore /> },
-        { val: 'Set Mixpoint', icon: <Adjust /> },
         {
-          val: isPlaying ? 'Pause' : 'Play',
-          icon: isPlaying ? <Pause /> : <PlayArrow />,
+          val: 'Previous Beat Marker',
+          icon: <SkipPrevious sx={{ fontSize: '20px' }} />,
         },
-        { val: 'Next Beat Marker', icon: <SkipNext /> },
+        { val: 'Set Mixpoint', icon: <Adjust sx={{ fontSize: '18px' }} /> },
+        {
+          val: 'Next Beat Marker',
+          icon: <SkipNext sx={{ fontSize: '20px' }} />,
+        },
       ].map(item => (
         <Button
           component='button'
@@ -323,6 +320,7 @@ const TrackNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
           value={item.val}
           title={item.val}
           sx={theme => ({
+            padding: 0,
             '--Icon-color': theme.palette.text.secondary,
             borderColor: 'transparent !important',
           })}
@@ -334,10 +332,76 @@ const TrackNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
   )
 }
 
-const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
-  if (!tracks?.length) return
+const TrackNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
+  const nudgeIndicator = (direction: 'forward' | 'backward') => {
+    setAudioState[trackId!].nudged(direction)
+    setTimeout(() => setAudioState[trackId!].nudged(), 200)
+  }
 
-  const [state, setState] = useState('Go to Mixpoint')
+  const navEvent = (nav: string) => {
+    switch (nav) {
+      case 'Play':
+        audioEvents(trackId).play()
+        break
+      case 'Pause':
+        audioEvents(trackId).pause()
+        break
+      case 'Go to Mixpoint':
+        audioEvents(trackId).seekMixpoint()
+        break
+      case 'Nudge Forward':
+        audioEvents(trackId).nudge('forward')
+        nudgeIndicator('forward')
+        break
+      case 'Nudge Backward':
+        audioEvents(trackId).nudge('backward')
+        nudgeIndicator('backward')
+        break
+    }
+  }
+
+  const [isPlaying] = audioState[trackId!].playing()
+
+  return (
+    <ButtonGroup variant='text' color='inherit' disableRipple id='navControl'>
+      {[
+        { val: 'Nudge Backward', icon: <KeyboardDoubleArrowLeft /> },
+        { val: 'Go to Mixpoint', icon: <SettingsBackupRestore /> },
+        {
+          val: isPlaying ? 'Pause' : 'Play',
+          icon: isPlaying ? <Pause /> : <PlayArrow />,
+        },
+        { val: 'Nudge Forward', icon: <KeyboardDoubleArrowRight /> },
+      ].map(item => {
+        const noNudge = item.val.includes('Nudge') && !isPlaying
+
+        return (
+          <Button
+            component='button'
+            onClick={e => navEvent(e.currentTarget.value)}
+            key={item.val}
+            value={item.val}
+            title={item.val}
+            disabled={noNudge}
+            sx={theme => ({
+              '--Icon-color': noNudge
+                ? theme.palette.action.selected
+                : theme.palette.text.secondary,
+              borderColor: 'transparent !important',
+            })}
+          >
+            {item.icon}
+          </Button>
+        )
+      })}
+    </ButtonGroup>
+  )
+}
+
+const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
+  if (!tracks?.length) return null
+
+  const [state, setState] = useState('Seek Mixpoint')
 
   const navEvent = (nav: string) => {
     switch (nav) {
@@ -447,7 +511,7 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
   useEffect(() => setMixpointVal(timeFormat(mixpointTime || 0)), [mixpointTime])
 
   const adjustMixpoint = async (newMixpoint: string) => {
-    if (convertToSecs(newMixpoint) == mixpointTime) return
+    if (convertToSecs(newMixpoint) == mixpointTime) return null
 
     audioEvents(trackId).setMixpoint(newMixpoint)
   }
@@ -574,6 +638,28 @@ const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
   )
 }
 
+const CrossfaderControls = () => {
+  const [fader, setFader] = useState(50)
+
+  return (
+    <Slider
+      aria-label='crossfader'
+      defaultValue={50}
+      min={0}
+      max={100}
+      track={false}
+      marks={[0, 50, 100].map(v => ({ value: v }))}
+      valueLabelDisplay='off'
+      variant='soft'
+      size={'sm'}
+      onChange={(e, value) => audioEvents().crossfade(value as number)}
+      sx={{
+        padding: '30px 0',
+      }}
+    />
+  )
+}
+
 export {
   BpmControl,
   OffsetControl,
@@ -582,5 +668,7 @@ export {
   MixControl,
   MixpointControl,
   TrackNavControl,
+  MixpointNavControl,
   StemControls,
+  CrossfaderControls,
 }

@@ -109,12 +109,11 @@ const Waveform = ({
       if (file) waveform.loadBlob(file)
 
       // initialize audio events
-      const waveformEvents = audioEvents(trackId)
-      waveformEvents.init()
+      audioEvents(trackId).init()
 
       // Initialize wavesurfer event listeners
-      waveform.on('ready', waveformEvents.onReady)
-      waveform.on('seek', waveformEvents.onSeek)
+      waveform.on('ready', audioEvents(trackId).onReady)
+      waveform.on('seek', audioEvents(trackId).onSeek)
     }
 
     initWaveform()

@@ -8,8 +8,19 @@ type AudioElements = Partial<{
   [key in Stem]: Partial<{
     element: HTMLAudioElement
     volume: number
+    gainNode: GainNode
     mute: boolean
   }>
+}>
+
+type AudioState = Partial<{
+  waveform: WaveSurfer
+  playing: boolean
+  nudged: 'forward' | 'backward' | undefined
+  time: number
+  volumeMeter: number
+  volumeMeterInterval: ReturnType<typeof setInterval> | number
+  audioElements: AudioElements
 }>
 
 // AudioState captures whether audio is being analyzed, processed, or played
@@ -18,15 +29,7 @@ const {
   useStore: audioState,
   setStore: setAudioState,
 } = createStore<{
-  [trackId: number]: {
-    waveform: WaveSurfer
-    playing: boolean
-    playbackRate: number // this is impacted by adjustedBpm
-    time: number
-    volumeMeter: number
-    volumeMeterInterval: ReturnType<typeof setInterval> | number
-    audioElements: AudioElements
-  }
+  [trackId: number]: AudioState
 }>({})
 
 // TableState captures the state of the table, such as search value, which which rows are selected and track drawer open/closed state
@@ -78,7 +81,7 @@ const { useStore: notificationState } = createStore<{
   variant: 'error',
 })
 
-export type { AudioElements }
+export type { AudioState, AudioElements }
 export {
   getAudioState,
   audioState,

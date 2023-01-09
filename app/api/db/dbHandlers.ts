@@ -133,10 +133,10 @@ const putStore = async (
 }
 
 const getTrackPrefs = async (trackId: Track['id']): Promise<TrackPrefs> => {
-  const { tracks = [], trackPrefss = [] } = await getPrefs('mix')
+  const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
   const trackIndex = tracks.indexOf(trackId) ?? -1
 
-  return trackPrefss[trackIndex] || {}
+  return trackPrefs[trackIndex] || {}
 }
 
 const getTrackName = async (trackId: Track['id']) => {
@@ -152,15 +152,15 @@ const putTrackPrefs = async (
   trackId: Track['id'],
   state: Partial<TrackPrefs>
 ): Promise<void> => {
-  const { tracks = [], trackPrefss = [] } = await getPrefs('mix')
+  const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
   const trackIndex = tracks.indexOf(trackId) ?? -1
 
   if (trackIndex == -1) throw errorHandler('Track not found in mix state')
 
-  const newState = { ...(trackPrefss[trackIndex] || {}), ...state }
-  trackPrefss[trackIndex] = newState
+  const newState = { ...(trackPrefs[trackIndex] || {}), ...state }
+  trackPrefs[trackIndex] = newState
 
-  await putStore('mix', { tracks, trackPrefss })
+  await putStore('mix', { tracks, trackPrefs })
 }
 
 const addToMix = async (track: Track) => {
@@ -168,31 +168,31 @@ const addToMix = async (track: Track) => {
   const file = await getPermission(track)
   if (!file) return
 
-  const { tracks = [], trackPrefss = [] } = await getPrefs('mix')
+  const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
 
   // limit 2 tracks in the mix for now
   // removing because destroy should occur on renderwaveform component unmount  if (tracks.length > 1) audioEvent.emit(tracks[1]!, 'destroy')
 
   const index = tracks.length > 0 ? 1 : 0
   tracks[index] = track.id
-  trackPrefss[index] = { id: track.id }
+  trackPrefs[index] = { id: track.id }
 
-  await putStore('mix', { tracks, trackPrefss })
+  await putStore('mix', { tracks, trackPrefs })
 }
 
 const removeFromMix = async (id: Track['id']) => {
   // removing because destroy should occur on renderwaveform component unmount   if (id) audioEvent.emit(id, 'destroy')
 
-  const { tracks = [], trackPrefss = [] } = await getPrefs('mix')
+  const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
 
   const index = tracks.indexOf(id) ?? -1
 
   if (index > -1) {
     tracks.splice(index, 1)
-    trackPrefss.splice(index, 1)
+    trackPrefs.splice(index, 1)
   }
 
-  await putStore('mix', { tracks, trackPrefss })
+  await putStore('mix', { tracks, trackPrefs })
 }
 
 export type {

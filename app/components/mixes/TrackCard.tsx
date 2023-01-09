@@ -10,11 +10,13 @@ import {
   BpmControl,
   EjectControl,
   MixpointControl,
+  MixpointNavControl,
   OffsetControl,
   TrackNavControl,
 } from '~/components/tracks/Controls'
 import Loader from '~/components/tracks/TrackLoader'
 import { errorHandler } from '~/utils/notifications'
+import { timeFormat } from '~/utils/tableOps'
 
 const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) throw errorHandler('Please try uploading the track again.')
@@ -25,9 +27,14 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
   const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
 
   const TrackTime = () => {
-    const [time] = audioState[trackId].time()
+    const [time = 0] = audioState[trackId].time()
+    const [nudged] = audioState[trackId!].nudged()
+
     return (
-      <Typography sx={{ fontSize: 'sm' }}>{(time || 0).toFixed(2)}</Typography>
+      <Typography sx={{ fontSize: 'sm' }}>
+        {timeFormat(time)}
+        {nudged ? (nudged == 'backward' ? ' -' : ' +') : ''}
+      </Typography>
     )
   }
 
@@ -109,7 +116,10 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
           {trackName}
         </Typography>
       </Box>
-      <MixpointControl trackId={trackId} />
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        <MixpointNavControl trackId={trackId} />
+        <MixpointControl trackId={trackId} />
+      </Box>
     </Box>
   )
 
