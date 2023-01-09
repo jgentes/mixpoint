@@ -1,5 +1,6 @@
 import { Box, Button, Card, Typography } from '@mui/joy'
 import { useEffect, useState } from 'react'
+import { AudioElements, setAudioState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
 import { stemAudio } from '~/api/bananaDev'
 import {
@@ -14,7 +15,6 @@ import {
   StemState,
   validateTrackStemAccess,
 } from '~/api/fileHandlers'
-import { AudioElements, setAudioState } from '~/api/uiState'
 import { StemControls } from '~/components/tracks/Controls'
 import Dropzone from '~/components/tracks/Dropzone'
 import { errorHandler } from '~/utils/notifications'
@@ -47,7 +47,7 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
             ) as HTMLAudioElement
             elem.src = URL.createObjectURL(file)
 
-            // store audioElemnts into uiState
+            // store audioElemnts in appState
             audioElements[stem as Stem] = {
               element: elem,
               volume: 100,

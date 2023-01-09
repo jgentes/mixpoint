@@ -8,8 +8,8 @@ import {
   TableRow,
 } from '@mui/material'
 import { useState } from 'react'
+import { tableState } from '~/api/appState'
 import { db, getPrefs, useLiveQuery } from '~/api/db/dbHandlers'
-import { tableState } from '~/api/uiState'
 import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
 import LeftNav from '~/components/tracks/LeftNav'
 import {
@@ -79,10 +79,10 @@ const TrackTable = () => {
       >
         <LeftNav />
 
-        <Box component="main" sx={{ p: 2 }}>
+        <Box component='main' sx={{ p: 2 }}>
           <Sheet
-            variant="outlined"
-            id="track-table"
+            variant='outlined'
+            id='track-table'
             sx={{
               borderRadius: 'sm',
               bgcolor: 'background.body',
@@ -107,9 +107,9 @@ const TrackTable = () => {
             <EnhancedTableToolbar numSelected={selected.length} />
             <TableContainer>
               <Table
-                aria-labelledby="tableTitle"
-                size="small"
-                padding="checkbox"
+                aria-labelledby='tableTitle'
+                size='small'
+                padding='checkbox'
               >
                 <EnhancedTableHead
                   numSelected={selected.length}
@@ -159,7 +159,7 @@ const TrackTable = () => {
             )}
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
-              component="div"
+              component='div'
               count={tracks.length || 0}
               rowsPerPage={rowsPerPage}
               page={page}

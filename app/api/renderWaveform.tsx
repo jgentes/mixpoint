@@ -1,9 +1,9 @@
 import { Card } from '@mui/joy'
 import { SxProps } from '@mui/joy/styles/types'
 import { useEffect } from 'react'
+import { setAudioState, setTableState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
 import { db, Track } from '~/api/db/dbHandlers'
-import { setAudioState, setTableState } from '~/api/uiState'
 import { errorHandler } from '~/utils/notifications'
 import { getPermission } from './fileHandlers'
 
@@ -125,7 +125,7 @@ const Waveform = ({
   return (
     <Card
       id={`zoomview-container_${trackId}`}
-      className="zoomview-container"
+      className='zoomview-container'
       sx={{
         ...sx,
         zIndex: 1,

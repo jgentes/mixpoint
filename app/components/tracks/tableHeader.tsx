@@ -18,6 +18,7 @@ import {
 import { alpha } from '@mui/material/styles'
 import { visuallyHidden } from '@mui/utils'
 import { ChangeEvent, MouseEvent, useMemo, useState } from 'react'
+import { setModalState, tableState } from '~/api/appState'
 import { analyzeTracks } from '~/api/audioHandlers'
 import {
   db,
@@ -28,7 +29,6 @@ import {
   UserPrefs,
 } from '~/api/db/dbHandlers'
 import { browseFile } from '~/api/fileHandlers'
-import { setModalState, tableState } from '~/api/uiState'
 import { createColumnDefinitions } from '~/components/tracks/tableColumns'
 
 // Toolbar is on top of the table, includes search, info, and button bar
@@ -99,16 +99,16 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
       }}
     >
       {numSelected > 0 ? (
-        <Typography component="div">{numSelected} selected</Typography>
+        <Typography component='div'>{numSelected} selected</Typography>
       ) : (
-        <Typography id="tableTitle" component="div" sx={{ flexBasis: '200px' }}>
+        <Typography id='tableTitle' component='div' sx={{ flexBasis: '200px' }}>
           {trackCount} Track{trackCount == 1 ? '' : 's'}
           {!dirtyTracks.length ? null : (
             <Link
               onClick={() => showAnalyzeDirtyModal()}
-              variant="plain"
-              level="body3"
-              underline="none"
+              variant='plain'
+              level='body3'
+              underline='none'
               sx={{ p: '2px 6px', ml: 1 }}
             >
               {dirtyTracks.length} to analyze
@@ -117,18 +117,18 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
         </Typography>
       )}
       <TextField
-        size="sm"
-        variant="soft"
-        placeholder="Search..."
-        startDecorator={<SearchRounded color="primary" />}
+        size='sm'
+        variant='soft'
+        placeholder='Search...'
+        startDecorator={<SearchRounded color='primary' />}
         onChange={e => setSearch(e.target.value)}
         value={search}
         endDecorator={
           !search ? null : (
             <IconButton
-              variant="outlined"
-              size="sm"
-              color="neutral"
+              variant='outlined'
+              size='sm'
+              color='neutral'
               onClick={() => setSearch('')}
             >
               <Clear />
@@ -147,20 +147,20 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
       />
       {numSelected == 0 ? (
         <Button
-          size="sm"
-          variant="soft"
+          size='sm'
+          variant='soft'
           onClick={browseFile}
           sx={{ whiteSpace: 'nowrap' }}
         >
-          <Add fontSize="small" />
+          <Add fontSize='small' />
           Add Track
         </Button>
       ) : (
         <IconButton
-          variant="plain"
-          title="Remove tracks"
-          size="sm"
-          color="neutral"
+          variant='plain'
+          title='Remove tracks'
+          size='sm'
+          color='neutral'
           onClick={() => showRemoveTracksModal()}
         >
           <Delete />
@@ -199,13 +199,13 @@ const EnhancedTableHead = (props: {
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="none" sx={{ padding: '7px 12px 0 16px' }}>
+        <TableCell padding='none' sx={{ padding: '7px 12px 0 16px' }}>
           <Checkbox
-            color="primary"
+            color='primary'
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
-            title="Select all"
+            title='Select all'
           />
         </TableCell>
         {columnDefs.map((column, i) => (
@@ -227,7 +227,7 @@ const EnhancedTableHead = (props: {
             >
               {column.label}
               {sortColumn === column.dbKey ? (
-                <Card component="span" sx={visuallyHidden}>
+                <Card component='span' sx={visuallyHidden}>
                   {sortDirection === 'desc'
                     ? 'sorted descending'
                     : 'sorted ascending'}

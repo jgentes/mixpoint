@@ -1,8 +1,11 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform around
 
+import preventClick from 'wavesurfer.js/src/util/prevent-click'
+import { getAudioState, setAudioState, setTableState } from '~/api/appState'
 import { calcMarkers } from '~/api/audioHandlers'
 import {
   db,
+  getPrefs,
   getTrackPrefs,
   putTrackPrefs,
   Stem,
@@ -10,12 +13,11 @@ import {
   TrackPrefs,
   updateTrack,
 } from '~/api/db/dbHandlers'
-import { getAudioState, setAudioState, setTableState } from '~/api/uiState'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
 // audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
 
-const caclculateVolume = (analyzer: AnalyserNode, dataArray: Uint8Array) => {
+const _caclculateVolume = (analyzer: AnalyserNode, dataArray: Uint8Array) => {
   analyzer.getByteFrequencyData(dataArray)
 
   let sum = 0
@@ -58,35 +60,40 @@ const audioEvents = (trackId: Track['id']) => {
         waveform.seekAndCenter(1 / (waveform.getDuration() / currentPlayhead))
       }
     },
-    play(offset: number = audioState.waveform.getCurrentTime()) {
-      const { volumeMeterInterval } = audioState
+    _playStems(startTime: number) {
+      // pull audio elements from audioState and synchronize playback
+      if (!audioElements) return
+
+      const elementArray = Object.values(audioElements || {}).map(
+        ({ element }) => element!
+      )
 
       // Build the audioContext every time because once started (played),
       // it must be closed and recreated before it can be started again
+      const context = new AudioContext()
 
-      if (audioElements) {
-        const context = new AudioContext()
+      // use setTimeout to ensure synchronized start time of all stems
+      window.setTimeout(() => {
+        for (const element of elementArray) {
+          if (!element) continue
 
-        // use setTimeout to ensure synchronized start time of all stems
-        window.setTimeout(() => {
-          for (const { element } of Object.values(audioElements)) {
-            if (!element) continue
-
-            element.currentTime = context.currentTime + offset
-            // only one mediaElementSource can be connected, so try/catch here
-            let source
-            try {
-              source = context.createMediaElementSource(element)
-              source.connect(context.destination)
-            } catch (e) {
-              // source already connected
-            }
-            element.play()
+          element.currentTime = context.currentTime + startTime
+          // only one mediaElementSource can be connected, so try/catch here
+          let source
+          try {
+            source = context.createMediaElementSource(element)
+            source.connect(context.destination)
+          } catch (e) {
+            // source already connected
           }
-        }, 0)
-      }
+          element.play()
+        }
+      }, 0)
+    },
+    _playWaveform(startTime: number) {
+      const { volumeMeterInterval } = audioState || {}
 
-      waveform.play()
+      waveform.play(startTime)
 
       // Setup for volume meter
 
@@ -98,8 +105,12 @@ const audioEvents = (trackId: Track['id']) => {
       // Slow down sampling to 12ms
       if (volumeMeterInterval > -1) clearInterval(volumeMeterInterval)
       const newInterval = setInterval(() => {
-        const volumeMeter = caclculateVolume(analyzer, dataArray)
-        setAudioState[trackId!].volumeMeter(volumeMeter)
+        const volumeMeter = _caclculateVolume(analyzer, dataArray)
+        setAudioState[trackId!](prev => ({
+          ...prev,
+          volumeMeter,
+          time: waveform.getCurrentTime(),
+        }))
       }, 12.5)
 
       setAudioState[trackId!](prev => ({
@@ -108,30 +119,9 @@ const audioEvents = (trackId: Track['id']) => {
         playing: true,
       }))
     },
-    playAll(offset: number = waveform.getCurrentTime()) {
-      // collect all audioElements
-      let audioElements: HTMLAudioElement[] = []
-      Object.keys(audioState).forEach(trackId => {
-        for (const { element } of Object.values(
-          audioState[trackId].audioElements
-        )) {
-          audioElements.push(element)
-        }
-      })
-
-      const context = new AudioContext()
-
-      window.setTimeout(() => {
-        for (const { element } of audioElements) {
-          element.currentTime = context.currentTime + offset
-          if (!sourceNodes.length) {
-            const source = context.createMediaElementSource(element)
-            source.connect(context.destination)
-            sourceNodes.push(source)
-          }
-          element.play()
-        }
-      }, 0)
+    play(offset: number = audioState.waveform.getCurrentTime()) {
+      audioEvents(trackId)._playStems(offset)
+      audioEvents(trackId)._playWaveform(offset)
     },
     pause() {
       const { volumeMeterInterval } = audioState

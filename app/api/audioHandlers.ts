@@ -13,7 +13,7 @@ import {
 } from '~/api/db/dbHandlers'
 import { getPermission, getStemsDirHandle } from '~/api/fileHandlers'
 
-import { setAudioState, setModalState, setTableState } from '~/api/uiState'
+import { setAudioState, setModalState, setTableState } from '~/api/appState'
 import { errorHandler } from '~/utils/notifications'
 
 // This is the main track processing workflow when files are added to the app
@@ -141,7 +141,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
     // Give Dexie a few ms to update the UI before removing analyzing state. This is to avoid the 'analyze' button appearing briefly.
     setTimeout(
       () =>
-      setTableState.analyzing(analyzing =>
+        setTableState.analyzing(analyzing =>
           analyzing.filter(id => id !== track.id)
         ),
       250

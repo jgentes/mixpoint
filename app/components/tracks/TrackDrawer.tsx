@@ -1,5 +1,5 @@
 import { Drawer } from '@mui/material'
-import { tableState } from '~/api/uiState'
+import { tableState } from '~/api/appState'
 import TrackTable from '~/components//tracks/TrackTable'
 import DrawerButton from '~/components/tracks/DrawerButton'
 
@@ -8,7 +8,7 @@ const TrackDrawer = () => {
 
   return (
     <Drawer
-      anchor="bottom"
+      anchor='bottom'
       open={openDrawer}
       onClose={() => setOpenDrawer(false)}
       PaperProps={{

@@ -1,7 +1,7 @@
 import { WarningRounded } from '@mui/icons-material'
 import { Box, Button, Modal, ModalDialog, Typography } from '@mui/joy'
 import { Divider } from '@mui/material'
-import { modalState } from '~/api/uiState'
+import { modalState } from '~/api/appState'
 
 const ConfirmModal = () => {
   const [confirmModal] = modalState()
@@ -20,19 +20,19 @@ const ConfirmModal = () => {
 
   return (
     <Modal
-      aria-labelledby="alert-dialog-modal-title"
-      aria-describedby="alert-dialog-modal-description"
+      aria-labelledby='alert-dialog-modal-title'
+      aria-describedby='alert-dialog-modal-description'
       open={openState || false}
       sx={{ alignItems: 'normal' }}
       onClose={() => closeModal()}
       disableEnforceFocus={true}
     >
-      <ModalDialog variant="outlined" role="alertdialog">
+      <ModalDialog variant='outlined' role='alertdialog'>
         <Typography
-          id="alert-dialog-modal-title"
-          component="h2"
-          level="inherit"
-          fontSize="1.25em"
+          id='alert-dialog-modal-title'
+          component='h2'
+          level='inherit'
+          fontSize='1.25em'
           sx={{ display: 'flex', alignItems: 'normal' }}
           startDecorator={<WarningRounded />}
         >
@@ -40,18 +40,18 @@ const ConfirmModal = () => {
         </Typography>
         <Divider sx={{ my: 1 }} />
         <Typography
-          id="alert-dialog-modal-description"
-          textColor="text.tertiary"
+          id='alert-dialog-modal-description'
+          textColor='text.tertiary'
           mb={3}
         >
           {bodyText}
         </Typography>
         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-          <Button variant="plain" color="neutral" onClick={() => onCancel()}>
+          <Button variant='plain' color='neutral' onClick={() => onCancel()}>
             Cancel
           </Button>
           <Button
-            variant="solid"
+            variant='solid'
             color={confirmColor}
             onClick={() => onConfirm()}
           >

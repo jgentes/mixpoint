@@ -1,6 +1,6 @@
 import { LinearProgress } from '@mui/material'
+import { audioState } from '~/api/appState'
 import { Track } from '~/api/db/dbHandlers'
-import { audioState } from '~/api/uiState'
 
 const VolumeMeter = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
@@ -10,7 +10,7 @@ const VolumeMeter = ({ trackId }: { trackId: Track['id'] }) => {
   return (
     <LinearProgress
       id={`volume-container_${trackId}`}
-      variant="determinate"
+      variant='determinate'
       value={100 - volumeMeter}
       sx={{
         mx: '3px',

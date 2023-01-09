@@ -1,7 +1,7 @@
 import moment from 'moment'
 import { ChangeEvent, MouseEvent } from 'react'
+import { getTableState, setTableState, tableState } from '~/api/appState'
 import { db, getPrefs, putStore, Track } from '~/api/db/dbHandlers'
-import { getTableState, setTableState, tableState } from '~/api/uiState'
 import { errorHandler } from '~/utils/notifications'
 
 const sort = async (event: MouseEvent<unknown>, property: keyof Track) => {

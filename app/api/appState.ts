@@ -1,4 +1,4 @@
-// This file handles application state that is not persisted through page refreshes, therefore not in IndexedDB
+// This file handles application state that is not persisted through page refreshes, therefore not in IndexedDB. appState is different from Prefs in that it isn't persistent.
 
 import { ButtonProps } from '@mui/joy'
 import createStore from 'teaful'
@@ -18,9 +18,11 @@ const {
   useStore: audioState,
   setStore: setAudioState,
 } = createStore<{
-  [trackId: string]: {
+  [trackId: number]: {
     waveform: WaveSurfer
     playing: boolean
+    playbackRate: number // this is impacted by adjustedBpm
+    time: number
     volumeMeter: number
     volumeMeterInterval: ReturnType<typeof setInterval> | number
     audioElements: AudioElements

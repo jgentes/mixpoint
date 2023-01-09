@@ -38,7 +38,7 @@ import {
   useLiveQuery,
 } from '~/api/db/dbHandlers'
 
-import { audioState, getAudioState, tableState } from '~/api/uiState'
+import { audioState, getAudioState, tableState } from '~/api/appState'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
 const inputText = (text: string) => {
@@ -335,8 +335,29 @@ const TrackNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
 }
 
 const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
+  if (!tracks?.length) return
+
   const [state, setState] = useState('Go to Mixpoint')
-  const [waveform] = getAudioState[1].waveform()
+
+  const navEvent = (nav: string) => {
+    switch (nav) {
+      case 'Play':
+        for (const trackId of tracks) {
+          audioEvents(trackId).play()
+        }
+        break
+      case 'Pause':
+        for (const trackId of tracks) {
+          audioEvents(trackId).pause()
+        }
+        break
+      case 'Go to Mixpoint':
+        for (const trackId of tracks) {
+          audioEvents(trackId).seekMixpoint()
+        }
+        break
+    }
+  }
 
   return (
     <RadioGroup
@@ -349,9 +370,7 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
         const val = e.target.value
 
         setState(val)
-        if (!tracks?.length) return
-
-        //audioEvents(tracks[0].id).playAll()
+        navEvent(val)
       }}
     >
       {[

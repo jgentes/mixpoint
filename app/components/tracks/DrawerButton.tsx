@@ -1,6 +1,6 @@
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material'
 import { Button } from '@mui/joy'
-import { tableState } from '~/api/uiState'
+import { tableState } from '~/api/appState'
 
 const DrawerButton = () => {
   const [openDrawer, setOpenDrawer] = tableState.openDrawer()
@@ -9,8 +9,8 @@ const DrawerButton = () => {
 
   return (
     <Button
-      variant="soft"
-      size="sm"
+      variant='soft'
+      size='sm'
       fullWidth
       title={direction === 'up' ? 'Open drawer' : 'Close drawer'}
       sx={{

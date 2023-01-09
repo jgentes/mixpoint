@@ -10,7 +10,7 @@ import {
 
 import { Animation, JoinInner, RadioButtonUnchecked } from '@mui/icons-material'
 
-import { tableState } from '~/api/uiState'
+import { tableState } from '~/api/appState'
 import Dropzone from '~/components/tracks/Dropzone'
 
 const LeftNav = () => {
@@ -18,8 +18,8 @@ const LeftNav = () => {
 
   return (
     <Box
-      component="nav"
-      height="100%"
+      component='nav'
+      height='100%'
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -28,7 +28,7 @@ const LeftNav = () => {
         borderColor: 'divider',
       }}
     >
-      <List size="sm" sx={{ '--List-item-radius': '8px' }}>
+      <List size='sm' sx={{ '--List-item-radius': '8px' }}>
         <ListItem nested sx={{ p: 0 }}>
           <Box
             sx={{
@@ -39,8 +39,8 @@ const LeftNav = () => {
             }}
           >
             <Typography
-              id="nav-list-browse"
-              textColor="neutral.500"
+              id='nav-list-browse'
+              textColor='neutral.500'
               fontWeight={700}
               sx={{
                 fontSize: '10px',
@@ -52,7 +52,7 @@ const LeftNav = () => {
             </Typography>
           </Box>
           <List
-            aria-labelledby="nav-list-browse"
+            aria-labelledby='nav-list-browse'
             sx={{
               '& .JoyListItemButton-root': { p: '8px' },
             }}
@@ -115,8 +115,8 @@ const LeftNav = () => {
             }}
           >
             <Typography
-              id="nav-list-playlists"
-              textColor="neutral.500"
+              id='nav-list-playlists'
+              textColor='neutral.500'
               fontWeight={700}
               sx={{
                 fontSize: '10px',
@@ -128,8 +128,8 @@ const LeftNav = () => {
             </Typography>
           </Box>
           <List
-            aria-labelledby="nav-list-playlists"
-            size="sm"
+            aria-labelledby='nav-list-playlists'
+            size='sm'
             sx={{
               '--List-decorator-size': '32px',
               '& .JoyListItemButton-root': { p: '8px' },

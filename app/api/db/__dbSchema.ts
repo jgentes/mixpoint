@@ -97,6 +97,14 @@ type TrackCache = {
   stems?: Partial<{ [key in Stem]: File }>
 }
 
+// Note TrackPrefs is not a table. Track states are contained in MixPrefs
+type TrackPrefs = Partial<{
+  id: Track['id']
+  adjustedBpm: Track['bpm']
+  beatResolution: 0.25 | 0.5 | 1
+  mixpointTime: number // seconds
+}>
+
 // State tables
 
 // Each row in a state table is a full representation of state at that point in time
@@ -106,7 +114,7 @@ type TrackCache = {
 type MixPrefs = Partial<{
   date: Date // current mix is most recent mixPrefs
   tracks: Track['id'][]
-  trackPrefss: TrackPrefs[]
+  trackPrefs: TrackPrefs[]
 }>
 
 type SetPrefs = Partial<{
@@ -119,14 +127,6 @@ type UserPrefs = Partial<{
   sortDirection: 'asc' | 'desc'
   sortColumn: keyof Track // track table order property
   stemsDirHandle: FileSystemDirectoryHandle // local folder on file system to store stems
-}>
-
-// Note TrackPrefs is not a table. Track states are contained in MixPrefs
-type TrackPrefs = Partial<{
-  id: Track['id']
-  adjustedBpm: Track['bpm']
-  beatResolution: 0.25 | 0.5 | 1
-  mixpointTime: number // seconds
 }>
 
 // For state getter and setter

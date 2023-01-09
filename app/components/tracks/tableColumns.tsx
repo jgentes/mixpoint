@@ -3,6 +3,7 @@ import { Box, Chip } from '@mui/joy'
 import { TableCellProps } from '@mui/material'
 import { SxProps } from '@mui/material/styles'
 import moment from 'moment'
+import { setTableState, tableState } from '~/api/appState'
 import { analyzeTracks } from '~/api/audioHandlers'
 import {
   addToMix,
@@ -11,7 +12,6 @@ import {
   Track,
   useLiveQuery,
 } from '~/api/db/dbHandlers'
-import { tableState, setTableState } from '~/api/uiState'
 import TrackLoader from '~/components/tracks/TrackLoader'
 import { formatMinutes, rowClick } from '~/utils/tableOps'
 
@@ -27,9 +27,9 @@ const createColumnDefinitions = (): {
 }[] => {
   const analyzeButton = (t: Track) => (
     <Chip
-      variant="outlined"
+      variant='outlined'
       startDecorator={<GraphicEq />}
-      size="sm"
+      size='sm'
       onClick={() => analyzeTracks([t])}
     >
       Analyze
@@ -57,11 +57,11 @@ const createColumnDefinitions = (): {
 
     return (
       <Chip
-        variant="outlined"
+        variant='outlined'
         className={isInMix ? 'visible' : 'visibleOnHover'}
         startDecorator={isInMix ? <Check /> : <Add />}
         color={isInMix ? 'success' : 'primary'}
-        size="sm"
+        size='sm'
         disabled={isBeingAnalyzed}
         sx={{
           maxHeight: '30px',

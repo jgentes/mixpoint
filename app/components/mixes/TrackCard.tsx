@@ -1,9 +1,9 @@
 import { Card, Typography } from '@mui/joy'
 import { Box } from '@mui/material'
 import { ClientOnly } from 'remix-utils'
+import { audioState, tableState } from '~/api/appState'
 import { getTrackName, Track, useLiveQuery } from '~/api/db/dbHandlers'
 import Waveform from '~/api/renderWaveform'
-import { tableState } from '~/api/uiState'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import {
   BeatResolutionControl,
@@ -24,6 +24,13 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
 
   const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
 
+  const TrackTime = () => {
+    const [time] = audioState[trackId].time()
+    return (
+      <Typography sx={{ fontSize: 'sm' }}>{(time || 0).toFixed(2)}</Typography>
+    )
+  }
+
   const trackFooter = (
     <Box
       sx={{
@@ -43,6 +50,7 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
         }}
       >
         <BpmControl trackId={trackId} />
+        <TrackTime />
       </Box>
       <TrackNavControl trackId={trackId} />
       <Box
@@ -81,7 +89,7 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
       }}
     >
       <Box
-        id="track-title"
+        id='track-title'
         sx={{
           display: 'flex',
           gap: 1,
@@ -107,7 +115,7 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
 
   return (
     <Card
-      variant="soft"
+      variant='soft'
       sx={{
         p: 1,
         borderRadius: 'sm',
