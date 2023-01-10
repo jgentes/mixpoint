@@ -15,6 +15,7 @@ import {
 } from '@mui/icons-material'
 import {
   Box,
+  Card,
   Chip,
   Link,
   Radio,
@@ -24,7 +25,7 @@ import {
   TextField,
   Typography,
 } from '@mui/joy'
-import { Button, ButtonGroup } from '@mui/material'
+import { Button, ButtonGroup, SxProps } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { audioEvents } from '~/api/audioEvents'
 import {
@@ -41,6 +42,8 @@ import {
 
 import { audioState, setAudioState, tableState } from '~/api/appState'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
+
+const STEMS = ['bass', 'drums', 'vocals', 'other']
 
 const inputText = (text: string) => {
   return (
@@ -423,13 +426,15 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
     }
   }
 
+  const radioSize = 28
+
   return (
     <RadioGroup
       row
       name='mixControl'
       variant='outlined'
       value={state}
-      sx={{ height: 48 }}
+      sx={{ height: radioSize, mb: 1 }}
       onChange={e => {
         const val = e.target.value
 
@@ -453,8 +458,8 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              width: 48,
-              height: 48,
+              width: radioSize * 2,
+              height: radioSize,
               '&:not([data-first-child])': {
                 borderLeft: '1px solid',
                 borderColor: `${theme.palette.divider} !important`,
@@ -482,6 +487,11 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
             variant={state == item.val ? 'soft' : 'plain'}
             color='primary'
             componentsProps={{
+              root: {
+                sx: {
+                  '--Icon-fontSize': `${radioSize - 8}px`,
+                },
+              },
               action: {
                 sx: {
                   borderRadius: 0,
@@ -630,15 +640,23 @@ const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
   }
 
   return (
-    <Box sx={{ my: 1 }}>
-      {['bass', 'drums', 'vocals', 'other'].map(v => (
-        <StemPlayer key={v} stemType={v as Stem} />
+    <Box sx={{ mb: 1 }}>
+      {STEMS.map(stem => (
+        <StemPlayer key={stem} stemType={stem as Stem} />
       ))}
     </Box>
   )
 }
 
-const CrossfaderControls = () => {
+const StemsCrossfaders = () => (
+  <Box sx={{ my: 1, lineHeight: 0.7 }}>
+    {STEMS.map(stem => (
+      <CrossfaderControl key={stem} stemType={stem as Stem} />
+    ))}
+  </Box>
+)
+
+const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => {
   const [fader, setFader] = useState(50)
 
   return (
@@ -651,10 +669,15 @@ const CrossfaderControls = () => {
       marks={[0, 50, 100].map(v => ({ value: v }))}
       valueLabelDisplay='off'
       variant='soft'
-      size={'sm'}
-      onChange={(e, value) => audioEvents().crossfade(value as number)}
+      size='md'
+      onChange={(_, val) => audioEvents().crossfade(val as number, stemType)}
       sx={{
-        padding: '30px 0',
+        padding: '15px 0',
+        '& .JoySlider-thumb': {
+          width: '10px',
+          height: '20px',
+          borderRadius: '3px',
+        },
       }}
     />
   )
@@ -670,5 +693,6 @@ export {
   TrackNavControl,
   MixpointNavControl,
   StemControls,
-  CrossfaderControls,
+  CrossfaderControl,
+  StemsCrossfaders,
 }

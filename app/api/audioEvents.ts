@@ -226,7 +226,7 @@ const audioEvents = (trackId?: Track['id']) => {
       audioEvents(trackId).seek(waveform.getDuration() * percentageTime)
     },
 
-    crossfade: async (sliderVal: number) => {
+    crossfade: async (sliderVal: number, stemType?: Stem) => {
       const { tracks = [] } = await getPrefs('mix', 'tracks')
 
       const [audioState] = getAudioState()
@@ -236,6 +236,8 @@ const audioEvents = (trackId?: Track['id']) => {
         if (!audioElements) return
 
         for (const stem of Object.keys(audioElements)) {
+          if (stemType && stem != stemType) continue
+
           if (audioElements[stem as Stem]?.gainNode) {
             audioElements[stem as Stem]!.gainNode!.gain.value = gain
           }
@@ -247,7 +249,7 @@ const audioEvents = (trackId?: Track['id']) => {
       // Use an equal-power crossfading curve:
       const gains = [
         Math.cos(sliderPercent * 0.5 * Math.PI),
-        Math.cos((1.0 - sliderPercent) * 0.5 * Math.PI),
+        Math.cos((1 - sliderPercent) * 0.5 * Math.PI),
       ]
 
       tracks.forEach((track, i) => {

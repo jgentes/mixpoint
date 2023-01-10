@@ -2,7 +2,11 @@ import { Box } from '@mui/joy'
 import { MixPrefs } from '~/api/db/dbHandlers'
 import StemsCard from '~/components/mixes/StemsCard'
 import TrackCard from '~/components/mixes/TrackCard'
-import { CrossfaderControls, MixControl } from '~/components/tracks/Controls'
+import {
+  CrossfaderControl,
+  MixControl,
+  StemsCrossfaders,
+} from '~/components/tracks/Controls'
 
 const MixView = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
   if (!tracks?.length) return null
@@ -29,8 +33,9 @@ const MixView = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
         {/* Hardcoding 2 tracks for now */}
         <StemsCard trackId={tracks[0]} />
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <StemsCrossfaders />
           <MixControl tracks={tracks} />
-          <CrossfaderControls />
+          <CrossfaderControl />
         </Box>
         <StemsCard trackId={tracks[1]} />
       </div>

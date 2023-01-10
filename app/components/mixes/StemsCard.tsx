@@ -109,29 +109,27 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
         borderRadius: 'sm',
         border: '1px solid',
         borderColor: 'action.selected',
-        width: '30%', // this just restricts it from going too wide
+        width: '30%',
       }}
     >
       {!trackId ? (
         <Dropzone />
       ) : (
         <>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography
-              sx={{
-                fontSize: 'sm',
-                fontWeight: 'md',
-                pl: '3px',
-              }}
-            >
-              {trackName}
-            </Typography>
-          </Box>
           {stemState !== 'ready' ? (
             <GetStemsButton />
           ) : (
             <StemControls trackId={trackId} />
           )}
+          <Typography
+            sx={{
+              fontSize: 'sm',
+              fontWeight: 'md',
+              pl: '3px',
+            }}
+          >
+            {trackName}
+          </Typography>
         </>
       )}
     </Card>
