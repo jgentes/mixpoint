@@ -111,20 +111,14 @@ const Waveform = ({
       // initialize audio prefs from appstate
       audioEvents(trackId).init()
 
-      // Initialize wavesurfer event listeners
+      // // Initialize wavesurfer event listeners
       waveform.on('ready', audioEvents(trackId).onReady)
       waveform.on('seek', audioEvents(trackId).onSeek)
     }
 
     initWaveform()
 
-    return () => {
-      const [{ volumeMeterInterval }] = getAudioState[trackId]()
-      if (volumeMeterInterval) clearInterval(volumeMeterInterval)
-      waveform.destroy()
-      // remove audioState
-      setAudioState[trackId]()
-    }
+    return () => audioEvents(trackId).destroy()
   }, [trackId])
 
   return (

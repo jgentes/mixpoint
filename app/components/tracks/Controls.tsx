@@ -24,8 +24,8 @@ import {
   TextField,
   Typography,
 } from '@mui/joy'
-import { Button, ButtonGroup, SxProps } from '@mui/material'
-import { useEffect, useRef, useState } from 'react'
+import { Button, ButtonGroup } from '@mui/material'
+import { useEffect, useState } from 'react'
 import { audioEvents } from '~/api/audioEvents'
 import {
   db,
@@ -39,7 +39,6 @@ import {
   useLiveQuery,
 } from '~/api/db/dbHandlers'
 
-import { isUndefined } from 'util'
 import { audioState, setAudioState, tableState } from '~/api/appState'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
@@ -552,10 +551,8 @@ const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
 
   const StemPlayer = ({ stemType }: { stemType: Stem }) => {
-    const stemRef = useRef<HTMLAudioElement>(null)
-
-    const [audioElement] = audioState[trackId].audioElements[stemType]()
-    const { volume = 100, mute = false } = audioElement || {}
+    const [stem] = audioState[trackId].stems[stemType]()
+    const { volume = 100, mute = false } = stem || {}
 
     const [solo, setSolo] = useState(false)
 
@@ -602,7 +599,6 @@ const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
             mr: '4px',
           }}
         />
-        <audio id={`${trackId}-${stemType.toLowerCase()}`} ref={stemRef} />
         <Headset
           fontSize='small'
           sx={{

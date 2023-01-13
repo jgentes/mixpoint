@@ -1,6 +1,7 @@
 import { Button, Card, Typography } from '@mui/joy'
 import { useEffect, useState } from 'react'
-import { AudioElements, setAudioState } from '~/api/appState'
+import { Player } from 'tone'
+import { setAudioState, Stems } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
 import { stemAudio } from '~/api/bananaDev'
 import {
@@ -18,7 +19,6 @@ import {
 import { StemControls } from '~/components/tracks/Controls'
 import Dropzone from '~/components/tracks/Dropzone'
 import { errorHandler } from '~/utils/notifications'
-import { Player } from 'tone'
 
 const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
   const [stemState, setStemState] = useState<StemState>()
@@ -35,34 +35,24 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
       const stemStatus = await checkStemStatus()
       setStemState(stemStatus)
 
-      // if stems exist, connect them to audio elements
+      // if stems exist, generate Tonejs players for each
       if (stemStatus == 'ready') {
-        const { stems } = (await db.trackCache.get(trackId)) || {}
+        const { stems: stemCache } = (await db.trackCache.get(trackId)) || {}
 
-        if (stems) {
-          const audioElements: AudioElements = {}
+        if (stemCache) {
+          const stems: Stems = {}
 
-          for (let [stem, file] of Object.entries(stems)) {
-            const elem = document.getElementById(
-              `${trackId}-${stem}`
-            ) as HTMLAudioElement
-            elem.src = URL.createObjectURL(file)
-
-            const buffer = await file.arrayBuffer()
-            const audioContext = new AudioContext()
-            const audioBuffer = await audioContext.decodeAudioData(buffer)
+          for (let [stem, file] of Object.entries(stemCache)) {
+            const source = URL.createObjectURL(file)
 
             // store audioElemnts in appState
-            audioElements[stem as Stem] = {
-              player: new Player(audioBuffer).toDestination(),
-              element: elem,
+            stems[stem as Stem] = {
+              player: new Player(source).toDestination(),
               volume: 100,
               mute: false,
             }
-
-            audioContext.close()
           }
-          setAudioState[trackId].audioElements(audioElements)
+          setAudioState[trackId].stems(stems)
         }
         // mute the waveform and use stems for playback instead
         audioEvents(trackId).mute()

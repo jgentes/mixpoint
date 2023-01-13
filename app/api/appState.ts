@@ -2,12 +2,12 @@
 
 import { ButtonProps } from '@mui/joy'
 import createStore from 'teaful'
+import { Player } from 'tone'
 import { Stem, Track } from '~/api/db/dbHandlers'
 
-type AudioElements = Partial<{
+type Stems = Partial<{
   [key in Stem]: Partial<{
-    element: HTMLAudioElement
-    player: any
+    player: Player
     volume: number
     gainNode: GainNode
     mute: boolean
@@ -21,7 +21,7 @@ type AudioState = Partial<{
   time: number
   volumeMeter: number
   volumeMeterInterval: ReturnType<typeof setInterval> | number
-  audioElements: AudioElements
+  stems: Stems
 }>
 
 // AudioState captures whether audio is being analyzed, processed, or played
@@ -82,7 +82,7 @@ const { useStore: notificationState } = createStore<{
   variant: 'error',
 })
 
-export type { AudioState, AudioElements }
+export type { AudioState, Stems }
 export {
   getAudioState,
   audioState,
