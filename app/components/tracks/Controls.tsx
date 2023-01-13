@@ -91,7 +91,7 @@ const NumberControl = ({
 
     setInputVal(newVal)
 
-    audioEvents(trackId)[emitEvent](newVal)
+    audioEvents[emitEvent](trackId, newVal)
   }
 
   const ResetValLink = () => (
@@ -217,7 +217,7 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
     useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
 
   const changeBeatResolution = (beatResolution: TrackPrefs['beatResolution']) =>
-    audioEvents(trackId!).beatResolution(beatResolution)
+    audioEvents.beatResolution(trackId, beatResolution)
 
   return (
     <RadioGroup
@@ -281,13 +281,13 @@ const MixpointNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
   const navEvent = (nav: string) => {
     switch (nav) {
       case 'Set Mixpoint':
-        audioEvents(trackId).setMixpoint()
+        audioEvents.setMixpoint(trackId)
         break
       case 'Previous Beat Marker':
-        audioEvents(trackId).seek(undefined, 'previous')
+        audioEvents.seek(trackId, undefined, 'previous')
         break
       case 'Next Beat Marker':
-        audioEvents(trackId).seek(undefined, 'next')
+        audioEvents.seek(trackId, undefined, 'next')
         break
     }
   }
@@ -339,20 +339,20 @@ const TrackNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
   const navEvent = (nav: string) => {
     switch (nav) {
       case 'Play':
-        audioEvents(trackId).play()
+        audioEvents.play(trackId)
         break
       case 'Pause':
-        audioEvents(trackId).pause()
+        audioEvents.pause(trackId)
         break
       case 'Go to Mixpoint':
-        audioEvents(trackId).seekMixpoint()
+        audioEvents.seekMixpoint(trackId)
         break
       case 'Nudge Forward':
-        audioEvents(trackId).nudge('forward')
+        audioEvents.nudge(trackId, 'forward')
         nudgeIndicator('forward')
         break
       case 'Nudge Backward':
-        audioEvents(trackId).nudge('backward')
+        audioEvents.nudge(trackId, 'backward')
         nudgeIndicator('backward')
         break
     }
@@ -402,16 +402,16 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
   const navEvent = (nav: string) => {
     switch (nav) {
       case 'Play':
-        audioEvents().playAll()
+        audioEvents.play()
         break
       case 'Pause':
         for (const trackId of tracks) {
-          audioEvents(trackId).pause()
+          audioEvents.pause(trackId)
         }
         break
       case 'Go to Mixpoint':
         for (const trackId of tracks) {
-          audioEvents(trackId).seekMixpoint()
+          audioEvents.seekMixpoint(trackId)
         }
         break
     }
@@ -511,7 +511,7 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
   const adjustMixpoint = async (newMixpoint: string) => {
     if (convertToSecs(newMixpoint) == mixpointTime) return null
 
-    audioEvents(trackId).setMixpoint(newMixpoint)
+    audioEvents.setMixpoint(trackId, newMixpoint)
   }
 
   return (
@@ -557,7 +557,7 @@ const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
     const [solo, setSolo] = useState(false)
 
     const toggleSolo = () => {
-      audioEvents(trackId).stemSoloToggle(stemType, !solo)
+      audioEvents.stemSoloToggle(trackId, stemType, !solo)
       setSolo(!solo)
     }
 
@@ -591,7 +591,7 @@ const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
           variant='soft'
           size={'sm'}
           onChange={(_, volume) =>
-            audioEvents(trackId).stemVolume(stemType, volume as number)
+            audioEvents.stemVolume(trackId, stemType, volume as number)
           }
           disabled={mute}
           sx={{
@@ -611,13 +611,13 @@ const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
           <VolumeOff
             fontSize='small'
             sx={{ color: 'text.secondary', cursor: 'pointer' }}
-            onClick={() => audioEvents(trackId).stemMuteToggle(stemType, false)}
+            onClick={() => audioEvents.stemMuteToggle(trackId, stemType, false)}
           />
         ) : (
           <VolumeUp
             fontSize='small'
             sx={{ color: 'text.secondary', cursor: 'pointer' }}
-            onClick={() => audioEvents(trackId).stemMuteToggle(stemType, true)}
+            onClick={() => audioEvents.stemMuteToggle(trackId, stemType, true)}
           />
         )}
       </Box>
@@ -655,7 +655,7 @@ const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => {
       valueLabelDisplay='off'
       variant='soft'
       size='md'
-      onChange={(_, val) => audioEvents().crossfade(val as number, stemType)}
+      onChange={(_, val) => audioEvents.crossfade(val as number, stemType)}
       sx={{
         padding: '15px 0',
         '& .JoySlider-thumb': {

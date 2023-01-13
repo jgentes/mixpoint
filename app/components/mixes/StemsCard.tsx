@@ -55,7 +55,7 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
           setAudioState[trackId].stems(stems)
         }
         // mute the waveform and use stems for playback instead
-        audioEvents(trackId).mute()
+        audioEvents.mute(trackId)
       }
     }
 

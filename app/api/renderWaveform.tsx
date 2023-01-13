@@ -109,16 +109,16 @@ const Waveform = ({
       if (file) waveform.loadBlob(file)
 
       // initialize audio prefs from appstate
-      audioEvents(trackId).init()
+      audioEvents.init(trackId)
 
       // // Initialize wavesurfer event listeners
-      waveform.on('ready', audioEvents(trackId).onReady)
-      waveform.on('seek', audioEvents(trackId).onSeek)
+      waveform.on('ready', async () => await audioEvents.onReady(trackId))
+      waveform.on('seek', async time => await audioEvents.onSeek(trackId, time))
     }
 
     initWaveform()
 
-    return () => audioEvents(trackId).destroy()
+    return () => audioEvents.destroy(trackId)
   }, [trackId])
 
   return (
@@ -130,7 +130,7 @@ const Waveform = ({
         zIndex: 1,
       }}
       onWheel={e =>
-        audioEvents(trackId).seek(undefined, e.deltaY > 0 ? 'next' : 'previous')
+        audioEvents.seek(trackId, undefined, e.deltaY > 0 ? 'next' : 'previous')
       }
     />
   )
