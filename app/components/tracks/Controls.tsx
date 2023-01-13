@@ -403,10 +403,7 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
   const navEvent = (nav: string) => {
     switch (nav) {
       case 'Play':
-        audioEvents()._playStems(undefined, true)
-        for (const trackId of tracks) {
-          audioEvents(trackId)._playWaveform()
-        }
+        audioEvents().playAll()
         break
       case 'Pause':
         for (const trackId of tracks) {

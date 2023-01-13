@@ -1,4 +1,4 @@
-import { Box, Button, Card, Typography } from '@mui/joy'
+import { Button, Card, Typography } from '@mui/joy'
 import { useEffect, useState } from 'react'
 import { AudioElements, setAudioState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
@@ -18,6 +18,7 @@ import {
 import { StemControls } from '~/components/tracks/Controls'
 import Dropzone from '~/components/tracks/Dropzone'
 import { errorHandler } from '~/utils/notifications'
+import { Player } from 'tone'
 
 const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
   const [stemState, setStemState] = useState<StemState>()
@@ -47,12 +48,19 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
             ) as HTMLAudioElement
             elem.src = URL.createObjectURL(file)
 
+            const buffer = await file.arrayBuffer()
+            const audioContext = new AudioContext()
+            const audioBuffer = await audioContext.decodeAudioData(buffer)
+
             // store audioElemnts in appState
             audioElements[stem as Stem] = {
+              player: new Player(audioBuffer).toDestination(),
               element: elem,
               volume: 100,
               mute: false,
             }
+
+            audioContext.close()
           }
           setAudioState[trackId].audioElements(audioElements)
         }

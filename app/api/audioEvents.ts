@@ -1,5 +1,5 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform around
-
+import { now, Player, start } from 'tone'
 import {
   AudioElements,
   AudioState,
@@ -75,22 +75,19 @@ const audioEvents = (trackId?: Track['id']) => {
     },
 
     _playStems: async (startTime: number, all?: boolean) => {
-      // Tone.setContext(new Tone.Context({ latencyHint: 'playback' }))
-      // Tone.Transport.start('+0.1')
-
-      const [audioState] = getAudioState()
       const playObj: {
-        stem: string
         id: string
-        element: HTMLMediaElement
+        player: any
         mixpointTime?: number
         bpm: number
         adjustedBpm?: number
       }[] = []
-      const { trackPrefs } = await getPrefs('mix')
 
+      const { trackPrefs } = await getPrefs('mix')
+      const [audioState] = getAudioState()
       // pull audio elements from audioState and synchronize playback
       // setup an obj first to reduce latency
+
       for (const [id, { audioElements }] of Object.entries(audioState)) {
         if (!all && String(trackId) !== id) continue
         if (!audioElements) continue
@@ -98,59 +95,24 @@ const audioEvents = (trackId?: Track['id']) => {
         const { bpm } = (await db.tracks.get(Number(id))) || {}
         if (!bpm) continue
 
-        for (const [stem, { element }] of Object.entries(audioElements)) {
-          if (!element) continue
+        for (const { player } of Object.values(audioElements)) {
+          if (!player) continue
+
           const { mixpointTime, adjustedBpm } =
             trackPrefs?.find(({ id: trackId }) => trackId === Number(id)) || {}
-          playObj.push({ stem, id, element, mixpointTime, bpm, adjustedBpm })
+
+          // if (adjustedBpm) element.playbackRate = adjustedBpm / bpm
+          // element.currentTime = startTime ?? mixpointTime
+
+          //const player = new Player(buffer).toDestination()
+
+          playObj.push({ id, player, mixpointTime, bpm, adjustedBpm })
         }
       }
 
-      // Build the audioContext every time because once started (played),
-      // it must be closed and recreated before it can be started again
-      const context = new AudioContext()
-
-      // use setTimeout to ensure synchronized start time of all stems
-      window.setTimeout(() => {
-        // store gainNodes to avoid updating state while synchronizing play of stems
-        let gains: { stem: string; id: string; gainNode: GainNode }[] = []
-
-        for (const {
-          stem,
-          id,
-          element,
-          mixpointTime,
-          bpm,
-          adjustedBpm,
-        } of playObj) {
-          // only one mediaElementSource can be connected, so try/catch here
-          let source: MediaElementAudioSourceNode,
-            gainNode: GainNode | undefined
-          try {
-            element.currentTime =
-              startTime ?? mixpointTime ?? context.currentTime + 0.1
-            if (adjustedBpm) element.playbackRate = adjustedBpm / bpm
-
-            source = context.createMediaElementSource(element)
-
-            gainNode = context.createGain()
-            gainNode.connect(context.destination)
-            gains.push({ stem, id, gainNode })
-
-            source.connect(gainNode)
-          } catch (e) {
-            // source already connected
-          }
-
-          element.play()
-        }
-
-        // store gainNode for control via crossfader while playing
-        for (const { stem, id, gainNode } of gains)
-          setAudioState[Number(id)].audioElements[stem as Stem].gainNode(
-            gainNode
-          )
-      }, 0)
+      await start()
+      const time = now()
+      for (const { player } of playObj) player.start(time, startTime)
     },
 
     _playWaveform: (startTime: number = waveform.getCurrentTime()) => {
@@ -188,12 +150,13 @@ const audioEvents = (trackId?: Track['id']) => {
       audioEvents(trackId)._playWaveform(startTime)
     },
 
+    playAll: () => {},
     pause: () => {
       const { volumeMeterInterval } = audioState
 
       if (audioElements) {
-        for (const { element } of Object.values(audioElements)) {
-          if (element) element.pause()
+        for (const { player } of Object.values(audioElements)) {
+          if (player) player.stop()
         }
       }
 

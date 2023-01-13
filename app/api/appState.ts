@@ -7,6 +7,7 @@ import { Stem, Track } from '~/api/db/dbHandlers'
 type AudioElements = Partial<{
   [key in Stem]: Partial<{
     element: HTMLAudioElement
+    player: any
     volume: number
     gainNode: GainNode
     mute: boolean
