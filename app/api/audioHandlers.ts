@@ -3,8 +3,9 @@ import {
   db,
   getTrackName,
   getTrackPrefs,
-  putStore,
   putTracks,
+  setPrefs,
+  setTrackPrefs,
   Stem,
   storeTrack,
   Track,
@@ -13,7 +14,7 @@ import {
 } from '~/api/db/dbHandlers'
 import { getPermission, getStemsDirHandle } from '~/api/fileHandlers'
 
-import { setAudioState, setModalState, setTableState } from '~/api/appState'
+import { setModalState, setTableState } from '~/api/appState'
 import { errorHandler } from '~/utils/notifications'
 
 // This is the main track processing workflow when files are added to the app
@@ -33,7 +34,7 @@ async function getTracksRecursively(
   const trackArray: Partial<Track>[] = []
 
   // Change sort order to lastModified so new tracks are visible at the top
-  await putStore('user', { sortColumn: 'lastModified', sortDirection: 'desc' })
+  await setPrefs('user', { sortColumn: 'lastModified', sortDirection: 'desc' })
 
   const filesToTracks = async (
     fileOrDirectoryHandle: FileSystemFileHandle | FileSystemDirectoryHandle,
@@ -111,7 +112,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
   for (const track of tracks) {
     if (!sorted) {
       // Change sort order to lastModified so new tracks are visible at the top
-      await putStore('user', {
+      await setPrefs('user', {
         sortColumn: 'lastModified',
         sortDirection: 'desc',
       })
@@ -200,11 +201,7 @@ const getAudioDetails = async (
 const calcMarkers = async (
   trackId: Track['id'],
   waveform: WaveSurfer
-): Promise<{
-  adjustedBpm: TrackPrefs['adjustedBpm']
-  beatResolution: TrackPrefs['beatResolution']
-  mixpointTime: TrackPrefs['mixpointTime']
-} | void> => {
+): Promise<void> => {
   if (!trackId) return
 
   const track = (await db.tracks.get(trackId)) || {}
@@ -220,13 +217,9 @@ const calcMarkers = async (
 
   if (!duration) throw errorHandler(`Please try adding ${track.name} again.`)
 
-  let {
-    adjustedBpm,
-    beatResolution = 0.25,
-    mixpointTime,
-  } = await getTrackPrefs(trackId)
+  let { beatResolution = 1, mixpointTime } = await getTrackPrefs(trackId)
 
-  const beatInterval = 60 / (adjustedBpm || bpm || 1)
+  const beatInterval = 60 / (bpm || 1)
   const skipLength = beatInterval * (1 / beatResolution)
 
   // SkipLength is used while calculating nearest Marker during seek events
@@ -250,85 +243,11 @@ const calcMarkers = async (
     // })
     waveform.markers.add({ time })
   }
-  return {
-    adjustedBpm,
-    beatResolution,
-    mixpointTime,
+
+  if (!mixpointTime) {
+    mixpointTime = startPoint
+    await setTrackPrefs(trackId, { mixpointTime })
   }
-}
-
-const getStemBuffers = async (
-  trackId: Track['id']
-): Promise<
-  | {
-      stemBuffers: Partial<{ [key in Stem]: AudioBuffer }> | null
-    }
-  | undefined
-> => {
-  if (!trackId) return
-
-  // Get files from cache or from file system
-  let { stems } = (await db.trackCache.get(trackId)) || {}
-
-  if (!stems) {
-    const stemsDirHandle = await getStemsDirHandle()
-    if (!stemsDirHandle)
-      throw errorHandler(
-        'There was a problem accessing the stems folder - please try setting it again.'
-      )
-
-    const trackName = await getTrackName(trackId)
-
-    const directoryName = `${trackName} - stems`
-
-    // Get a FileHandle for the MP3 file
-    let trackDirHandle
-    try {
-      trackDirHandle = await stemsDirHandle.getDirectoryHandle(directoryName)
-    } catch (e) {
-      // directory doesn't exist
-      return
-    }
-
-    const stemFiles: TrackCache['stems'] = {}
-    for (const stem of ['bass', 'drums', 'vocals', 'other']) {
-      // get a FileHandle for the MP3 file
-      let fileHandle
-      try {
-        fileHandle = await trackDirHandle.getFileHandle(`${stem}.mp3`)
-      } catch (e) {
-        // file doesn't exist
-        console.log('file not found:', `${stem}.mp3`)
-        return
-      }
-
-      // Get a File object for the MP3 file
-      const file = await fileHandle.getFile()
-
-      stemFiles[stem as Stem] = file
-
-      // store stem in cache
-      storeTrack({ id: trackId, stems: { [stem]: file } })
-    }
-
-    stems = stemFiles
-  }
-
-  const stemContext = new AudioContext()
-  const stemBuffers: Partial<{ [key in Stem]: AudioBuffer }> = {}
-
-  for (const [stem, file] of Object.entries(stems)) {
-    // Read the file as an ArrayBuffer
-    const arrayBuffer = await file.arrayBuffer()
-
-    // Decode the audio data
-    const audioBuffer = await stemContext.decodeAudioData(arrayBuffer)
-
-    stemBuffers[stem as Stem] = audioBuffer
-  }
-
-  stemContext.close()
-  return { stemBuffers }
 }
 
 // const createMix = async (TrackPrefsArray: TrackPrefs[]) => {
@@ -381,7 +300,6 @@ export {
   processTracks,
   getAudioDetails,
   //createMix,
-  getStemBuffers,
   analyzeTracks,
   calcMarkers,
 }

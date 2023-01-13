@@ -2,7 +2,7 @@ import {
   addToMix,
   db,
   getPrefs,
-  putStore,
+  setPrefs,
   Stem,
   storeTrack,
   Track,
@@ -109,7 +109,7 @@ const getStemsDirHandle = async (): Promise<
     (await newStemsDirHandle.queryPermission({ mode: 'readwrite' })) ===
     'granted'
   ) {
-    await putStore('user', { stemsDirHandle: newStemsDirHandle })
+    await setPrefs('user', { stemsDirHandle: newStemsDirHandle })
     return newStemsDirHandle
   }
 }

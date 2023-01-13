@@ -8,7 +8,7 @@ import {
   Typography,
 } from '@mui/joy'
 
-import { Animation, JoinInner, RadioButtonUnchecked } from '@mui/icons-material'
+import { Animation, RadioButtonUnchecked } from '@mui/icons-material'
 
 import { tableState } from '~/api/appState'
 import Dropzone from '~/components/tracks/Dropzone'
@@ -66,7 +66,7 @@ const LeftNav = () => {
                   <RadioButtonUnchecked
                     sx={{
                       fontSize: '20px',
-                      color: '#3399FF',
+                      color: '#2ca3d6',
                     }}
                   />
                 </ListItemDecorator>
@@ -76,11 +76,9 @@ const LeftNav = () => {
             <ListItem>
               <ListItemButton>
                 <ListItemDecorator sx={{ color: 'inherit' }}>
-                  <JoinInner
-                    sx={{
-                      fontSize: '20px',
-                      color: '#3399FF',
-                    }}
+                  <img
+                    src='/media/innerjoin32.png'
+                    style={{ height: '22px', marginRight: '8px' }}
                   />
                 </ListItemDecorator>
                 <ListItemContent>
@@ -95,7 +93,7 @@ const LeftNav = () => {
                     sx={{
                       fontSize: '22px',
                       transform: 'rotate(45deg)',
-                      color: '#3399FF',
+                      color: '#2ca3d6',
                     }}
                   />
                 </ListItemDecorator>

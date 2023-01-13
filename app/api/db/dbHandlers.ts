@@ -119,7 +119,7 @@ const getPrefs = async <T extends keyof StoreTypes>(
   return key ? ({ [key]: state[key] } as Partial<StoreTypes[T]>) : state
 }
 
-const putStore = async (
+const setPrefs = async (
   table: keyof StoreTypes,
   state: Partial<StoreTypes[typeof table]>
 ): Promise<void> => {
@@ -148,7 +148,7 @@ const getTrackName = async (trackId: Track['id']) => {
 }
 
 // Update the state for an individual track in the mix, such as when offset is adjusted
-const putTrackPrefs = async (
+const setTrackPrefs = async (
   trackId: Track['id'],
   state: Partial<TrackPrefs>
 ): Promise<void> => {
@@ -160,7 +160,7 @@ const putTrackPrefs = async (
   const newState = { ...(trackPrefs[trackIndex] || {}), ...state }
   trackPrefs[trackIndex] = newState
 
-  await putStore('mix', { tracks, trackPrefs })
+  await setPrefs('mix', { tracks, trackPrefs })
 }
 
 const addToMix = async (track: Track) => {
@@ -177,7 +177,7 @@ const addToMix = async (track: Track) => {
   tracks[index] = track.id
   trackPrefs[index] = { id: track.id }
 
-  await putStore('mix', { tracks, trackPrefs })
+  await setPrefs('mix', { tracks, trackPrefs })
 }
 
 const removeFromMix = async (id: Track['id']) => {
@@ -192,7 +192,7 @@ const removeFromMix = async (id: Track['id']) => {
     trackPrefs.splice(index, 1)
   }
 
-  await putStore('mix', { tracks, trackPrefs })
+  await setPrefs('mix', { tracks, trackPrefs })
 }
 
 export type {
@@ -219,9 +219,9 @@ export {
   addToMix,
   removeFromMix,
   getPrefs,
-  putStore,
+  setPrefs,
   getTrackPrefs,
   getTrackName,
-  putTrackPrefs,
+  setTrackPrefs,
   storeTrack,
 }

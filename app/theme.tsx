@@ -21,21 +21,6 @@ const muiTheme = extendMuiTheme({
           height: '100%',
         },
 
-        '.logoText': {
-          fontFamily: 'system-ui, sans-serif',
-          fontWeight: 400,
-          fontSize: '22px',
-          margin: 0,
-          background:
-            'linear-gradient(60deg, hsl(0, 75%, 50%) 5%,hsl(260, 75%, 50%) 35%, hsl(200, 75%, 50%) 65%,hsl(220, 75%, 50%) 95%)',
-          color: '#fff',
-          WebkitBackgroundClip: 'text',
-          backgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          WebkitTextStrokeWidth: 'thin',
-          WebkitTextStrokeColor: 'rgb(255 255 255 / 35%)',
-        },
-
         'tr:hover .visibleOnHover': {
           visibility: 'visible',
         },
@@ -48,6 +33,7 @@ const muiTheme = extendMuiTheme({
           visibility: 'visible',
         },
 
+        // wavesurfer ui tweaks
         '.wavesurfer-playhead': {
           width: 0,
           height: 0,

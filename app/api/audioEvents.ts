@@ -1,7 +1,5 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform around
 
-import { PlayArrow } from '@mui/icons-material'
-import preventClick from 'wavesurfer.js/src/util/prevent-click'
 import {
   AudioElements,
   AudioState,
@@ -14,7 +12,7 @@ import {
   db,
   getPrefs,
   getTrackPrefs,
-  putTrackPrefs,
+  setTrackPrefs,
   Stem,
   Track,
   TrackPrefs,
@@ -45,41 +43,68 @@ const audioEvents = (trackId?: Track['id']) => {
   }
 
   return {
+    // Init occurs before waveform is generated, so any adjustments to view should be done here to avoid abrupt changes after render
     init: async () => {
-      const { adjustedBpm, beatResolution } =
-        (await calcMarkers(trackId, waveform)) || {}
+      await calcMarkers(trackId, waveform)
+
+      const { beatResolution = 1 } = await getTrackPrefs(trackId)
 
       // Adjust zoom based on previous mixPrefs
       waveform.zoom(beatResolution == 1 ? 80 : beatResolution == 0.5 ? 40 : 20)
-
-      // Adjust bpm if set in mixPrefs
-      if (adjustedBpm) {
-        const { bpm } = (await db.tracks.get(trackId!)) || {}
-        waveform.setPlaybackRate(adjustedBpm / (bpm || adjustedBpm))
-      }
     },
 
     onReady: async () => {
       setTableState.analyzing(prev => prev.filter(id => id !== trackId))
 
-      const { mixpointTime } = await getTrackPrefs(trackId)
+      const { adjustedBpm, mixpointTime } = await getTrackPrefs(trackId)
 
       // Set playhead to mixpoint if it exists
       const currentPlayhead =
         mixpointTime || waveform.markers.markers?.[0].time || 0
 
       if (currentPlayhead) {
-        waveform.playhead.setPlayheadTime(currentPlayhead)
         waveform.seekAndCenter(1 / (waveform.getDuration() / currentPlayhead))
+        waveform.playhead.setPlayheadTime(currentPlayhead)
+      }
+
+      // Adjust playbackrate if bpm has been modified
+      if (adjustedBpm) {
+        const { bpm } = (await db.tracks.get(trackId!)) || {}
+        waveform.setPlaybackRate(adjustedBpm / (bpm || adjustedBpm))
       }
     },
 
-    _playStems: (startTime: number) => {
+    _playStems: async (startTime: number, all?: boolean) => {
+      // Tone.setContext(new Tone.Context({ latencyHint: 'playback' }))
+      // Tone.Transport.start('+0.1')
+
+      const [audioState] = getAudioState()
+      const playObj: {
+        stem: string
+        id: string
+        element: HTMLMediaElement
+        mixpointTime?: number
+        bpm: number
+        adjustedBpm?: number
+      }[] = []
+      const { trackPrefs } = await getPrefs('mix')
+
       // pull audio elements from audioState and synchronize playback
-      if (!audioElements) return
-      const elementArray = Object.values(audioElements || {}).map(
-        ({ element }) => element!
-      )
+      // setup an obj first to reduce latency
+      for (const [id, { audioElements }] of Object.entries(audioState)) {
+        if (!all && String(trackId) !== id) continue
+        if (!audioElements) continue
+
+        const { bpm } = (await db.tracks.get(Number(id))) || {}
+        if (!bpm) continue
+
+        for (const [stem, { element }] of Object.entries(audioElements)) {
+          if (!element) continue
+          const { mixpointTime, adjustedBpm } =
+            trackPrefs?.find(({ id: trackId }) => trackId === Number(id)) || {}
+          playObj.push({ stem, id, element, mixpointTime, bpm, adjustedBpm })
+        }
+      }
 
       // Build the audioContext every time because once started (played),
       // it must be closed and recreated before it can be started again
@@ -87,34 +112,48 @@ const audioEvents = (trackId?: Track['id']) => {
 
       // use setTimeout to ensure synchronized start time of all stems
       window.setTimeout(() => {
-        for (const [stem, { element }] of Object.entries(audioElements)) {
-          if (!element) continue
+        // store gainNodes to avoid updating state while synchronizing play of stems
+        let gains: { stem: string; id: string; gainNode: GainNode }[] = []
 
-          element.currentTime = startTime ?? context.currentTime
+        for (const {
+          stem,
+          id,
+          element,
+          mixpointTime,
+          bpm,
+          adjustedBpm,
+        } of playObj) {
           // only one mediaElementSource can be connected, so try/catch here
           let source: MediaElementAudioSourceNode,
             gainNode: GainNode | undefined
           try {
+            element.currentTime =
+              startTime ?? mixpointTime ?? context.currentTime + 0.1
+            if (adjustedBpm) element.playbackRate = adjustedBpm / bpm
+
             source = context.createMediaElementSource(element)
+
             gainNode = context.createGain()
             gainNode.connect(context.destination)
+            gains.push({ stem, id, gainNode })
+
             source.connect(gainNode)
           } catch (e) {
             // source already connected
           }
 
           element.play()
-
-          // store gainNode for future control via crossfader
-          if (gainNode)
-            setAudioState[trackId!].audioElements[stem as Stem].gainNode(
-              gainNode
-            )
         }
+
+        // store gainNode for control via crossfader while playing
+        for (const { stem, id, gainNode } of gains)
+          setAudioState[Number(id)].audioElements[stem as Stem].gainNode(
+            gainNode
+          )
       }, 0)
     },
 
-    _playWaveform: (startTime: number) => {
+    _playWaveform: (startTime: number = waveform.getCurrentTime()) => {
       const { volumeMeterInterval = -1 } = audioState || {}
 
       waveform.play(startTime)
@@ -144,9 +183,9 @@ const audioEvents = (trackId?: Track['id']) => {
       }))
     },
 
-    play: (offset: number = waveform.getCurrentTime()) => {
-      audioEvents(trackId)._playStems(offset)
-      audioEvents(trackId)._playWaveform(offset)
+    play: (startTime: number = waveform.getCurrentTime(), all?: boolean) => {
+      audioEvents(trackId)._playStems(startTime, all)
+      audioEvents(trackId)._playWaveform(startTime)
     },
 
     pause: () => {
@@ -276,7 +315,7 @@ const audioEvents = (trackId?: Track['id']) => {
       }
 
       // Update mixPrefs
-      await putTrackPrefs(trackId, { beatResolution })
+      await setTrackPrefs(trackId, { beatResolution })
 
       calcMarkers(trackId, waveform)
     },
@@ -291,18 +330,17 @@ const audioEvents = (trackId?: Track['id']) => {
       // Update waveform playback rate
       waveform.setPlaybackRate(playbackRate)
 
-      // update stem playback rate
+      // update stem playback rate in realtime
       if (audioElements) {
-        const elementArray = Object.values(audioElements || {}).map(
-          ({ element }) => element!
-        )
-        for (const element of elementArray) {
+        for (const { element } of Object.values(audioElements)) {
+          if (!element) continue
+
           element.playbackRate = playbackRate
         }
       }
 
       // Update mixPrefs
-      putTrackPrefs(trackId, { adjustedBpm })
+      await setTrackPrefs(trackId, { adjustedBpm })
     },
 
     offset: async (adjustedOffset: Track['adjustedOffset']): Promise<void> => {
@@ -321,7 +359,7 @@ const audioEvents = (trackId?: Track['id']) => {
       const newMixpoint = convertToSecs(mixpoint)
       if (newMixpoint == mixpointTime) return
 
-      putTrackPrefs(trackId, { mixpointTime: newMixpoint })
+      setTrackPrefs(trackId, { mixpointTime: newMixpoint })
       waveform.seekAndCenter(1 / (waveform.getDuration() / newMixpoint))
     },
 

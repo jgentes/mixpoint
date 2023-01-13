@@ -15,7 +15,6 @@ import {
 } from '@mui/icons-material'
 import {
   Box,
-  Card,
   Chip,
   Link,
   Radio,
@@ -40,6 +39,7 @@ import {
   useLiveQuery,
 } from '~/api/db/dbHandlers'
 
+import { isUndefined } from 'util'
 import { audioState, setAudioState, tableState } from '~/api/appState'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
@@ -65,7 +65,6 @@ const NumberControl = ({
   text,
   width = 144,
   emitEvent,
-  propName,
   styles,
 }: {
   trackId: Track['id']
@@ -76,7 +75,6 @@ const NumberControl = ({
   text: string
   width?: number
   emitEvent: 'bpm' | 'offset'
-  propName: string
   styles?: object
 }) => {
   const [inputVal, setInputVal] = useState<string | number>(0)
@@ -191,7 +189,6 @@ const BpmControl = ({ trackId }: { trackId: Track['id'] }) => {
       title='Reset BPM'
       text='BPM:'
       emitEvent='bpm'
-      propName='adjustedBpm'
       width={115}
     />
   )
@@ -212,13 +209,12 @@ const OffsetControl = ({ trackId }: { trackId: Track['id'] }) => {
       title='Reset Beat Offset'
       text='Beat Offset:'
       emitEvent='offset'
-      propName='adjustedOffset'
     />
   )
 }
 
 const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
-  const { beatResolution = 0.25 } =
+  const { beatResolution = 1 } =
     useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
 
   const changeBeatResolution = (beatResolution: TrackPrefs['beatResolution']) =>
@@ -404,13 +400,12 @@ const TrackNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
 const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
   if (!tracks?.length) return null
 
-  const [state, setState] = useState('Seek Mixpoint')
-
   const navEvent = (nav: string) => {
     switch (nav) {
       case 'Play':
+        audioEvents()._playStems(undefined, true)
         for (const trackId of tracks) {
-          audioEvents(trackId).play()
+          audioEvents(trackId)._playWaveform()
         }
         break
       case 'Pause':
@@ -433,13 +428,10 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
       row
       name='mixControl'
       variant='outlined'
-      value={state}
       sx={{ height: radioSize, mb: 1 }}
-      onChange={e => {
-        const val = e.target.value
-
-        setState(val)
-        navEvent(val)
+      onClick={e => {
+        const el = e.target as HTMLInputElement
+        navEvent(el.value)
       }}
     >
       {[
@@ -484,7 +476,7 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
             disableIcon
             overlay
             label={item.icon}
-            variant={state == item.val ? 'soft' : 'plain'}
+            variant='plain'
             color='primary'
             componentsProps={{
               root: {

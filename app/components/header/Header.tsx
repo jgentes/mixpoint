@@ -7,10 +7,9 @@ import { GitHub, Settings } from '@mui/icons-material'
 
 const Header = () => (
   <Box
-    component="header"
+    component='header'
     sx={{
       p: 2,
-      gap: 2,
       bgcolor: 'background.surface',
       display: 'flex',
       flexDirection: 'row',
@@ -27,11 +26,11 @@ const Header = () => (
     <Logo />
     <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.5 }}>
       <IconButton
-        size="sm"
-        variant="outlined"
-        color="primary"
-        aria-label="Github"
-        title="Discuss on Github"
+        size='sm'
+        variant='outlined'
+        color='primary'
+        aria-label='Github'
+        title='Discuss on Github'
         onClick={() =>
           window.open('https://github.com/jgentes/mixpoint/discussions')
         }

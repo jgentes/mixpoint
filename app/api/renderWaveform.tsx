@@ -1,7 +1,7 @@
 import { Card } from '@mui/joy'
 import { SxProps } from '@mui/joy/styles/types'
 import { useEffect } from 'react'
-import { setAudioState, setTableState } from '~/api/appState'
+import { getAudioState, setAudioState, setTableState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
 import { db, Track } from '~/api/db/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
@@ -108,7 +108,7 @@ const Waveform = ({
 
       if (file) waveform.loadBlob(file)
 
-      // initialize audio events
+      // initialize audio prefs from appstate
       audioEvents(trackId).init()
 
       // Initialize wavesurfer event listeners
@@ -118,7 +118,13 @@ const Waveform = ({
 
     initWaveform()
 
-    return () => waveform.destroy()
+    return () => {
+      const [{ volumeMeterInterval }] = getAudioState[trackId]()
+      if (volumeMeterInterval) clearInterval(volumeMeterInterval)
+      waveform.destroy()
+      // remove audioState
+      setAudioState[trackId]()
+    }
   }, [trackId])
 
   return (

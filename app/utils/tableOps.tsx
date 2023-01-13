@@ -1,7 +1,7 @@
 import moment from 'moment'
 import { ChangeEvent, MouseEvent } from 'react'
 import { getTableState, setTableState, tableState } from '~/api/appState'
-import { db, getPrefs, putStore, Track } from '~/api/db/dbHandlers'
+import { db, getPrefs, setPrefs, Track } from '~/api/db/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
 
 const sort = async (event: MouseEvent<unknown>, property: keyof Track) => {
@@ -14,7 +14,7 @@ const sort = async (event: MouseEvent<unknown>, property: keyof Track) => {
 
   const isAsc = sortColumn === property && sortDirection === 'asc'
 
-  putStore('user', {
+  setPrefs('user', {
     sortDirection: isAsc ? 'desc' : 'asc',
     sortColumn: property,
   })
