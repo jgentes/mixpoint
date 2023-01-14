@@ -405,14 +405,10 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
         audioEvents.play()
         break
       case 'Pause':
-        for (const trackId of tracks) {
-          audioEvents.pause(trackId)
-        }
+        audioEvents.pause()
         break
       case 'Go to Mixpoint':
-        for (const trackId of tracks) {
-          audioEvents.seekMixpoint(trackId)
-        }
+        audioEvents.seekMixpoint()
         break
     }
   }
@@ -641,32 +637,28 @@ const StemsCrossfaders = () => (
   </Box>
 )
 
-const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => {
-  const [fader, setFader] = useState(50)
-
-  return (
-    <Slider
-      aria-label='crossfader'
-      defaultValue={50}
-      min={0}
-      max={100}
-      track={false}
-      marks={[0, 50, 100].map(v => ({ value: v }))}
-      valueLabelDisplay='off'
-      variant='soft'
-      size='md'
-      onChange={(_, val) => audioEvents.crossfade(val as number, stemType)}
-      sx={{
-        padding: '15px 0',
-        '& .JoySlider-thumb': {
-          width: '10px',
-          height: '20px',
-          borderRadius: '3px',
-        },
-      }}
-    />
-  )
-}
+const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => (
+  <Slider
+    aria-label='crossfader'
+    defaultValue={50}
+    min={0}
+    max={100}
+    track={false}
+    marks={[0, 50, 100].map(v => ({ value: v }))}
+    valueLabelDisplay='off'
+    variant='soft'
+    size='md'
+    onChange={(_, val) => audioEvents.crossfade(val as number, stemType)}
+    sx={{
+      padding: '15px 0',
+      '& .JoySlider-thumb': {
+        width: '10px',
+        height: '20px',
+        borderRadius: '3px',
+      },
+    }}
+  />
+)
 
 export {
   BpmControl,

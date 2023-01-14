@@ -113,7 +113,7 @@ const Waveform = ({
 
       // // Initialize wavesurfer event listeners
       waveform.on('ready', async () => await audioEvents.onReady(trackId))
-      waveform.on('seek', async time => await audioEvents.onSeek(trackId, time))
+      waveform.on('seek', time => audioEvents.onSeek(trackId, time))
     }
 
     initWaveform()

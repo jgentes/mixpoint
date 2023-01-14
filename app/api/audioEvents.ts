@@ -1,6 +1,5 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform around
-import { now, Player, start, ToneAudioNode, Transport } from 'tone'
-import { Tone } from 'tone/build/esm/core/Tone'
+import { now, Player, start, Transport } from 'tone'
 import {
   AudioState,
   getAudioState,
@@ -35,7 +34,8 @@ const _caclculateVolume = (analyzer: AnalyserNode, dataArray: Uint8Array) => {
 }
 
 const percentageToDb = (percentage: number) => {
-  return -3 + (percentage / 100) * 3
+  // thanks chatGPT!
+  return -40 + (percentage / 100) * 40
 }
 
 const _getPlayers = (trackId?: number): Player[] => {
@@ -117,6 +117,7 @@ const audioEvents = {
     // use the same Tonejs audio context timer for all stems
     await start()
     const contextTime = now()
+    const latency = 0.05 // account for latency from tonejs
 
     for (const [id, { waveform }] of Object.entries(audioState)) {
       if (!waveform) continue
@@ -129,25 +130,19 @@ const audioEvents = {
         ;({ bpm } = (await db.tracks.get(Number(id))) || {})
       }
 
-      const startTime = waveform.getCurrentTime()
       const players = _getPlayers(Number(id))
 
       for (const player of players) {
         if (adjustedBpm && bpm) player.playbackRate = adjustedBpm / bpm
-        player.start(contextTime, startTime)
+        player.start(contextTime, waveform.getCurrentTime() + latency)
       }
-
       audioEvents._playWaveform(waveform)
+      setAudioState[Number(id)](prev => ({ ...prev, playing: true }))
     }
   },
 
   _playWaveform: (waveform: WaveSurfer) => {
-    // account for latency from tonejs
-    const latency = 0.04
-    const currentTime = waveform.getCurrentTime()
-    const time = currentTime > latency ? currentTime - latency : currentTime
-
-    waveform.play(time)
+    waveform.play(waveform.getCurrentTime())
 
     // Setup for volume meter
 
@@ -177,11 +172,6 @@ const audioEvents = {
   pause: async (trackId?: Track['id']) => {
     const players = trackId ? _getPlayers(trackId) : _getAllPlayers()
 
-    const time = now()
-    for (const player of players) {
-      player.stop(time)
-    }
-
     let waveforms, trackIds
     if (trackId) {
       const [waveform] = getAudioState[trackId!].waveform()
@@ -194,7 +184,12 @@ const audioEvents = {
     }
 
     for (const wave of waveforms) {
-      if (wave) wave.pause()
+      if (wave) {
+        for (const player of players) {
+          player.stop(Transport.context.currentTime + 0.1)
+        }
+        wave.pause()
+      }
     }
 
     for (const id of trackIds) {
@@ -208,6 +203,8 @@ const audioEvents = {
         volumeMeter: 0,
         playing: false,
       }))
+
+      audioEvents.seek(Number(id)) // move to closest beat marker (necessary for sync)
     }
   },
 
@@ -235,13 +232,14 @@ const audioEvents = {
     direction?: 'previous' | 'next'
   ) => {
     const [{ playing, waveform }] = getAudioState[trackId!]()
+
     if (!waveform) return
 
     const { markers = [] } = waveform.markers || {}
 
     startTime = startTime || waveform.getCurrentTime()
 
-    // Find the closest (left-most) marker to the current time
+    // Find the closest marker to the current time
     const currentMarkerIndex = Math.floor(startTime / waveform.skipLength)
 
     const index =
@@ -259,26 +257,35 @@ const audioEvents = {
 
     // if the audio is playing, restart playing when seeking to new time
     if (playing) {
-      audioEvents.pause(trackId)
       audioEvents.play(trackId)
+      // careful here - a loop exists if pause causes a seek event
       //audioEvents.play(trackId, waveform.playhead.playheadTime)
     }
   },
 
-  seekMixpoint: async (trackId: Track['id']) => {
-    const { mixpointTime = 0 } = (await getTrackPrefs(trackId)) || {}
-    const [{ playing, waveform }] = getAudioState[trackId!]()
-    if (!waveform) return
+  seekMixpoint: async (trackId?: Track['id']) => {
+    let tracks
+    if (trackId) tracks = [trackId]
+    else {
+      const [audioState] = getAudioState()
+      tracks = Object.keys(audioState)
+    }
 
-    const time =
-      mixpointTime > 0 ? 1 / (waveform.getDuration() / mixpointTime) : 0
+    for (const trackId of tracks) {
+      const { mixpointTime = 0 } = (await getTrackPrefs(Number(trackId))) || {}
+      const [{ playing, waveform }] = getAudioState[Number(trackId)]()
+      if (!waveform) return
 
-    waveform.seekAndCenter(time)
+      const time =
+        mixpointTime > 0 ? 1 / (waveform.getDuration() / mixpointTime) : 0
 
-    // if (playing) audioEvents.play(trackId, mixpointTime)
-    if (playing) {
-      audioEvents.pause(trackId)
-      audioEvents.play(trackId)
+      waveform.seekAndCenter(time)
+
+      // if (playing) audioEvents.play(trackId, mixpointTime)
+      if (playing) {
+        // careful here - a loop exists if pause causes a seek event
+        audioEvents.play(Number(trackId))
+      }
     }
   },
 
@@ -444,18 +451,22 @@ const audioEvents = {
     if (volumeMeterInterval) clearInterval(volumeMeterInterval)
 
     const [{ stems, waveform }] = getAudioState[trackId!]()
-    if (!stems || !waveform) return
 
-    for (let { player } of Object.values(stems)) {
-      if (!player) continue
+    if (stems) {
+      for (let { player } of Object.values(stems)) {
+        if (!player) continue
 
-      player = player.dispose()
+        player = player.dispose()
+      }
     }
 
-    waveform.destroy()
+    if (waveform) waveform.destroy()
 
     // remove audioState
-    setAudioState[trackId!]()
+    setAudioState(prev => {
+      delete prev[trackId!]
+      return { ...prev }
+    })
   },
 }
 
