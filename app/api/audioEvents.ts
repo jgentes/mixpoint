@@ -1,5 +1,5 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform around
-import { gainToDb, Meter, now, Player, start, Transport } from 'tone'
+import { Meter, now, start, Transport } from 'tone'
 import {
   AudioState,
   getAudioState,
@@ -52,34 +52,29 @@ const _getAllWaveforms = (): WaveSurfer[] => {
 }
 
 const audioEvents = {
-  // Init occurs before waveform is generated, so any adjustments to view should be done here to avoid abrupt changes after render
-  init: async (trackId: Track['id']) => {
+  init: async (trackId: Track['id'], usingPcm: boolean) => {
     const [waveform] = getAudioState[trackId!].waveform()
     if (!waveform) return
 
+    // Generate beat markers and apply them to waveform
     await calcMarkers(trackId, waveform)
 
-    const { beatResolution = 1 } = await getTrackPrefs(trackId)
+    const {
+      adjustedBpm,
+      mixpointTime,
+      beatResolution = 1,
+    } = await getTrackPrefs(trackId)
 
     // Adjust zoom based on previous mixPrefs
     waveform.zoom(beatResolution == 1 ? 80 : beatResolution == 0.5 ? 40 : 20)
-  },
-
-  onReady: async (trackId: Track['id']) => {
-    const [waveform] = getAudioState[trackId!].waveform()
-    if (!waveform) return
-
-    setTableState.analyzing(prev => prev.filter(id => id !== trackId))
-
-    const { adjustedBpm, mixpointTime } = await getTrackPrefs(trackId)
 
     // Set playhead to mixpoint if it exists
     const currentPlayhead =
       mixpointTime || waveform.markers.markers?.[0].time || 0
 
     if (currentPlayhead) {
-      waveform.seekAndCenter(1 / (waveform.getDuration() / currentPlayhead))
       waveform.playhead.setPlayheadTime(currentPlayhead)
+      waveform.drawer.recenter(1 / (waveform.getDuration() / currentPlayhead))
     }
 
     // Adjust playbackrate if bpm has been modified
@@ -87,13 +82,30 @@ const audioEvents = {
       const { bpm } = (await db.tracks.get(trackId!)) || {}
       waveform.setPlaybackRate(adjustedBpm / (bpm || adjustedBpm))
     }
+
+    // Remove analyzing overlay
+    setTableState.analyzing(prev => prev.filter(id => id !== trackId))
+
+    // Create a PCM of waveform if we don't have one
+    // This allows huge browser memory savings
+    if (!usingPcm) {
+      const pcm = await waveform.exportPCM(
+        waveform.drawer.width,
+        10000,
+        true,
+        0
+      )
+
+      if (pcm) {
+        db.tracks.update(trackId!, { pcm })
+      }
+    }
   },
 
   play: async (trackId?: Track['id']) => {
     // use the same Tonejs audio context timer for all stems
     await start()
-    const contextTime = now()
-    const latency = 0.05 // account for latency from tonejs
+    const contextStartTime = now()
 
     const [audioState] = getAudioState()
 
@@ -128,12 +140,11 @@ const audioEvents = {
           player.connect(meter)
           meters[stem as Stem] = meter
 
-          player.start(contextTime, waveform.getCurrentTime() + latency)
+          player.start(contextStartTime, waveform.getCurrentTime())
         }
       }
 
-      // play the waveform for visual playback
-      waveform.play(waveform.getCurrentTime())
+      const startTime = waveform.getCurrentTime()
 
       // create interval for volume meters
       const newInterval = setInterval(() => {
@@ -148,11 +159,16 @@ const audioEvents = {
           setAudioState[Number(id)].stems[stem as Stem].volumeMeter(volumeMeter)
         }
 
+        const time = startTime + now() - contextStartTime
+
+        // move the playmarker ahead
+        waveform.drawer.progress(1 / (waveform.getDuration() / time))
+
         // this is the waveform volume meter
         setAudioState[Number(id)](prev => ({
           ...prev,
           volumeMeter: maxDb(volumes),
-          time: waveform.getCurrentTime(),
+          time,
         }))
       }, 20)
 
@@ -250,15 +266,12 @@ const audioEvents = {
       if (direction) waveform.skipForward(time - startTime)
       else {
         waveform.playhead.setPlayheadTime(time)
+        waveform.seekTo(1 / (waveform.getDuration() / time))
       }
     }
 
     // if the audio is playing, restart playing when seeking to new time
-    if (playing) {
-      audioEvents.play(trackId)
-      // careful here - a loop exists if pause causes a seek event
-      //audioEvents.play(trackId, waveform.playhead.playheadTime)
-    }
+    if (playing) audioEvents.play(trackId)
   },
 
   seekMixpoint: async (trackId?: Track['id']) => {
@@ -279,10 +292,7 @@ const audioEvents = {
 
       waveform.seekAndCenter(time)
 
-      // if (playing) audioEvents.play(trackId, mixpointTime)
-      if (playing) {
-        audioEvents.play(Number(trackId))
-      }
+      if (playing) audioEvents.play(Number(trackId))
     }
   },
 

@@ -47,8 +47,12 @@ const Waveform = ({
         prev.includes(trackId) ? prev : [...prev, trackId]
       )
 
+      // check for existing PCM data
+      const { pcm, duration } = (await db.tracks.get(trackId)) || {}
+
       waveform = WaveSurfer.create({
         container: `#zoomview-container_${trackId}`,
+        backend: 'MediaElementWebAudio',
         scrollParent: true,
         fillParent: false,
         pixelRatio: 1,
@@ -82,9 +86,6 @@ const Waveform = ({
               backgroundColor: 'rgba(0, 0, 0, 0.3)',
             },
           }),
-          // RegionsPlugin.create({
-          //   regions,
-          // }),
           MarkersPlugin.create({ markers: [] }),
           MinimapPlugin.create({
             container: `#overview-container_${trackId}`,
@@ -106,14 +107,18 @@ const Waveform = ({
 
       setAudioState[trackId].waveform(waveform)
 
-      if (file) waveform.loadBlob(file)
-
-      // initialize audio prefs from appstate
-      audioEvents.init(trackId)
-
-      // // Initialize wavesurfer event listeners
-      waveform.on('ready', async () => await audioEvents.onReady(trackId))
+      if (pcm) {
+        waveform.backend.setPeaks(pcm, duration)
+        waveform.drawBuffer()
+        waveform.fireEvent('ready')
+      } else {
+        if (file) waveform.loadBlob(file)
+      }
+      console.log(waveform)
+      // Initialize wavesurfer event listeners
       waveform.on('seek', time => audioEvents.onSeek(trackId, time))
+
+      await audioEvents.init(trackId, !!pcm)
     }
 
     initWaveform()
