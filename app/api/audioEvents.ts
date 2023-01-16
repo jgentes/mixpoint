@@ -1,5 +1,5 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform around
-import { dbToGain, gainToDb, Meter, now, Player, start, Transport } from 'tone'
+import { gainToDb, Meter, now, Player, start, Transport } from 'tone'
 import {
   AudioState,
   getAudioState,
@@ -20,9 +20,13 @@ import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
 // audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
 
+const MUTE_DB = -40
+
+const percentageToDb = (percentage: number) => percentage * -MUTE_DB + MUTE_DB
+
 const decibelToPercentage = (decibel: number) => {
-  decibel = Math.max(decibel, -40)
-  return ((decibel + 40) / 40) * 100
+  decibel = Math.max(decibel, MUTE_DB)
+  return ((decibel + -MUTE_DB) / -MUTE_DB) * 100
 }
 
 const maxDb = (dbArray: number[]) =>
@@ -32,27 +36,6 @@ const clearVolumeMeter = (trackId: Track['id']) => {
   const [volumeMeterInterval] =
     getAudioState[Number(trackId)].volumeMeterInterval()
   clearInterval(volumeMeterInterval)
-}
-
-const _getPlayers = (trackId?: number): Player[] => {
-  // pull players from audioState for synchronized playback
-  const [{ stems }] = getAudioState[trackId!]()
-  if (!stems) return []
-
-  return Object.values(stems).map(({ player }) => player as Player)
-}
-
-const _getAllPlayers = (): Player[] => {
-  const [audioState] = getAudioState()
-
-  let players: Player[] = []
-
-  for (const [trackId, { stems }] of Object.entries(audioState)) {
-    if (!stems) continue
-    players = players.concat(_getPlayers(Number(trackId)))
-  }
-
-  return players
 }
 
 const _getAllWaveforms = (): WaveSurfer[] => {
@@ -111,7 +94,6 @@ const audioEvents = {
     await start()
     const contextTime = now()
     const latency = 0.05 // account for latency from tonejs
-    const meters: Partial<{ [key in Stem]: Meter }> = {} // stem volume meters
 
     const [audioState] = getAudioState()
 
@@ -120,7 +102,10 @@ const audioEvents = {
       if (trackId && id !== String(trackId)) continue
 
       // clear any running volume meter timers
-      clearVolumeMeter(trackId)
+      clearVolumeMeter(Number(id))
+
+      // stem volume meters
+      const meters: Partial<{ [key in Stem]: Meter }> = {}
 
       // check for bpm adjustment
       let bpm
@@ -130,28 +115,30 @@ const audioEvents = {
       }
 
       // pull players from audioState for synchronized playback
-      const [{ stems }] = getAudioState[trackId!]()
-      if (!stems) return []
+      const [stems] = getAudioState[Number(id)!].stems()
 
-      for (const [stem, { player }] of Object.entries(stems)) {
-        if (!player) continue
+      if (stems) {
+        for (const [stem, { player }] of Object.entries(stems)) {
+          if (!player) continue
 
-        if (adjustedBpm && bpm) player.playbackRate = adjustedBpm / bpm
+          if (adjustedBpm && bpm) player.playbackRate = adjustedBpm / bpm
 
-        // connect Meter for volume monitoring
-        const meter = new Meter()
-        player.connect(meter)
-        meters[stem as Stem] = meter
+          // connect Meter for volume monitoring
+          const meter = new Meter()
+          player.connect(meter)
+          meters[stem as Stem] = meter
 
-        player.start(contextTime, waveform.getCurrentTime() + latency)
+          player.start(contextTime, waveform.getCurrentTime() + latency)
+        }
       }
 
       // play the waveform for visual playback
-      audioEvents._playWaveform(waveform)
+      waveform.play(waveform.getCurrentTime())
 
       // create interval for volume meters
       const newInterval = setInterval(() => {
         const volumes: number[] = []
+
         for (const [stem, meter] of Object.entries(meters)) {
           const vol = meter.getValue() as number
           volumes.push(vol)
@@ -167,7 +154,7 @@ const audioEvents = {
           volumeMeter: maxDb(volumes),
           time: waveform.getCurrentTime(),
         }))
-      }, 12.5)
+      }, 20)
 
       // store the interval so it can be cleared later
       setAudioState[Number(id)](prev => ({
@@ -178,31 +165,7 @@ const audioEvents = {
     }
   },
 
-  _playWaveform: (waveform: WaveSurfer) => {
-    waveform.play(waveform.getCurrentTime())
-
-    // Setup for volume meter
-
-    // // @ts-ignore
-    // const analyzer = waveform.backend.analyser
-    // const bufferLength = analyzer.frequencyBinCount
-    // const dataArray = new Uint8Array(bufferLength)
-
-    // // Slow down sampling to 12ms
-    // if (volumeMeterInterval > -1) clearInterval(volumeMeterInterval)
-    // const newInterval = setInterval(() => {
-    //   const volumeMeter = _caclculateVolume(analyzer, dataArray)
-    //   setAudioState[trackId!](prev => ({
-    //     ...prev,
-    //     volumeMeter,
-    //     time: waveform.getCurrentTime(),
-    //   }))
-    // }, 12.5)
-  },
-
   pause: async (trackId?: Track['id']) => {
-    const players = trackId ? _getPlayers(trackId) : _getAllPlayers()
-
     let waveforms, trackIds
     if (trackId) {
       const [waveform] = getAudioState[trackId!].waveform()
@@ -215,15 +178,21 @@ const audioEvents = {
     }
 
     for (const wave of waveforms) {
-      if (wave) {
-        for (const player of players) {
-          player.stop(Transport.context.currentTime + 0.1)
-        }
-        wave.pause()
-      }
+      if (wave) wave.pause()
     }
 
     for (const id of trackIds) {
+      const [stems] = getAudioState[Number(id)].stems()
+      if (stems) {
+        for (const [stem, { player }] of Object.entries(stems)) {
+          // set volume meter to zero for the stem
+          setAudioState[Number(id)].stems[stem as Stem].volumeMeter(0)
+
+          if (!player) continue
+          player.stop(Transport.context.currentTime + 0.1)
+        }
+      }
+
       clearVolumeMeter(Number(id))
 
       setAudioState[Number(id)]((prev: AudioState) => ({
@@ -335,18 +304,17 @@ const audioEvents = {
       for (const stem of Object.keys(stems)) {
         if (stemType && stem != stemType) continue
 
-        if (stems[stem as Stem]?.player) {
-          stems[stem as Stem]!.player!.volume.value = gainToDb(gain)
-        }
+        if (stems[stem as Stem]!.player)
+          stems[stem as Stem]!.player!.volume.value = percentageToDb(gain)
       }
     }
 
     const sliderPercent = sliderVal / 100
 
-    // Use an equal-power crossfading curve:
-    const gains = [
-      Math.cos(sliderPercent * 0.5 * Math.PI),
-      Math.cos((1 - sliderPercent) * 0.5 * Math.PI),
+    // Keep volumes at 100% when at 50% crossfade
+    let gains = [
+      Math.min(1, 1 + Math.cos(sliderPercent * Math.PI)),
+      Math.min(1, 1 + Math.cos((1 - sliderPercent) * Math.PI)),
     ]
 
     tracks.forEach((track, i) => {
@@ -445,7 +413,7 @@ const audioEvents = {
 
     // update player volume
     const player = stems[stemType as Stem]?.player
-    if (player) player.volume.value = gainToDb(volume)
+    if (player) player.volume.value = percentageToDb(volume)
 
     // set volume in state, which in turn will update components (volume sliders)
     setAudioState[trackId!].stems[stemType as Stem].volume(volume)
@@ -459,7 +427,8 @@ const audioEvents = {
     const { player, volume } = stem || {}
 
     // update element volume (not volume in state)
-    if (player) player.volume.value = mute ? -3 : gainToDb(volume || 100)
+    if (player)
+      player.volume.value = mute ? MUTE_DB : percentageToDb(volume || 1)
 
     // set muted in state, which in turn will update components (volume sliders)
     setAudioState[trackId!].stems[stemType as Stem].mute(mute)

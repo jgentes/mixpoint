@@ -638,7 +638,7 @@ const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
 }
 
 const StemsCrossfaders = () => (
-  <Box sx={{ my: 1, lineHeight: 0.7 }}>
+  <Box sx={{ my: 1, lineHeight: 1.2 }}>
     {STEMS.map(stem => (
       <CrossfaderControl key={stem} stemType={stem as Stem} />
     ))}
@@ -651,6 +651,7 @@ const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => (
     defaultValue={50}
     min={0}
     max={100}
+    step={5}
     track={false}
     marks={[0, 50, 100].map(v => ({ value: v }))}
     valueLabelDisplay='off'
