@@ -1,16 +1,14 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform around
-import { now, Player, start, Transport } from 'tone'
+import { dbToGain, gainToDb, Meter, now, Player, start, Transport } from 'tone'
 import {
   AudioState,
   getAudioState,
   setAudioState,
   setTableState,
-  Stems,
 } from '~/api/appState'
 import { calcMarkers } from '~/api/audioHandlers'
 import {
   db,
-  getPrefs,
   getTrackPrefs,
   setTrackPrefs,
   Stem,
@@ -22,20 +20,18 @@ import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
 // audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
 
-const _caclculateVolume = (analyzer: AnalyserNode, dataArray: Uint8Array) => {
-  analyzer.getByteFrequencyData(dataArray)
-
-  let sum = 0
-  for (const amplitude of dataArray) {
-    sum += amplitude * amplitude
-  }
-
-  return Math.sqrt(sum / (dataArray.length + 1000))
+const decibelToPercentage = (decibel: number) => {
+  decibel = Math.max(decibel, -40)
+  return ((decibel + 40) / 40) * 100
 }
 
-const percentageToDb = (percentage: number) => {
-  // thanks chatGPT!
-  return -40 + (percentage / 100) * 40
+const maxDb = (dbArray: number[]) =>
+  Math.max(...dbArray.map(decibelToPercentage))
+
+const clearVolumeMeter = (trackId: Track['id']) => {
+  const [volumeMeterInterval] =
+    getAudioState[Number(trackId)].volumeMeterInterval()
+  clearInterval(volumeMeterInterval)
 }
 
 const _getPlayers = (trackId?: number): Player[] => {
@@ -111,17 +107,20 @@ const audioEvents = {
   },
 
   play: async (trackId?: Track['id']) => {
-    // pull audio elements from audioState and synchronize playback
-    const [audioState] = getAudioState()
-
     // use the same Tonejs audio context timer for all stems
     await start()
     const contextTime = now()
     const latency = 0.05 // account for latency from tonejs
+    const meters: Partial<{ [key in Stem]: Meter }> = {} // stem volume meters
+
+    const [audioState] = getAudioState()
 
     for (const [id, { waveform }] of Object.entries(audioState)) {
       if (!waveform) continue
       if (trackId && id !== String(trackId)) continue
+
+      // clear any running volume meter timers
+      clearVolumeMeter(trackId)
 
       // check for bpm adjustment
       let bpm
@@ -130,14 +129,52 @@ const audioEvents = {
         ;({ bpm } = (await db.tracks.get(Number(id))) || {})
       }
 
-      const players = _getPlayers(Number(id))
+      // pull players from audioState for synchronized playback
+      const [{ stems }] = getAudioState[trackId!]()
+      if (!stems) return []
 
-      for (const player of players) {
+      for (const [stem, { player }] of Object.entries(stems)) {
+        if (!player) continue
+
         if (adjustedBpm && bpm) player.playbackRate = adjustedBpm / bpm
+
+        // connect Meter for volume monitoring
+        const meter = new Meter()
+        player.connect(meter)
+        meters[stem as Stem] = meter
+
         player.start(contextTime, waveform.getCurrentTime() + latency)
       }
+
+      // play the waveform for visual playback
       audioEvents._playWaveform(waveform)
-      setAudioState[Number(id)](prev => ({ ...prev, playing: true }))
+
+      // create interval for volume meters
+      const newInterval = setInterval(() => {
+        const volumes: number[] = []
+        for (const [stem, meter] of Object.entries(meters)) {
+          const vol = meter.getValue() as number
+          volumes.push(vol)
+          const volumeMeter = decibelToPercentage(vol)
+
+          // each stem volume is set here
+          setAudioState[Number(id)].stems[stem as Stem].volumeMeter(volumeMeter)
+        }
+
+        // this is the waveform volume meter
+        setAudioState[Number(id)](prev => ({
+          ...prev,
+          volumeMeter: maxDb(volumes),
+          time: waveform.getCurrentTime(),
+        }))
+      }, 12.5)
+
+      // store the interval so it can be cleared later
+      setAudioState[Number(id)](prev => ({
+        ...prev,
+        volumeMeterInterval: newInterval,
+        playing: true,
+      }))
     }
   },
 
@@ -161,12 +198,6 @@ const audioEvents = {
     //     time: waveform.getCurrentTime(),
     //   }))
     // }, 12.5)
-
-    // setAudioState[trackId!](prev => ({
-    //   ...prev,
-    //   volumeMeterInterval: newInterval,
-    //   playing: true,
-    // }))
   },
 
   pause: async (trackId?: Track['id']) => {
@@ -193,9 +224,7 @@ const audioEvents = {
     }
 
     for (const id of trackIds) {
-      const [volumeMeterInterval] =
-        getAudioState[Number(id)].volumeMeterInterval()
-      clearInterval(volumeMeterInterval)
+      clearVolumeMeter(Number(id))
 
       setAudioState[Number(id)]((prev: AudioState) => ({
         ...prev,
@@ -283,7 +312,6 @@ const audioEvents = {
 
       // if (playing) audioEvents.play(trackId, mixpointTime)
       if (playing) {
-        // careful here - a loop exists if pause causes a seek event
         audioEvents.play(Number(trackId))
       }
     }
@@ -307,8 +335,8 @@ const audioEvents = {
       for (const stem of Object.keys(stems)) {
         if (stemType && stem != stemType) continue
 
-        if (stems[stem as Stem]?.gainNode) {
-          stems[stem as Stem]!.gainNode!.gain.value = gain
+        if (stems[stem as Stem]?.player) {
+          stems[stem as Stem]!.player!.volume.value = gainToDb(gain)
         }
       }
     }
@@ -417,7 +445,7 @@ const audioEvents = {
 
     // update player volume
     const player = stems[stemType as Stem]?.player
-    if (player) player.volume.value = percentageToDb(volume)
+    if (player) player.volume.value = gainToDb(volume)
 
     // set volume in state, which in turn will update components (volume sliders)
     setAudioState[trackId!].stems[stemType as Stem].volume(volume)
@@ -431,7 +459,7 @@ const audioEvents = {
     const { player, volume } = stem || {}
 
     // update element volume (not volume in state)
-    if (player) player.volume.value = mute ? -3 : percentageToDb(volume || 100)
+    if (player) player.volume.value = mute ? -3 : gainToDb(volume || 100)
 
     // set muted in state, which in turn will update components (volume sliders)
     setAudioState[trackId!].stems[stemType as Stem].mute(mute)
@@ -447,8 +475,7 @@ const audioEvents = {
   },
 
   destroy: (trackId: Track['id']) => {
-    const [{ volumeMeterInterval }] = getAudioState[trackId!]()
-    if (volumeMeterInterval) clearInterval(volumeMeterInterval)
+    audioEvents.pause(trackId)
 
     const [{ stems, waveform }] = getAudioState[trackId!]()
 

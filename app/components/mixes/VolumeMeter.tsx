@@ -1,15 +1,23 @@
 import { LinearProgress } from '@mui/material'
 import { audioState } from '~/api/appState'
-import { Track } from '~/api/db/dbHandlers'
+import { Stem, Track } from '~/api/db/dbHandlers'
 
-const VolumeMeter = ({ trackId }: { trackId: Track['id'] }) => {
+const VolumeMeter = ({
+  trackId,
+  stemType,
+}: {
+  trackId: Track['id']
+  stemType?: Stem
+}) => {
   if (!trackId) return null
 
-  const [volumeMeter = 0] = audioState[trackId].volumeMeter()
+  const [volumeMeter = 0] = stemType
+    ? audioState[trackId].stems[stemType].volumeMeter()
+    : audioState[trackId].volumeMeter()
 
   return (
     <LinearProgress
-      id={`volume-container_${trackId}`}
+      id={`volume-container_${trackId}${stemType || ''}`}
       variant='determinate'
       value={100 - volumeMeter}
       sx={{

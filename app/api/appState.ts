@@ -10,6 +10,7 @@ type Stems = Partial<{
     player: Player
     volume: number
     gainNode: GainNode
+    volumeMeter: number
     mute: boolean
   }>
 }>

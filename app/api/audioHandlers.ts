@@ -1,18 +1,13 @@
 import { guess } from 'web-audio-beat-detector'
 import {
   db,
-  getTrackName,
   getTrackPrefs,
   putTracks,
   setPrefs,
   setTrackPrefs,
-  Stem,
-  storeTrack,
   Track,
-  TrackCache,
-  TrackPrefs,
 } from '~/api/db/dbHandlers'
-import { getPermission, getStemsDirHandle } from '~/api/fileHandlers'
+import { getPermission } from '~/api/fileHandlers'
 
 import { setModalState, setTableState } from '~/api/appState'
 import { errorHandler } from '~/utils/notifications'

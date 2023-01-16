@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
 import { tableState } from '~/api/appState'
-import { Track } from '~/api/dbHandlers'
+import { Track } from '~/api/db/dbHandlers'
 import { rowClick } from '~/utils/tableOps'
 import { createColumnDefinitions } from './tableColumns'
 
