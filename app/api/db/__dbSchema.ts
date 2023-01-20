@@ -45,7 +45,7 @@ const db = new MixpointDb()
 type Track = Partial<{
   id: number
   name: string
-  pcm: any
+  pcm: number[]
   fileHandle: FileSystemFileHandle
   dirHandle: FileSystemDirectoryHandle
   size: number

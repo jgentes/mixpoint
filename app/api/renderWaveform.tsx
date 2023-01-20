@@ -52,7 +52,7 @@ const Waveform = ({
 
       waveform = WaveSurfer.create({
         container: `#zoomview-container_${trackId}`,
-        backend: 'MediaElementWebAudio',
+        backend: pcm ? 'MediaElementWebAudio' : 'WebAudio',
         scrollParent: true,
         fillParent: false,
         pixelRatio: 1,
@@ -105,6 +105,13 @@ const Waveform = ({
         ],
       })
 
+      // Initialize wavesurfer event listeners
+      waveform.on('seek', time => audioEvents.onSeek(trackId, time))
+      waveform.on(
+        'ready',
+        async () => await audioEvents.onReady(trackId, !!pcm)
+      )
+
       setAudioState[trackId].waveform(waveform)
 
       if (pcm) {
@@ -114,11 +121,6 @@ const Waveform = ({
       } else {
         if (file) waveform.loadBlob(file)
       }
-      console.log(waveform)
-      // Initialize wavesurfer event listeners
-      waveform.on('seek', time => audioEvents.onSeek(trackId, time))
-
-      await audioEvents.init(trackId, !!pcm)
     }
 
     initWaveform()

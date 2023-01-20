@@ -52,7 +52,7 @@ const _getAllWaveforms = (): WaveSurfer[] => {
 }
 
 const audioEvents = {
-  init: async (trackId: Track['id'], usingPcm: boolean) => {
+  onReady: async (trackId: Track['id'], usingPcm: boolean) => {
     const [waveform] = getAudioState[trackId!].waveform()
     if (!waveform) return
 
@@ -85,21 +85,6 @@ const audioEvents = {
 
     // Remove analyzing overlay
     setTableState.analyzing(prev => prev.filter(id => id !== trackId))
-
-    // Create a PCM of waveform if we don't have one
-    // This allows huge browser memory savings
-    if (!usingPcm) {
-      const pcm = await waveform.exportPCM(
-        waveform.drawer.width,
-        10000,
-        true,
-        0
-      )
-
-      if (pcm) {
-        db.tracks.update(trackId!, { pcm })
-      }
-    }
   },
 
   play: async (trackId?: Track['id']) => {
@@ -142,7 +127,7 @@ const audioEvents = {
 
           player.start(contextStartTime, waveform.getCurrentTime())
         }
-      }
+      } else waveform.play()
 
       const startTime = waveform.getCurrentTime()
 
@@ -245,6 +230,7 @@ const audioEvents = {
     startTime?: number,
     direction?: 'previous' | 'next'
   ) => {
+    console.log('seek', startTime)
     const [{ playing, waveform }] = getAudioState[trackId!]()
 
     if (!waveform) return
@@ -262,6 +248,7 @@ const audioEvents = {
     const { time } = markers[index] || {}
 
     // Estimate that we're at the right time and move playhead (and center if using prev/next buttons)
+
     if (time && (time > startTime + 0.005 || time < startTime - 0.005)) {
       if (direction) waveform.skipForward(time - startTime)
       else {
