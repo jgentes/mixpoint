@@ -6,7 +6,7 @@ MixPoint solves a common problem that many "desktop" DJ's face - there are only 
 
 2. DAW apps (Audacity, Cubase, etc) - these assume you're making music, with lots of sampling and effects, optimized for audio production. They supports laying out multiple tracks (which is what is missing in DJ apps) but doesn't provide the basic context that DJ's need, such as BPM detection, beatmatching, and simple crossfading between tracks. Of course these things can be done with these tools, but it's not easy and certainly not what they are designed for.
 
-The goal of this app is to provide a focused user experience that delivers on the need to lay out a series of tracks, easily tweak the transition from one track to the next (a mix), and save the output as a finished set. Using machine learning, the software will reccomend mixes based on mixes other people have created, and optionally mix tracks together for you.
+The goal of this app is to provide a focused user experience that delivers on the need to lay out a series of tracks, easily tweak the transition from one track to the next (a mix), and save the output as a finished set. Using machine learning, the software will recommend mixes based on mixes other people have created, and optionally mix tracks together for you.
 
 Huge thanks to the MUI team for creating such a [kickass UI](https://mui.com/joy-ui/getting-started/overview/) freely available.
 
