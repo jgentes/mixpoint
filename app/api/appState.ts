@@ -22,17 +22,25 @@ type AudioState = Partial<{
   volumeMeter: number
   volumeMeterInterval: ReturnType<typeof setInterval> | number
   stems: Stems
+  stemState: StemState
 }>
 
 type Stems = Partial<{
   [key in Stem]: Partial<{
     player: Player
     volume: number
-    gainNode: GainNode
     volumeMeter: number
     mute: boolean
   }>
 }>
+
+type StemState =
+  | 'selectStemDir'
+  | 'grantStemDirAccess'
+  | 'getStems'
+  | 'processingStems'
+  | 'convertingStems'
+  | 'ready'
 
 // TableState captures the state of the table, such as search value, which which rows are selected and track drawer open/closed state
 const {
@@ -83,7 +91,7 @@ const { useStore: notificationState } = createStore<{
   variant: 'error',
 })
 
-export type { AudioState, Stems }
+export type { AudioState, Stems, StemState }
 export {
   getAudioState,
   audioState,

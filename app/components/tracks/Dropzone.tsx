@@ -35,8 +35,8 @@ const Dropzone = (props: BoxProps) => {
 
   return (
     <Sheet
-      variant="soft"
-      id="dropzone"
+      variant='soft'
+      id='dropzone'
       sx={{
         border: '2px dashed #bbb',
         padding: '10px',
@@ -68,16 +68,16 @@ const Dropzone = (props: BoxProps) => {
     >
       <DriveFolderUpload
         sx={{ fontSize: 38, color: 'text.secondary' }}
-        className="drop"
+        className='drop'
       />
       <Typography
-        level="body1"
-        className="drop"
+        level='body1'
+        className='drop'
         sx={{ color: 'text.secondary' }}
       >
         <b>Add Tracks</b>
       </Typography>
-      <Typography className="drop" level="body2">
+      <Typography className='drop' level='body2'>
         Drag or click here
       </Typography>
     </Sheet>

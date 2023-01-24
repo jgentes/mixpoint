@@ -1,11 +1,12 @@
+import { setAudioState } from '~/api/appState'
 import { savePCM } from '~/api/audioHandlers'
 import { db, storeTrack, Track } from '~/api/db/dbHandlers'
 import { getStemsDirHandle } from '~/api/fileHandlers'
 import { convertWav } from '~/api/mp3Converter'
 import { errorHandler } from '~/utils/notifications'
 
-const START_ENDPOINT = 'https://stemproxy.jgentes.workers.dev/start'
-const CHECK_ENDPOINT = 'https://stemproxy.jgentes.workers.dev/check'
+const START_ENDPOINT = 'https://api.banana.dev/start/v4'
+const CHECK_ENDPOINT = 'https://api.banana.dev/check/v4'
 
 type Stems = 'vocals' | 'bass' | 'drums' | 'other'
 
@@ -59,7 +60,6 @@ const sendPost = async (
     },
     body: JSON.stringify(body),
   })
-
   if (!res.ok) {
     const message = `An error has occurred: ${res.status} - ${res.statusText}`
     throw errorHandler(message)
@@ -72,7 +72,10 @@ const checkForStems = async (
   callID: BananaCheckRequest['callID']
 ): Promise<BananaCheckResponse['modelOutputs']> => {
   const checkRequest: BananaCheckRequest = {
+    //@ts-ignore
+    apiKey: window.ENV.BANANA_API_KEY,
     callID,
+    longPoll: true,
   }
 
   const { message, modelOutputs } = (await sendPost(
@@ -99,6 +102,8 @@ const stemAudio = async (trackId: Track['id']) => {
     throw errorHandler('Permission to the file or folder was denied.')
   }
 
+  setAudioState[trackId!].stemState('processingStems')
+
   // convert file to Base64
   const fileBuffer = await file.arrayBuffer()
   const fileBase64 = window.btoa(
@@ -110,6 +115,10 @@ const stemAudio = async (trackId: Track['id']) => {
 
   // create payload with encoded audio file
   const startBody: BananaStartRequest = {
+    //@ts-ignore
+    apiKey: window.ENV.BANANA_API_KEY,
+    //@ts-ignore
+    modelKey: window.ENV.BANANA_MODEL_KEY,
     modelInputs: {
       fineTuned: false,
       file: {
@@ -129,6 +138,8 @@ const stemAudio = async (trackId: Track['id']) => {
   if (!finished) modelOutputs = await checkForStems(callID)
 
   const { name: filename, data: stems } = modelOutputs[0]
+
+  setAudioState[trackId!].stemState('convertingStems')
 
   console.log(`Received stems for ${filename}, converting to mp3...`)
 
@@ -178,6 +189,8 @@ const stemAudio = async (trackId: Track['id']) => {
 
       // store stem in cache
       storeTrack({ id: trackId, stems: { [name.slice(0, -4) as Stems]: file } })
+
+      setAudioState[trackId!].stemState('ready')
 
       // now that we have stems, we can use PCM data for waveform instead of duplicating
       // the audioBuffer in WaveSurfer

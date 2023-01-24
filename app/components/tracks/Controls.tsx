@@ -548,8 +548,8 @@ const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
 
   const StemPlayer = ({ stemType }: { stemType: Stem }) => {
-    const [stem] = audioState[trackId].stems[stemType]()
-    const { volume = 100, mute = false } = stem || {}
+    const [volume = 100] = audioState[trackId].stems[stemType].volume()
+    const [mute = false] = audioState[trackId].stems[stemType].mute()
 
     const [solo, setSolo] = useState(false)
 
@@ -629,7 +629,7 @@ const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
   }
 
   return (
-    <Box sx={{ mb: 1 }}>
+    <Box sx={{ mb: 2 }}>
       {STEMS.map(stem => (
         <StemPlayer key={stem} stemType={stem as Stem} />
       ))}

@@ -1,3 +1,4 @@
+import { getAudioState, setAudioState } from '~/api/appState'
 import {
   addToMix,
   db,
@@ -114,61 +115,65 @@ const getStemsDirHandle = async (): Promise<
   }
 }
 
-type StemState = 'selectStemDir' | 'grantStemDirAccess' | 'getStems' | 'ready'
+const validateTrackStemAccess = async (trackId: Track['id']): Promise<void> => {
+  if (!trackId) return
 
-const validateTrackStemAccess = async (
-  trackId: Track['id']
-): Promise<StemState> => {
-  if (!trackId) return 'selectStemDir'
+  const checkAccess = async () => {
+    // See if we have stems in cache
+    const { stems } = (await db.trackCache.get(trackId)) || {}
+    if (stems) return 'ready'
 
-  // See if we have stems in cache
-  const { stems } = (await db.trackCache.get(trackId)) || {}
-  if (stems) return 'ready'
+    // do we have a stem dir defined?
+    const { stemsDirHandle } = await getPrefs('user')
+    if (!stemsDirHandle) return 'selectStemDir'
 
-  // do we have a stem dir defined?
-  const { stemsDirHandle } = await getPrefs('user')
-  if (!stemsDirHandle) return 'selectStemDir'
+    // do we have access to the stem dir?
+    try {
+      const stemDirAccess = await stemsDirHandle.queryPermission({
+        mode: 'readwrite',
+      })
+      if (stemDirAccess !== 'granted') return 'grantStemDirAccess'
+    } catch (e) {
+      // directory doesn't exist
+      return 'selectStemDir'
+    }
 
-  // do we have access to the stem dir?
-  try {
-    const stemDirAccess = await stemsDirHandle.queryPermission({
-      mode: 'readwrite',
-    })
-    if (stemDirAccess !== 'granted') return 'grantStemDirAccess'
-  } catch (e) {
-    // directory doesn't exist
-    return 'selectStemDir'
+    const [stemState] = getAudioState[trackId].stemState()
+    if (stemState == 'processingStems' || stemState == 'convertingStems')
+      return stemState
+
+    const { name } = (await db.tracks.get(trackId)) || {}
+    if (!name) return 'getStems'
+
+    // does the stem dir for this track exist?
+    let trackStemDirHandle
+    try {
+      trackStemDirHandle = await stemsDirHandle.getDirectoryHandle(
+        `${name.split('.')[0]} - stems`
+      )
+    } catch (e) {
+      // directory doesn't exist
+      return 'getStems'
+    }
+
+    // are there at least 4 files in the dir?
+    const localStems: TrackCache['stems'] = {}
+    for await (const [name, fileHandle] of trackStemDirHandle.entries()) {
+      const file = (await fileHandle.getFile(name)) as File
+      localStems[name.slice(0, -4) as Stem] = file
+    }
+
+    if (Object.keys(localStems).length < 4) return 'getStems'
+
+    // cache the stems
+    await storeTrack({ id: trackId, stems: localStems })
+
+    // ready!
+    return 'ready'
   }
 
-  const { name } = (await db.tracks.get(trackId)) || {}
-  if (!name) return 'getStems'
-
-  // does the stem dir for this track exist?
-  let trackStemDirHandle
-  try {
-    trackStemDirHandle = await stemsDirHandle.getDirectoryHandle(
-      `${name.split('.')[0]} - stems`
-    )
-  } catch (e) {
-    // directory doesn't exist
-    return 'getStems'
-  }
-
-  // are there at least 4 files in the dir?
-  const localStems: TrackCache['stems'] = {}
-  for await (const [name, fileHandle] of trackStemDirHandle.entries()) {
-    const file = (await fileHandle.getFile(name)) as File
-    localStems[name.slice(0, -4) as Stem] = file
-  }
-
-  if (Object.keys(localStems).length < 4) return 'getStems'
-
-  // cache the stems
-  await storeTrack({ id: trackId, stems: localStems })
-
-  // ready!
-  return 'ready'
+  const state = await checkAccess()
+  setAudioState[trackId].stemState(state)
 }
 
-export type { StemState }
 export { getPermission, browseFile, getStemsDirHandle, validateTrackStemAccess }
