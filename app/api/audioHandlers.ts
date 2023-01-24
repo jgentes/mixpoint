@@ -1,4 +1,4 @@
-import { guess } from 'web-audio-beat-detector'
+import { guess as detectBPM } from 'web-audio-beat-detector'
 import {
   db,
   getTrackPrefs,
@@ -160,20 +160,21 @@ const getAudioDetails = async (
   const file = await getPermission(track)
   if (!file) {
     setTableState.analyzing([])
-    throw errorHandler('Permission to the file or folder was denied.') // this would be due to denial of permission (ie. clicked cancel)
+    throw errorHandler('Permission to the file or folder was denied.')
   }
 
-  const audioCtx = new AudioContext()
-  const arrayBuffer = await file.arrayBuffer()
-  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
-
   const { name, size, type } = file
+  const arrayBuffer = await file.arrayBuffer()
+
+  const audioCtx = new AudioContext()
+  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
   const { duration, sampleRate } = audioBuffer
+
   let offset = 0,
     bpm = 1
 
   try {
-    ;({ offset, bpm } = await guess(audioBuffer))
+    ;({ offset, bpm } = await detectBPM(audioBuffer))
   } catch (e) {
     errorHandler(`Unable to determine BPM for ${name}`)
   }

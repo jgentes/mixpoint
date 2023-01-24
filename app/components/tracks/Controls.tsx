@@ -198,7 +198,7 @@ const OffsetControl = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
 
   const { offset, adjustedOffset } =
-    useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
+    useLiveQuery(() => db.tracks.get(trackId)) || {}
 
   return (
     <NumberControl
@@ -331,7 +331,7 @@ const MixpointNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
   )
 }
 
-const TrackNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
+const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
   const nudgeIndicator = (direction: 'forward' | 'backward') => {
     setAudioState[trackId!].nudged(direction)
     setTimeout(() => setAudioState[trackId!].nudged(), 200)
@@ -359,7 +359,7 @@ const TrackNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
     }
   }
 
-  const [isPlaying] = audioState[trackId!].playing()
+  const [isPlaying] = audioState[trackId].playing()
 
   return (
     <ButtonGroup variant='text' color='inherit' disableRipple id='navControl'>

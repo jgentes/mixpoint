@@ -60,7 +60,7 @@ const getPermission = async (track: Track): Promise<File | null> => {
   return await _getFile(track)
 }
 
-const browseFile = async () => {
+const browseFile = async (): Promise<void> => {
   const files: FileSystemFileHandle[] | undefined = await window
     .showOpenFilePicker({ multiple: true })
     .catch(e => {

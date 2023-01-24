@@ -4,16 +4,16 @@ import { getStemsDirHandle } from '~/api/fileHandlers'
 import { convertWav } from '~/api/mp3Converter'
 import { errorHandler } from '~/utils/notifications'
 
-const START_ENDPOINT = 'https://api.banana.dev/start/v4'
-const CHECK_ENDPOINT = 'https://api.banana.dev/check/v4'
+const START_ENDPOINT = 'https://stemproxy.jgentes.workers.dev/start'
+const CHECK_ENDPOINT = 'https://stemproxy.jgentes.workers.dev/check'
 
 type Stems = 'vocals' | 'bass' | 'drums' | 'other'
 
 type BananaStartRequest = {
   id?: string // some uuid to identify the payload
   created?: number // the current Unix timestamp in seconds
-  apiKey: string // your api key, for authorization
-  modelKey: string // the key giving you access to this model
+  apiKey?: string // your api key, for authorization
+  modelKey?: string // the key giving you access to this model
   startOnly?: boolean // tell backend to return a callID immediately, without awaiting results. Defaults to false.
   modelInputs: {
     fineTuned?: boolean // tell backend to use the fine-tuned model. Defaults to false.
@@ -41,8 +41,8 @@ type BananaStartResponse = {
 type BananaCheckRequest = {
   id?: BananaStartRequest['id']
   created?: BananaStartRequest['created']
-  apiKey: BananaStartRequest['apiKey']
-  longPoll: boolean // **suggested -** a flag telling the REST call wait on the server for results, up to 50s
+  apiKey?: BananaStartRequest['apiKey']
+  longPoll?: boolean // **suggested -** a flag telling the REST call wait on the server for results, up to 50s
   callID: string // the async task ID to fetch results for
 }
 
@@ -71,16 +71,13 @@ const sendPost = async (
 const checkForStems = async (
   callID: BananaCheckRequest['callID']
 ): Promise<BananaCheckResponse['modelOutputs']> => {
-  const checkRquest: BananaCheckRequest = {
-    //@ts-ignore
-    apiKey: window.ENV.BANANA_API_KEY,
+  const checkRequest: BananaCheckRequest = {
     callID,
-    longPoll: true,
   }
 
   const { message, modelOutputs } = (await sendPost(
     CHECK_ENDPOINT,
-    checkRquest
+    checkRequest
   )) as BananaCheckResponse
 
   if (message.includes('error') || (message == 'success' && !modelOutputs))
@@ -91,7 +88,6 @@ const checkForStems = async (
 }
 
 const stemAudio = async (trackId: Track['id']) => {
-  console.log('in stemaudio')
   // retrieve file from cache
   const { file } = (await db.trackCache.get(trackId)) || {}
   if (!file) throw errorHandler('No file found for track, try re-adding it.')
@@ -114,11 +110,6 @@ const stemAudio = async (trackId: Track['id']) => {
 
   // create payload with encoded audio file
   const startBody: BananaStartRequest = {
-    // TODO: remove env vars from here !important
-    //@ts-ignore
-    apiKey: window.ENV.BANANA_API_KEY,
-    //@ts-ignore
-    modelKey: window.ENV.BANANA_MODEL_KEY,
     modelInputs: {
       fineTuned: false,
       file: {

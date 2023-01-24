@@ -216,6 +216,7 @@ const audioEvents = {
       waveform.getCurrentTime() +
       (direction == 'backward' ? -nudgeVal : nudgeVal)
     console.log('nudge does not work properly, no offset')
+    // @ts-ignore
     audioEvents.play(trackId, offset)
   },
 

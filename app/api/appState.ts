@@ -5,15 +5,14 @@ import createStore from 'teaful'
 import { Player } from 'tone'
 import { Stem, Track } from '~/api/db/dbHandlers'
 
-type Stems = Partial<{
-  [key in Stem]: Partial<{
-    player: Player
-    volume: number
-    gainNode: GainNode
-    volumeMeter: number
-    mute: boolean
-  }>
-}>
+// AudioState captures whether audio is being analyzed, processed, or played
+const {
+  getStore: getAudioState,
+  useStore: audioState,
+  setStore: setAudioState,
+} = createStore<{
+  [trackId: number]: AudioState
+}>({})
 
 type AudioState = Partial<{
   waveform: WaveSurfer
@@ -25,14 +24,15 @@ type AudioState = Partial<{
   stems: Stems
 }>
 
-// AudioState captures whether audio is being analyzed, processed, or played
-const {
-  getStore: getAudioState,
-  useStore: audioState,
-  setStore: setAudioState,
-} = createStore<{
-  [trackId: number]: AudioState
-}>({})
+type Stems = Partial<{
+  [key in Stem]: Partial<{
+    player: Player
+    volume: number
+    gainNode: GainNode
+    volumeMeter: number
+    mute: boolean
+  }>
+}>
 
 // TableState captures the state of the table, such as search value, which which rows are selected and track drawer open/closed state
 const {
