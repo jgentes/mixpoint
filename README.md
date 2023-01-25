@@ -18,7 +18,7 @@
 
 ## Presentation
 
-![Slides](https://slides.com/jamesgentes/mixpoint-05ab4b 'Slides')
+- [Slides](https://slides.com/jamesgentes/mixpoint-05ab4b 'Slides')
 
 ## Overview
 
