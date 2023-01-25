@@ -16,6 +16,10 @@
 
 ![App](public/media/Mixpoint_Screenshot.png 'App')
 
+## Presentation
+
+![Slides](https://slides.com/jamesgentes/mixpoint-05ab4b 'Slides')
+
 ## Overview
 
 Mixpoint solves a common problem that many "desktop" DJ's face - there are only two different types of products available on the market today:
