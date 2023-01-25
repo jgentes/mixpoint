@@ -1,6 +1,24 @@
-![Mixpoint Screenshot](public/media/Mixpoint_Screenshot.png?raw=true 'Mixpoint Screenshot')
+<h1 align="center">Mixpoint</h1>
 
-MixPoint solves a common problem that many "desktop" DJ's face - there are only two different types of products available on the market today:
+<p align="center">Mixpoint is multi-track audio mixing app for the browser</p>
+
+## Links
+
+- [Repo](https://github.com/jgentes/mixpoint 'Mixpoint Repo')
+
+- [Live](https://mixpoint.jgentes.com 'Live View')
+
+- [Bugs](https://github.com/jgentes/mixpoint/issues 'Issues Page')
+
+- [Discussion](https://github.com/jgentes/mixpoint/discussions 'Discussion Page')
+
+## Screenshots
+
+![App](public/media/Mixpoint_Screenshot.png 'App')
+
+## Overview
+
+Mixpoint solves a common problem that many "desktop" DJ's face - there are only two different types of products available on the market today:
 
 1. DJ apps (VirtualDJ, etc) - these all replicate the 2 turntable scenario, which is great for mixing 2 tracks together in real time. This is appropriate for live performances, but not ideal if you want to take the time to perfect mixes and create a longer, flawless set.
 
@@ -13,3 +31,44 @@ Huge thanks to the MUI team for creating such a [kickass UI](https://mui.com/joy
 The project uses [Wavesurfer](https://wavesurfer-js.org/) for waveform analysis and navigation, . Also thanks to John Heiner for the fun progress indicator.
 
 Open source is more than a licensing strategy. It's a [movement](https://opensource.stackexchange.com/questions/9805/can-i-license-my-project-with-an-open-source-license-but-disallow-commercial-use). This work is made possible only by the labor of many open source contributers and their dependent, freely sourced efforts. My work is a meager attempt to contribute to what so many others have already provided.
+
+## Available Commands
+
+In the project directory, you can run:
+
+### `"yarn dev" : "remix dev"`,
+
+The app is built using `Remix` which uses esBuild for really fast hot reloads. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+
+### `"yarn test": "vitest"`,
+
+Launches tests, of which there are few.
+
+## Built With
+
+- Typescript
+- Remix
+- MUI (Joy)
+- Teaful for App State
+- Dexie (IndexedDb) for Persistent State
+- WaveSurfer
+- Tone.js (Web Audio API)
+
+## Roadmap
+
+- [ ] Usability Improvements
+- [ ] Mix Recommendations
+- [ ] Saving Mixes
+- [ ] Creating Sets
+- [ ] User Authentication
+
+## Author
+
+**James Gentes**
+
+- [Profile](https://github.com/jgentes 'James Gentes')
+- [Email](mailto:jgentes@gmail.com?subject=Mixpoint 'Hi!')
+
+## 🤝 Support
+
+Give a ⭐️ if you like this project!
