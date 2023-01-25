@@ -89,4 +89,4 @@ const App = () => (
   </HtmlDoc>
 )
 
-export { loader, App as default, ThemeLoader, meta, links }
+export { App as default, ThemeLoader, meta, links }
