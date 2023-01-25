@@ -1,8 +1,8 @@
 // This file provides a few helper functions for interacting with the database
 import { useLiveQuery } from 'dexie-react-hooks'
-import { audioEvents } from '~/api/audioEvents'
 import {
   __db as db,
+  __STEMS as STEMS,
   __Mix as Mix,
   __MixPrefs as MixPrefs,
   __Set as Set,
@@ -209,6 +209,7 @@ export type {
 }
 export {
   db,
+  STEMS,
   useLiveQuery,
   updateTrack,
   putTracks,

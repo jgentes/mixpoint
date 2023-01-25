@@ -5,6 +5,7 @@ import {
   getPrefs,
   setPrefs,
   Stem,
+  STEMS,
   storeTrack,
   Track,
   TrackCache,
@@ -149,7 +150,7 @@ const validateTrackStemAccess = async (trackId: Track['id']): Promise<void> => {
     let trackStemDirHandle
     try {
       trackStemDirHandle = await stemsDirHandle.getDirectoryHandle(
-        `${name.split('.')[0]} - stems`
+        `${name.slice(0, -4)} - stems`
       )
     } catch (e) {
       // directory doesn't exist
@@ -160,7 +161,8 @@ const validateTrackStemAccess = async (trackId: Track['id']): Promise<void> => {
     const localStems: TrackCache['stems'] = {}
     for await (const [name, fileHandle] of trackStemDirHandle.entries()) {
       const file = (await fileHandle.getFile(name)) as File
-      localStems[name.slice(0, -4) as Stem] = file
+      const stemName = name.slice(0, -4)
+      if (STEMS.includes(stemName as Stem)) localStems[stemName as Stem] = file
     }
 
     if (Object.keys(localStems).length < 4) return 'getStems'

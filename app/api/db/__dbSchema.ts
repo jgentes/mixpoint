@@ -89,8 +89,8 @@ type Set = {
 // waveforms without prompting the user for permission to read the file from
 // disk, which cannot be done without interacting with the page first.
 // Each file is a few megabytes, so the cache must be limited.
-const stems = ['drums', 'bass', 'vocals', 'other'] as const
-type Stem = typeof stems[number]
+const STEMS = ['drums', 'bass', 'vocals', 'other'] as const
+type Stem = typeof STEMS[number]
 
 type TrackCache = {
   id: Track['id']
@@ -164,4 +164,4 @@ export type {
   TrackCache as __TrackCache,
   Stem as __Stem,
 }
-export { db as __db }
+export { db as __db, STEMS as __STEMS }

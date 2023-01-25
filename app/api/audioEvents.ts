@@ -1,11 +1,6 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform around
 import { Meter, now, start, Transport } from 'tone'
-import {
-  AudioState,
-  getAudioState,
-  setAudioState,
-  setTableState,
-} from '~/api/appState'
+import { getAudioState, setAudioState, setTableState } from '~/api/appState'
 import { calcMarkers } from '~/api/audioHandlers'
 import {
   db,
@@ -117,6 +112,7 @@ const audioEvents = {
       const [stems] = getAudioState[Number(id)!].stems()
 
       if (stems) {
+        console.log('playing stems', stems)
         for (const [stem, { player }] of Object.entries(stems)) {
           if (!player) continue
 

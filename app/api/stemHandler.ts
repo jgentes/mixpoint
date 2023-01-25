@@ -8,8 +8,6 @@ import { errorHandler } from '~/utils/notifications'
 const START_ENDPOINT = 'https://stemproxy.jgentes.workers.dev/start'
 const CHECK_ENDPOINT = 'https://stemproxy.jgentes.workers.dev/check'
 
-type Stems = 'vocals' | 'bass' | 'drums' | 'other'
-
 type BananaStartRequest = {
   id?: string // some uuid to identify the payload
   created?: number // the current Unix timestamp in seconds

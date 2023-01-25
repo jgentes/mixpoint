@@ -34,6 +34,7 @@ import {
   MixPrefs,
   removeFromMix,
   Stem,
+  STEMS,
   Track,
   TrackPrefs,
   useLiveQuery,
@@ -42,8 +43,6 @@ import {
 import { audioState, setAudioState, tableState } from '~/api/appState'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
-
-const STEMS = ['bass', 'drums', 'vocals', 'other']
 
 const inputText = (text: string) => {
   return (
