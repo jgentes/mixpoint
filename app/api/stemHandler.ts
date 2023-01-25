@@ -5,8 +5,8 @@ import { getStemsDirHandle } from '~/api/fileHandlers'
 import { convertWav } from '~/api/mp3Converter'
 import { errorHandler } from '~/utils/notifications'
 
-const START_ENDPOINT = 'https://api.banana.dev/start/v4'
-const CHECK_ENDPOINT = 'https://api.banana.dev/check/v4'
+const START_ENDPOINT = 'https://stemproxy.jgentes.workers.dev/start'
+const CHECK_ENDPOINT = 'https://stemproxy.jgentes.workers.dev/check'
 
 type Stems = 'vocals' | 'bass' | 'drums' | 'other'
 
@@ -72,8 +72,6 @@ const checkForStems = async (
   callID: BananaCheckRequest['callID']
 ): Promise<BananaCheckResponse['modelOutputs']> => {
   const checkRequest: BananaCheckRequest = {
-    //@ts-ignore
-    apiKey: window.ENV.BANANA_API_KEY,
     callID,
     longPoll: true,
   }
@@ -115,10 +113,6 @@ const stemAudio = async (trackId: Track['id']) => {
 
   // create payload with encoded audio file
   const startBody: BananaStartRequest = {
-    //@ts-ignore
-    apiKey: window.ENV.BANANA_API_KEY,
-    //@ts-ignore
-    modelKey: window.ENV.BANANA_MODEL_KEY,
     modelInputs: {
       fineTuned: false,
       file: {

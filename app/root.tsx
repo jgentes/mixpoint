@@ -20,15 +20,6 @@ import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import { theme } from '~/theme'
 
-const loader = async () => {
-  return {
-    ENV: {
-      BANANA_API_KEY: process.env.BANANA_API_KEY,
-      BANANA_MODEL_KEY: process.env.BANANA_MODEL_KEY,
-    },
-  }
-}
-
 const meta: MetaFunction = () => {
   return {
     title: 'Mixpoint',
@@ -48,7 +39,6 @@ const links: LinksFunction = () => [
 ]
 
 const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
-  const data = useLoaderData<typeof loader>()
   return (
     <html lang='en'>
       <head>
@@ -58,12 +48,6 @@ const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
       <body>
         <LiveReload />
         {children}
-        <script
-          // https://remix.run/docs/en/v1/guides/envvars
-          dangerouslySetInnerHTML={{
-            __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
-          }}
-        />
       </body>
     </html>
   )
