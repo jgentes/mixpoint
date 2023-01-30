@@ -60,7 +60,8 @@ Launches tests, of which there are few.
 
 ## Roadmap
 
-- [ ] Usability Improvements
+- [ ] Documentation
+- [ ] Playlists / Track Organization
 - [ ] Mix Recommendations
 - [ ] Saving Mixes
 - [ ] Creating Sets
