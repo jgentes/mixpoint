@@ -1,6 +1,6 @@
 import { setAudioState, Stems } from '~/api/appState'
 import { savePCM } from '~/api/audioHandlers'
-import { db, storeTrack, Stem, Track } from '~/api/db/dbHandlers'
+import { db, Stem, storeTrack, Track } from '~/api/db/dbHandlers'
 import { getStemsDirHandle } from '~/api/fileHandlers'
 import { convertWav } from '~/api/mp3Converter'
 import { errorHandler } from '~/utils/notifications'
@@ -89,13 +89,13 @@ const checkForStems = async (
 const stemAudio = async (trackId: Track['id']) => {
   // retrieve file from cache
   const { file } = (await db.trackCache.get(trackId)) || {}
-  if (!file) throw errorHandler('No file found for track, try re-adding it.')
+  if (!file) return errorHandler('No file found for track, try re-adding it.')
 
   // ensure we have access to a directory to save the stems
   const dirHandle = await getStemsDirHandle()
   if (!dirHandle) {
     // this would be due to denial of permission (ie. clicked cancel)
-    throw errorHandler('Permission to the file or folder was denied.')
+    return errorHandler('Permission to the file or folder was denied.')
   }
 
   setAudioState[trackId!].stemState('processingStems')
@@ -145,7 +145,7 @@ const stemAudio = async (trackId: Track['id']) => {
       }
     )
   } catch (e) {
-    throw errorHandler('Error creating directory for stems.')
+    return errorHandler('Error creating directory for stems.')
   }
 
   const stemType = `audio/${startBody.modelInputs.mp3 ? 'mp3' : 'wav'}`

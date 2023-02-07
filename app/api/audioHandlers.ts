@@ -213,7 +213,7 @@ const calcMarkers = async (
     ;({ duration, bpm, offset } = analyzedTracks[0])
   }
 
-  if (!duration) throw errorHandler(`Please try adding ${track.name} again.`)
+  if (!duration) return errorHandler(`Please try adding ${track.name} again.`)
 
   let { beatResolution = 1, mixpointTime } = await getTrackPrefs(trackId)
 

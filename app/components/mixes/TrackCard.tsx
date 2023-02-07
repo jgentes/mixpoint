@@ -19,7 +19,7 @@ import { errorHandler } from '~/utils/notifications'
 import { timeFormat } from '~/utils/tableOps'
 
 const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
-  if (!trackId) throw errorHandler('Please try uploading the track again.')
+  if (!trackId) return errorHandler('Please try uploading the track again.')
 
   const [analyzingTracks] = tableState.analyzing()
   const analyzing = analyzingTracks.includes(trackId)

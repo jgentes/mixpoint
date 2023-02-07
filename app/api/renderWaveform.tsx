@@ -38,10 +38,10 @@ const Waveform = ({
     // Retrieve track, file and region data, then store waveform in audioState
     const initWaveform = async () => {
       const track = await db.tracks.get(trackId)
-      if (!track) throw errorHandler('Could not retrieve track from database.')
+      if (!track) return errorHandler('Could not retrieve track from database.')
 
       const file = await getPermission(track)
-      if (!file) throw errorHandler(`Please try adding ${track.name} again.`)
+      if (!file) return errorHandler(`Please try adding ${track.name} again.`)
 
       setTableState.analyzing(prev =>
         prev.includes(trackId) ? prev : [...prev, trackId]

@@ -1,7 +1,5 @@
 import { notificationState } from '~/api/appState'
 
-//const [notification, setNotification] = notificationState()
-
 type Notification = {
   message?: string
   variant?: 'success' | 'error' | 'warning' | 'info'
@@ -10,11 +8,11 @@ type Notification = {
 const errorHandler = (error: Error | string) => {
   if (typeof error == 'string') error = Error(error)
 
-  console.error(error)
+  console.error(error.message)
 
   window.dispatchEvent(
     new CustomEvent('notify', {
-      detail: { message: error.message, variant: 'error' },
+      detail: { message: error?.message, variant: 'error' },
     })
   )
 }

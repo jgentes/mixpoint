@@ -166,8 +166,10 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
       size='sm'
       onClick={() => ejectTrack()}
       sx={{
+        minHeight: '21px',
         lineHeight: 0,
         '--Chip-radius': '5px',
+        '--Chip-paddingInline': '0.4rem',
         '--Icon-fontSize': '16px',
       }}
     >

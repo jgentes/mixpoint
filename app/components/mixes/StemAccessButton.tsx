@@ -13,12 +13,13 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
   const [stemState = 'selectStemDir'] = audioState[trackId].stemState()
 
   const getStemsDir = async () => {
-    const dirHandle = await getStemsDirHandle()
-    if (!dirHandle) {
+    try {
+      await getStemsDirHandle()
+      await validateTrackStemAccess(trackId)
+    } catch (err) {
       // this would be due to denial of permission (ie. clicked cancel)
-      throw errorHandler('Permission to the file or folder was denied.')
+      return errorHandler('Permission to the file or folder was denied.')
     }
-    await validateTrackStemAccess(trackId)
   }
 
   const stemHandler = () => {

@@ -2,12 +2,12 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
   __db as db,
-  __STEMS as STEMS,
   __Mix as Mix,
   __MixPrefs as MixPrefs,
   __Set as Set,
   __SetPrefs as SetPrefs,
   __Stem as Stem,
+  __STEMS as STEMS,
   __StoreTypes as StoreTypes,
   __Track as Track,
   __TrackCache as TrackCache,
@@ -155,7 +155,7 @@ const setTrackPrefs = async (
   const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
   const trackIndex = tracks.indexOf(trackId) ?? -1
 
-  if (trackIndex == -1) throw errorHandler('Track not found in mix state')
+  if (trackIndex == -1) return errorHandler('Track not found in mix state')
 
   const newState = { ...(trackPrefs[trackIndex] || {}), ...state }
   trackPrefs[trackIndex] = newState
