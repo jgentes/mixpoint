@@ -16,12 +16,13 @@ import {
 import {
   Box,
   Chip,
+  FormControl,
+  Input,
   Link,
   Radio,
   radioClasses,
   RadioGroup,
   Slider,
-  TextField,
   Typography,
 } from '@mui/joy'
 import { Button, ButtonGroup } from '@mui/material'
@@ -104,7 +105,6 @@ const NumberControl = ({
       sx={{
         fontSize: 12,
         WebkitTextFillColor: 'divider',
-        lineHeight: 0,
       }}
     >
       {inputText(text)}
@@ -113,14 +113,19 @@ const NumberControl = ({
   )
 
   return (
-    <form
+    <FormControl
       style={{ ...styles }}
       onSubmit={e => {
         e.preventDefault()
         adjustVal(Number(inputVal))
       }}
+      sx={{
+        '& div': {
+          '--Input-minHeight': '24px',
+        },
+      }}
     >
-      <TextField
+      <Input
         variant='outlined'
         startDecorator={<ResetValLink />}
         value={inputVal}
@@ -131,18 +136,16 @@ const NumberControl = ({
         sx={{
           width,
           '& div': {
-            minHeight: '24px',
             borderColor: 'action.disabled',
           },
           '& input': {
             textAlign: 'right',
             fontSize: 12,
             color: 'text.secondary',
-            lineHeight: 0,
           },
         }}
       />
-    </form>
+    </FormControl>
   )
 }
 
@@ -163,7 +166,9 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
       size='sm'
       onClick={() => ejectTrack()}
       sx={{
-        borderRadius: 'sm',
+        lineHeight: 0,
+        '--Chip-radius': '5px',
+        '--Icon-fontSize': '16px',
       }}
     >
       <Eject titleAccess='Load Track' />
@@ -221,7 +226,7 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
 
   return (
     <RadioGroup
-      row
+      orientation={'horizontal'}
       name='beatResolution'
       value={beatResolution}
       variant='outlined'
@@ -264,7 +269,7 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
               fontSize: 12,
               color: 'text.secondary',
             }}
-            componentsProps={{
+            slotProps={{
               action: {
                 sx: { borderRadius: 0, transition: 'none' },
               },
@@ -417,7 +422,7 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 
   return (
     <RadioGroup
-      row
+      orientation={'horizontal'}
       name='mixControl'
       variant='outlined'
       sx={{ height: radioSize, mb: 1 }}
@@ -470,7 +475,7 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
             label={item.icon}
             variant='plain'
             color='primary'
-            componentsProps={{
+            slotProps={{
               root: {
                 sx: {
                   '--Icon-fontSize': `${radioSize - 8}px`,
@@ -511,13 +516,18 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
   }
 
   return (
-    <form
+    <FormControl
       onSubmit={e => {
         e.preventDefault()
         adjustMixpoint(mixpointVal)
       }}
+      sx={{
+        '& div': {
+          '--Input-minHeight': '24px',
+        },
+      }}
     >
-      <TextField
+      <Input
         variant='outlined'
         startDecorator={inputText('Mixpoint:')}
         endDecorator={inputText(`/ ${timeFormat(duration || 0).slice(0, -3)}`)}
@@ -527,7 +537,6 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
         sx={{
           width: 175,
           '& div': {
-            minHeight: '24px',
             borderColor: 'action.disabled',
             '--Input-gap': '4px',
           },
@@ -535,11 +544,10 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
             textAlign: 'right',
             fontSize: 12,
             color: 'text.secondary',
-            lineHeight: 0,
           },
         }}
       />
-    </form>
+    </FormControl>
   )
 }
 
@@ -659,7 +667,7 @@ const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => (
     onChange={(_, val) => audioEvents.crossfade(val as number, stemType)}
     sx={{
       padding: '15px 0',
-      '& .JoySlider-thumb': {
+      '& .MuiSlider-thumb': {
         width: '10px',
         height: '20px',
         borderRadius: '3px',

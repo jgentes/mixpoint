@@ -1433,7 +1433,7 @@
   dependencies:
     "@babel/runtime" "^7.20.6"
 
-"@mui/joy@^5.0.0-alpha.48":
+"@mui/joy@^5.0.0-alpha.65":
   version "5.0.0-alpha.65"
   resolved "https://registry.yarnpkg.com/@mui/joy/-/joy-5.0.0-alpha.65.tgz#70ece8bad7c64974d738954de4e7290243d4e59f"
   integrity sha512-Whtfn8ULpvUOfgtrZ76XutYXTqNEDD/hwRFcWc5OV50NzTu5d+TC+hQARa0EKXd2YGktaolvnRdjN6beDGtlWg==
@@ -1449,7 +1449,7 @@
     prop-types "^15.8.1"
     react-is "^18.2.0"
 
-"@mui/material@^5.10.8":
+"@mui/material@^5.11.7":
   version "5.11.7"
   resolved "https://registry.yarnpkg.com/@mui/material/-/material-5.11.7.tgz#d460c7239013a57cc2aa3d2bbe14ba875b29d7cb"
   integrity sha512-wDv7Pc6kMe9jeWkmCLt4JChd1lPc2u23JQHpB35L2VwQowpNFoDfIwqi0sYCnZTMKlRc7lza8LqwSwHl2G52Rw==

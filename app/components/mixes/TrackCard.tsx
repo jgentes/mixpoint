@@ -78,7 +78,7 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
     p: 0,
     border: '1px solid',
     borderColor: 'action.focus',
-    borderRadius: 'sm',
+    borderRadius: '6px',
     borderBottom: 'none',
     bgcolor: 'background.body',
     overflow: 'hidden',
@@ -128,7 +128,7 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
       variant='soft'
       sx={{
         p: 1,
-        borderRadius: 'sm',
+        borderRadius: '6px',
         border: '1px solid',
         borderColor: 'action.selected',
       }}

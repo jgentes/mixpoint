@@ -59,7 +59,7 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
       sx={{
         p: 1,
         flexGrow: 1,
-        borderRadius: 'sm',
+        borderRadius: '6px',
         border: '1px solid',
         borderColor: 'action.selected',
         width: '30%',

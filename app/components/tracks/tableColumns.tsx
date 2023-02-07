@@ -153,7 +153,7 @@ const createColumnDefinitions = (): {
       sx: { whiteSpace: 'nowrap' },
       formatter: t => moment(t.lastModified).fromNow(),
     },
-  ]
+  ];
 }
 
 export { createColumnDefinitions }

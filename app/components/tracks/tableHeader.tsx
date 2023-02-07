@@ -3,9 +3,10 @@ import {
   Button,
   Card,
   Checkbox,
+  FormControl,
   IconButton,
+  Input,
   Link,
-  TextField,
   Typography,
 } from '@mui/joy'
 import {
@@ -116,35 +117,41 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
           )}
         </Typography>
       )}
-      <TextField
-        size='sm'
-        variant='soft'
-        placeholder='Search...'
-        startDecorator={<SearchRounded color='primary' />}
-        onChange={e => setSearch(e.target.value)}
-        value={search}
-        endDecorator={
-          !search ? null : (
-            <IconButton
-              variant='outlined'
-              size='sm'
-              color='neutral'
-              onClick={() => setSearch('')}
-            >
-              <Clear />
-            </IconButton>
-          )
-        }
+      <FormControl
         sx={{
-          fontWeight: 'thin',
-          flexBasis: '500px',
-          mx: 2,
-          display: {
-            xs: 'none',
-            sm: 'flex',
-          },
+          display: 'flex',
+          flexDirection: 'row',
         }}
-      />
+      >
+        <Input
+          variant='soft'
+          placeholder='Search...'
+          startDecorator={<SearchRounded color='primary' />}
+          onChange={e => setSearch(e.target.value)}
+          value={search}
+          endDecorator={
+            !search ? null : (
+              <IconButton
+                variant='outlined'
+                size='sm'
+                color='neutral'
+                onClick={() => setSearch('')}
+              >
+                <Clear />
+              </IconButton>
+            )
+          }
+          sx={{
+            fontWeight: 'thin',
+            flexBasis: '500px',
+            mx: 2,
+            display: {
+              xs: 'none',
+              sm: 'flex',
+            },
+          }}
+        />
+      </FormControl>
       {numSelected == 0 ? (
         <Button
           size='sm'

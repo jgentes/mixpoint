@@ -1,6 +1,6 @@
-import { setAudioState } from '~/api/appState'
+import { setAudioState, Stems } from '~/api/appState'
 import { savePCM } from '~/api/audioHandlers'
-import { db, storeTrack, Track } from '~/api/db/dbHandlers'
+import { db, storeTrack, Stem, Track } from '~/api/db/dbHandlers'
 import { getStemsDirHandle } from '~/api/fileHandlers'
 import { convertWav } from '~/api/mp3Converter'
 import { errorHandler } from '~/utils/notifications'
@@ -151,7 +151,7 @@ const stemAudio = async (trackId: Track['id']) => {
   const stemType = `audio/${startBody.modelInputs.mp3 ? 'mp3' : 'wav'}`
 
   for (const { name, data } of stems) {
-    const rename = `${name.slice(0, -4)}.mp3`
+    const rename = `${name.toString().slice(0, -4)}.mp3`
     const stemFile = await audioDirHandle.getFileHandle(rename, {
       create: true,
     })
@@ -180,7 +180,10 @@ const stemAudio = async (trackId: Track['id']) => {
       console.log(`Stem saved: ${filename.split('.')[0]} - ${rename}`)
 
       // store stem in cache
-      storeTrack({ id: trackId, stems: { [name.slice(0, -4) as Stems]: file } })
+      storeTrack({
+        id: trackId,
+        stems: { [name.toString().slice(0, -4) as Stem]: file },
+      })
 
       setAudioState[trackId!].stemState('ready')
 

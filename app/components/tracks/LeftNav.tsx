@@ -54,7 +54,7 @@ const LeftNav = () => {
           <List
             aria-labelledby='nav-list-browse'
             sx={{
-              '& .JoyListItemButton-root': { p: '8px' },
+              '& .MuiListItemButton-root': { p: '8px' },
             }}
           >
             <ListItem>
@@ -130,7 +130,7 @@ const LeftNav = () => {
             size='sm'
             sx={{
               '--List-decorator-size': '32px',
-              '& .JoyListItemButton-root': { p: '8px' },
+              '& .MuiListItemButton-root': { p: '8px' },
             }}
           >
             <ListItem>

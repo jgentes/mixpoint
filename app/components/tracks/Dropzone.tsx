@@ -44,7 +44,7 @@ const Dropzone = (props: BoxProps) => {
         cursor: 'pointer',
         borderColor: dragOver ? '#30b2e9' : undefined,
         backgroundColor: dragOver ? '#30b2e919' : undefined,
-        borderRadius: 'sm',
+        borderRadius: '6px',
 
         '&:hover, &:active': {
           borderColor: '#30b2e9',
