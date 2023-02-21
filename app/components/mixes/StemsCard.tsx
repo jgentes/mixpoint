@@ -1,8 +1,9 @@
 import { Card, Typography } from '@mui/joy'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Player } from 'tone'
 import { audioState, setAudioState, Stems } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
+import { savePCM } from '~/api/audioHandlers'
 
 import {
   db,
@@ -33,7 +34,7 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
         if (stemCache) {
           const stems: Stems = {}
 
-          for (let [stem, file] of Object.entries(stemCache)) {
+          for (let [stem, { file, pcm }] of Object.entries(stemCache)) {
             const source = URL.createObjectURL(file)
 
             // store audioElemnts in appState
@@ -47,6 +48,11 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
         }
         // mute the waveform and use stems for playback instead
         audioEvents.mute(trackId)
+
+        // store PCM data for waveform instead of duplicating
+        // the audioBuffer in WaveSurfer, since Tone handles playback
+        const { pcm } = (await db.tracks.get(trackId!)) || {}
+        if (!pcm) savePCM(trackId)
       }
     }
 

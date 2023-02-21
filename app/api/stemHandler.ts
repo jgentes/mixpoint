@@ -1,5 +1,4 @@
 import { setAudioState, Stems } from '~/api/appState'
-import { savePCM } from '~/api/audioHandlers'
 import { db, Stem, storeTrack, Track } from '~/api/db/dbHandlers'
 import { getStemsDirHandle } from '~/api/fileHandlers'
 import { convertWav } from '~/api/mp3Converter'
@@ -182,14 +181,10 @@ const stemAudio = async (trackId: Track['id']) => {
       // store stem in cache
       storeTrack({
         id: trackId,
-        stems: { [name.toString().slice(0, -4) as Stem]: file },
+        stems: { [name.toString().slice(0, -4) as Stem]: { file } },
       })
 
       setAudioState[trackId!].stemState('ready')
-
-      // now that we have stems, we can use PCM data for waveform instead of duplicating
-      // the audioBuffer in WaveSurfer
-      savePCM(trackId)
     }
 
     if (!startBody.modelInputs.mp3) {

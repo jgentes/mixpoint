@@ -159,10 +159,16 @@ const validateTrackStemAccess = async (trackId: Track['id']): Promise<void> => {
 
     // are there at least 4 files in the dir?
     const localStems: TrackCache['stems'] = {}
-    for await (const [name, fileHandle] of trackStemDirHandle.entries()) {
-      const file = (await fileHandle.getFile(name)) as File
-      const stemName = name.slice(0, -4)
-      if (STEMS.includes(stemName as Stem)) localStems[stemName as Stem] = file
+    try {
+      for await (const [name, fileHandle] of trackStemDirHandle.entries()) {
+        const file = (await fileHandle.getFile(name)) as File
+        const stemName = name.slice(0, -4)
+        if (stemName && STEMS.includes(stemName as Stem)) {
+          localStems[stemName as Stem] = { file }
+        }
+      }
+    } catch (e) {
+      throw errorHandler(e as Error)
     }
 
     if (Object.keys(localStems).length < 4) return 'getStems'

@@ -27,6 +27,7 @@ const convertWav = (
           const mp3Blob = new Blob(e.data.buf, { type: 'audio/mp3' })
           onProgress(1)
           onSuccess(mp3Blob)
+          mp3Worker.terminate()
       }
     }
   }
