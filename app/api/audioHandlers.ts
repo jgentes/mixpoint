@@ -5,11 +5,13 @@ import {
   putTracks,
   setPrefs,
   setTrackPrefs,
+  Stem,
+  storeTrackCache,
   Track,
 } from '~/api/db/dbHandlers'
 import { getPermission } from '~/api/fileHandlers'
 
-import { getAudioState, setModalState, setTableState } from '~/api/appState'
+import { setModalState, setTableState } from '~/api/appState'
 import { errorHandler } from '~/utils/notifications'
 
 // This is the main track processing workflow when files are added to the app
@@ -248,14 +250,25 @@ const calcMarkers = async (
   }
 }
 
-const savePCM = async (trackId: Track['id']) => {
-  const [waveform] = getAudioState[trackId!].waveform()
-  if (!waveform) return errorHandler('No waveform data found, cannot save PCM.')
+const savePCM = async (
+  trackId: Track['id'],
+  waveform: WaveSurfer,
+  stem?: Stem
+) => {
+  if (!waveform || !trackId)
+    return errorHandler('No waveform data found, cannot save PCM.')
 
   const pcm = await waveform.exportPCM(waveform.drawer.width, 10000, true, 0)
 
   if (pcm) {
-    db.tracks.update(trackId!, { pcm })
+    if (stem) {
+      const cache = await db.trackCache.get(trackId)
+      const stems = cache?.stems || {}
+      stems[stem] = { ...stems[stem], pcm }
+      await storeTrackCache({ id: trackId, file: stems[stem]?.file, stems })
+    } else {
+      db.tracks.update(trackId!, { pcm })
+    }
   }
 }
 

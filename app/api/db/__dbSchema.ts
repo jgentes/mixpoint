@@ -1,6 +1,7 @@
 // This file initializes Dexie (indexDB), defines the schema and creates tables
 
 import Dexie from 'dexie'
+import { Peaks } from 'wavesurfer.js/types/backend'
 
 // eventually allow the user to change these
 const STATE_ROW_LIMIT = 100
@@ -95,7 +96,7 @@ type Stem = typeof STEMS[number]
 type TrackCache = {
   id: Track['id']
   file?: File
-  stems?: Partial<{ [key in Stem]: { file: File; pcm?: number[] } }>
+  stems?: Partial<{ [key in Stem]: { file?: File; pcm?: Peaks } }>
 }
 
 // Note TrackPrefs is not a table. Track states are contained in MixPrefs

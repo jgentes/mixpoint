@@ -19,7 +19,7 @@ import { errorHandler } from '~/utils/notifications'
 
 const CACHE_LIMIT = 25
 
-const storeTrack = async ({
+const storeTrackCache = async ({
   id,
   file,
   stems,
@@ -224,5 +224,5 @@ export {
   getTrackPrefs,
   getTrackName,
   setTrackPrefs,
-  storeTrack,
+  storeTrackCache,
 }

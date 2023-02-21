@@ -6,7 +6,7 @@ import {
   setPrefs,
   Stem,
   STEMS,
-  storeTrack,
+  storeTrackCache,
   Track,
   TrackCache,
 } from '~/api/db/dbHandlers'
@@ -29,7 +29,7 @@ const _getFile = async (track: Track): Promise<File | null> => {
   }
 
   // Cache the file
-  if (file) await storeTrack({ id: track.id, file })
+  if (file) await storeTrackCache({ id: track.id, file })
 
   // In the case perms aren't granted, return null - we need to request permission
   return file
@@ -174,7 +174,7 @@ const validateTrackStemAccess = async (trackId: Track['id']): Promise<void> => {
     if (Object.keys(localStems).length < 4) return 'getStems'
 
     // cache the stems
-    await storeTrack({ id: trackId, stems: localStems })
+    await storeTrackCache({ id: trackId, stems: localStems })
 
     // ready!
     return 'ready'

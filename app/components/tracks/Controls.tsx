@@ -15,6 +15,7 @@ import {
 } from '@mui/icons-material'
 import {
   Box,
+  Card,
   Chip,
   FormControl,
   Input,
@@ -553,96 +554,88 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
   )
 }
 
-const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
+const StemControl = ({
+  trackId,
+  stemType,
+}: {
+  trackId: Track['id']
+  stemType: Stem
+}) => {
   if (!trackId) return null
 
-  const StemPlayer = ({ stemType }: { stemType: Stem }) => {
-    const [volume = 100] = audioState[trackId].stems[stemType].volume()
-    const [mute = false] = audioState[trackId].stems[stemType].mute()
+  const [volume = 100] = audioState[trackId].stems[stemType].volume()
+  const [mute = false] = audioState[trackId].stems[stemType].mute()
 
-    const [solo, setSolo] = useState(false)
+  const [solo, setSolo] = useState(false)
 
-    const toggleSolo = () => {
-      audioEvents.stemSoloToggle(trackId, stemType, !solo)
-      setSolo(!solo)
-    }
-
-    return (
-      <>
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 1,
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <Typography
-            sx={{
-              fontSize: 'xs',
-              fontWeight: 'md',
-              pl: '3px',
-              width: '60px',
-            }}
-          >
-            {stemType[0].toUpperCase() + stemType.slice(1).toLowerCase()}
-          </Typography>
-          <Slider
-            aria-label={stemType}
-            value={volume}
-            min={0}
-            max={100}
-            step={5}
-            marks={[0, 25, 50, 75, 100].map(v => ({ value: v }))}
-            valueLabelDisplay='auto'
-            variant='soft'
-            size={'sm'}
-            onChange={(_, volume) =>
-              audioEvents.stemVolume(trackId, stemType, volume as number)
-            }
-            disabled={mute}
-            sx={{
-              padding: '15px 0',
-              mr: '4px',
-            }}
-          />
-          <Headset
-            fontSize='small'
-            sx={{
-              color: solo ? 'text.primary' : 'action.disabled',
-              cursor: 'pointer',
-            }}
-            onClick={() => toggleSolo()}
-          />
-          {!volume || mute ? (
-            <VolumeOff
-              fontSize='small'
-              sx={{ color: 'text.secondary', cursor: 'pointer' }}
-              onClick={() =>
-                audioEvents.stemMuteToggle(trackId, stemType, false)
-              }
-            />
-          ) : (
-            <VolumeUp
-              fontSize='small'
-              sx={{ color: 'text.secondary', cursor: 'pointer' }}
-              onClick={() =>
-                audioEvents.stemMuteToggle(trackId, stemType, true)
-              }
-            />
-          )}
-        </Box>
-        <VolumeMeter trackId={trackId} stemType={stemType} />
-      </>
-    )
+  const toggleSolo = () => {
+    audioEvents.stemSoloToggle(trackId, stemType, !solo)
+    setSolo(!solo)
   }
 
   return (
-    <Box sx={{ mb: 2 }}>
-      {STEMS.map(stem => (
-        <StemPlayer key={stem} stemType={stem as Stem} />
-      ))}
-    </Box>
+    <>
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography
+          sx={{
+            fontSize: 'xs',
+            fontWeight: 'md',
+            pl: '3px',
+            width: '60px',
+          }}
+        >
+          {stemType[0].toUpperCase() + stemType.slice(1).toLowerCase()}
+        </Typography>
+        <Slider
+          aria-label={stemType}
+          value={volume}
+          min={0}
+          max={100}
+          step={5}
+          marks={[0, 25, 50, 75, 100].map(v => ({ value: v }))}
+          valueLabelDisplay='auto'
+          variant='soft'
+          size={'sm'}
+          onChange={(_, volume) =>
+            audioEvents.stemVolume(trackId, stemType, volume as number)
+          }
+          disabled={mute}
+          sx={{
+            padding: '15px 0',
+            mr: '4px',
+          }}
+        />
+        <Headset
+          fontSize='small'
+          sx={{
+            color: solo ? 'text.primary' : 'action.disabled',
+            cursor: 'pointer',
+          }}
+          onClick={() => toggleSolo()}
+        />
+        {!volume || mute ? (
+          <VolumeOff
+            fontSize='small'
+            sx={{ color: 'text.secondary', cursor: 'pointer' }}
+            onClick={() => audioEvents.stemMuteToggle(trackId, stemType, false)}
+          />
+        ) : (
+          <VolumeUp
+            fontSize='small'
+            sx={{ color: 'text.secondary', cursor: 'pointer' }}
+            onClick={() => audioEvents.stemMuteToggle(trackId, stemType, true)}
+          />
+        )}
+      </Box>
+      <VolumeMeter trackId={trackId} stemType={stemType} />
+    </>
   )
 }
 
@@ -687,7 +680,7 @@ export {
   MixpointControl,
   TrackNavControl,
   MixpointNavControl,
-  StemControls,
+  StemControl,
   CrossfaderControl,
   StemsCrossfaders,
 }

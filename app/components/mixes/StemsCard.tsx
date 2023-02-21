@@ -1,20 +1,21 @@
-import { Card, Typography } from '@mui/joy'
+import { Box, Card, Typography } from '@mui/joy'
 import { useEffect } from 'react'
 import { Player } from 'tone'
 import { audioState, setAudioState, Stems } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
-import { savePCM } from '~/api/audioHandlers'
 
 import {
   db,
   getTrackName,
   Stem,
+  STEMS,
   Track,
   useLiveQuery,
 } from '~/api/db/dbHandlers'
 import { validateTrackStemAccess } from '~/api/fileHandlers'
+import { initWaveform } from '~/api/renderWaveform'
 import StemAccessButton from '~/components/mixes/StemAccessButton'
-import { StemControls } from '~/components/tracks/Controls'
+import { StemControl } from '~/components/tracks/Controls'
 import Dropzone from '~/components/tracks/Dropzone'
 
 const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
@@ -35,6 +36,8 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
           const stems: Stems = {}
 
           for (let [stem, { file, pcm }] of Object.entries(stemCache)) {
+            if (!file) continue
+
             const source = URL.createObjectURL(file)
 
             // store audioElemnts in appState
@@ -43,16 +46,14 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
               volume: 100,
               mute: false,
             }
+
+            await initWaveform({ trackId, file, stem: stem as Stem })
           }
           setAudioState[trackId!].stems(stems)
         }
+
         // mute the waveform and use stems for playback instead
         audioEvents.mute(trackId)
-
-        // store PCM data for waveform instead of duplicating
-        // the audioBuffer in WaveSurfer, since Tone handles playback
-        const { pcm } = (await db.tracks.get(trackId!)) || {}
-        if (!pcm) savePCM(trackId)
       }
     }
 
@@ -78,7 +79,17 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
           {stemState !== 'ready' ? (
             <StemAccessButton trackId={trackId} />
           ) : (
-            <StemControls trackId={trackId} />
+            <Box sx={{ mb: 2 }}>
+              {STEMS.map(stem => (
+                <div key={stem}>
+                  <Card
+                    id={`zoomview-container_${trackId}_${stem}`}
+                    className='zoomview-container'
+                  />
+                  <StemControl trackId={trackId} stemType={stem as Stem} />
+                </div>
+              ))}
+            </Box>
           )}
           <Typography
             sx={{

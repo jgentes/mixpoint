@@ -1,9 +1,12 @@
 import { Card } from '@mui/joy'
 import { SxProps } from '@mui/joy/styles/types'
 import { useEffect } from 'react'
-import { getAudioState, setAudioState, setTableState } from '~/api/appState'
+import { Peaks } from 'wavesurfer.js/types/backend'
+import { WaveSurferParams } from 'wavesurfer.js/types/params'
+import { setAudioState, setTableState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
-import { db, Track } from '~/api/db/dbHandlers'
+import { savePCM } from '~/api/audioHandlers'
+import { db, Stem, Track } from '~/api/db/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
 import { getPermission } from './fileHandlers'
 
@@ -23,22 +26,37 @@ if (typeof document !== 'undefined') {
   MarkersPlugin = require('wavesurfer.js/src/plugin/markers').default
 }
 
+// This function accepts either a full track (with no stem) or an individual stem ('bass', etc)
+// It generates the waveform container and stores PCM data for future use
 const initWaveform = async ({
   trackId,
   file,
+  stem,
 }: {
   trackId: Track['id']
   file: File
+  stem?: Stem
 }) => {
+  if (!trackId) throw errorHandler('No track ID provided to initWaveform')
+
   setTableState.analyzing(prev =>
     prev.includes(trackId) ? prev : [...prev, trackId]
   )
 
-  // check for existing PCM data
-  const { pcm, duration } = (await db.tracks.get(trackId!)) || {}
+  const track = (await db.tracks.get(trackId)) || {}
+  const { duration } = track
 
-  const waveform = WaveSurfer.create({
-    container: `#zoomview-container_${trackId}`,
+  // check for existing PCM data to determine wavesurfer backend
+  let pcm: Peaks | undefined
+  if (stem) {
+    const cache = await db.trackCache.get(trackId!)
+    if (cache?.stems) pcm = cache.stems[stem]?.pcm
+  } else {
+    pcm = track.pcm
+  }
+
+  const waveformConfig: WaveSurferParams = {
+    container: `#zoomview-container_${trackId}${stem ? `_${stem}` : ''}`,
     backend: pcm ? 'MediaElementWebAudio' : 'WebAudio',
     scrollParent: true,
     fillParent: false,
@@ -74,6 +92,11 @@ const initWaveform = async ({
         },
       }),
       MarkersPlugin.create({ markers: [] }),
+    ],
+  }
+
+  if (!stem)
+    waveformConfig.plugins!.push(
       MinimapPlugin.create({
         container: `#overview-container_${trackId}`,
         waveColor: [
@@ -88,9 +111,10 @@ const initWaveform = async ({
         scrollParent: false,
         hideScrollbar: true,
         pixelRatio: 1,
-      }),
-    ],
-  })
+      })
+    )
+
+  const waveform = WaveSurfer.create(waveformConfig)
 
   // Initialize wavesurfer event listeners
   waveform.on('seek', time => audioEvents.onSeek(trackId, time))
@@ -99,14 +123,18 @@ const initWaveform = async ({
   // Save waveform in audioState, later used to generate PCM.
   // PCM avoids loading the audio into memory, which isn't necessary
   // because playback is handled by Tone.js instead of Wavesurfer
-  setAudioState[trackId!].waveform(waveform)
-  console.log(!!pcm)
+  if (!stem) setAudioState[trackId!].waveform(waveform)
+
   if (pcm) {
     waveform.backend.setPeaks(pcm, duration)
     waveform.drawBuffer()
     waveform.fireEvent('ready')
   } else {
     if (file) waveform.loadBlob(file)
+
+    // store PCM data for waveform instead of duplicating
+    // the audioBuffer in WaveSurfer, since Tone handles playback
+    savePCM(trackId, waveform, stem)
   }
 }
 
@@ -151,4 +179,4 @@ const Waveform = ({
   )
 }
 
-export { Waveform as default }
+export { Waveform as default, initWaveform }
