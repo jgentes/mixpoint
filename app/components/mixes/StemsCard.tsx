@@ -1,6 +1,7 @@
 import { Box, Card, Typography } from '@mui/joy'
 import { useEffect } from 'react'
 import { Player } from 'tone'
+import { WaveSurferParams } from 'wavesurfer.js/types/params'
 import { audioState, setAudioState, Stems } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
 
@@ -35,19 +36,51 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
         if (stemCache) {
           const stems: Stems = {}
 
-          for (let [stem, { file, pcm }] of Object.entries(stemCache)) {
+          for (let [stem, { file }] of Object.entries(stemCache)) {
             if (!file) continue
 
             const source = URL.createObjectURL(file)
+
+            const waveformConfig: WaveSurferParams = {
+              container: `#zoomview-container_${trackId}_${stem}`,
+              scrollParent: false,
+              fillParent: true,
+              hideScrollbar: true,
+              pixelRatio: 1,
+              barWidth: 1,
+              cursorColor: 'secondary.mainChannel',
+              interact: true,
+              closeAudioContext: true,
+              //@ts-ignore - author hasn't updated types for gradients
+              waveColor: [
+                'rgb(200, 165, 49)',
+                'rgb(200, 165, 49)',
+                'rgb(200, 165, 49)',
+                'rgb(205, 124, 49)',
+                'rgb(205, 124, 49)',
+              ],
+              progressColor: 'rgba(0, 0, 0, 0.45)',
+            }
+
+            const waveform = await initWaveform({
+              trackId,
+              file,
+              stem: stem as Stem,
+              waveformConfig,
+            })
 
             // store audioElemnts in appState
             stems[stem as Stem] = {
               player: new Player(source).toDestination(),
               volume: 100,
               mute: false,
+              waveform,
             }
 
-            await initWaveform({ trackId, file, stem: stem as Stem })
+            // Initialize wavesurfer event listeners
+            // Must happen after storing the waveform in state
+            waveform.on('seek', time => audioEvents.onSeek(trackId, time))
+            waveform.on('ready', () => audioEvents.onReady(trackId))
           }
           setAudioState[trackId!].stems(stems)
         }
@@ -82,10 +115,6 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
             <Box sx={{ mb: 2 }}>
               {STEMS.map(stem => (
                 <div key={stem}>
-                  <Card
-                    id={`zoomview-container_${trackId}_${stem}`}
-                    className='zoomview-container'
-                  />
                   <StemControl trackId={trackId} stemType={stem as Stem} />
                 </div>
               ))}

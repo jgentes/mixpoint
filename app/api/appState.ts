@@ -31,6 +31,7 @@ type Stems = Partial<{
     volume: number
     volumeMeter: number
     mute: boolean
+    waveform: WaveSurfer
   }>
 }>
 

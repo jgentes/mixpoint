@@ -573,8 +573,28 @@ const StemControl = ({
     setSolo(!solo)
   }
 
+  const loaderSx = {
+    p: 0,
+    border: '1px solid',
+    borderColor: 'action.focus',
+    borderRadius: '6px',
+    borderBottom: 'none',
+    bgcolor: 'background.body',
+    overflow: 'hidden',
+    zIndex: 1,
+  }
+
   return (
     <>
+      <Card
+        id={`zoomview-container_${trackId}_${stemType}`}
+        sx={{
+          ...loaderSx,
+          height: '25px',
+          mt: 1,
+        }}
+      />
+      <VolumeMeter trackId={trackId} stemType={stemType} />
       <Box
         sx={{
           display: 'flex',
@@ -634,7 +654,6 @@ const StemControl = ({
           />
         )}
       </Box>
-      <VolumeMeter trackId={trackId} stemType={stemType} />
     </>
   )
 }

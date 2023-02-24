@@ -260,12 +260,12 @@ const savePCM = async (
 
   const pcm = await waveform.exportPCM(waveform.drawer.width, 10000, true, 0)
 
-  if (pcm) {
+  if (pcm?.length) {
     if (stem) {
       const cache = await db.trackCache.get(trackId)
       const stems = cache?.stems || {}
       stems[stem] = { ...stems[stem], pcm }
-      await storeTrackCache({ id: trackId, file: stems[stem]?.file, stems })
+      await storeTrackCache({ id: trackId, file: cache?.file, stems })
     } else {
       db.tracks.update(trackId!, { pcm })
     }

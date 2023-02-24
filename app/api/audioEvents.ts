@@ -49,7 +49,7 @@ const _getAllWaveforms = (): WaveSurfer[] => {
 }
 
 const audioEvents = {
-  onReady: async (trackId: Track['id'], usingPcm: boolean) => {
+  onReady: async (trackId: Track['id']) => {
     const [waveform] = getAudioState[trackId!].waveform()
     if (!waveform) return
 
@@ -92,8 +92,7 @@ const audioEvents = {
     const [audioState] = getAudioState()
 
     for (const [id, { waveform }] of Object.entries(audioState)) {
-      if (!waveform) continue
-      if (trackId && id !== String(trackId)) continue
+      if (!waveform || (trackId && id !== String(trackId))) continue
 
       // clear any running volume meter timers
       clearVolumeMeter(Number(id))
@@ -110,10 +109,12 @@ const audioEvents = {
 
       // pull players from audioState for synchronized playback
       const [stems] = getAudioState[Number(id)!].stems()
+      let waves = [waveform] // used for drawer progress
 
       if (stems) {
-        console.log('playing stems', stems)
-        for (const [stem, { player }] of Object.entries(stems)) {
+        for (const [stem, { player, waveform: stemWave }] of Object.entries(
+          stems
+        )) {
           if (!player) continue
 
           if (adjustedBpm && bpm) player.playbackRate = adjustedBpm / bpm
@@ -124,6 +125,7 @@ const audioEvents = {
           meters[stem as Stem] = meter
 
           player.start(contextStartTime, waveform.getCurrentTime())
+          if (stemWave) waves.push(stemWave)
         }
       } else waveform.play()
 
@@ -145,7 +147,9 @@ const audioEvents = {
         const time = startTime + now() - contextStartTime
 
         // move the playmarker ahead
-        waveform.drawer.progress(1 / (waveform.getDuration() / time))
+        waves.forEach(wave =>
+          wave.drawer.progress(1 / (waveform.getDuration() / time))
+        )
 
         // this is the waveform volume meter
         setAudioState[Number(id)].volumeMeter(maxDb(volumes))

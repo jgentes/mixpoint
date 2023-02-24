@@ -96,7 +96,9 @@ type Stem = typeof STEMS[number]
 type TrackCache = {
   id: Track['id']
   file?: File
-  stems?: Partial<{ [key in Stem]: { file?: File; pcm?: Peaks } }>
+  stems?: Partial<{
+    [key in Stem]: { file?: File; pcm?: Peaks }
+  }>
 }
 
 // Note TrackPrefs is not a table. Track states are contained in MixPrefs
