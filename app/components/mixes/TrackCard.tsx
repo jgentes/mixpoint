@@ -30,6 +30,16 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
     const [time = 0] = audioState[trackId].time()
     const [nudged] = audioState[trackId!].nudged()
 
+    // adjust time marker on waveform
+    const [waveform] = audioState[trackId].waveform()
+
+    if (waveform) {
+      const drawerTime = 1 / (waveform.getDuration() / time)
+      waveform.drawer.progress(drawerTime)
+      //@ts-ignore - minimap does indeed have a drawer.progress method
+      waveform.minimap.drawer.progress(drawerTime)
+    }
+
     return (
       <Typography sx={{ fontSize: 'sm' }}>
         {timeFormat(time)}

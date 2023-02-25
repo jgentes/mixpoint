@@ -48,6 +48,7 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
               hideScrollbar: true,
               pixelRatio: 1,
               barWidth: 1,
+              normalize: true,
               cursorColor: 'secondary.mainChannel',
               interact: true,
               closeAudioContext: true,

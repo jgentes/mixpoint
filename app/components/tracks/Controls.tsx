@@ -568,6 +568,11 @@ const StemControl = ({
 
   const [solo, setSolo] = useState(false)
 
+  // adjust stem time marker based on main waveform
+  const [time = 0] = audioState[trackId].time()
+  const [waveform] = audioState[trackId].stems[stemType].waveform()
+  if (waveform) waveform.drawer.progress(1 / (waveform.getDuration() / time))
+
   const toggleSolo = () => {
     audioEvents.stemSoloToggle(trackId, stemType, !solo)
     setSolo(!solo)

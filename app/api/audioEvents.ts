@@ -71,7 +71,9 @@ const audioEvents = {
 
     if (currentPlayhead) {
       waveform.playhead.setPlayheadTime(currentPlayhead)
-      waveform.drawer.recenter(1 / (waveform.getDuration() / currentPlayhead))
+
+      // set time in appstate, which will trigger drawer renders
+      setAudioState[trackId!].time(currentPlayhead)
     }
 
     // Adjust playbackrate if bpm has been modified
@@ -109,7 +111,6 @@ const audioEvents = {
 
       // pull players from audioState for synchronized playback
       const [stems] = getAudioState[Number(id)!].stems()
-      let waves = [waveform] // used for drawer progress
 
       if (stems) {
         for (const [stem, { player, waveform: stemWave }] of Object.entries(
@@ -125,7 +126,6 @@ const audioEvents = {
           meters[stem as Stem] = meter
 
           player.start(contextStartTime, waveform.getCurrentTime())
-          if (stemWave) waves.push(stemWave)
         }
       } else waveform.play()
 
@@ -145,11 +145,6 @@ const audioEvents = {
         }
 
         const time = startTime + now() - contextStartTime
-
-        // move the playmarker ahead
-        waves.forEach(wave =>
-          wave.drawer.progress(1 / (waveform.getDuration() / time))
-        )
 
         // this is the waveform volume meter
         setAudioState[Number(id)].volumeMeter(maxDb(volumes))
