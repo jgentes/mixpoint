@@ -34,7 +34,7 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
     const [waveform] = audioState[trackId].waveform()
 
     if (waveform) {
-      const drawerTime = 1 / (waveform.getDuration() / time)
+      const drawerTime = 1 / (waveform.getDuration() / time) || 0
       waveform.drawer.progress(drawerTime)
       //@ts-ignore - minimap does indeed have a drawer.progress method
       waveform.minimap.drawer.progress(drawerTime)

@@ -237,9 +237,14 @@ const audioEvents = {
 
     // Estimate that we're at the right time and move playhead (and center if using prev/next buttons)
     if (time && (time > startTime + 0.005 || time < startTime - 0.005)) {
-      if (direction) waveform.skipForward(time - startTime)
-      else {
-        waveform.playhead.setPlayheadTime(time) // fires a seek event
+      if (direction) {
+        waveform.skipForward(time - startTime)
+      } else {
+        waveform.playhead.setPlayheadTime(time)
+        waveform.seekAndCenter(1 / (waveform.getDuration() / time) || 0)
+
+        // set time in audioState to trigger waveform rerender
+        setAudioState[trackId!].time(time)
       }
     } else {
       // if the audio is playing, restart playing when seeking to new time
@@ -269,6 +274,7 @@ const audioEvents = {
     }
   },
 
+  // onSeek is the handler for the WaveSurfer 'seek' event
   onSeek: (trackId: Track['id'], percentageTime: number) => {
     const [waveform] = getAudioState[trackId!].waveform()
     if (!waveform) return
