@@ -97,7 +97,7 @@ type TrackCache = {
   id: Track['id']
   file?: File
   stems?: Partial<{
-    [key in Stem]: { file?: File; pcm?: Peaks }
+    [key in Stem]: { file?: File }
   }>
 }
 

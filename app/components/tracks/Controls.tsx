@@ -136,6 +136,7 @@ const NumberControl = ({
         }}
         sx={{
           width,
+          borderRadius: '5px',
           '& div': {
             borderColor: 'action.disabled',
           },
@@ -233,6 +234,9 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
       name='beatResolution'
       value={beatResolution}
       variant='outlined'
+      sx={{
+        borderRadius: '5px',
+      }}
       onChange={e =>
         changeBeatResolution(+e.target.value as TrackPrefs['beatResolution'])
       }
@@ -252,12 +256,12 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
               borderColor: theme.palette.divider,
             },
             [`&[data-first-child] .${radioClasses.action}`]: {
-              borderTopLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-              borderBottomLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+              borderTopLeftRadius: '5px',
+              borderBottomLeftRadius: '5px',
             },
             [`&[data-last-child] .${radioClasses.action}`]: {
-              borderTopRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-              borderBottomRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+              borderTopRightRadius: '5px',
+              borderBottomRightRadius: '5px',
             },
           })}
         >
@@ -306,7 +310,9 @@ const MixpointNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
       color='inherit'
       disableRipple
       id='navControl'
-      sx={{ '.MuiButtonGroup-grouped': { minWidth: '30px' } }}
+      sx={{
+        '.MuiButtonGroup-grouped': { minWidth: '30px' },
+      }}
     >
       {[
         {
@@ -539,6 +545,7 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
         onBlur={() => adjustMixpoint(mixpointVal)}
         sx={{
           width: 175,
+          borderRadius: '5px',
           '& div': {
             borderColor: 'action.disabled',
             '--Input-gap': '4px',
@@ -582,7 +589,7 @@ const StemControl = ({
     p: 0,
     border: '1px solid',
     borderColor: 'action.focus',
-    borderRadius: '6px',
+    borderRadius: '4px',
     borderBottom: 'none',
     bgcolor: 'background.body',
     overflow: 'hidden',
@@ -591,15 +598,6 @@ const StemControl = ({
 
   return (
     <>
-      <Card
-        id={`zoomview-container_${trackId}_${stemType}`}
-        sx={{
-          ...loaderSx,
-          height: '25px',
-          mt: 1,
-        }}
-      />
-      <VolumeMeter trackId={trackId} stemType={stemType} />
       <Box
         sx={{
           display: 'flex',
@@ -618,7 +616,19 @@ const StemControl = ({
         >
           {stemType[0].toUpperCase() + stemType.slice(1).toLowerCase()}
         </Typography>
-        <Slider
+        <Box sx={{ width: '100%' }}>
+          <Card
+            id={`zoomview-container_${trackId}_${stemType}`}
+            sx={{
+              ...loaderSx,
+              height: '20px',
+              pt: '3px',
+            }}
+          />
+          <VolumeMeter trackId={trackId} stemType={stemType} />
+        </Box>
+
+        {/* <Slider
           aria-label={stemType}
           value={volume}
           min={0}
@@ -636,7 +646,7 @@ const StemControl = ({
             padding: '15px 0',
             mr: '4px',
           }}
-        />
+        /> */}
         <Headset
           fontSize='small'
           sx={{

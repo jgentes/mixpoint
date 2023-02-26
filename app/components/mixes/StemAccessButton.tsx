@@ -71,10 +71,9 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
       sx={{
         border: '2px dashed #bbb',
         padding: '20px 10px',
-        margin: '10px',
         textAlign: 'center',
         cursor: 'pointer',
-        borderRadius: '6px',
+        borderRadius: '4px',
         borderColor: '#e9b830cc',
         backgroundColor: 'rgba(233, 215, 48, 0.1)',
 

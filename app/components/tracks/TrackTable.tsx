@@ -84,7 +84,7 @@ const TrackTable = () => {
             variant='outlined'
             id='track-table'
             sx={{
-              borderRadius: '6px',
+              borderRadius: '4px',
               bgcolor: 'background.body',
               overflow: 'auto',
 

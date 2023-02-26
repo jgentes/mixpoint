@@ -52,7 +52,6 @@ const audioEvents = {
   onReady: async (trackId: Track['id']) => {
     const [waveform] = getAudioState[trackId!].waveform()
     if (!waveform) return
-
     // Generate beat markers and apply them to waveform
     await calcMarkers(trackId, waveform)
 

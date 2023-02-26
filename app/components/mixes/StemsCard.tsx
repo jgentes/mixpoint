@@ -34,56 +34,25 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
         const { stems: stemCache } = (await db.trackCache.get(trackId)) || {}
 
         if (stemCache) {
-          const stems: Stems = {}
-
           for (let [stem, { file }] of Object.entries(stemCache)) {
             if (!file) continue
-
-            const source = URL.createObjectURL(file)
 
             const waveformConfig: WaveSurferParams = {
               container: `#zoomview-container_${trackId}_${stem}`,
               scrollParent: false,
               fillParent: true,
               hideScrollbar: true,
-              pixelRatio: 1,
               barWidth: 1,
               normalize: true,
-              cursorColor: 'secondary.mainChannel',
-              interact: true,
-              closeAudioContext: true,
-              //@ts-ignore - author hasn't updated types for gradients
-              waveColor: [
-                'rgb(200, 165, 49)',
-                'rgb(200, 165, 49)',
-                'rgb(200, 165, 49)',
-                'rgb(205, 124, 49)',
-                'rgb(205, 124, 49)',
-              ],
-              progressColor: 'rgba(0, 0, 0, 0.45)',
             }
 
-            const waveform = await initWaveform({
+            await initWaveform({
               trackId,
               file,
               stem: stem as Stem,
               waveformConfig,
             })
-
-            // store audioElemnts in appState
-            stems[stem as Stem] = {
-              player: new Player(source).toDestination(),
-              volume: 100,
-              mute: false,
-              waveform,
-            }
-
-            // Initialize wavesurfer event listeners
-            // Must happen after storing the waveform in state
-            waveform.on('seek', time => audioEvents.onSeek(trackId, time))
-            waveform.on('ready', () => audioEvents.onReady(trackId))
           }
-          setAudioState[trackId!].stems(stems)
         }
 
         // mute the waveform and use stems for playback instead
@@ -100,7 +69,7 @@ const StemsCard = ({ trackId }: { trackId: Track['id'] }) => {
       sx={{
         p: 1,
         flexGrow: 1,
-        borderRadius: '6px',
+        borderRadius: '4px',
         border: '1px solid',
         borderColor: 'action.selected',
         width: '30%',

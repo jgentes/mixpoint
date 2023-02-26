@@ -1,23 +1,14 @@
 import { Card } from '@mui/joy'
 import { SxProps } from '@mui/joy/styles/types'
 import { useEffect } from 'react'
+import * as Tone from 'tone'
+import { Player, ToneAudioBuffer } from 'tone'
 import { Peaks } from 'wavesurfer.js/types/backend'
 import { WaveSurferParams } from 'wavesurfer.js/types/params'
-import {
-  audioState,
-  getAudioState,
-  setAudioState,
-  setTableState,
-} from '~/api/appState'
+import { getAudioState, setAudioState, setTableState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
 import { savePCM } from '~/api/audioHandlers'
-import {
-  db,
-  Stem,
-  storeTrackCache,
-  Track,
-  TrackCache,
-} from '~/api/db/dbHandlers'
+import { db, Stem, Track } from '~/api/db/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
 import { getPermission } from './fileHandlers'
 
@@ -52,42 +43,98 @@ const initWaveform = async ({
 }): Promise<WaveSurfer> => {
   if (!trackId) throw errorHandler('No track ID provided to initWaveform')
 
+  const track = await db.tracks.get(trackId)
+  if (!track) throw errorHandler('Track not found')
+
   if (!stem)
     setTableState.analyzing(prev =>
       prev.includes(trackId) ? prev : [...prev, trackId]
     )
 
-  const track = (await db.tracks.get(trackId)) || {}
-  const { duration } = track
-
   // check for existing PCM data to determine wavesurfer backend
   // PCM avoids loading the audio into memory, which isn't necessary
   // because playback is handled by Tone.js instead of Wavesurfer
   let pcm: Peaks | undefined
-  if (stem) {
-    const cache = await db.trackCache.get(trackId!)
-    if (cache?.stems) pcm = cache.stems[stem]?.pcm
-  } else {
+  if (!stem) {
     if (track.pcm?.length) pcm = track.pcm
   }
 
   const config: WaveSurferParams = {
     backend: pcm ? 'MediaElementWebAudio' : 'WebAudio',
+    pixelRatio: 1,
+    cursorColor: 'secondary.mainChannel',
+    interact: true,
+    closeAudioContext: true,
+    //@ts-ignore - author hasn't updated types for gradients
+    waveColor: [
+      'rgb(200, 165, 49)',
+      'rgb(200, 165, 49)',
+      'rgb(200, 165, 49)',
+      'rgb(205, 124, 49)',
+      'rgb(205, 124, 49)',
+    ],
+    progressColor: 'rgba(0, 0, 0, 0.45)',
     ...waveformConfig,
   }
 
   const waveform = WaveSurfer.create(config)
 
-  if (pcm?.length) {
-    waveform.backend.setPeaks(pcm, duration)
-    waveform.drawBuffer()
-    waveform.fireEvent('ready')
-  } else {
-    if (file) waveform.loadBlob(file)
+  // There are 2 configurations here:
+  // 1. No stems = create Tone player for track and render track waveform from ToneBuffer. Also generate PCM data for when stems are being used.
+  // 2. Stems = do not create Tone player for track, instead use PCM data for track waveform. Create Tone player for stems and render stem waveforms using ToneBuffers.
+
+  // create the Tone Player
+  const source = URL.createObjectURL(file)
+  const player: Player = new Player(source, () => {
+    waveform.loadDecodedBuffer(player.buffer.get())
 
     // store PCM data for waveform instead of duplicating
     // the audioBuffer in WaveSurfer, since Tone handles playback
-    savePCM(trackId, waveform, stem)
+    if (stem && !pcm) savePCM(trackId, waveform)
+  }).toDestination()
+
+  if (!stem) {
+  }
+
+  if (!pcm?.length && stem) {
+    console.log('loading Tonejs')
+    const source = URL.createObjectURL(file)
+
+    const player: Player = new Player(source, () => {
+      //@ts-ignore _buffer is private, but it's the only way to get the audioBuffer
+      waveform.loadDecodedBuffer(player.buffer._buffer)
+      // store PCM data for waveform instead of duplicating
+      // the audioBuffer in WaveSurfer, since Tone handles playback
+      if (!pcm) {
+        savePCM(trackId, waveform, stem)
+      }
+    }).toDestination()
+
+    // Save waveform in audioState, later used to generate PCM and
+    // is needed to track user interactions with the waveform and show progress
+    if (stem) {
+      setAudioState[trackId!].stems[stem as Stem]({
+        player,
+        volume: 100,
+        mute: false,
+        waveform,
+      })
+    } else {
+      setAudioState[trackId!].waveform(waveform)
+      setAudioState[trackId!].player(player)
+    }
+  } else {
+    setAudioState[trackId!].waveform(waveform)
+    // Initialize wavesurfer event listeners
+    // Must happen after storing the waveform in state
+    waveform.on('seek', time => audioEvents.onSeek(trackId, time))
+    waveform.on('ready', () => audioEvents.onReady(trackId))
+
+    console.log('loading PCM')
+    const { duration } = track
+    waveform.backend.setPeaks(pcm, duration)
+    waveform.drawBuffer()
+    waveform.fireEvent('ready')
   }
 
   return waveform
@@ -115,22 +162,9 @@ const Waveform = ({
         container: `#zoomview-container_${trackId}`,
         scrollParent: true,
         fillParent: false,
-        pixelRatio: 1,
         barWidth: 2,
         barHeight: 0.9,
         barGap: 1,
-        cursorColor: 'secondary.mainChannel',
-        interact: true,
-        closeAudioContext: true,
-        //@ts-ignore - author hasn't updated types for gradients
-        waveColor: [
-          'rgb(200, 165, 49)',
-          'rgb(200, 165, 49)',
-          'rgb(200, 165, 49)',
-          'rgb(205, 124, 49)',
-          'rgb(205, 124, 49)',
-        ],
-        progressColor: 'rgba(0, 0, 0, 0.45)',
         plugins: [
           PlayheadPlugin.create({
             returnOnPause: false,
@@ -165,16 +199,7 @@ const Waveform = ({
         ],
       }
 
-      const waveform = await initWaveform({ trackId, file, waveformConfig })
-
-      // Save waveform in audioState, later used to generate PCM and
-      // is needed to track user interactions with the waveform and show progress
-      setAudioState[trackId!].waveform(waveform)
-
-      // Initialize wavesurfer event listeners
-      // Must happen after storing the waveform in state
-      waveform.on('seek', time => audioEvents.onSeek(trackId, time))
-      waveform.on('ready', () => audioEvents.onReady(trackId))
+      await initWaveform({ trackId, file, waveformConfig })
     }
 
     init()

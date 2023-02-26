@@ -103,6 +103,15 @@ const muiTheme = extendMuiTheme({
 })
 
 const joyTheme = extendJoyTheme({
+  components: {
+    JoyCard: {
+      styleOverrides: {
+        root: {
+          backgroundColor: 'var(--joy-palette-neutral-50)',
+        },
+      },
+    },
+  },
   colorSchemes: {
     light: {
       palette: {
