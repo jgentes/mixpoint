@@ -43,6 +43,7 @@ const Dropzone = (props: BoxProps) => {
         textAlign: 'center',
         cursor: 'pointer',
         borderColor: dragOver ? '#30b2e9' : undefined,
+        backgroundImage: 'none',
         backgroundColor: dragOver ? '#30b2e919' : undefined,
         borderRadius: '4px',
 

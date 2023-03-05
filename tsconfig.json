@@ -19,5 +19,12 @@
     "strictNullChecks": true,
     "esModuleInterop": true
   },
-  "include": ["**/*.ts", "**/*.tsx", "remix.env.d.ts", "./global.d.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "remix.env.d.ts",
+    "./global.d.ts",
+    "app/entry.client.tsx",
+    "app/entry.server.tsx"
+  ]
 }

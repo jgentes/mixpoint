@@ -137,6 +137,7 @@ const NumberControl = ({
         sx={{
           width,
           borderRadius: '5px',
+          borderColor: 'action.selected',
           '& div': {
             borderColor: 'action.disabled',
           },
@@ -235,6 +236,7 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
       value={beatResolution}
       variant='outlined'
       sx={{
+        borderColor: 'action.selected',
         borderRadius: '5px',
       }}
       onChange={e =>
@@ -546,6 +548,7 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
         sx={{
           width: 175,
           borderRadius: '5px',
+          borderColor: 'action.selected',
           '& div': {
             borderColor: 'action.disabled',
             '--Input-gap': '4px',

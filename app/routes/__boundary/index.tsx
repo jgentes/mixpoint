@@ -1,4 +1,4 @@
-import { Box } from '@mui/joy'
+import { Sheet } from '@mui/joy'
 import { useEffect, useState } from 'react'
 import { setTableState } from '~/api/appState'
 import { db, getPrefs, MixPrefs, useLiveQuery } from '~/api/db/dbHandlers'
@@ -18,9 +18,8 @@ const Mixes: React.FunctionComponent = () => {
   })
 
   return (
-    <Box
+    <Sheet
       sx={{
-        bgcolor: 'background.surface',
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -36,7 +35,7 @@ const Mixes: React.FunctionComponent = () => {
         <TrackTable />
       )}
       <TrackDrawer />
-    </Box>
+    </Sheet>
   )
 }
 

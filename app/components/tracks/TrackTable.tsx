@@ -80,15 +80,15 @@ const TrackTable = () => {
         <LeftNav />
 
         <Box component='main' sx={{ p: 2 }}>
-          <Sheet
-            variant='outlined'
+          <Box
             id='track-table'
             sx={{
+              border: '1px solid',
               borderRadius: '4px',
               bgcolor: 'background.body',
               overflow: 'auto',
 
-              borderColor: dragOver ? '#30b2e9' : undefined,
+              borderColor: dragOver ? '#30b2e9' : 'action.selected',
               backgroundColor: dragOver ? 'rgba(48, 178, 233, 0.1)' : undefined,
             }}
             onDrop={e => {
@@ -166,7 +166,7 @@ const TrackTable = () => {
               onPageChange={changePage}
               onRowsPerPageChange={changeRows}
             />
-          </Sheet>
+          </Box>
         </Box>
       </Box>
     )

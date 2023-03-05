@@ -189,6 +189,10 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
               borderRadius: '4px',
               border: '1px solid',
               borderColor: 'action.selected',
+              backgroundColor: theme => {
+                console.log(theme.palette.background)
+                return theme.palette.background.level1
+              },
             }}
           >
             <TrackMix trackId={trackId} />
