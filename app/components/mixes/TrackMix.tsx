@@ -35,11 +35,11 @@ const TrackMix = ({ trackId }: { trackId: Track['id'] }) => {
   const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
 
   const TrackTime = () => {
-    const [time = 0] = audioState[trackId].time()
+    const [time = 0] = audioState[trackId!].time()
     const [nudged] = audioState[trackId!].nudged()
 
     // adjust time marker on waveform
-    const [waveform] = audioState[trackId].waveform()
+    const [waveform] = audioState[trackId!].waveform()
 
     if (waveform) {
       const drawerTime = 1 / (waveform.getDuration() / time) || 0
@@ -67,7 +67,17 @@ const TrackMix = ({ trackId }: { trackId: Track['id'] }) => {
       }}
     >
       <Box sx={{ display: 'flex', gap: 1 }}>
-        <MixpointControl trackId={trackId} />
+        <Typography
+          sx={{
+            fontSize: 'sm',
+            fontWeight: 'md',
+            pl: '3px',
+            color: 'text.secondary',
+          }}
+        >
+          Time:
+        </Typography>
+        <TrackTime />
       </Box>
       <Box
         sx={{
@@ -99,18 +109,7 @@ const TrackMix = ({ trackId }: { trackId: Track['id'] }) => {
           marginRight: 'auto',
         }}
       >
-        <TrackTime />
-      </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 1,
-          alignItems: 'center',
-          flexBasis: 'calc(50% - ((160px + 16px) / 2))', // center audio controls
-          maxWidth: 'calc(50% - ((160px + 16px) / 2))', // 160 is width of TrackNavControl
-        }}
-      >
-        <MixpointNavControl trackId={trackId} />
+        <MixpointControl trackId={trackId} />
       </Box>
       <Box
         sx={{

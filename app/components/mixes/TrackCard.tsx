@@ -1,5 +1,4 @@
 import { Box, Card, Typography } from '@mui/joy'
-import { ClientOnly } from 'remix-utils'
 import { audioState, tableState } from '~/api/appState'
 import {
   getTrackName,
@@ -8,23 +7,17 @@ import {
   Track,
   useLiveQuery,
 } from '~/api/db/dbHandlers'
-import Waveform from '~/api/renderWaveform'
 import StemAccessButton from '~/components/mixes/StemAccessButton'
 import TrackMix from '~/components/mixes/TrackMix'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import {
-  BeatResolutionControl,
   BpmControl,
   EjectControl,
-  MixpointControl,
-  MixpointNavControl,
-  OffsetControl,
   StemControl,
   TrackNavControl,
 } from '~/components/tracks/Controls'
 import Dropzone from '~/components/tracks/Dropzone'
 import Loader from '~/components/tracks/TrackLoader'
-import { errorHandler } from '~/utils/notifications'
 import { timeFormat } from '~/utils/tableOps'
 
 const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
@@ -104,30 +97,11 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
   const trackFooter = (
     <Box
       sx={{
-        display: 'flex',
-        gap: 1,
+        mx: 'auto',
         mt: 1,
-        alignItems: 'center',
       }}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 1,
-          alignItems: 'center',
-          flexBasis: 'calc(50% - ((160px + 16px) / 2))', // center audio controls
-          maxWidth: 'calc(50% - ((160px + 16px) / 2))', // 160 is width of TrackNavControl
-        }}
-      ></Box>
       <TrackNavControl trackId={trackId} />
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 1,
-          alignItems: 'center',
-          marginLeft: 'auto',
-        }}
-      ></Box>
     </Box>
   )
 
@@ -170,7 +144,18 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
             {stemState !== 'ready' ? (
               <StemAccessButton trackId={trackId} />
             ) : (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1,
+                  p: 1,
+                  borderRadius: '4px',
+                  border: '1px solid',
+                  borderColor: 'action.selected',
+                  backgroundColor: 'background.level1',
+                }}
+              >
                 {STEMS.map(stem => (
                   <StemControl
                     key={stem}
@@ -189,14 +174,12 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
               borderRadius: '4px',
               border: '1px solid',
               borderColor: 'action.selected',
-              backgroundColor: theme => {
-                console.log(theme.palette.background)
-                return theme.palette.background.level1
-              },
+              backgroundColor: 'background.level1',
             }}
           >
             <TrackMix trackId={trackId} />
           </Box>
+
           {/* <ClientOnly>
             {() => (
               <Waveform

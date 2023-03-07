@@ -291,61 +291,6 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
   )
 }
 
-const MixpointNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
-  const navEvent = (nav: string) => {
-    switch (nav) {
-      case 'Set Mixpoint':
-        audioEvents.setMixpoint(trackId)
-        break
-      case 'Previous Beat Marker':
-        audioEvents.seek(trackId, undefined, 'previous')
-        break
-      case 'Next Beat Marker':
-        audioEvents.seek(trackId, undefined, 'next')
-        break
-    }
-  }
-
-  return (
-    <ButtonGroup
-      variant='text'
-      color='inherit'
-      disableRipple
-      id='navControl'
-      sx={{
-        '.MuiButtonGroup-grouped': { minWidth: '30px' },
-      }}
-    >
-      {[
-        {
-          val: 'Previous Beat Marker',
-          icon: <SkipPrevious sx={{ fontSize: '20px' }} />,
-        },
-        { val: 'Set Mixpoint', icon: <Adjust sx={{ fontSize: '18px' }} /> },
-        {
-          val: 'Next Beat Marker',
-          icon: <SkipNext sx={{ fontSize: '20px' }} />,
-        },
-      ].map(item => (
-        <Button
-          component='button'
-          onClick={e => navEvent(e.currentTarget.value)}
-          key={item.val}
-          value={item.val}
-          title={item.val}
-          sx={theme => ({
-            padding: 0,
-            '--Icon-color': theme.palette.text.secondary,
-            borderColor: 'transparent !important',
-          })}
-        >
-          {item.icon}
-        </Button>
-      ))}
-    </ButtonGroup>
-  )
-}
-
 const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
   const nudgeIndicator = (direction: 'forward' | 'backward') => {
     setAudioState[trackId!].nudged(direction)
@@ -371,6 +316,15 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
         audioEvents.nudge(trackId, 'backward')
         nudgeIndicator('backward')
         break
+      case 'Set Mixpoint':
+        audioEvents.setMixpoint(trackId)
+        break
+      case 'Previous Beat Marker':
+        audioEvents.seek(trackId, undefined, 'previous')
+        break
+      case 'Next Beat Marker':
+        audioEvents.seek(trackId, undefined, 'next')
+        break
     }
   }
 
@@ -380,10 +334,20 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
     <ButtonGroup variant='text' color='inherit' disableRipple id='navControl'>
       {[
         { val: 'Nudge Backward', icon: <KeyboardDoubleArrowLeft /> },
+        {
+          val: 'Previous Beat Marker',
+          icon: <SkipPrevious sx={{ fontSize: '20px' }} />,
+        },
         { val: 'Go to Mixpoint', icon: <SettingsBackupRestore /> },
+
+        { val: 'Set Mixpoint', icon: <Adjust sx={{ fontSize: '18px' }} /> },
         {
           val: isPlaying ? 'Pause' : 'Play',
           icon: isPlaying ? <Pause /> : <PlayArrow />,
+        },
+        {
+          val: 'Next Beat Marker',
+          icon: <SkipNext sx={{ fontSize: '20px' }} />,
         },
         { val: 'Nudge Forward', icon: <KeyboardDoubleArrowRight /> },
       ].map(item => {
@@ -716,7 +680,6 @@ export {
   MixControl,
   MixpointControl,
   TrackNavControl,
-  MixpointNavControl,
   StemControl,
   CrossfaderControl,
   StemsCrossfaders,
