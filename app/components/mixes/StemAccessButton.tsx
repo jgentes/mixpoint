@@ -70,6 +70,7 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
       variant='soft'
       sx={{
         border: '2px dashed #bbb',
+        height: '138px', // height of stems once loaded
         padding: '20px 10px',
         textAlign: 'center',
         cursor: 'pointer',

@@ -1,5 +1,5 @@
 import { DriveFolderUpload } from '@mui/icons-material'
-import { BoxProps, Sheet, Typography } from '@mui/joy'
+import { Box, BoxProps, Sheet, Typography } from '@mui/joy'
 import { useState } from 'react'
 import { processTracks } from '~/api/audioHandlers'
 import { browseFile } from '~/api/fileHandlers'
@@ -46,6 +46,9 @@ const Dropzone = (props: BoxProps) => {
         backgroundImage: 'none',
         backgroundColor: dragOver ? '#30b2e919' : 'background.level1',
         borderRadius: '4px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
 
         '&:hover, &:active': {
           borderColor: '#30b2e9',
@@ -67,20 +70,22 @@ const Dropzone = (props: BoxProps) => {
       onDragEnter={() => setDragOver(true)}
       onDragLeave={() => setDragOver(false)}
     >
-      <DriveFolderUpload
-        sx={{ fontSize: 38, color: 'text.secondary' }}
-        className='drop'
-      />
-      <Typography
-        level='body1'
-        className='drop'
-        sx={{ color: 'text.secondary' }}
-      >
-        <b>Add Tracks</b>
-      </Typography>
-      <Typography className='drop' level='body2'>
-        Drag or click here
-      </Typography>
+      <Box>
+        <DriveFolderUpload
+          sx={{ fontSize: 38, color: 'text.secondary' }}
+          className='drop'
+        />
+        <Typography
+          level='body1'
+          className='drop'
+          sx={{ color: 'text.secondary' }}
+        >
+          <b>Add Tracks</b>
+        </Typography>
+        <Typography className='drop' level='body2'>
+          Drag or click here
+        </Typography>
+      </Box>
     </Sheet>
   )
 }

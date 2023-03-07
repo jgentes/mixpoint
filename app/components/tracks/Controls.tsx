@@ -42,7 +42,12 @@ import {
   useLiveQuery,
 } from '~/api/db/dbHandlers'
 
-import { audioState, setAudioState, tableState } from '~/api/appState'
+import {
+  audioState,
+  getTableState,
+  setAudioState,
+  setTableState,
+} from '~/api/appState'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
@@ -153,11 +158,12 @@ const NumberControl = ({
 }
 
 const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
-  const [openDrawer, setOpenDrawer] = tableState.openDrawer()
+  const [openDrawer] = getTableState.openDrawer()
+
   const ejectTrack = async () => {
     // If this is not the last track in the mix, open drawer, otherwise the drawer will open automatically
     const { tracks = [] } = await getPrefs('mix')
-    if (tracks.length > 1) setOpenDrawer(true)
+    if (tracks.length > 1) setTableState.openDrawer(true)
 
     if (trackId) removeFromMix(trackId)
   }
@@ -584,6 +590,19 @@ const StemControl = ({
           {stemType[0].toUpperCase() + stemType.slice(1).toLowerCase()}
         </Typography>
         <Box sx={{ width: '100%' }}>
+          {/* loader cover //TODO add loader for stems */}
+          {/* {!analyzing ? null : (
+            <Card
+              sx={{
+                ...loaderSx,
+                zIndex: 2,
+                position: 'absolute',
+                inset: '40px 8px calc(100% - 67px)',
+              }}
+            >
+              <Loader style={{ margin: 'auto' }} />
+            </Card>
+          )} */}
           <Card
             id={`zoomview-container_${trackId}_${stemType}`}
             sx={{

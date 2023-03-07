@@ -1,4 +1,4 @@
-import { Box, Sheet } from '@mui/joy'
+import { Box } from '@mui/joy'
 import {
   Table,
   TableBody,

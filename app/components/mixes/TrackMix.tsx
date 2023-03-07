@@ -1,38 +1,21 @@
 import { Box, Card, Typography } from '@mui/joy'
-import { Box } from '@mui/material'
 import { ClientOnly } from 'remix-utils'
 import { audioState, tableState } from '~/api/appState'
-import {
-  getTrackName,
-  Stem,
-  STEMS,
-  Track,
-  useLiveQuery,
-} from '~/api/db/dbHandlers'
+import { Track } from '~/api/db/dbHandlers'
 import Waveform from '~/api/renderWaveform'
-import StemAccessButton from '~/components/mixes/StemAccessButton'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import {
   BeatResolutionControl,
-  BpmControl,
-  EjectControl,
   MixpointControl,
-  MixpointNavControl,
   OffsetControl,
-  StemControl,
-  TrackNavControl,
 } from '~/components/tracks/Controls'
 import Dropzone from '~/components/tracks/Dropzone'
 import Loader from '~/components/tracks/TrackLoader'
-import { errorHandler } from '~/utils/notifications'
 import { timeFormat } from '~/utils/tableOps'
 
 const TrackMix = ({ trackId }: { trackId: Track['id'] }) => {
   const [analyzingTracks] = tableState.analyzing()
   const analyzing = analyzingTracks.includes(trackId)
-
-  const [stemState] = audioState[trackId!].stemState()
-  const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
 
   const TrackTime = () => {
     const [time = 0] = audioState[trackId!].time()
@@ -140,37 +123,26 @@ const TrackMix = ({ trackId }: { trackId: Track['id'] }) => {
   ) : (
     <>
       {trackHeader}
-      {/* {stemState !== 'ready' ? (
-        <StemAccessButton trackId={trackId} />
-      ) : (
-        STEMS.map(stem => (
-          <div key={stem}>
-            <StemControl trackId={trackId} stemType={stem as Stem} />
-          </div>
-        ))
-      )} */}
-      <ClientOnly>
-        {() => (
-          <Waveform trackId={trackId} sx={{ ...loaderSx, height: '80px' }} />
-        )}
-      </ClientOnly>
 
-      <VolumeMeter trackId={trackId} />
-
-      {trackFooter}
-
+      {/* loader cover */}
       {!analyzing ? null : (
         <Card
           sx={{
             ...loaderSx,
             zIndex: 2,
             position: 'absolute',
-            inset: '40px 8px calc(100% - 120px) 8px',
+            inset: '265px 16px calc(100% - 346px)',
           }}
         >
           <Loader style={{ margin: 'auto' }} />
         </Card>
       )}
+
+      <Waveform trackId={trackId} sx={{ ...loaderSx, height: '80px' }} />
+
+      <VolumeMeter trackId={trackId} />
+
+      {trackFooter}
     </>
   )
 }

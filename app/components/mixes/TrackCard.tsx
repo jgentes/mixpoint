@@ -18,7 +18,6 @@ import {
 } from '~/components/tracks/Controls'
 import Dropzone from '~/components/tracks/Dropzone'
 import Loader from '~/components/tracks/TrackLoader'
-import { timeFormat } from '~/utils/tableOps'
 
 const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
   const [analyzingTracks] = tableState.analyzing()
@@ -26,28 +25,6 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
 
   const [stemState] = audioState[trackId!].stemState()
   const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
-
-  const TrackTime = () => {
-    const [time = 0] = audioState[trackId].time()
-    const [nudged] = audioState[trackId!].nudged()
-
-    // adjust time marker on waveform
-    const [waveform] = audioState[trackId].waveform()
-
-    if (waveform) {
-      const drawerTime = 1 / (waveform.getDuration() / time) || 0
-      waveform.drawer.progress(drawerTime)
-      //@ts-ignore - minimap does indeed have a drawer.progress method
-      waveform.minimap.drawer.progress(drawerTime)
-    }
-
-    return (
-      <Typography sx={{ fontSize: 'sm' }}>
-        {timeFormat(time)}
-        {nudged ? (nudged == 'backward' ? ' -' : ' +') : ''}
-      </Typography>
-    )
-  }
 
   const trackHeader = (
     <Box
@@ -127,10 +104,26 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
       }}
     >
       {!trackId ? (
-        <Dropzone />
+        <Dropzone sx={{ height: '100%' }} />
       ) : (
         <>
           {trackHeader}
+
+          {/* loader cover */}
+          {!analyzing ? null : (
+            <Card
+              sx={{
+                ...loaderSx,
+                zIndex: 2,
+                position: 'absolute',
+                inset: '40px 8px calc(100% - 67px)',
+              }}
+            >
+              <Loader style={{ margin: 'auto' }} />
+            </Card>
+          )}
+
+          {/* overview */}
           <Card
             id={`overview-container_${trackId}`}
             sx={{
@@ -180,27 +173,7 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
             <TrackMix trackId={trackId} />
           </Box>
 
-          {/* <ClientOnly>
-            {() => (
-              <Waveform
-                trackId={trackId}
-                sx={{ ...loaderSx, mt: 1, height: '80px' }}
-              />
-            )}
-          </ClientOnly> */}
           {trackFooter}
-          {!analyzing ? null : (
-            <Card
-              sx={{
-                ...loaderSx,
-                zIndex: 2,
-                position: 'absolute',
-                inset: '40px 8px calc(100% - 120px) 8px',
-              }}
-            >
-              <Loader style={{ margin: 'auto' }} />
-            </Card>
-          )}
         </>
       )}
     </Card>

@@ -1,4 +1,9 @@
-import { getAudioState, setAudioState } from '~/api/appState'
+import {
+  getAudioState,
+  getTableState,
+  setAudioState,
+  setTableState,
+} from '~/api/appState'
 import {
   addToMix,
   db,
@@ -63,6 +68,12 @@ const getPermission = async (track: Track): Promise<File | null> => {
 }
 
 const browseFile = async (): Promise<void> => {
+  // if the track drawer isn't open and we're in mix view, open it, otherwise show file picker
+  const [openDrawer] = getTableState.openDrawer()
+  const { tracks } = (await getPrefs('mix', 'tracks')) || {}
+
+  if (!openDrawer && tracks?.length) return setTableState.openDrawer(true)
+
   const files: FileSystemFileHandle[] | undefined = await window
     .showOpenFilePicker({ multiple: true })
     .catch(e => {
