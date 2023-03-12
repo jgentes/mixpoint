@@ -4,21 +4,21 @@
 
 ## Links
 
-- [Repo](https://github.com/jgentes/mixpoint 'Mixpoint Repo')
+- [Mixpoint Repo](https://github.com/jgentes/mixpoint)
 
-- [Live](https://mixpoint.jgentes.com 'Live View')
+- [Live Demo](https://mixpoint.jgentes.com)
 
-- [Bugs](https://github.com/jgentes/mixpoint/issues 'Issues Page')
+- [Issues Page](https://github.com/jgentes/mixpoint/issues)
 
-- [Discussion](https://github.com/jgentes/mixpoint/discussions 'Discussion Page')
+- [Discussion Page](https://github.com/jgentes/mixpoint/discussions)
 
-## Screenshots
+## Screenshot
 
-![App](public/media/Mixpoint_Screenshot.png 'App')
+![App](public/media/Mixpoint_Screenshot_323.png 'App')
 
 ## Presentation
 
-- [Slides](https://slides.com/jamesgentes/mixpoint-05ab4b 'Slides')
+[![Slides](public/media/Presentation_Screenshot_323.png 'Slides')](https://slides.com/jamesgentes/mixpoint-05ab4b)
 
 ## Overview
 
