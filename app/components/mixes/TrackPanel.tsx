@@ -13,7 +13,7 @@ import Dropzone from '~/components/tracks/Dropzone'
 import Loader from '~/components/tracks/TrackLoader'
 import { timeFormat } from '~/utils/tableOps'
 
-const TrackMix = ({ trackId }: { trackId: Track['id'] }) => {
+const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
   const [analyzingTracks] = tableState.analyzing()
   const analyzing = analyzingTracks.includes(trackId)
 
@@ -131,7 +131,7 @@ const TrackMix = ({ trackId }: { trackId: Track['id'] }) => {
             ...loaderSx,
             zIndex: 2,
             position: 'absolute',
-            inset: '265px 16px calc(100% - 346px)',
+            inset: '262px 16px calc(100% - 343px)',
           }}
         >
           <Loader style={{ margin: 'auto' }} />
@@ -147,4 +147,4 @@ const TrackMix = ({ trackId }: { trackId: Track['id'] }) => {
   )
 }
 
-export { TrackMix as default }
+export { TrackPanel as default }

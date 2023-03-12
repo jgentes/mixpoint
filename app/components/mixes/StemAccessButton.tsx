@@ -1,6 +1,6 @@
 import { CloudDownload, RuleFolder, Tune } from '@mui/icons-material'
 import { CircularProgress, Sheet, Typography } from '@mui/joy'
-import { ReactElement, useEffect, useState } from 'react'
+import { ReactElement } from 'react'
 import { audioState, StemState } from '~/api/appState'
 import { Track } from '~/api/db/dbHandlers'
 import { getStemsDirHandle, validateTrackStemAccess } from '~/api/fileHandlers'

@@ -13,6 +13,7 @@ import { getPermission } from '~/api/fileHandlers'
 
 import { setModalState, setTableState } from '~/api/appState'
 import { errorHandler } from '~/utils/notifications'
+import { Peaks } from 'wavesurfer.js/types/backend'
 
 // This is the main track processing workflow when files are added to the app
 const processTracks = async (
@@ -250,28 +251,6 @@ const calcMarkers = async (
   }
 }
 
-const savePCM = async (
-  trackId: Track['id'],
-  waveform: WaveSurfer,
-  stem?: Stem
-) => {
-  if (!waveform || !trackId)
-    return errorHandler('No waveform data found, cannot save PCM.')
-
-  const pcm = await waveform.exportPCM(waveform.drawer.width, 10000, true, 0)
-
-  if (pcm?.length) {
-    if (stem) {
-      const cache = await db.trackCache.get(trackId)
-      const stems = cache?.stems || {}
-      stems[stem] = { ...stems[stem], pcm }
-      await storeTrackCache({ id: trackId, file: cache?.file, stems })
-    } else {
-      db.tracks.update(trackId!, { pcm })
-    }
-  }
-}
-
 // const createMix = async (TrackPrefsArray: TrackPrefs[]) => {
 //   // this is slow, also look at https://github.com/jackedgson/crunker and https://github.com/audiojs/audio-buffer-utils
 
@@ -324,5 +303,4 @@ export {
   //createMix,
   analyzeTracks,
   calcMarkers,
-  savePCM,
 }

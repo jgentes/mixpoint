@@ -3,6 +3,7 @@ import {
   getTableState,
   setAudioState,
   setTableState,
+  StemState,
 } from '~/api/appState'
 import {
   addToMix,
@@ -127,8 +128,10 @@ const getStemsDirHandle = async (): Promise<
   }
 }
 
-const validateTrackStemAccess = async (trackId: Track['id']): Promise<void> => {
-  if (!trackId) return
+const validateTrackStemAccess = async (
+  trackId: Track['id']
+): Promise<StemState> => {
+  if (!trackId) throw errorHandler('No Track id provided for stems')
 
   const checkAccess = async () => {
     // See if we have stems in cache
@@ -193,6 +196,8 @@ const validateTrackStemAccess = async (trackId: Track['id']): Promise<void> => {
 
   const state = await checkAccess()
   setAudioState[trackId].stemState(state)
+
+  return state
 }
 
 export { getPermission, browseFile, getStemsDirHandle, validateTrackStemAccess }

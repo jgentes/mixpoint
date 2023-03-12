@@ -1,29 +1,21 @@
 import { Box, Card, Typography } from '@mui/joy'
-import { audioState, tableState } from '~/api/appState'
-import {
-  getTrackName,
-  Stem,
-  STEMS,
-  Track,
-  useLiveQuery,
-} from '~/api/db/dbHandlers'
-import StemAccessButton from '~/components/mixes/StemAccessButton'
-import TrackMix from '~/components/mixes/TrackMix'
+import { tableState } from '~/api/appState'
+import { getTrackName, Track, useLiveQuery } from '~/api/db/dbHandlers'
+import StemPanel from '~/components/mixes/StemPanel'
+import TrackPanel from '~/components/mixes/TrackPanel'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import {
   BpmControl,
   EjectControl,
-  StemControl,
   TrackNavControl,
 } from '~/components/tracks/Controls'
 import Dropzone from '~/components/tracks/Dropzone'
 import Loader from '~/components/tracks/TrackLoader'
 
-const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
+const MixCard = ({ trackId }: { trackId: Track['id'] }) => {
   const [analyzingTracks] = tableState.analyzing()
   const analyzing = analyzingTracks.includes(trackId)
 
-  const [stemState] = audioState[trackId!].stemState()
   const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
 
   const trackHeader = (
@@ -131,33 +123,9 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
               height: '25px',
             }}
           />
-          <VolumeMeter trackId={trackId} />
 
           <Box sx={{ mt: 1 }}>
-            {stemState !== 'ready' ? (
-              <StemAccessButton trackId={trackId} />
-            ) : (
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1,
-                  p: 1,
-                  borderRadius: '4px',
-                  border: '1px solid',
-                  borderColor: 'action.selected',
-                  backgroundColor: 'background.level1',
-                }}
-              >
-                {STEMS.map(stem => (
-                  <StemControl
-                    key={stem}
-                    trackId={trackId}
-                    stemType={stem as Stem}
-                  />
-                ))}
-              </Box>
-            )}
+            <StemPanel trackId={trackId} />
           </Box>
 
           <Box
@@ -170,7 +138,7 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
               backgroundColor: 'background.level1',
             }}
           >
-            <TrackMix trackId={trackId} />
+            <TrackPanel trackId={trackId} />
           </Box>
 
           {trackFooter}
@@ -180,4 +148,4 @@ const TrackCard = ({ trackId }: { trackId: Track['id'] }) => {
   )
 }
 
-export { TrackCard as default }
+export { MixCard as default }

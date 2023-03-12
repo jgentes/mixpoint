@@ -14,7 +14,7 @@ import { tableState } from '~/api/appState'
 import Dropzone from '~/components/tracks/Dropzone'
 
 const LeftNav = () => {
-  const [openDrawer, setOpenDrawer] = tableState.openDrawer()
+  const [openDrawer] = tableState.openDrawer()
 
   return (
     <Box
