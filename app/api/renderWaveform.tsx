@@ -27,7 +27,7 @@ if (typeof document !== 'undefined') {
 }
 
 // This function accepts either a full track (with no stem) or an individual stem ('bass', etc)
-// It generates the waveform container and stores PCM data for future use
+// It generates the waveform container and Tone player
 const initWaveform = async ({
   trackId,
   file,
