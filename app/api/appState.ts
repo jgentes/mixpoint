@@ -16,6 +16,7 @@ const {
 
 type AudioState = Partial<{
   waveform: WaveSurfer
+  player: Player
   playing: boolean
   nudged: 'forward' | 'backward' | undefined
   time: number
@@ -27,6 +28,7 @@ type AudioState = Partial<{
 
 type Stems = Partial<{
   [key in Stem]: Partial<{
+    waveform: WaveSurfer
     player: Player
     volume: number
     volumeMeter: number

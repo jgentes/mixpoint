@@ -29,7 +29,7 @@ const selectAll = async (event: ChangeEvent<HTMLInputElement>) => {
 }
 
 const rowClick = (event: MouseEvent<unknown>, id: Track['id']) => {
-  if (!id) throw errorHandler('There was a problem selecting the row')
+  if (!id) return errorHandler('There was a problem selecting the row')
 
   const [selected] = getTableState.selected()
 

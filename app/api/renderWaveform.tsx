@@ -1,11 +1,14 @@
 import { Card } from '@mui/joy'
 import { SxProps } from '@mui/joy/styles/types'
 import { useEffect } from 'react'
-import { getAudioState, setAudioState, setTableState } from '~/api/appState'
+import { Player } from 'tone'
+import { Peaks } from 'wavesurfer.js/types/backend'
+import { WaveSurferParams } from 'wavesurfer.js/types/params'
+import { setAudioState, setTableState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
-import { db, Track } from '~/api/db/dbHandlers'
+import { db, Stem, Track } from '~/api/db/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
-import { getPermission } from './fileHandlers'
+import { getPermission, validateTrackStemAccess } from './fileHandlers'
 
 // Only load WaveSurfer on the client
 let WaveSurfer: typeof import('wavesurfer.js'),
@@ -23,6 +26,72 @@ if (typeof document !== 'undefined') {
   MarkersPlugin = require('wavesurfer.js/src/plugin/markers').default
 }
 
+// This function accepts either a full track (with no stem) or an individual stem ('bass', etc)
+// It generates the waveform container and Tone player
+const initWaveform = async ({
+  trackId,
+  file,
+  stem,
+  waveformConfig,
+}: {
+  trackId: Track['id']
+  file: File
+  stem?: Stem
+  waveformConfig: WaveSurferParams
+}): Promise<void> => {
+  if (!trackId) throw errorHandler('No track ID provided to initWaveform')
+
+  if (!stem) {
+    setTableState.analyzing(prev =>
+      prev.includes(trackId) ? prev : [...prev, trackId]
+    )
+  }
+
+  const config: WaveSurferParams = {
+    pixelRatio: 1,
+    cursorColor: 'secondary.mainChannel',
+    interact: true,
+    closeAudioContext: true,
+    //@ts-ignore - author hasn't updated types for gradients
+    waveColor: [
+      'rgb(200, 165, 49)',
+      'rgb(200, 165, 49)',
+      'rgb(200, 165, 49)',
+      'rgb(205, 124, 49)',
+      'rgb(205, 124, 49)',
+    ],
+    progressColor: 'rgba(0, 0, 0, 0.45)',
+    ...waveformConfig,
+  }
+
+  const waveform = WaveSurfer.create(config)
+
+  // create the Tone Player
+  const source = URL.createObjectURL(file)
+  const player: Player = new Player(source, async () => {
+    // use Tonejs buffer to render waveform
+    waveform.loadDecodedBuffer(player.buffer.get())
+  }).toDestination()
+
+  // Save waveform in audioState to track user interactions with the waveform and show progress
+  if (stem) {
+    setAudioState[trackId!].stems[stem as Stem]({
+      player,
+      volume: 100,
+      mute: false,
+      waveform,
+    })
+  } else {
+    setAudioState[trackId!].waveform(waveform)
+    setAudioState[trackId!].player(player)
+  }
+
+  // Initialize wavesurfer event listeners
+  // Must happen after storing the waveform in state
+  waveform.on('seek', time => audioEvents.onSeek(trackId, time))
+  waveform.on('ready', () => audioEvents.onReady(trackId))
+}
+
 const Waveform = ({
   trackId,
   sx,
@@ -33,44 +102,21 @@ const Waveform = ({
   if (!trackId) throw errorHandler('No track to initialize.')
 
   useEffect(() => {
-    let waveform: WaveSurfer
-
     // Retrieve track, file and region data, then store waveform in audioState
-    const initWaveform = async () => {
+    const init = async () => {
       const track = await db.tracks.get(trackId)
-      if (!track) throw errorHandler('Could not retrieve track from database.')
+      if (!track) return errorHandler('Could not retrieve track from database.')
 
       const file = await getPermission(track)
-      if (!file) throw errorHandler(`Please try adding ${track.name} again.`)
+      if (!file) return errorHandler(`Please try adding ${track.name} again.`)
 
-      setTableState.analyzing(prev =>
-        prev.includes(trackId) ? prev : [...prev, trackId]
-      )
-
-      // check for existing PCM data
-      const { pcm, duration } = (await db.tracks.get(trackId)) || {}
-
-      waveform = WaveSurfer.create({
+      const waveformConfig: WaveSurferParams = {
         container: `#zoomview-container_${trackId}`,
-        backend: pcm ? 'MediaElementWebAudio' : 'WebAudio',
         scrollParent: true,
         fillParent: false,
-        pixelRatio: 1,
         barWidth: 2,
         barHeight: 0.9,
         barGap: 1,
-        cursorColor: 'secondary.mainChannel',
-        interact: true,
-        closeAudioContext: true,
-        //@ts-ignore - author hasn't updated types for gradients
-        waveColor: [
-          'rgb(200, 165, 49)',
-          'rgb(200, 165, 49)',
-          'rgb(200, 165, 49)',
-          'rgb(205, 124, 49)',
-          'rgb(205, 124, 49)',
-        ],
-        progressColor: 'rgba(0, 0, 0, 0.45)',
         plugins: [
           PlayheadPlugin.create({
             returnOnPause: false,
@@ -103,27 +149,12 @@ const Waveform = ({
             pixelRatio: 1,
           }),
         ],
-      })
-
-      // Initialize wavesurfer event listeners
-      waveform.on('seek', time => audioEvents.onSeek(trackId, time))
-      waveform.on(
-        'ready',
-        async () => await audioEvents.onReady(trackId, !!pcm)
-      )
-
-      setAudioState[trackId].waveform(waveform)
-
-      if (pcm) {
-        waveform.backend.setPeaks(pcm, duration)
-        waveform.drawBuffer()
-        waveform.fireEvent('ready')
-      } else {
-        if (file) waveform.loadBlob(file)
       }
+
+      await initWaveform({ trackId, file, waveformConfig })
     }
 
-    initWaveform()
+    init()
 
     return () => audioEvents.destroy(trackId)
   }, [trackId])
@@ -143,4 +174,4 @@ const Waveform = ({
   )
 }
 
-export { Waveform as default }
+export { Waveform as default, initWaveform }

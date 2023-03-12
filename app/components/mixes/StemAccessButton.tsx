@@ -1,6 +1,6 @@
 import { CloudDownload, RuleFolder, Tune } from '@mui/icons-material'
 import { CircularProgress, Sheet, Typography } from '@mui/joy'
-import { ReactElement, useEffect, useState } from 'react'
+import { ReactElement } from 'react'
 import { audioState, StemState } from '~/api/appState'
 import { Track } from '~/api/db/dbHandlers'
 import { getStemsDirHandle, validateTrackStemAccess } from '~/api/fileHandlers'
@@ -13,12 +13,13 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
   const [stemState = 'selectStemDir'] = audioState[trackId].stemState()
 
   const getStemsDir = async () => {
-    const dirHandle = await getStemsDirHandle()
-    if (!dirHandle) {
+    try {
+      await getStemsDirHandle()
+      await validateTrackStemAccess(trackId)
+    } catch (err) {
       // this would be due to denial of permission (ie. clicked cancel)
-      throw errorHandler('Permission to the file or folder was denied.')
+      return errorHandler('Permission to the file or folder was denied.')
     }
-    await validateTrackStemAccess(trackId)
   }
 
   const stemHandler = () => {
@@ -69,11 +70,11 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
       variant='soft'
       sx={{
         border: '2px dashed #bbb',
+        height: '138px', // height of stems once loaded
         padding: '20px 10px',
-        margin: '10px',
         textAlign: 'center',
         cursor: 'pointer',
-        borderRadius: '6px',
+        borderRadius: '4px',
         borderColor: '#e9b830cc',
         backgroundColor: 'rgba(233, 215, 48, 0.1)',
 

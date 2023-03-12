@@ -15,6 +15,7 @@ import {
 } from '@mui/icons-material'
 import {
   Box,
+  Card,
   Chip,
   FormControl,
   Input,
@@ -41,7 +42,12 @@ import {
   useLiveQuery,
 } from '~/api/db/dbHandlers'
 
-import { audioState, setAudioState, tableState } from '~/api/appState'
+import {
+  audioState,
+  getTableState,
+  setAudioState,
+  setTableState,
+} from '~/api/appState'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
@@ -135,6 +141,8 @@ const NumberControl = ({
         }}
         sx={{
           width,
+          borderRadius: '5px',
+          borderColor: 'action.selected',
           '& div': {
             borderColor: 'action.disabled',
           },
@@ -150,11 +158,12 @@ const NumberControl = ({
 }
 
 const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
-  const [openDrawer, setOpenDrawer] = tableState.openDrawer()
+  const [openDrawer] = getTableState.openDrawer()
+
   const ejectTrack = async () => {
     // If this is not the last track in the mix, open drawer, otherwise the drawer will open automatically
     const { tracks = [] } = await getPrefs('mix')
-    if (tracks.length > 1) setOpenDrawer(true)
+    if (tracks.length > 1) setTableState.openDrawer(true)
 
     if (trackId) removeFromMix(trackId)
   }
@@ -166,8 +175,10 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
       size='sm'
       onClick={() => ejectTrack()}
       sx={{
+        minHeight: '21px',
         lineHeight: 0,
         '--Chip-radius': '5px',
+        '--Chip-paddingInline': '0.4rem',
         '--Icon-fontSize': '16px',
       }}
     >
@@ -230,6 +241,10 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
       name='beatResolution'
       value={beatResolution}
       variant='outlined'
+      sx={{
+        borderColor: 'action.selected',
+        borderRadius: '5px',
+      }}
       onChange={e =>
         changeBeatResolution(+e.target.value as TrackPrefs['beatResolution'])
       }
@@ -249,12 +264,12 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
               borderColor: theme.palette.divider,
             },
             [`&[data-first-child] .${radioClasses.action}`]: {
-              borderTopLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-              borderBottomLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+              borderTopLeftRadius: '5px',
+              borderBottomLeftRadius: '5px',
             },
             [`&[data-last-child] .${radioClasses.action}`]: {
-              borderTopRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-              borderBottomRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
+              borderTopRightRadius: '5px',
+              borderBottomRightRadius: '5px',
             },
           })}
         >
@@ -279,59 +294,6 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
         </Box>
       ))}
     </RadioGroup>
-  )
-}
-
-const MixpointNavControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
-  const navEvent = (nav: string) => {
-    switch (nav) {
-      case 'Set Mixpoint':
-        audioEvents.setMixpoint(trackId)
-        break
-      case 'Previous Beat Marker':
-        audioEvents.seek(trackId, undefined, 'previous')
-        break
-      case 'Next Beat Marker':
-        audioEvents.seek(trackId, undefined, 'next')
-        break
-    }
-  }
-
-  return (
-    <ButtonGroup
-      variant='text'
-      color='inherit'
-      disableRipple
-      id='navControl'
-      sx={{ '.MuiButtonGroup-grouped': { minWidth: '30px' } }}
-    >
-      {[
-        {
-          val: 'Previous Beat Marker',
-          icon: <SkipPrevious sx={{ fontSize: '20px' }} />,
-        },
-        { val: 'Set Mixpoint', icon: <Adjust sx={{ fontSize: '18px' }} /> },
-        {
-          val: 'Next Beat Marker',
-          icon: <SkipNext sx={{ fontSize: '20px' }} />,
-        },
-      ].map(item => (
-        <Button
-          component='button'
-          onClick={e => navEvent(e.currentTarget.value)}
-          key={item.val}
-          value={item.val}
-          title={item.val}
-          sx={theme => ({
-            padding: 0,
-            '--Icon-color': theme.palette.text.secondary,
-            borderColor: 'transparent !important',
-          })}
-        >
-          {item.icon}
-        </Button>
-      ))}
-    </ButtonGroup>
   )
 }
 
@@ -360,6 +322,15 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
         audioEvents.nudge(trackId, 'backward')
         nudgeIndicator('backward')
         break
+      case 'Set Mixpoint':
+        audioEvents.setMixpoint(trackId)
+        break
+      case 'Previous Beat Marker':
+        audioEvents.seek(trackId, undefined, 'previous')
+        break
+      case 'Next Beat Marker':
+        audioEvents.seek(trackId, undefined, 'next')
+        break
     }
   }
 
@@ -369,10 +340,20 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
     <ButtonGroup variant='text' color='inherit' disableRipple id='navControl'>
       {[
         { val: 'Nudge Backward', icon: <KeyboardDoubleArrowLeft /> },
+        {
+          val: 'Previous Beat Marker',
+          icon: <SkipPrevious sx={{ fontSize: '20px' }} />,
+        },
         { val: 'Go to Mixpoint', icon: <SettingsBackupRestore /> },
+
+        { val: 'Set Mixpoint', icon: <Adjust sx={{ fontSize: '18px' }} /> },
         {
           val: isPlaying ? 'Pause' : 'Play',
           icon: isPlaying ? <Pause /> : <PlayArrow />,
+        },
+        {
+          val: 'Next Beat Marker',
+          icon: <SkipNext sx={{ fontSize: '20px' }} />,
         },
         { val: 'Nudge Forward', icon: <KeyboardDoubleArrowRight /> },
       ].map(item => {
@@ -536,6 +517,8 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
         onBlur={() => adjustMixpoint(mixpointVal)}
         sx={{
           width: 175,
+          borderRadius: '5px',
+          borderColor: 'action.selected',
           '& div': {
             borderColor: 'action.disabled',
             '--Input-gap': '4px',
@@ -551,96 +534,128 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
   )
 }
 
-const StemControls = ({ trackId }: { trackId: Track['id'] }) => {
+const StemControl = ({
+  trackId,
+  stemType,
+}: {
+  trackId: Track['id']
+  stemType: Stem
+}) => {
   if (!trackId) return null
 
-  const StemPlayer = ({ stemType }: { stemType: Stem }) => {
-    const [volume = 100] = audioState[trackId].stems[stemType].volume()
-    const [mute = false] = audioState[trackId].stems[stemType].mute()
+  const [volume = 100] = audioState[trackId].stems[stemType].volume()
+  const [mute = false] = audioState[trackId].stems[stemType].mute()
 
-    const [solo, setSolo] = useState(false)
+  const [solo, setSolo] = useState(false)
 
-    const toggleSolo = () => {
-      audioEvents.stemSoloToggle(trackId, stemType, !solo)
-      setSolo(!solo)
-    }
+  // adjust stem time marker based on main waveform
+  const [time = 0] = audioState[trackId].time()
+  const [waveform] = audioState[trackId].stems[stemType].waveform()
+  if (waveform) waveform.drawer.progress(1 / (waveform.getDuration() / time))
 
-    return (
-      <>
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 1,
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <Typography
-            sx={{
-              fontSize: 'xs',
-              fontWeight: 'md',
-              pl: '3px',
-              width: '60px',
-            }}
-          >
-            {stemType[0].toUpperCase() + stemType.slice(1).toLowerCase()}
-          </Typography>
-          <Slider
-            aria-label={stemType}
-            value={volume}
-            min={0}
-            max={100}
-            step={5}
-            marks={[0, 25, 50, 75, 100].map(v => ({ value: v }))}
-            valueLabelDisplay='auto'
-            variant='soft'
-            size={'sm'}
-            onChange={(_, volume) =>
-              audioEvents.stemVolume(trackId, stemType, volume as number)
-            }
-            disabled={mute}
-            sx={{
-              padding: '15px 0',
-              mr: '4px',
-            }}
-          />
-          <Headset
-            fontSize='small'
-            sx={{
-              color: solo ? 'text.primary' : 'action.disabled',
-              cursor: 'pointer',
-            }}
-            onClick={() => toggleSolo()}
-          />
-          {!volume || mute ? (
-            <VolumeOff
-              fontSize='small'
-              sx={{ color: 'text.secondary', cursor: 'pointer' }}
-              onClick={() =>
-                audioEvents.stemMuteToggle(trackId, stemType, false)
-              }
-            />
-          ) : (
-            <VolumeUp
-              fontSize='small'
-              sx={{ color: 'text.secondary', cursor: 'pointer' }}
-              onClick={() =>
-                audioEvents.stemMuteToggle(trackId, stemType, true)
-              }
-            />
-          )}
-        </Box>
-        <VolumeMeter trackId={trackId} stemType={stemType} />
-      </>
-    )
+  const toggleSolo = () => {
+    audioEvents.stemSoloToggle(trackId, stemType, !solo)
+    setSolo(!solo)
+  }
+
+  const loaderSx = {
+    p: 0,
+    border: '1px solid',
+    borderColor: 'action.focus',
+    borderRadius: '4px',
+    borderBottom: 'none',
+    bgcolor: 'background.body',
+    overflow: 'hidden',
+    zIndex: 1,
   }
 
   return (
-    <Box sx={{ mb: 2 }}>
-      {STEMS.map(stem => (
-        <StemPlayer key={stem} stemType={stem as Stem} />
-      ))}
-    </Box>
+    <>
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography
+          sx={{
+            fontSize: 'xs',
+            fontWeight: 'md',
+            pl: '3px',
+            width: '60px',
+          }}
+        >
+          {stemType[0].toUpperCase() + stemType.slice(1).toLowerCase()}
+        </Typography>
+        <Box sx={{ width: '100%' }}>
+          {/* loader cover //TODO add loader for stems */}
+          {/* {!analyzing ? null : (
+            <Card
+              sx={{
+                ...loaderSx,
+                zIndex: 2,
+                position: 'absolute',
+                inset: '40px 8px calc(100% - 67px)',
+              }}
+            >
+              <Loader style={{ margin: 'auto' }} />
+            </Card>
+          )} */}
+          <Card
+            id={`zoomview-container_${trackId}_${stemType}`}
+            sx={{
+              ...loaderSx,
+              height: '20px',
+              pt: '3px',
+            }}
+          />
+          <VolumeMeter trackId={trackId} stemType={stemType} />
+        </Box>
+
+        {/* <Slider
+          aria-label={stemType}
+          value={volume}
+          min={0}
+          max={100}
+          step={5}
+          marks={[0, 25, 50, 75, 100].map(v => ({ value: v }))}
+          valueLabelDisplay='auto'
+          variant='soft'
+          size={'sm'}
+          onChange={(_, volume) =>
+            audioEvents.stemVolume(trackId, stemType, volume as number)
+          }
+          disabled={mute}
+          sx={{
+            padding: '15px 0',
+            mr: '4px',
+          }}
+        /> */}
+        <Headset
+          fontSize='small'
+          sx={{
+            color: solo ? 'text.primary' : 'action.disabled',
+            cursor: 'pointer',
+          }}
+          onClick={() => toggleSolo()}
+        />
+        {!volume || mute ? (
+          <VolumeOff
+            fontSize='small'
+            sx={{ color: 'text.secondary', cursor: 'pointer' }}
+            onClick={() => audioEvents.stemMuteToggle(trackId, stemType, false)}
+          />
+        ) : (
+          <VolumeUp
+            fontSize='small'
+            sx={{ color: 'text.secondary', cursor: 'pointer' }}
+            onClick={() => audioEvents.stemMuteToggle(trackId, stemType, true)}
+          />
+        )}
+      </Box>
+    </>
   )
 }
 
@@ -684,8 +699,7 @@ export {
   MixControl,
   MixpointControl,
   TrackNavControl,
-  MixpointNavControl,
-  StemControls,
+  StemControl,
   CrossfaderControl,
   StemsCrossfaders,
 }

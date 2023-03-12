@@ -1,4 +1,10 @@
-import { getAudioState, setAudioState } from '~/api/appState'
+import {
+  getAudioState,
+  getTableState,
+  setAudioState,
+  setTableState,
+  StemState,
+} from '~/api/appState'
 import {
   addToMix,
   db,
@@ -6,7 +12,7 @@ import {
   setPrefs,
   Stem,
   STEMS,
-  storeTrack,
+  storeTrackCache,
   Track,
   TrackCache,
 } from '~/api/db/dbHandlers'
@@ -29,7 +35,7 @@ const _getFile = async (track: Track): Promise<File | null> => {
   }
 
   // Cache the file
-  if (file) await storeTrack({ id: track.id, file })
+  if (file) await storeTrackCache({ id: track.id, file })
 
   // In the case perms aren't granted, return null - we need to request permission
   return file
@@ -63,6 +69,12 @@ const getPermission = async (track: Track): Promise<File | null> => {
 }
 
 const browseFile = async (): Promise<void> => {
+  // if the track drawer isn't open and we're in mix view, open it, otherwise show file picker
+  const [openDrawer] = getTableState.openDrawer()
+  const { tracks } = (await getPrefs('mix', 'tracks')) || {}
+
+  if (!openDrawer && tracks?.length) return setTableState.openDrawer(true)
+
   const files: FileSystemFileHandle[] | undefined = await window
     .showOpenFilePicker({ multiple: true })
     .catch(e => {
@@ -116,8 +128,10 @@ const getStemsDirHandle = async (): Promise<
   }
 }
 
-const validateTrackStemAccess = async (trackId: Track['id']): Promise<void> => {
-  if (!trackId) return
+const validateTrackStemAccess = async (
+  trackId: Track['id']
+): Promise<StemState> => {
+  if (!trackId) throw errorHandler('No Track id provided for stems')
 
   const checkAccess = async () => {
     // See if we have stems in cache
@@ -159,16 +173,22 @@ const validateTrackStemAccess = async (trackId: Track['id']): Promise<void> => {
 
     // are there at least 4 files in the dir?
     const localStems: TrackCache['stems'] = {}
-    for await (const [name, fileHandle] of trackStemDirHandle.entries()) {
-      const file = (await fileHandle.getFile(name)) as File
-      const stemName = name.slice(0, -4)
-      if (STEMS.includes(stemName as Stem)) localStems[stemName as Stem] = file
+    try {
+      for await (const [name, fileHandle] of trackStemDirHandle.entries()) {
+        const file = (await fileHandle.getFile(name)) as File
+        const stemName = name.slice(0, -4)
+        if (stemName && STEMS.includes(stemName as Stem)) {
+          localStems[stemName as Stem] = { file }
+        }
+      }
+    } catch (e) {
+      throw errorHandler(e as Error)
     }
 
     if (Object.keys(localStems).length < 4) return 'getStems'
 
     // cache the stems
-    await storeTrack({ id: trackId, stems: localStems })
+    await storeTrackCache({ id: trackId, stems: localStems })
 
     // ready!
     return 'ready'
@@ -176,6 +196,8 @@ const validateTrackStemAccess = async (trackId: Track['id']): Promise<void> => {
 
   const state = await checkAccess()
   setAudioState[trackId].stemState(state)
+
+  return state
 }
 
 export { getPermission, browseFile, getStemsDirHandle, validateTrackStemAccess }

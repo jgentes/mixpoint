@@ -5,12 +5,15 @@ import {
   putTracks,
   setPrefs,
   setTrackPrefs,
+  Stem,
+  storeTrackCache,
   Track,
 } from '~/api/db/dbHandlers'
 import { getPermission } from '~/api/fileHandlers'
 
-import { getAudioState, setModalState, setTableState } from '~/api/appState'
+import { setModalState, setTableState } from '~/api/appState'
 import { errorHandler } from '~/utils/notifications'
+import { Peaks } from 'wavesurfer.js/types/backend'
 
 // This is the main track processing workflow when files are added to the app
 const processTracks = async (
@@ -213,7 +216,7 @@ const calcMarkers = async (
     ;({ duration, bpm, offset } = analyzedTracks[0])
   }
 
-  if (!duration) throw errorHandler(`Please try adding ${track.name} again.`)
+  if (!duration) return errorHandler(`Please try adding ${track.name} again.`)
 
   let { beatResolution = 1, mixpointTime } = await getTrackPrefs(trackId)
 
@@ -245,17 +248,6 @@ const calcMarkers = async (
   if (!mixpointTime) {
     mixpointTime = startPoint
     await setTrackPrefs(trackId, { mixpointTime })
-  }
-}
-
-const savePCM = async (trackId: Track['id']) => {
-  const [waveform] = getAudioState[trackId!].waveform()
-  if (!waveform) return errorHandler('No waveform data found, cannot save PCM.')
-
-  const pcm = await waveform.exportPCM(waveform.drawer.width, 10000, true, 0)
-
-  if (pcm) {
-    db.tracks.update(trackId!, { pcm })
   }
 }
 
@@ -311,5 +303,4 @@ export {
   //createMix,
   analyzeTracks,
   calcMarkers,
-  savePCM,
 }

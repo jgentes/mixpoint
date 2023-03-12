@@ -5,4 +5,4 @@ module.exports =
         serverBuildTarget: 'cloudflare-pages',
         server: './server.js',
       }
-    : {}
+    : { future: { unstable_dev: false } }

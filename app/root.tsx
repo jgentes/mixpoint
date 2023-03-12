@@ -5,14 +5,7 @@ import PublicSansFont from '@fontsource/public-sans/latin.css'
 import { CssVarsProvider } from '@mui/joy/styles'
 import { CssBaseline } from '@mui/material'
 import { LinksFunction, MetaFunction } from '@remix-run/node'
-import {
-  Links,
-  LiveReload,
-  Meta,
-  Outlet,
-  Scripts,
-  useLoaderData,
-} from '@remix-run/react'
+import { Links, LiveReload, Meta, Outlet, Scripts } from '@remix-run/react'
 import { SnackbarProvider } from 'notistack'
 import { useEffect, useState } from 'react'
 import { ClientOnly } from 'remix-utils'
