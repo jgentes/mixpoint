@@ -1,5 +1,5 @@
 import { expect } from 'vitest'
-import Header from '~/components/Header'
+import Header from '~/components/layout/Header'
 import { render, screen } from '~/tests/testSetup'
 
 test('Logo must have proper src and alt text', () => {

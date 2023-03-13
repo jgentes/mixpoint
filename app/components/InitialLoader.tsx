@@ -1,6 +1,6 @@
 import { Warning } from '@mui/icons-material'
 import { CircularProgress, styled } from '@mui/joy'
-import Logo from '~/components/header/MixpointLogo'
+import Logo from '~/components/layout/MixpointLogo'
 
 const LoaderWrapDiv = styled('div')`
   top: 0;
