@@ -5,10 +5,9 @@
   "scripts": {
     "build": "remix build",
     "dev": "remix dev",
-    "//dev-new": "cross-env NODE_ENV=development remix dev",
     "//dev": "run-p dev:*",
     "//dev:build": "cross-env NODE_ENV=development remix dev",
-    "dev:serve": "cross-env NODE_ENV=development nodemon --watch build node_modules/.bin/remix-serve build",
+    "//dev:serve": "cross-env NODE_ENV=development nodemon --watch build node_modules/.bin/remix-serve build",
     "start": "remix-serve ./build",
     "test": "vitest",
     "test:ui": "vitest --ui --api 3001",
