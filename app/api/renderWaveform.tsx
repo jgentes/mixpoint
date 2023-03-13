@@ -2,13 +2,17 @@ import { Card } from '@mui/joy'
 import { SxProps } from '@mui/joy/styles/types'
 import { useEffect } from 'react'
 import { Player } from 'tone'
-import { Peaks } from 'wavesurfer.js/types/backend'
 import { WaveSurferParams } from 'wavesurfer.js/types/params'
-import { setAudioState, setTableState } from '~/api/appState'
+import {
+  getAudioState,
+  getTableState,
+  setAudioState,
+  setTableState,
+} from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
 import { db, Stem, Track } from '~/api/db/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
-import { getPermission, validateTrackStemAccess } from './fileHandlers'
+import { getPermission } from './fileHandlers'
 
 // Only load WaveSurfer on the client
 let WaveSurfer: typeof import('wavesurfer.js'),
@@ -40,12 +44,6 @@ const initWaveform = async ({
   waveformConfig: WaveSurferParams
 }): Promise<void> => {
   if (!trackId) throw errorHandler('No track ID provided to initWaveform')
-
-  if (!stem) {
-    setTableState.analyzing(prev =>
-      prev.includes(trackId) ? prev : [...prev, trackId]
-    )
-  }
 
   const config: WaveSurferParams = {
     pixelRatio: 1,
@@ -103,12 +101,18 @@ const Waveform = ({
 
   useEffect(() => {
     // Retrieve track, file and region data, then store waveform in audioState
+
     const init = async () => {
+      const [analyzingTracks] = getTableState.analyzing()
+      const analyzing = analyzingTracks.includes(trackId)
+
+      if (analyzing) return // prevent duplication on re-render while loading
+
       const track = await db.tracks.get(trackId)
-      if (!track) return errorHandler('Could not retrieve track from database.')
+      if (!track) throw errorHandler('Could not retrieve track from database.')
 
       const file = await getPermission(track)
-      if (!file) return errorHandler(`Please try adding ${track.name} again.`)
+      if (!file) throw errorHandler(`Please try adding ${track.name} again.`)
 
       const waveformConfig: WaveSurferParams = {
         container: `#zoomview-container_${trackId}`,
@@ -151,12 +155,18 @@ const Waveform = ({
         ],
       }
 
-      await initWaveform({ trackId, file, waveformConfig })
+      initWaveform({ trackId, file, waveformConfig })
     }
 
     init()
 
-    return () => audioEvents.destroy(trackId)
+    setTableState.analyzing(prev =>
+      prev.includes(trackId) ? prev : [...prev, trackId]
+    )
+
+    return () => {
+      audioEvents.destroy(trackId)
+    }
   }, [trackId])
 
   return (

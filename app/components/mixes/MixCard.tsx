@@ -3,7 +3,6 @@ import { tableState } from '~/api/appState'
 import { getTrackName, Track, useLiveQuery } from '~/api/db/dbHandlers'
 import StemPanel from '~/components/mixes/StemPanel'
 import TrackPanel from '~/components/mixes/TrackPanel'
-import VolumeMeter from '~/components/mixes/VolumeMeter'
 import {
   BpmControl,
   EjectControl,
@@ -18,7 +17,7 @@ const MixCard = ({ trackId }: { trackId: Track['id'] }) => {
 
   const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
 
-  const trackHeader = (
+  const mixCardHeader = (
     <Box
       sx={{
         display: 'flex',
@@ -63,7 +62,7 @@ const MixCard = ({ trackId }: { trackId: Track['id'] }) => {
     </Box>
   )
 
-  const trackFooter = (
+  const mixCardFooter = (
     <Box
       sx={{
         mx: 'auto',
@@ -99,7 +98,7 @@ const MixCard = ({ trackId }: { trackId: Track['id'] }) => {
         <Dropzone sx={{ height: '100%' }} />
       ) : (
         <>
-          {trackHeader}
+          {mixCardHeader}
 
           {/* loader cover */}
           {!analyzing ? null : (
@@ -141,7 +140,7 @@ const MixCard = ({ trackId }: { trackId: Track['id'] }) => {
             <TrackPanel trackId={trackId} />
           </Box>
 
-          {trackFooter}
+          {mixCardFooter}
         </>
       )}
     </Card>
