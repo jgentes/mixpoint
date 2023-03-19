@@ -317,6 +317,9 @@ const audioEvents = {
     const [waveform] = getAudioState[trackId!].waveform()
     if (!waveform || !beatResolution) return
 
+    // Update mixPrefs
+    await setTrackPrefs(trackId, { beatResolution })
+
     // Adjust zoom
     switch (beatResolution) {
       case 0.25:
@@ -329,9 +332,6 @@ const audioEvents = {
         waveform.zoom(80)
         break
     }
-
-    // Update mixPrefs
-    await setTrackPrefs(trackId, { beatResolution })
 
     calcMarkers(trackId, waveform)
   },

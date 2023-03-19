@@ -8,12 +8,13 @@ import {
   Stem,
   storeTrackCache,
   Track,
+  TrackPrefs,
 } from '~/api/db/dbHandlers'
 import { getPermission } from '~/api/fileHandlers'
 
+import { Peaks } from 'wavesurfer.js/types/backend'
 import { setModalState, setTableState } from '~/api/appState'
 import { errorHandler } from '~/utils/notifications'
-import { Peaks } from 'wavesurfer.js/types/backend'
 
 // This is the main track processing workflow when files are added to the app
 const processTracks = async (
@@ -203,7 +204,8 @@ const calcMarkers = async (
   trackId: Track['id'],
   waveform: WaveSurfer
 ): Promise<void> => {
-  if (!trackId) return
+  if (!trackId || !waveform) return
+  waveform.markers.clear()
 
   const track = (await db.tracks.get(trackId)) || {}
   let { duration, offset, adjustedOffset, bpm } = track
@@ -218,7 +220,9 @@ const calcMarkers = async (
 
   if (!duration) return errorHandler(`Please try adding ${track.name} again.`)
 
-  let { beatResolution = 1, mixpointTime } = await getTrackPrefs(trackId)
+  const trackPrefs = await getTrackPrefs(trackId)
+
+  const beatResolution = trackPrefs.beatResolution || 1
 
   const beatInterval = 60 / (bpm || 1)
   const skipLength = beatInterval * (1 / beatResolution)
@@ -232,23 +236,12 @@ const calcMarkers = async (
   while (startPoint - beatInterval > 0) startPoint -= beatInterval
 
   // Now that we have zerotime, move forward with markers based on the bpm
-  waveform.markers.clear()
   for (let time = startPoint; time < duration; time += skipLength) {
-    // regions.push({
-    //   start: time,
-    //   end: time + skipLength,
-    //   color: 'rgba(255, 255, 255, 0)',
-    //   drag: false,
-    //   resize: false,
-    //   showTooltip: false,
-    // })
     waveform.markers.add({ time })
   }
 
-  if (!mixpointTime) {
-    mixpointTime = startPoint
-    await setTrackPrefs(trackId, { mixpointTime })
-  }
+  const mixpointTime = trackPrefs.mixpointTime || startPoint
+  await setTrackPrefs(trackId, { mixpointTime })
 }
 
 // const createMix = async (TrackPrefsArray: TrackPrefs[]) => {
