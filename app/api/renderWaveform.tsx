@@ -10,6 +10,7 @@ import {
   setTableState,
 } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
+import { calcMarkers } from '~/api/audioHandlers'
 import { db, Stem, Track } from '~/api/db/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
 import { getPermission } from './fileHandlers'
@@ -87,7 +88,7 @@ const initWaveform = async ({
   // Initialize wavesurfer event listeners
   // Must happen after storing the waveform in state
   waveform.on('seek', time => audioEvents.onSeek(trackId, time))
-  waveform.on('ready', () => audioEvents.onReady(trackId))
+  waveform.on('ready', () => audioEvents.onReady(trackId, stem))
 }
 
 const Waveform = ({

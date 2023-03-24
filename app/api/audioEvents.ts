@@ -49,11 +49,9 @@ const _getAllWaveforms = (): WaveSurfer[] => {
 }
 
 const audioEvents = {
-  onReady: async (trackId: Track['id']) => {
+  onReady: async (trackId: Track['id'], stem?: Stem) => {
     const [waveform] = getAudioState[trackId!].waveform()
     if (!waveform) return
-    // Generate beat markers and apply them to waveform
-    await calcMarkers(trackId, waveform)
 
     const {
       adjustedBpm,
@@ -61,18 +59,15 @@ const audioEvents = {
       beatResolution = 1,
     } = await getTrackPrefs(trackId)
 
-    // Adjust zoom based on previous mixPrefs
-    waveform.zoom(beatResolution == 1 ? 80 : beatResolution == 0.5 ? 40 : 20)
+    if (!stem) {
+      // Generate beat markers and apply them to waveform
+      calcMarkers(trackId, waveform)
 
-    // Set playhead to mixpoint if it exists
-    const currentPlayhead =
-      mixpointTime || waveform.markers.markers?.[0].time || 0
+      // Adjust zoom based on previous mixPrefs
+      waveform.zoom(beatResolution == 1 ? 80 : beatResolution == 0.5 ? 40 : 20)
 
-    if (currentPlayhead) {
-      waveform.playhead.setPlayheadTime(currentPlayhead)
-
-      // set time in appstate, which will trigger drawer renders
-      setAudioState[trackId!].time(currentPlayhead)
+      // Remove analyzing overlay
+      setTableState.analyzing(prev => prev.filter(id => id !== trackId))
     }
 
     // Adjust playbackrate if bpm has been modified
@@ -81,8 +76,10 @@ const audioEvents = {
       waveform.setPlaybackRate(adjustedBpm / (bpm || adjustedBpm))
     }
 
-    // Remove analyzing overlay
-    setTableState.analyzing(prev => prev.filter(id => id !== trackId))
+    // Set playhead to mixpoint if it exists
+    setAudioState[trackId!].time(
+      mixpointTime || waveform.markers.markers?.[0].time || 0
+    )
   },
 
   play: async (trackId?: Track['id']) => {
