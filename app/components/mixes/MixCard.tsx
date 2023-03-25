@@ -24,41 +24,22 @@ const MixCard = ({ trackId }: { trackId: Track['id'] }) => {
         gap: 1,
         mb: 1,
         alignItems: 'center',
-        justifyContent: 'space-between',
       }}
     >
-      <Box
-        id='track-title'
+      <EjectControl trackId={trackId} />
+      <Typography
         sx={{
-          display: 'flex',
-          gap: 1,
-          alignItems: 'center',
+          fontSize: 'sm',
+          fontWeight: 'md',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         }}
       >
-        <EjectControl trackId={trackId} />
-        <Typography
-          sx={{
-            fontSize: 'sm',
-            fontWeight: 'md',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
-          {trackName}
-        </Typography>
-      </Box>
+        {trackName}
+      </Typography>
 
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 1,
-          alignItems: 'center',
-          marginLeft: 'auto',
-        }}
-      >
-        <BpmControl trackId={trackId} />
-      </Box>
+      <BpmControl trackId={trackId} styles={{ marginLeft: 'auto' }} />
     </Box>
   )
 
@@ -91,7 +72,7 @@ const MixCard = ({ trackId }: { trackId: Track['id'] }) => {
         borderRadius: '4px',
         border: '1px solid',
         borderColor: 'action.selected',
-        flexBasis: '45%',
+        minWidth: '40%',
       }}
     >
       {!trackId ? (

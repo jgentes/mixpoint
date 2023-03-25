@@ -1,6 +1,5 @@
 import { Box, Card, Typography } from '@mui/joy'
-import { ClientOnly } from 'remix-utils'
-import { audioState, tableState } from '~/api/appState'
+import { tableState } from '~/api/appState'
 import { Track } from '~/api/db/dbHandlers'
 import Waveform from '~/api/renderWaveform'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
@@ -8,36 +7,14 @@ import {
   BeatResolutionControl,
   MixpointControl,
   OffsetControl,
+  TrackTime,
 } from '~/components/tracks/Controls'
 import Dropzone from '~/components/tracks/Dropzone'
 import Loader from '~/components/tracks/TrackLoader'
-import { timeFormat } from '~/utils/tableOps'
 
 const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
   const [analyzingTracks] = tableState.analyzing()
   const analyzing = analyzingTracks.includes(trackId)
-
-  const TrackTime = () => {
-    const [time = 0] = audioState[trackId!].time()
-    const [nudged] = audioState[trackId!].nudged()
-
-    // adjust time marker on waveform
-    const [waveform] = audioState[trackId!].waveform()
-
-    if (waveform) {
-      const drawerTime = 1 / (waveform.getDuration() / time) || 0
-      waveform.drawer.progress(drawerTime)
-      //@ts-ignore - minimap does indeed have a drawer.progress method
-      waveform.minimap.drawer.progress(drawerTime)
-    }
-
-    return (
-      <Typography sx={{ fontSize: 'sm' }}>
-        {timeFormat(time)}
-        {nudged ? (nudged == 'backward' ? ' -' : ' +') : ''}
-      </Typography>
-    )
-  }
 
   const trackHeader = (
     <Box
@@ -46,32 +23,20 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
         gap: 1,
         mb: 1,
         alignItems: 'center',
-        justifyContent: 'space-between',
       }}
     >
-      <Box sx={{ display: 'flex', gap: 1 }}>
-        <Typography
-          sx={{
-            fontSize: 'sm',
-            fontWeight: 'md',
-            pl: '3px',
-            color: 'text.secondary',
-          }}
-        >
-          Time:
-        </Typography>
-        <TrackTime />
-      </Box>
-      <Box
+      <Typography
         sx={{
-          display: 'flex',
-          gap: 1,
-          alignItems: 'center',
-          marginLeft: 'auto',
+          fontSize: 'sm',
+          fontWeight: 'md',
+          pl: '3px',
+          color: 'text.secondary',
         }}
       >
-        <BeatResolutionControl trackId={trackId} />
-      </Box>
+        Time:
+      </Typography>
+      <TrackTime trackId={trackId} />
+      <BeatResolutionControl trackId={trackId} sx={{ marginLeft: 'auto' }} />
     </Box>
   )
 
@@ -84,26 +49,8 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
         alignItems: 'center',
       }}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 1,
-          alignItems: 'center',
-          marginRight: 'auto',
-        }}
-      >
-        <MixpointControl trackId={trackId} />
-      </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 1,
-          alignItems: 'center',
-          marginLeft: 'auto',
-        }}
-      >
-        <OffsetControl trackId={trackId} />
-      </Box>
+      <MixpointControl trackId={trackId} />
+      <OffsetControl trackId={trackId} styles={{ marginLeft: 'auto' }} />
     </Box>
   )
 

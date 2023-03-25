@@ -42,6 +42,7 @@ import {
   useLiveQuery,
 } from '~/api/db/dbHandlers'
 
+import { SxProps } from '@mui/joy/styles/types/theme'
 import {
   audioState,
   getTableState,
@@ -187,7 +188,13 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
   )
 }
 
-const BpmControl = ({ trackId }: { trackId: Track['id'] }) => {
+const BpmControl = ({
+  trackId,
+  styles,
+}: {
+  trackId: Track['id']
+  styles: object
+}) => {
   if (!trackId) return null
 
   const { bpm } = useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
@@ -205,11 +212,18 @@ const BpmControl = ({ trackId }: { trackId: Track['id'] }) => {
       text='BPM:'
       emitEvent='bpm'
       width={115}
+      styles={styles}
     />
   )
 }
 
-const OffsetControl = ({ trackId }: { trackId: Track['id'] }) => {
+const OffsetControl = ({
+  trackId,
+  styles,
+}: {
+  trackId: TrackPrefs['id']
+  styles?: object
+}) => {
   if (!trackId) return null
 
   const { offset, adjustedOffset } =
@@ -224,11 +238,18 @@ const OffsetControl = ({ trackId }: { trackId: Track['id'] }) => {
       title='Reset Beat Offset'
       text='Beat Offset:'
       emitEvent='offset'
+      styles={styles}
     />
   )
 }
 
-const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
+const BeatResolutionControl = ({
+  trackId,
+  sx,
+}: {
+  trackId: TrackPrefs['id']
+  sx?: SxProps
+}) => {
   const { beatResolution = 1 } =
     useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
 
@@ -244,6 +265,7 @@ const BeatResolutionControl = ({ trackId }: { trackId: TrackPrefs['id'] }) => {
       sx={{
         borderColor: 'action.selected',
         borderRadius: '5px',
+        ...sx,
       }}
       onChange={e =>
         changeBeatResolution(+e.target.value as TrackPrefs['beatResolution'])
@@ -691,6 +713,28 @@ const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => (
   />
 )
 
+const TrackTime = ({ trackId, sx }: { trackId: Track['id']; sx?: SxProps }) => {
+  const [time = 0] = audioState[trackId!].time()
+  const [nudged] = audioState[trackId!].nudged()
+
+  // adjust time marker on waveform
+  const [waveform] = audioState[trackId!].waveform()
+
+  if (waveform) {
+    const drawerTime = 1 / (waveform.getDuration() / time) || 0
+    waveform.drawer.progress(drawerTime)
+    //@ts-ignore - minimap does indeed have a drawer.progress method
+    waveform.minimap.drawer.progress(drawerTime)
+  }
+
+  return (
+    <Typography sx={{ fontSize: 'sm', ...sx }}>
+      {timeFormat(time)}
+      {nudged ? (nudged == 'backward' ? ' -' : ' +') : ''}
+    </Typography>
+  )
+}
+
 export {
   BpmControl,
   OffsetControl,
@@ -702,4 +746,5 @@ export {
   StemControl,
   CrossfaderControl,
   StemsCrossfaders,
+  TrackTime,
 }
