@@ -26,7 +26,7 @@ import {
   Slider,
   Typography,
 } from '@mui/joy'
-import { Button, ButtonGroup } from '@mui/material'
+import { Button, ButtonGroup, SxProps } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { audioEvents } from '~/api/audioEvents'
 import {
@@ -42,7 +42,6 @@ import {
   useLiveQuery,
 } from '~/api/db/dbHandlers'
 
-import { SxProps } from '@mui/joy/styles/types/theme'
 import {
   audioState,
   getTableState,

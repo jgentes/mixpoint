@@ -1,4 +1,5 @@
 import { Box, Card, Typography } from '@mui/joy'
+import { SxProps } from '@mui/material'
 import { tableState } from '~/api/appState'
 import { getTrackName, Track, useLiveQuery } from '~/api/db/dbHandlers'
 import StemPanel from '~/components/mixes/StemPanel'
@@ -11,7 +12,7 @@ import {
 import Dropzone from '~/components/tracks/Dropzone'
 import Loader from '~/components/tracks/TrackLoader'
 
-const MixCard = ({ trackId }: { trackId: Track['id'] }) => {
+const MixCard = ({ trackId, sx }: { trackId: Track['id']; sx?: SxProps }) => {
   const [analyzingTracks] = tableState.analyzing()
   const analyzing = analyzingTracks.includes(trackId)
 
@@ -72,7 +73,8 @@ const MixCard = ({ trackId }: { trackId: Track['id'] }) => {
         borderRadius: '4px',
         border: '1px solid',
         borderColor: 'action.selected',
-        minWidth: '40%',
+        width: '40%',
+        ...sx,
       }}
     >
       {!trackId ? (
