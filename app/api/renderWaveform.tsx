@@ -1,7 +1,7 @@
 import { Card } from '@mui/joy'
 import { SxProps } from '@mui/joy/styles/types'
 import { useEffect } from 'react'
-import { Player } from 'tone'
+import { Gain, Player } from 'tone'
 import { WaveSurferParams } from 'wavesurfer.js/types/params'
 import {
   getAudioState,
@@ -65,23 +65,28 @@ const initWaveform = async ({
 
   const waveform = WaveSurfer.create(config)
 
+  // create a GainNode to control volume using 0 -> 1 scale rather than decibels
+  const gainNode = new Gain({ units: 'normalRange' }).toDestination()
+
   // create the Tone Player
   const source = URL.createObjectURL(file)
   const player: Player = new Player(source, async () => {
     // use Tonejs buffer to render waveform
     waveform.loadDecodedBuffer(player.buffer.get())
-  }).toDestination()
+  }).connect(gainNode)
 
   // Save waveform in audioState to track user interactions with the waveform and show progress
   if (stem) {
     setAudioState[trackId!].stems[stem as Stem]({
       player,
-      volume: 100,
+      gainNode,
+      volume: 1,
       mute: false,
       waveform,
     })
   } else {
     setAudioState[trackId!].waveform(waveform)
+    setAudioState[trackId!].gainNode(gainNode)
     setAudioState[trackId!].player(player)
   }
 

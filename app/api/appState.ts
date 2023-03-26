@@ -2,7 +2,7 @@
 
 import { ButtonProps } from '@mui/joy'
 import createStore from 'teaful'
-import { Player } from 'tone'
+import { Gain, Player } from 'tone'
 import { Stem, Track } from '~/api/db/dbHandlers'
 
 // AudioState captures whether audio is being analyzed, processed, or played
@@ -20,6 +20,8 @@ type AudioState = Partial<{
   playing: boolean
   nudged: 'forward' | 'backward' | undefined
   time: number
+  gainNode: Gain<'normalRange'>
+  volume: number
   volumeMeter: number
   volumeMeterInterval: ReturnType<typeof setInterval> | number
   stems: Stems
@@ -30,6 +32,7 @@ type Stems = Partial<{
   [key in Stem]: Partial<{
     waveform: WaveSurfer
     player: Player
+    gainNode: Gain<'normalRange'>
     volume: number
     volumeMeter: number
     mute: boolean

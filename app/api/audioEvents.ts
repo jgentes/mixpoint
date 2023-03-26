@@ -16,19 +16,6 @@ import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
 // audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
 
-const MUTE_DB = -60
-
-const percentageToDb = (percentage: number) =>
-  (percentage / 100) * -MUTE_DB + MUTE_DB
-
-const decibelToPercentage = (decibel: number) => {
-  decibel = Math.max(decibel, MUTE_DB)
-  return ((decibel + -MUTE_DB) / -MUTE_DB) * 100
-}
-
-const maxDb = (dbArray: number[]) =>
-  Math.max(...dbArray.map(decibelToPercentage))
-
 const clearVolumeMeter = (trackId: Track['id']) => {
   const [volumeMeterInterval] =
     getAudioState[Number(trackId)].volumeMeterInterval()
@@ -78,7 +65,7 @@ const audioEvents = {
 
     // Set playhead to mixpoint if it exists
     setAudioState[trackId!].time(
-      mixpointTime || waveform.markers.markers?.[0].time || 0
+      mixpointTime || waveform.markers.markers?.[0]?.time || 0
     )
   },
 
@@ -89,8 +76,8 @@ const audioEvents = {
 
     const [audioState] = getAudioState()
 
-    for (const [id, { waveform }] of Object.entries(audioState)) {
-      if (!waveform || (trackId && id !== String(trackId))) continue
+    for (const [id, { waveform, player }] of Object.entries(audioState)) {
+      if (!waveform || !player || (trackId && id !== String(trackId))) continue
 
       // clear any running volume meter timers
       clearVolumeMeter(Number(id))
@@ -109,21 +96,19 @@ const audioEvents = {
       const [stems] = getAudioState[Number(id)!].stems()
 
       if (stems) {
-        for (const [stem, { player, waveform: stemWave }] of Object.entries(
-          stems
-        )) {
+        for (const [stem, { player, waveform }] of Object.entries(stems)) {
           if (!player) continue
 
           if (adjustedBpm && bpm) player.playbackRate = adjustedBpm / bpm
 
           // connect Meter for volume monitoring
-          const meter = new Meter()
+          const meter = new Meter({ normalRange: true })
           player.connect(meter)
           meters[stem as Stem] = meter
 
-          player.start(contextStartTime, waveform.getCurrentTime())
+          player.start(contextStartTime, waveform!.getCurrentTime())
         }
-      } else waveform.play()
+      } else player.start(contextStartTime, waveform.getCurrentTime())
 
       const startTime = waveform.getCurrentTime()
 
@@ -134,16 +119,15 @@ const audioEvents = {
         for (const [stem, meter] of Object.entries(meters)) {
           const vol = meter.getValue() as number
           volumes.push(vol)
-          const volumeMeter = decibelToPercentage(vol)
 
           // each stem volume is set here
-          setAudioState[Number(id)].stems[stem as Stem].volumeMeter(volumeMeter)
+          setAudioState[Number(id)].stems[stem as Stem].volumeMeter(vol)
         }
 
         const time = startTime + now() - contextStartTime
 
         // this is the waveform volume meter
-        setAudioState[Number(id)].volumeMeter(maxDb(volumes))
+        setAudioState[Number(id)].volumeMeter(Math.max(...volumes))
         setAudioState[Number(id)].time(time)
       }, 20)
 
@@ -278,33 +262,42 @@ const audioEvents = {
     audioEvents.seek(trackId, waveform.getDuration() * percentageTime)
   },
 
+  // crossfade handles the sliders that mix between stems or full track
   crossfade: async (sliderVal: number, stemType?: Stem) => {
     const { tracks } = await getPrefs('mix')
-
-    const updateVolume = (trackId: number, volume: number) => {
-      const [stems] = getAudioState[trackId].stems()
-      if (!stems) return
-
-      for (const stem of Object.keys(stems)) {
-        if (stemType && stem != stemType) continue
-
-        if (stems[stem as Stem]!.player)
-          stems[stem as Stem]!.player!.volume.value = percentageToDb(volume)
-      }
-    }
+    if (!tracks) return
 
     const sliderPercent = sliderVal / 100
 
     // Keep volumes at 100% when at 50% crossfade
+    // [left, right] @ 0% = [1, 0] 50% = [1, 1] 100% = [0, 1]
     let volumes = [
-      Math.min(1, 1 + Math.cos(sliderPercent * Math.PI)) * 100,
-      Math.min(1, 1 + Math.cos((1 - sliderPercent) * Math.PI)) * 100,
+      Math.min(1, 1 + Math.cos(sliderPercent * Math.PI)),
+      Math.min(1, 1 + Math.cos((1 - sliderPercent) * Math.PI)),
     ]
 
-    if (tracks)
-      tracks.forEach((track, i) => {
-        if (track) updateVolume(Number(track), volumes[i])
-      })
+    tracks.forEach((track, i) => {
+      if (track) audioEvents.updateVolume(Number(track), volumes[i], stemType)
+    })
+  },
+
+  updateVolume: (trackId: number, volume: number, stemType?: Stem) => {
+    const [stems] = getAudioState[trackId].stems()
+    if (!stems) {
+      const [gainNode] = getAudioState[trackId].gainNode()
+      if (gainNode) {
+        gainNode.gain.setValueAtTime(volume, now())
+      }
+      return
+    }
+
+    for (const stem of Object.keys(stems)) {
+      if (stemType && stem != stemType) continue
+
+      if (stems[stem as Stem]!.gainNode) {
+        stems[stem as Stem]!.gainNode!.gain.setValueAtTime(volume, now())
+      }
+    }
   },
 
   beatResolution: async (
@@ -397,8 +390,8 @@ const audioEvents = {
     if (!stems) return
 
     // update player volume
-    const player = stems[stemType as Stem]?.player
-    if (player) player.volume.value = percentageToDb(volume)
+    const gainNode = stems[stemType as Stem]?.gainNode
+    if (gainNode) gainNode.gain.setValueAtTime(volume, now())
 
     // set volume in state, which in turn will update components (volume sliders)
     setAudioState[trackId!].stems[stemType as Stem].volume(volume)
@@ -409,15 +402,12 @@ const audioEvents = {
     if (!stems) return
 
     const stem = stems[stemType as Stem]
-    const { player, volume } = stem || {}
+    const { gainNode, volume } = stem || {}
 
-    // update element gain (not volume in state)
-    if (player) {
-      // player volume is in db!
-      player.volume.value = mute ? MUTE_DB : percentageToDb(volume || 100)
+    if (gainNode) {
+      gainNode.gain.setValueAtTime(mute ? 0 : volume || 1, now())
     }
 
-    // set muted in state, which in turn will update components (volume sliders)
     setAudioState[trackId!].stems[stemType as Stem].mute(mute)
   },
 

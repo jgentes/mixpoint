@@ -611,19 +611,6 @@ const StemControl = ({
           {stemType[0].toUpperCase() + stemType.slice(1).toLowerCase()}
         </Typography>
         <Box sx={{ width: '100%' }}>
-          {/* loader cover //TODO add loader for stems */}
-          {/* {!analyzing ? null : (
-            <Card
-              sx={{
-                ...loaderSx,
-                zIndex: 2,
-                position: 'absolute',
-                inset: '40px 8px calc(100% - 67px)',
-              }}
-            >
-              <Loader style={{ margin: 'auto' }} />
-            </Card>
-          )} */}
           <Card
             id={`zoomview-container_${trackId}_${stemType}`}
             sx={{
@@ -694,7 +681,7 @@ const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => (
     defaultValue={50}
     min={0}
     max={100}
-    step={5}
+    step={2}
     track={false}
     marks={[0, 50, 100].map(v => ({ value: v }))}
     valueLabelDisplay='off'
