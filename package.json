@@ -20,9 +20,10 @@
     "@mui/icons-material": "~5.10.3",
     "@mui/joy": "~5.0.0-alpha.65",
     "@mui/material": "~5.11.7",
-    "@remix-run/cloudflare-pages": "~1.14.1",
-    "@remix-run/node": "~1.14.1",
+    "@remix-run/node": "^1.14.3",
     "@remix-run/react": "~1.14.1",
+    "@remix-run/server-runtime": "^1.14.3",
+    "@vercel/remix": "^1.14.3-patch.1",
     "cross-env": "^7.0.3",
     "dexie": "~3.2.2",
     "dexie-react-hooks": "~1.1.1",
@@ -39,11 +40,10 @@
     "web-audio-beat-detector": "~8.1.37"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "~3.18.0",
     "@remix-run/dev": "~1.14.1",
-    "@remix-run/serve": "~1.14.1",
+    "@remix-run/serve": "^1.14.3",
     "@testing-library/jest-dom": "~5.16.5",
-    "@testing-library/react": "~12.1.5",
+    "@testing-library/react": "^14.0.0",
     "@types/node": "~18.7.3",
     "@types/react": "~18.0.17",
     "@types/react-dom": "~18.0.6",
@@ -51,13 +51,13 @@
     "@types/wicg-file-system-access": "~2020.9.5",
     "@vitejs/plugin-react": "~2.2.0",
     "@vitest/ui": "~0.25.2",
-    "@welldone-software/why-did-you-render": "^7.0.1",
     "fake-indexeddb": "~4.0.0",
     "happy-dom": "~7.7.0",
+    "typescript": "^5.0.2",
     "npm-run-all": "^4.1.5",
-    "remix-utils": "~3.3.0",
-    "typescript": "~4.8.3",
-    "vitest": "~0.25.2"
+    "remix-utils": "^6.0.0",
+    "vitest": "~0.25.2",
+    "zod": "^3.21.4"
   },
   "packageManager": "yarn@3.5.0"
 }

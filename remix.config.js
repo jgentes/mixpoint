@@ -2,8 +2,11 @@
 module.exports =
   process.env.NODE_ENV === 'production'
     ? {
-        serverBuildTarget: 'cloudflare-pages',
-        server: './server.js',
+        ignoredRouteFiles: ['**/.*'],
+        future: {
+          unstable_dev: false,
+          v2_routeConvention: true,
+        },
       }
     : {
         future: {
