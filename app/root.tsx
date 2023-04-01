@@ -1,7 +1,6 @@
 // this file establishes the root component that renders all subsequent / child routes
 // it also injects top level styling, HTML meta tags, links, and javascript for browser rendering
 import PublicSansFont from '@fontsource/public-sans/latin.css'
-
 import { CssVarsProvider } from '@mui/joy/styles'
 import { CssBaseline } from '@mui/material'
 import { Links, LiveReload, Meta, Outlet, Scripts } from '@remix-run/react'
@@ -12,6 +11,9 @@ import { ClientOnly } from 'remix-utils'
 import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import { theme } from '~/theme'
+
+// @ts-ignore
+import { Analytics } from '@vercel/analytics/react'
 
 const meta: MetaFunction = () => {
   return {
@@ -39,8 +41,9 @@ const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
         <Links />
       </head>
       <body>
-        <LiveReload />
         {children}
+        <LiveReload />
+        <Analytics />
       </body>
     </html>
   )

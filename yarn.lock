@@ -3272,6 +3272,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vercel/analytics@npm:^0.1.11":
+  version: 0.1.11
+  resolution: "@vercel/analytics@npm:0.1.11"
+  peerDependencies:
+    react: ^16.8||^17||^18
+  checksum: 05b8180ac6e23ebe7c09d74c43f8ee78c408cd0b6546e676389cbf4fba44dfeeae3648c9b52e2421be64fe3aeee8b026e6ea4bdfc0589fb5780670f2b090a167
+  languageName: node
+  linkType: hard
+
 "@vercel/remix@npm:^1.15.0":
   version: 1.15.0
   resolution: "@vercel/remix@npm:1.15.0"
@@ -8223,6 +8232,7 @@ isbot@latest:
     "@types/react-dom": ~18.0.6
     "@types/wavesurfer.js": ~6.0.3
     "@types/wicg-file-system-access": ~2020.9.5
+    "@vercel/analytics": ^0.1.11
     "@vercel/remix": ^1.15.0
     "@vitejs/plugin-react": ~2.2.0
     "@vitest/ui": ~0.25.2
