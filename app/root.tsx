@@ -4,7 +4,7 @@ import PublicSansFont from '@fontsource/public-sans/latin.css'
 import { CssVarsProvider } from '@mui/joy/styles'
 import { CssBaseline } from '@mui/material'
 import { Links, LiveReload, Meta, Outlet, Scripts } from '@remix-run/react'
-import { LinksFunction, MetaFunction } from '@vercel/remix'
+import { LinksFunction, V2_MetaFunction } from '@vercel/remix'
 import { SnackbarProvider } from 'notistack'
 import { useEffect, useState } from 'react'
 import { ClientOnly } from 'remix-utils'
@@ -15,13 +15,11 @@ import { theme } from '~/theme'
 // @ts-ignore
 import { Analytics } from '@vercel/analytics/react'
 
-const meta: MetaFunction = () => {
-  return {
-    title: 'Mixpoint',
-    description: 'Mixpoint is multi-track audio mixing app for the browser',
-    viewport: 'width=device-width, initial-scale=1',
-  }
-}
+const meta: V2_MetaFunction = () => [
+  { title: 'Mixpoint' },
+  { description: 'Mixpoint is multi-track audio mixing app for the browser' },
+  { viewport: 'width=device-width, initial-scale=1' },
+]
 
 const links: LinksFunction = () => [
   {

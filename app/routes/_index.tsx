@@ -2,18 +2,26 @@
 import { useSnackbar, VariantType } from 'notistack'
 import { useEffect } from 'react'
 
+import { useRouteError, isRouteErrorResponse } from '@remix-run/react'
+
 import InitialLoader from '~/components/InitialLoader'
 import Layout from '~/components/layout/Layout'
 
-const boundaryHandler = (error: Error, variant: VariantType = 'error') => {
+const boundaryHandler = (message: string, variant: VariantType = 'error') => {
   const { enqueueSnackbar } = useSnackbar()
-  enqueueSnackbar(error.message, { variant })
-  return <InitialLoader message={error.message} />
+  enqueueSnackbar(message, { variant })
+  return <InitialLoader message={message} />
 }
 
-const ErrorBoundary = ({ error }: { error: Error }) => boundaryHandler(error)
-const CatchBoundary = ({ error }: { error: Error }) =>
-  boundaryHandler(error, 'warning')
+const ErrorBoundary = () => {
+  const error = useRouteError() as Error
+
+  if (isRouteErrorResponse(error)) {
+    return boundaryHandler(error.data.message, 'warning')
+  }
+
+  boundaryHandler(error.message || JSON.stringify(error))
+}
 
 const Boundary = () => {
   const { enqueueSnackbar } = useSnackbar()
@@ -30,4 +38,4 @@ const Boundary = () => {
   return <Layout />
 }
 
-export { Boundary as default, ErrorBoundary, CatchBoundary }
+export { Boundary as default, ErrorBoundary }
