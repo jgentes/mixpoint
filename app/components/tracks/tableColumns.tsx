@@ -1,4 +1,4 @@
-import { Add, Check, GraphicEq } from '@mui/icons-material'
+import { Icon } from '@iconify-icon/react'
 import { Box, Chip } from '@mui/joy'
 import { TableCellProps } from '@mui/material'
 import { SxProps } from '@mui/material/styles'
@@ -6,10 +6,10 @@ import moment from 'moment'
 import { setTableState, tableState } from '~/api/appState'
 import { analyzeTracks } from '~/api/audioHandlers'
 import {
+  Track,
   addToMix,
   getPrefs,
   removeFromMix,
-  Track,
   useLiveQuery,
 } from '~/api/db/dbHandlers'
 import TrackLoader from '~/components/tracks/TrackLoader'
@@ -28,7 +28,7 @@ const createColumnDefinitions = (): {
   const analyzeButton = (t: Track) => (
     <Chip
       variant='outlined'
-      startDecorator={<GraphicEq />}
+      startDecorator={<Icon icon='material-symbols:graphic-eq' height='16px' />}
       size='sm'
       onClick={() => analyzeTracks([t])}
     >
@@ -59,7 +59,13 @@ const createColumnDefinitions = (): {
       <Chip
         variant='outlined'
         className={isInMix ? 'visible' : 'visibleOnHover'}
-        startDecorator={isInMix ? <Check /> : <Add />}
+        startDecorator={
+          isInMix ? (
+            <Icon icon='material-symbols:check' height='16px' />
+          ) : (
+            <Icon icon='material-symbols:add' height='16px' />
+          )
+        }
         color={isInMix ? 'success' : 'primary'}
         size='sm'
         disabled={isBeingAnalyzed}
@@ -153,7 +159,7 @@ const createColumnDefinitions = (): {
       sx: { whiteSpace: 'nowrap' },
       formatter: t => moment(t.lastModified).fromNow(),
     },
-  ];
+  ]
 }
 
 export { createColumnDefinitions }

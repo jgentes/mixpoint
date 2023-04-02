@@ -3,7 +3,7 @@ import { Box, IconButton } from '@mui/joy'
 import DarkMode from '~/components/layout/DarkMode'
 import Logo from '~/components/layout/MixpointLogo'
 
-import { GitHub, Settings } from '@mui/icons-material'
+import { Icon } from '@iconify-icon/react'
 
 const Header = () => (
   <Box
@@ -35,7 +35,7 @@ const Header = () => (
           window.open('https://github.com/jgentes/mixpoint/discussions')
         }
       >
-        <GitHub />
+        <Icon icon='mdi:github' height='20px' />
       </IconButton>
       <DarkMode />
     </Box>

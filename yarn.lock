@@ -1317,7 +1317,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.20.1, @babel/runtime@npm:^7.20.13, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.8.7, @babel/runtime@npm:^7.9.2":
+"@babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.20.13, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.8.7, @babel/runtime@npm:^7.9.2":
   version: 7.21.0
   resolution: "@babel/runtime@npm:7.21.0"
   dependencies:
@@ -2179,6 +2179,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@iconify-icon/react@npm:^1.0.7":
+  version: 1.0.7
+  resolution: "@iconify-icon/react@npm:1.0.7"
+  dependencies:
+    iconify-icon: ^1.0.7
+  peerDependencies:
+    react: ">=16"
+  checksum: 9a94d7d8f4ee140836a776dc851da248a1a7a875213db3a16379c7c74976913f09582d0a0ea3a84b69eda581b6c15d98a93d9e6e7a31b9322e033039cbc45b35
+  languageName: node
+  linkType: hard
+
+"@iconify/types@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@iconify/types@npm:2.0.0"
+  checksum: 029f58542c160e9d4a746869cf2e475b603424d3adf3994c5cc8d0406c47e6e04a3b898b2707840c1c5b9bd5563a1660a34b110d89fce43923baca5222f4e597
+  languageName: node
+  linkType: hard
+
 "@jest/expect-utils@npm:^29.4.3":
   version: 29.4.3
   resolution: "@jest/expect-utils@npm:29.4.3"
@@ -2290,22 +2308,6 @@ __metadata:
   version: 5.11.11
   resolution: "@mui/core-downloads-tracker@npm:5.11.11"
   checksum: 8c79c1a760eee497fb65f867117251adaaca435a8813394c6bf3d014d5e26148af1ff89beef2f50cea76c43412b722d3bd78bc71d8fc85aadcd57c8b22f17ec6
-  languageName: node
-  linkType: hard
-
-"@mui/icons-material@npm:~5.10.3":
-  version: 5.10.16
-  resolution: "@mui/icons-material@npm:5.10.16"
-  dependencies:
-    "@babel/runtime": ^7.20.1
-  peerDependencies:
-    "@mui/material": ^5.0.0
-    "@types/react": ^17.0.0 || ^18.0.0
-    react: ^17.0.0 || ^18.0.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 00cf9cdbb76a5806307d9cccb647cbd8e45d18a1be7e252727c789cd5a29103abf7fdbe724553425bcdff8daf58ec612e5a8c08c3c7a5a6e28efb14b86507687
   languageName: node
   linkType: hard
 
@@ -6472,6 +6474,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"iconify-icon@npm:^1.0.7":
+  version: 1.0.7
+  resolution: "iconify-icon@npm:1.0.7"
+  dependencies:
+    "@iconify/types": ^2.0.0
+  checksum: 49bdf42e435fbd914b8802fa6199389f1508e1bfaeee546387f04f8e34eda9f9e349a0c775302e054e55c11814097057b010a525c34a916c07e9c96b0ed143c8
+  languageName: node
+  linkType: hard
+
 "iconv-lite@npm:0.4.24, iconv-lite@npm:^0.4.24":
   version: 0.4.24
   resolution: "iconv-lite@npm:0.4.24"
@@ -8217,7 +8228,7 @@ isbot@latest:
     "@emotion/react": ~11.10.6
     "@emotion/styled": ~11.10.6
     "@fontsource/public-sans": ~4.5.11
-    "@mui/icons-material": ~5.10.3
+    "@iconify-icon/react": ^1.0.7
     "@mui/joy": ~5.0.0-alpha.65
     "@mui/material": ~5.11.7
     "@remix-run/dev": ^1.15.0

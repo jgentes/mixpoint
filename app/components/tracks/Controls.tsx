@@ -1,18 +1,4 @@
-import {
-  Adjust,
-  Eject,
-  Headset,
-  KeyboardDoubleArrowLeft,
-  KeyboardDoubleArrowRight,
-  Pause,
-  PlayArrow,
-  Replay,
-  SettingsBackupRestore,
-  SkipNext,
-  SkipPrevious,
-  VolumeOff,
-  VolumeUp,
-} from '@mui/icons-material'
+import { Icon } from '@iconify-icon/react'
 import {
   Box,
   Card,
@@ -21,24 +7,24 @@ import {
   Input,
   Link,
   Radio,
-  radioClasses,
   RadioGroup,
   Slider,
   Typography,
+  radioClasses,
 } from '@mui/joy'
 import { Button, ButtonGroup, SxProps } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { audioEvents } from '~/api/audioEvents'
 import {
+  MixPrefs,
+  STEMS,
+  Stem,
+  Track,
+  TrackPrefs,
   db,
   getPrefs,
   getTrackPrefs,
-  MixPrefs,
   removeFromMix,
-  Stem,
-  STEMS,
-  Track,
-  TrackPrefs,
   useLiveQuery,
 } from '~/api/db/dbHandlers'
 
@@ -114,7 +100,11 @@ const NumberControl = ({
       }}
     >
       {inputText(text)}
-      {valDiff ? <Replay sx={{ ml: 0.5 }} /> : ''}
+      {valDiff ? (
+        <Icon icon='ic:round-replay' height='14px' style={{ marginLeft: 2 }} />
+      ) : (
+        ''
+      )}
     </Link>
   )
 
@@ -173,6 +163,7 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
       variant='outlined'
       color='primary'
       size='sm'
+      title='Load Track'
       onClick={() => ejectTrack()}
       sx={{
         minHeight: '21px',
@@ -182,7 +173,7 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
         '--Icon-fontSize': '16px',
       }}
     >
-      <Eject titleAccess='Load Track' />
+      <Icon icon='material-symbols:eject-rounded' height='20px' />
     </Chip>
   )
 }
@@ -360,23 +351,54 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
   return (
     <ButtonGroup variant='text' color='inherit' disableRipple id='navControl'>
       {[
-        { val: 'Nudge Backward', icon: <KeyboardDoubleArrowLeft /> },
+        {
+          val: 'Nudge Backward',
+          icon: (
+            <Icon
+              icon='material-symbols:keyboard-double-arrow-left'
+              height='20px'
+            />
+          ),
+        },
         {
           val: 'Previous Beat Marker',
-          icon: <SkipPrevious sx={{ fontSize: '20px' }} />,
+          icon: <Icon icon='material-symbols:skip-previous' height='20px' />,
         },
-        { val: 'Go to Mixpoint', icon: <SettingsBackupRestore /> },
+        {
+          val: 'Go to Mixpoint',
+          icon: (
+            <Icon
+              icon='material-symbols:settings-backup-restore'
+              height='20px'
+            />
+          ),
+        },
 
-        { val: 'Set Mixpoint', icon: <Adjust sx={{ fontSize: '18px' }} /> },
+        {
+          val: 'Set Mixpoint',
+          icon: <Icon icon='material-symbols:adjust-outline' height='18px' />,
+        },
         {
           val: isPlaying ? 'Pause' : 'Play',
-          icon: isPlaying ? <Pause /> : <PlayArrow />,
+          icon: isPlaying ? (
+            <Icon icon='material-symbols:pause' height='20px' />
+          ) : (
+            <Icon icon='material-symbols:play-arrow' height='20px' />
+          ),
         },
         {
           val: 'Next Beat Marker',
-          icon: <SkipNext sx={{ fontSize: '20px' }} />,
+          icon: <Icon icon='material-symbols:skip-next' height='20px' />,
         },
-        { val: 'Nudge Forward', icon: <KeyboardDoubleArrowRight /> },
+        {
+          val: 'Nudge Forward',
+          icon: (
+            <Icon
+              icon='material-symbols:keyboard-double-arrow-right'
+              height='20px'
+            />
+          ),
+        },
       ].map(item => {
         const noNudge = item.val.includes('Nudge') && !isPlaying
 
@@ -434,12 +456,23 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
       }}
     >
       {[
-        { val: 'Go to Mixpoint', icon: <SettingsBackupRestore /> },
+        {
+          val: 'Go to Mixpoint',
+          icon: (
+            <Icon
+              icon='material-symbols:settings-backup-restore'
+              height='18px'
+            />
+          ),
+        },
         {
           val: 'Pause',
-          icon: <Pause />,
+          icon: <Icon icon='material-symbols:pause' height='20px' />,
         },
-        { val: 'Play', icon: <PlayArrow /> },
+        {
+          val: 'Play',
+          icon: <Icon icon='material-symbols:play-arrow' height='20px' />,
+        },
       ].map(item => (
         <Box
           key={item.val}
@@ -641,24 +674,30 @@ const StemControl = ({
             mr: '4px',
           }}
         /> */}
-        <Headset
-          fontSize='small'
-          sx={{
-            color: solo ? 'text.primary' : 'action.disabled',
+        <Icon
+          icon={solo ? 'ic:baseline-headset-off' : 'ic:baseline-headset'}
+          height='16px'
+          title='Solo'
+          style={{
+            color: '#aaa',
             cursor: 'pointer',
           }}
           onClick={() => toggleSolo()}
         />
         {!volume || mute ? (
-          <VolumeOff
-            fontSize='small'
-            sx={{ color: 'text.secondary', cursor: 'pointer' }}
+          <Icon
+            icon='material-symbols:volume-off'
+            title='Mute'
+            height='16px'
+            style={{ color: '#aaa', cursor: 'pointer' }}
             onClick={() => audioEvents.stemMuteToggle(trackId, stemType, false)}
           />
         ) : (
-          <VolumeUp
-            fontSize='small'
-            sx={{ color: 'text.secondary', cursor: 'pointer' }}
+          <Icon
+            icon='material-symbols:volume-up'
+            title='Unmute'
+            height='16px'
+            style={{ color: '#aaa', cursor: 'pointer' }}
             onClick={() => audioEvents.stemMuteToggle(trackId, stemType, true)}
           />
         )}

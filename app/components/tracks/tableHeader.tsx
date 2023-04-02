@@ -1,4 +1,4 @@
-import { Add, Clear, Delete, SearchRounded } from '@mui/icons-material'
+import { Icon } from '@iconify-icon/react'
 import {
   Button,
   Card,
@@ -22,12 +22,12 @@ import { ChangeEvent, MouseEvent, useMemo, useState } from 'react'
 import { setModalState, tableState } from '~/api/appState'
 import { analyzeTracks } from '~/api/audioHandlers'
 import {
+  Track,
+  UserPrefs,
   db,
   getDirtyTracks,
   removeTracks,
-  Track,
   useLiveQuery,
-  UserPrefs,
 } from '~/api/db/dbHandlers'
 import { browseFile } from '~/api/fileHandlers'
 import { createColumnDefinitions } from '~/components/tracks/tableColumns'
@@ -126,7 +126,7 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
         <Input
           variant='soft'
           placeholder='Search...'
-          startDecorator={<SearchRounded color='primary' />}
+          startDecorator={<Icon icon='material-symbols:search' height='20px' />}
           onChange={e => setSearch(e.target.value)}
           value={search}
           endDecorator={
@@ -137,7 +137,7 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
                 color='neutral'
                 onClick={() => setSearch('')}
               >
-                <Clear />
+                <Icon icon='material-symbols:clear' height='20px' />
               </IconButton>
             )
           }
@@ -159,7 +159,7 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
           onClick={browseFile}
           sx={{ whiteSpace: 'nowrap' }}
         >
-          <Add fontSize='small' />
+          <Icon icon='material-symbols:add' height='20px' />
           Add Track
         </Button>
       ) : (
@@ -170,7 +170,7 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
           color='neutral'
           onClick={() => showRemoveTracksModal()}
         >
-          <Delete />
+          <Icon icon='material-symbols:delete' height='20px' />
         </IconButton>
       )}
     </Toolbar>

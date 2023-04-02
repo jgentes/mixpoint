@@ -1,5 +1,4 @@
 // from https://mui.com/joy-ui/guides/using-joy-ui-and-material-ui-together/
-import { ConstructionRounded } from '@mui/icons-material'
 import { extendTheme as extendJoyTheme } from '@mui/joy/styles'
 import {
   experimental_extendTheme as extendMuiTheme,

@@ -1,7 +1,7 @@
-import { CloudDownload, RuleFolder, Tune } from '@mui/icons-material'
+import { Icon } from '@iconify-icon/react'
 import { CircularProgress, Sheet, Typography } from '@mui/joy'
 import { ReactElement } from 'react'
-import { audioState, StemState } from '~/api/appState'
+import { StemState, audioState } from '~/api/appState'
 import { Track } from '~/api/db/dbHandlers'
 import { getStemsDirHandle, validateTrackStemAccess } from '~/api/fileHandlers'
 import { stemAudio } from '~/api/stemHandler'
@@ -38,17 +38,32 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
     }
   } = {
     selectStemDir: {
-      icon: <CloudDownload sx={{ fontSize: 38, color: 'text.secondary' }} />,
+      icon: (
+        <Icon
+          icon='material-symbols:cloud-download'
+          style={{ fontSize: 38, color: 'text.secondary' }}
+        />
+      ),
       primaryText: 'Click to Select Stems Folder',
       secondaryText: 'Downloaded stems will be stored here',
     },
     grantStemDirAccess: {
-      icon: <RuleFolder sx={{ fontSize: 38, color: 'text.secondary' }} />,
+      icon: (
+        <Icon
+          icon='material-symbols:rule-folder-outline'
+          style={{ fontSize: 38, color: 'text.secondary' }}
+        />
+      ),
       primaryText: 'Click to Grant Folder Access',
       secondaryText: 'Permission needed to access stems',
     },
     getStems: {
-      icon: <Tune sx={{ fontSize: 38, color: 'text.secondary' }} />,
+      icon: (
+        <Icon
+          icon='material-symbols:tune'
+          style={{ fontSize: 38, color: 'text.secondary' }}
+        />
+      ),
       primaryText: 'Click to Retrieve Stems',
       secondaryText: 'Separate track into drums, vocals, etc',
     },

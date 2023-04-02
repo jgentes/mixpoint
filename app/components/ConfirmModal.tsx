@@ -1,4 +1,4 @@
-import { WarningRounded } from '@mui/icons-material'
+import { Icon } from '@iconify-icon/react'
 import { Box, Button, Modal, ModalDialog, Typography } from '@mui/joy'
 import { Divider } from '@mui/material'
 import { modalState } from '~/api/appState'
@@ -34,7 +34,13 @@ const ConfirmModal = () => {
           level='inherit'
           fontSize='1.25em'
           sx={{ display: 'flex', alignItems: 'normal' }}
-          startDecorator={<WarningRounded />}
+          startDecorator={
+            <Icon
+              icon='material-symbols:warning-rounded'
+              height='20px'
+              style={{ alignSelf: 'center' }}
+            />
+          }
         >
           {headerText}
         </Typography>

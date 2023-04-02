@@ -17,7 +17,6 @@
     "@emotion/react": "~11.10.6",
     "@emotion/styled": "~11.10.6",
     "@fontsource/public-sans": "~4.5.11",
-    "@mui/icons-material": "~5.10.3",
     "@mui/joy": "~5.0.0-alpha.65",
     "@mui/material": "~5.11.7",
     "@remix-run/node": "^1.15.0",
@@ -41,6 +40,7 @@
     "web-audio-beat-detector": "~8.1.37"
   },
   "devDependencies": {
+    "@iconify-icon/react": "^1.0.7",
     "@remix-run/dev": "^1.15.0",
     "@remix-run/serve": "^1.15.0",
     "@testing-library/jest-dom": "~5.16.5",

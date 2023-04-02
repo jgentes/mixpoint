@@ -1,4 +1,4 @@
-import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material'
+import { Icon } from '@iconify-icon/react'
 import { Button } from '@mui/joy'
 import { tableState } from '~/api/appState'
 
@@ -21,7 +21,10 @@ const DrawerButton = () => {
       }}
       onClick={() => setOpenDrawer(direction == 'up' ? true : false)}
     >
-      {direction == 'up' ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+      <Icon
+        icon={`material-symbols:keyboard-arrow-${direction}`}
+        height='24px'
+      />
     </Button>
   )
 }

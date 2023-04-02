@@ -1,4 +1,4 @@
-import { Warning } from '@mui/icons-material'
+import { Icon } from '@iconify-icon/react'
 import { CircularProgress, styled } from '@mui/joy'
 import Logo from '~/components/layout/MixpointLogo'
 
@@ -39,9 +39,13 @@ const InitialLoader = ({ message }: { message?: string }) => (
       <LoaderRow style={{ paddingBottom: '4px' }}>
         <Logo />
         {message ? (
-          <Warning color="action" sx={{ pt: '4px' }} />
+          <Icon
+            icon='material-symbols:warning'
+            height='20px'
+            style={{ alignSelf: 'center', color: 'action', paddingTop: '4px' }}
+          />
         ) : (
-          <CircularProgress color="primary" size="sm" variant="soft" />
+          <CircularProgress color='primary' size='sm' variant='soft' />
         )}
       </LoaderRow>
       <LoaderRow style={{ borderTop: '1px solid #e2e2e2' }}>

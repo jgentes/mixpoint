@@ -1,3 +1,4 @@
+import { Icon } from '@iconify-icon/react'
 import {
   Box,
   List,
@@ -7,8 +8,6 @@ import {
   ListItemDecorator,
   Typography,
 } from '@mui/joy'
-
-import { Animation, RadioButtonUnchecked } from '@mui/icons-material'
 
 import { tableState } from '~/api/appState'
 import Dropzone from '~/components/tracks/Dropzone'
@@ -63,8 +62,9 @@ const LeftNav = () => {
                 color={openDrawer ? 'primary' : undefined}
               >
                 <ListItemDecorator sx={{ color: 'inherit' }}>
-                  <RadioButtonUnchecked
-                    sx={{
+                  <Icon
+                    icon='material-symbols:lens-outline'
+                    style={{
                       fontSize: '20px',
                       color: '#2ca3d6',
                     }}
@@ -89,8 +89,9 @@ const LeftNav = () => {
             <ListItem>
               <ListItemButton>
                 <ListItemDecorator sx={{ color: 'inherit' }}>
-                  <Animation
-                    sx={{
+                  <Icon
+                    icon='material-symbols:animation'
+                    style={{
                       fontSize: '22px',
                       transform: 'rotate(45deg)',
                       color: '#2ca3d6',

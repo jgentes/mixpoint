@@ -1,4 +1,4 @@
-import { DriveFolderUpload } from '@mui/icons-material'
+import { Icon } from '@iconify-icon/react'
 import { Box, BoxProps, Sheet, Typography } from '@mui/joy'
 import { useState } from 'react'
 import { processTracks } from '~/api/audioHandlers'
@@ -71,8 +71,9 @@ const Dropzone = (props: BoxProps) => {
       onDragLeave={() => setDragOver(false)}
     >
       <Box>
-        <DriveFolderUpload
-          sx={{ fontSize: 38, color: 'text.secondary' }}
+        <Icon
+          icon='material-symbols:drive-folder-upload-outline'
+          style={{ fontSize: 38, color: '#aaa' }}
           className='drop'
         />
         <Typography
