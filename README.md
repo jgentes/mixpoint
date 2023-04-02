@@ -40,13 +40,9 @@ Open source is more than a licensing strategy. It's a [movement](https://opensou
 
 In the project directory, you can run:
 
-### `"yarn dev" : "remix dev"`,
+### `"yarn dev"`,
 
 The app is built using `Remix` which uses esBuild for really fast hot reloads. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-### `"yarn test": "vitest"`,
-
-Launches tests, of which there are few.
 
 ## Built With
 
