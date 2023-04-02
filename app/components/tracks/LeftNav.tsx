@@ -23,6 +23,7 @@ const LeftNav = () => {
         display: 'flex',
         flexDirection: 'column',
         p: 2,
+        bgcolor: 'background.surface',
         borderRight: '1px solid',
         borderColor: 'divider',
       }}
