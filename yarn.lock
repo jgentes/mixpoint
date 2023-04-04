@@ -7293,7 +7293,7 @@ isbot@latest:
     teaful: ~0.11.1
     tone: ~14.7.77
     typescript: ^5.0.2
-    wavesurfer.js: ~6.3.0
+    wavesurfer.js: ^6.6.2
     web-audio-beat-detector: ~8.1.37
     zod: ^3.21.4
   languageName: unknown
@@ -10033,10 +10033,10 @@ isbot@latest:
   languageName: node
   linkType: hard
 
-"wavesurfer.js@npm:~6.3.0":
-  version: 6.3.0
-  resolution: "wavesurfer.js@npm:6.3.0"
-  checksum: 4306d998345b62b47d17a062054be87930a35c823ac90173ba352a23a14204a4db4e943100d499e702894d86e963567806de158ff25d958a1e6449dc0f9f1f3d
+"wavesurfer.js@npm:^6.6.2":
+  version: 6.6.2
+  resolution: "wavesurfer.js@npm:6.6.2"
+  checksum: e8c0bb3ad3bf50362d91ab27f4d4901621700fc6e72f14725e13839503c04432d79267929888d59f24f1e6c60cfae6b6b096b0130d55d0b48057d06e1b60cfe7
   languageName: node
   linkType: hard
 

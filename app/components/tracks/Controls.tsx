@@ -326,14 +326,6 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
       case 'Go to Mixpoint':
         audioEvents.seekMixpoint(trackId)
         break
-      case 'Nudge Forward':
-        audioEvents.nudge(trackId, 'forward')
-        nudgeIndicator('forward')
-        break
-      case 'Nudge Backward':
-        audioEvents.nudge(trackId, 'backward')
-        nudgeIndicator('backward')
-        break
       case 'Set Mixpoint':
         audioEvents.setMixpoint(trackId)
         break
@@ -351,15 +343,6 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
   return (
     <ButtonGroup variant='text' color='inherit' disableRipple id='navControl'>
       {[
-        {
-          val: 'Nudge Backward',
-          icon: (
-            <Icon
-              icon='material-symbols:keyboard-double-arrow-left'
-              height='20px'
-            />
-          ),
-        },
         {
           val: 'Previous Beat Marker',
           icon: <Icon icon='material-symbols:skip-previous' height='20px' />,
@@ -389,15 +372,6 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
         {
           val: 'Next Beat Marker',
           icon: <Icon icon='material-symbols:skip-next' height='20px' />,
-        },
-        {
-          val: 'Nudge Forward',
-          icon: (
-            <Icon
-              icon='material-symbols:keyboard-double-arrow-right'
-              height='20px'
-            />
-          ),
         },
       ].map(item => {
         const noNudge = item.val.includes('Nudge') && !isPlaying
@@ -746,6 +720,7 @@ const TrackTime = ({ trackId, sx }: { trackId: Track['id']; sx?: SxProps }) => {
   const [waveform] = audioState[trackId!].waveform()
 
   if (waveform) {
+    // TODO: this should probably not be in the TrackTime component :/
     const drawerTime = 1 / (waveform.getDuration() / time) || 0
     waveform.drawer.progress(drawerTime)
     //@ts-ignore - minimap does indeed have a drawer.progress method

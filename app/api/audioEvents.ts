@@ -1,5 +1,5 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform around
-import { Meter, now, start, Transport } from 'tone'
+import { Meter, now, Player, start, Transport } from 'tone'
 import { getAudioState, setAudioState, setTableState } from '~/api/appState'
 import { calcMarkers } from '~/api/audioHandlers'
 import {
@@ -22,17 +22,17 @@ const clearVolumeMeter = (trackId: Track['id']) => {
   clearInterval(volumeMeterInterval)
 }
 
-const _getAllWaveforms = (): WaveSurfer[] => {
+const _getAllPlayers = (): Player[] => {
   const [audioState] = getAudioState()
 
-  let waveforms: WaveSurfer[] = []
+  let players: Player[] = []
 
-  for (const { waveform } of Object.values(audioState)) {
-    if (!waveform) continue
-    waveforms.push(waveform)
+  for (const { player } of Object.values(audioState)) {
+    if (!player) continue
+    players.push(player)
   }
 
-  return waveforms
+  return players
 }
 
 const audioEvents = {
@@ -76,7 +76,7 @@ const audioEvents = {
 
     const [audioState] = getAudioState()
 
-    for (const [id, { waveform, player }] of Object.entries(audioState)) {
+    for (const [id, { waveform, player, time }] of Object.entries(audioState)) {
       if (!waveform || !player || (trackId && id !== String(trackId))) continue
 
       // clear any running volume meter timers
@@ -96,7 +96,7 @@ const audioEvents = {
       const [stems] = getAudioState[Number(id)!].stems()
 
       if (stems) {
-        for (const [stem, { player, waveform }] of Object.entries(stems)) {
+        for (const [stem, { player }] of Object.entries(stems)) {
           if (!player) continue
 
           if (adjustedBpm && bpm) player.playbackRate = adjustedBpm / bpm
@@ -106,11 +106,9 @@ const audioEvents = {
           player.connect(meter)
           meters[stem as Stem] = meter
 
-          player.start(contextStartTime, waveform!.getCurrentTime())
+          player.start(contextStartTime, time)
         }
-      } else player.start(contextStartTime, waveform.getCurrentTime())
-
-      const startTime = waveform.getCurrentTime()
+      } else player.start(contextStartTime, time)
 
       // create interval for volume meters
       const newInterval = setInterval(() => {
@@ -124,11 +122,13 @@ const audioEvents = {
           setAudioState[Number(id)].stems[stem as Stem].volumeMeter(vol)
         }
 
-        const time = startTime + now() - contextStartTime
+        const startTime = (time || 0) + now() - contextStartTime
 
         // this is the waveform volume meter
         setAudioState[Number(id)].volumeMeter(Math.max(...volumes))
-        setAudioState[Number(id)].time(time)
+
+        // time also moves the waveform drawer
+        setAudioState[Number(id)].time(startTime)
       }, 20)
 
       // store the interval so it can be cleared later
@@ -138,19 +138,19 @@ const audioEvents = {
   },
 
   pause: async (trackId?: Track['id']) => {
-    let waveforms, trackIds
+    let players, trackIds
     if (trackId) {
-      const [waveform] = getAudioState[trackId!].waveform()
-      waveforms = [waveform]
+      const [player] = getAudioState[trackId].player()
+      players = [player]
       trackIds = [trackId]
     } else {
-      waveforms = _getAllWaveforms()
+      players = _getAllPlayers()
       const [audioState] = getAudioState()
       trackIds = Object.keys(audioState)
     }
 
-    for (const wave of waveforms) {
-      if (wave) wave.pause()
+    for (const player of players) {
+      if (player) player.stop(Transport.context.currentTime + 0.1)
     }
 
     for (const id of trackIds) {
@@ -170,22 +170,7 @@ const audioEvents = {
       setAudioState[Number(id)].volumeMeter(0)
       setAudioState[Number(id)].volumeMeterInterval(-1)
       setAudioState[Number(id)].playing(false)
-
-      audioEvents.seek(Number(id)) // move to closest beat marker (necessary for sync)
     }
-  },
-
-  nudge: (trackId: Track['id'], direction: 'backward' | 'forward') => {
-    const [waveform] = getAudioState[trackId!].waveform()
-    if (!waveform) return
-
-    const nudgeVal = 0.005
-    const offset =
-      waveform.getCurrentTime() +
-      (direction == 'backward' ? -nudgeVal : nudgeVal)
-    console.log('nudge does not work properly, no offset')
-    // @ts-ignore
-    audioEvents.play(trackId, offset)
   },
 
   mute: (trackId: Track['id']) => {
@@ -193,15 +178,24 @@ const audioEvents = {
     if (waveform) waveform.setMute(true)
   },
 
+  // onSeek is the handler for the WaveSurfer 'seek' event
+  onSeek: (trackId: Track['id'], percentageTime: number) => {
+    const [waveform] = getAudioState[trackId!].waveform()
+    if (!waveform) return
+
+    audioEvents.seek(trackId, waveform.getDuration() * percentageTime)
+  },
+
   // Scroll to previous/next beat marker
-  seek: (
+  seek: async (
     trackId: Track['id'],
     startTime?: number,
     direction?: 'previous' | 'next'
   ) => {
-    const [{ playing, waveform }] = getAudioState[trackId!]()
-
+    const [{ waveform, playing }] = getAudioState[trackId!]()
     if (!waveform) return
+
+    if (playing) await audioEvents.pause(trackId)
 
     const { markers = [] } = waveform.markers || {}
 
@@ -210,26 +204,18 @@ const audioEvents = {
     // Find the closest marker to the current time
     const currentMarkerIndex = Math.floor(startTime / waveform.skipLength)
 
-    const index =
+    const newIndex =
       currentMarkerIndex + (direction ? (direction == 'next' ? 1 : -1) : 0)
 
-    const { time } = markers[index] || {}
+    const { time } = markers[newIndex] || {}
 
-    // Estimate that we're at the right time and move playhead (and center if using prev/next buttons)
+    // avoid looping if the time is within 5ms of the current time
     if (time && (time > startTime + 0.005 || time < startTime - 0.005)) {
-      if (direction) {
-        waveform.skipForward(time - startTime)
-      } else {
-        waveform.playhead.setPlayheadTime(time)
-        waveform.seekAndCenter(1 / (waveform.getDuration() / time) || 0)
-
-        // set time in audioState to trigger waveform rerender
-        setAudioState[trackId!].time(time)
-      }
-    } else {
-      // if the audio is playing, restart playing when seeking to new time
-      if (playing) audioEvents.play(trackId)
+      waveform.playhead.setPlayheadTime(time)
+      setAudioState[trackId!].time(time)
     }
+
+    if (playing) audioEvents.play(trackId)
   },
 
   seekMixpoint: async (trackId?: Track['id']) => {
@@ -252,14 +238,6 @@ const audioEvents = {
 
       if (playing) audioEvents.play(Number(trackId))
     }
-  },
-
-  // onSeek is the handler for the WaveSurfer 'seek' event
-  onSeek: (trackId: Track['id'], percentageTime: number) => {
-    const [waveform] = getAudioState[trackId!].waveform()
-    if (!waveform) return
-
-    audioEvents.seek(trackId, waveform.getDuration() * percentageTime)
   },
 
   // crossfade handles the sliders that mix between stems or full track

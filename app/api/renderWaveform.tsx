@@ -11,7 +11,7 @@ import {
 } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
 import { calcMarkers } from '~/api/audioHandlers'
-import { db, Stem, Track } from '~/api/db/dbHandlers'
+import { Stem, Track, db } from '~/api/db/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
 import { getPermission } from './fileHandlers'
 
@@ -129,6 +129,7 @@ const Waveform = ({
         barGap: 1,
         plugins: [
           PlayheadPlugin.create({
+            moveOnSeek: false,
             returnOnPause: false,
             draw: true,
           }),
