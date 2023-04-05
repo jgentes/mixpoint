@@ -171,9 +171,7 @@ const Waveform = ({
       prev.includes(trackId) ? prev : [...prev, trackId]
     )
 
-    return () => {
-      audioEvents.destroy(trackId)
-    }
+    return () => audioEvents.destroy(trackId)
   }, [trackId])
 
   return (

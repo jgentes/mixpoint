@@ -4,7 +4,7 @@ import { Gain } from 'tone'
 import { WaveSurferParams } from 'wavesurfer.js/types/params'
 import { audioState, getAudioState, setAudioState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
-import { db, Stem, STEMS, Track } from '~/api/db/dbHandlers'
+import { STEMS, Stem, Track, db } from '~/api/db/dbHandlers'
 import { validateTrackStemAccess } from '~/api/fileHandlers'
 import { initWaveform } from '~/api/renderWaveform'
 import StemAccessButton from '~/components/mixes/StemAccessButton'
@@ -46,9 +46,6 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
           }
         }
 
-        // mute the waveform and use stems for playback instead
-        audioEvents.mute(trackId)
-
         // route all players through an additional gainNode to allow the main
         // crossfader to set volume independently of the stem volumes
         const [stems] = getAudioState[trackId].stems()
@@ -65,6 +62,15 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
     }
 
     initStems()
+
+    return () => {
+      const [stems] = getAudioState[trackId].stems()
+      if (stems) {
+        for (let stem of Object.values(stems)) {
+          stem?.waveform?.destroy()
+        }
+      }
+    }
   }, [trackId, stemState])
 
   return stemState !== 'ready' ? (

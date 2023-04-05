@@ -399,17 +399,7 @@ const audioEvents = {
   },
 
   destroy: (trackId: Track['id']) => {
-    audioEvents.pause(trackId)
-
-    const [{ stems, waveform }] = getAudioState[trackId!]()
-
-    if (stems) {
-      for (let { player } of Object.values(stems)) {
-        if (!player) continue
-
-        player = player.dispose()
-      }
-    }
+    const [waveform] = getAudioState[trackId!].waveform()
 
     if (waveform) waveform.destroy()
 
