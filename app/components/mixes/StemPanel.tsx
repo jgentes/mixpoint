@@ -22,7 +22,7 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
       if (stemState == 'ready') {
         const { stems: stemCache } = (await db.trackCache.get(trackId)) || {}
 
-        const [gainNode] = getAudioState[trackId].gainNode()
+        //const [gainNode] = getAudioState[trackId].gainNode()
 
         if (stemCache) {
           for (let [stem, { file }] of Object.entries(stemCache)) {
@@ -44,12 +44,12 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
               waveformConfig,
             })
 
-            if (!gainNode) continue
+            // if (!gainNode) continue
 
             // route all players through an additional gainNode to allow the main
             // crossfader to set volume independently of the stem volumes
-            const [stemGainNode] =
-              getAudioState[trackId].stems[stem as Stem].gainNode()
+            // const [stemGainNode] =
+            //   getAudioState[trackId].stems[stem as Stem].gainNode()
 
             // TODO refactor using volume, this has an odd issue on re-render
             //if (stemGainNode) stemGainNode.connect(gainNode)

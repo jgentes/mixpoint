@@ -1,5 +1,6 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform around
-import { Meter, now, Player, start, Transport } from 'tone'
+import { CrossFade, Meter, now, Player, start, Transport } from 'tone'
+import { Tone } from 'tone/build/esm/core/Tone'
 import { getAudioState, setAudioState, setTableState } from '~/api/appState'
 import { calcMarkers } from '~/api/audioHandlers'
 import {
@@ -192,14 +193,14 @@ const audioEvents = {
     startTime?: number,
     direction?: 'previous' | 'next'
   ) => {
-    const [{ waveform, playing }] = getAudioState[trackId!]()
+    const [{ waveform, playing, time: trackTime }] = getAudioState[trackId!]()
     if (!waveform) return
 
     if (playing) await audioEvents.pause(trackId)
 
     const { markers = [] } = waveform.markers || {}
 
-    startTime = startTime || waveform.getCurrentTime()
+    startTime = startTime || trackTime || 1
 
     // Find the closest marker to the current time
     const currentMarkerIndex = Math.floor(startTime / waveform.skipLength)
@@ -243,7 +244,7 @@ const audioEvents = {
   // crossfade handles the sliders that mix between stems or full track
   crossfade: async (sliderVal: number, stemType?: Stem) => {
     const { tracks } = await getPrefs('mix')
-    if (!tracks) return
+    if (!tracks?.length) return
 
     const sliderPercent = sliderVal / 100
 
@@ -260,21 +261,37 @@ const audioEvents = {
   },
 
   updateVolume: (trackId: number, volume: number, stemType?: Stem) => {
-    const [stems] = getAudioState[trackId].stems()
-    if (!stems) {
-      const [gainNode] = getAudioState[trackId].gainNode()
-      if (gainNode) {
-        gainNode.gain.setValueAtTime(volume, now())
-      }
+    const [{ volume: trackVol = 1, stems, gainNode, stemState }] =
+      getAudioState[trackId]()
+    const currentTime = now()
+
+    // if we have a stemType, this is a stem crossfader
+    if (stemType) {
+      if (!stems) return
+
+      // adjust the gain of the stem as a percentage of the track volume
+      // (75% crossfader x 50% stem fader = 37.5% stem volume)
+      const stemGain = stems[stemType]?.gainNode
+      stemGain?.gain.setValueAtTime(trackVol * volume, currentTime)
+      setAudioState[trackId].stems[stemType].volume(volume)
       return
     }
 
-    for (const stem of Object.keys(stems)) {
-      if (stemType && stem != stemType) continue
+    // otherwise this is main crossfader
+    if (stemState !== 'ready') {
+      gainNode?.gain.setValueAtTime(volume, currentTime)
+    } else if (stems) {
+      for (const stem of Object.keys(stems)) {
+        const [stemGain] = getAudioState[trackId].stems[stem as Stem].gainNode()
+        const [stemVol = 1] =
+          getAudioState[trackId].stems[stem as Stem].volume()
 
-      if (stems[stem as Stem]!.gainNode) {
-        stems[stem as Stem]!.gainNode!.gain.setValueAtTime(volume, now())
+        // adjust the gain of the stem as a percentage of the track volume
+        // (75% crossfader x 50% stem fader = 37.5% stem volume)
+        stemGain?.gain.setValueAtTime(trackVol * stemVol, currentTime)
       }
+
+      setAudioState[trackId].volume(volume)
     }
   },
 
@@ -368,8 +385,8 @@ const audioEvents = {
     if (!stems) return
 
     // update player volume
-    const gainNode = stems[stemType as Stem]?.gainNode
-    if (gainNode) gainNode.gain.setValueAtTime(volume, now())
+    // const gainNode = stems[stemType as Stem]?.gainNode
+    // if (gainNode) gainNode.gain.setValueAtTime(volume, now())
 
     // set volume in state, which in turn will update components (volume sliders)
     setAudioState[trackId!].stems[stemType as Stem].volume(volume)
@@ -382,9 +399,9 @@ const audioEvents = {
     const stem = stems[stemType as Stem]
     const { gainNode, volume } = stem || {}
 
-    if (gainNode) {
-      gainNode.gain.setValueAtTime(mute ? 0 : volume || 1, now())
-    }
+    // if (gainNode) {
+    //   gainNode.gain.setValueAtTime(mute ? 0 : volume || 1, now())
+    // }
 
     setAudioState[trackId!].stems[stemType as Stem].mute(mute)
   },

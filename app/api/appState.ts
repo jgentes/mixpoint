@@ -18,10 +18,9 @@ type AudioState = Partial<{
   waveform: WaveSurfer
   player: Player
   playing: boolean
-  nudged: 'forward' | 'backward' | undefined
   time: number
-  gainNode: Gain<'normalRange'>
-  volume: number
+  gainNode: Gain<'normalRange'> // gain controls actual volume
+  volume: number // volume is the crossfader value
   volumeMeter: number
   volumeMeterInterval: ReturnType<typeof setInterval> | number
   stems: Stems
@@ -32,8 +31,8 @@ type Stems = Partial<{
   [key in Stem]: Partial<{
     waveform: WaveSurfer
     player: Player
-    gainNode: Gain<'normalRange'>
-    volume: number
+    gainNode: Gain<'normalRange'> // gain controls actual volume
+    volume: number // volume is the crossfader value
     volumeMeter: number
     mute: boolean
   }>
