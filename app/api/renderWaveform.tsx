@@ -3,12 +3,7 @@ import { SxProps } from '@mui/joy/styles/types'
 import { useEffect } from 'react'
 import { Gain, Player } from 'tone'
 import { WaveSurferParams } from 'wavesurfer.js/types/params'
-import {
-  getAudioState,
-  getTableState,
-  setAudioState,
-  setTableState,
-} from '~/api/appState'
+import { getTableState, setAudioState, setTableState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
 import { Stem, Track, db } from '~/api/db/dbHandlers'
 import { errorHandler } from '~/utils/notifications'

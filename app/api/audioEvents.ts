@@ -1,6 +1,5 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform around
-import { CrossFade, Meter, now, Player, start, Transport } from 'tone'
-import { Tone } from 'tone/build/esm/core/Tone'
+import { Meter, now, Player, start, Transport } from 'tone'
 import { getAudioState, setAudioState, setTableState } from '~/api/appState'
 import { calcMarkers } from '~/api/audioHandlers'
 import {
@@ -384,9 +383,8 @@ const audioEvents = {
     const [stems] = getAudioState[trackId!].stems()
     if (!stems) return
 
-    // update player volume
-    // const gainNode = stems[stemType as Stem]?.gainNode
-    // if (gainNode) gainNode.gain.setValueAtTime(volume, now())
+    const gainNode = stems[stemType as Stem]?.gainNode
+    if (gainNode) gainNode.gain.setValueAtTime(volume, now())
 
     // set volume in state, which in turn will update components (volume sliders)
     setAudioState[trackId!].stems[stemType as Stem].volume(volume)
@@ -399,9 +397,7 @@ const audioEvents = {
     const stem = stems[stemType as Stem]
     const { gainNode, volume } = stem || {}
 
-    // if (gainNode) {
-    //   gainNode.gain.setValueAtTime(mute ? 0 : volume || 1, now())
-    // }
+    gainNode?.gain.setValueAtTime(mute ? 0 : volume || 1, now())
 
     setAudioState[trackId!].stems[stemType as Stem].mute(mute)
   },

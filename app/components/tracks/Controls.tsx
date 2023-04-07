@@ -630,26 +630,6 @@ const StemControl = ({
           />
           <VolumeMeter trackId={trackId} stemType={stemType} />
         </Box>
-
-        {/* <Slider
-          aria-label={stemType}
-          value={volume}
-          min={0}
-          max={100}
-          step={5}
-          marks={[0, 25, 50, 75, 100].map(v => ({ value: v }))}
-          valueLabelDisplay='auto'
-          variant='soft'
-          size={'sm'}
-          onChange={(_, volume) =>
-            audioEvents.stemVolume(trackId, stemType, volume as number)
-          }
-          disabled={mute}
-          sx={{
-            padding: '15px 0',
-            mr: '4px',
-          }}
-        /> */}
         <Icon
           icon={solo ? 'ic:baseline-headset-off' : 'ic:baseline-headset'}
           height='16px'
