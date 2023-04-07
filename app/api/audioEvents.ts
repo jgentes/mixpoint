@@ -400,14 +400,7 @@ const audioEvents = {
 
   destroy: (trackId: Track['id']) => {
     const [waveform] = getAudioState[trackId!].waveform()
-
     if (waveform) waveform.destroy()
-
-    // remove audioState
-    setAudioState(prev => {
-      delete prev[trackId!]
-      return { ...prev }
-    })
   },
 }
 

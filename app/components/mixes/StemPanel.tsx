@@ -1,9 +1,7 @@
 import { Box } from '@mui/joy'
 import { useEffect } from 'react'
-import { Gain } from 'tone'
 import { WaveSurferParams } from 'wavesurfer.js/types/params'
-import { audioState, getAudioState, setAudioState } from '~/api/appState'
-import { audioEvents } from '~/api/audioEvents'
+import { audioState, getAudioState } from '~/api/appState'
 import { STEMS, Stem, Track, db } from '~/api/db/dbHandlers'
 import { validateTrackStemAccess } from '~/api/fileHandlers'
 import { initWaveform } from '~/api/renderWaveform'
@@ -24,6 +22,8 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
       if (stemState == 'ready') {
         const { stems: stemCache } = (await db.trackCache.get(trackId)) || {}
 
+        const [gainNode] = getAudioState[trackId].gainNode()
+
         if (stemCache) {
           for (let [stem, { file }] of Object.entries(stemCache)) {
             if (!file) continue
@@ -43,20 +43,17 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
               stem: stem as Stem,
               waveformConfig,
             })
-          }
-        }
 
-        // route all players through an additional gainNode to allow the main
-        // crossfader to set volume independently of the stem volumes
-        const [stems] = getAudioState[trackId].stems()
-        if (stems) {
-          const gainNode = new Gain({ units: 'normalRange' }).toDestination()
-          for (let stem of Object.values(stems)) {
-            stem?.gainNode?.connect(gainNode)
-          }
+            if (!gainNode) continue
 
-          // store gainNode in appState
-          setAudioState[trackId!].gainNode(gainNode)
+            // route all players through an additional gainNode to allow the main
+            // crossfader to set volume independently of the stem volumes
+            const [stemGainNode] =
+              getAudioState[trackId].stems[stem as Stem].gainNode()
+
+            // TODO refactor using volume, this has an odd issue on re-render
+            //if (stemGainNode) stemGainNode.connect(gainNode)
+          }
         }
       }
     }
@@ -64,7 +61,8 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
     initStems()
 
     return () => {
-      const [stems] = getAudioState[trackId].stems()
+      const [stems] = getAudioState[trackId!].stems()
+
       if (stems) {
         for (let stem of Object.values(stems)) {
           stem?.waveform?.destroy()

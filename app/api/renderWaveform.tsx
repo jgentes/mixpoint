@@ -3,14 +3,8 @@ import { SxProps } from '@mui/joy/styles/types'
 import { useEffect } from 'react'
 import { Gain, Player } from 'tone'
 import { WaveSurferParams } from 'wavesurfer.js/types/params'
-import {
-  getAudioState,
-  getTableState,
-  setAudioState,
-  setTableState,
-} from '~/api/appState'
+import { getTableState, setAudioState, setTableState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
-import { calcMarkers } from '~/api/audioHandlers'
 import { Stem, Track, db } from '~/api/db/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
 import { getPermission } from './fileHandlers'
@@ -66,11 +60,11 @@ const initWaveform = async ({
   const waveform = WaveSurfer.create(config)
 
   // create a GainNode to control volume using 0 -> 1 scale rather than decibels
-  const gainNode = new Gain({ units: 'normalRange' }).toDestination()
+  const gainNode = new Gain({ units: 'normalRange' })
 
   // create the Tone Player
   const source = URL.createObjectURL(file)
-  const player: Player = new Player(source, async () => {
+  const player: Player = new Player(source, () => {
     // use Tonejs buffer to render waveform
     waveform.loadDecodedBuffer(player.buffer.get())
   }).connect(gainNode)
@@ -86,7 +80,7 @@ const initWaveform = async ({
     })
   } else {
     setAudioState[trackId!].waveform(waveform)
-    setAudioState[trackId!].gainNode(gainNode)
+    setAudioState[trackId!].gainNode(gainNode.toDestination())
     setAudioState[trackId!].player(player)
   }
 

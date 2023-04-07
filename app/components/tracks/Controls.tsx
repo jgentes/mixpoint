@@ -578,8 +578,10 @@ const StemControl = ({
 
   // adjust stem time marker based on main waveform
   const [time = 0] = audioState[trackId].time()
+  const { duration = 1 } =
+    useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
   const [waveform] = audioState[trackId].stems[stemType].waveform()
-  if (waveform) waveform.drawer.progress(1 / (waveform.getDuration() / time))
+  if (waveform) waveform.drawer.progress(1 / (duration / time))
 
   const toggleSolo = () => {
     audioEvents.stemSoloToggle(trackId, stemType, !solo)
@@ -718,10 +720,12 @@ const TrackTime = ({ trackId, sx }: { trackId: Track['id']; sx?: SxProps }) => {
 
   // adjust time marker on waveform
   const [waveform] = audioState[trackId!].waveform()
+  const { duration = 1 } =
+    useLiveQuery(() => db.tracks.get(trackId!), [trackId]) || {}
 
   if (waveform) {
     // TODO: this should probably not be in the TrackTime component :/
-    const drawerTime = 1 / (waveform.getDuration() / time) || 0
+    const drawerTime = 1 / (duration / time) || 0
     waveform.drawer.progress(drawerTime)
     //@ts-ignore - minimap does indeed have a drawer.progress method
     waveform.minimap.drawer.progress(drawerTime)
