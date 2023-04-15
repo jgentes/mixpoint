@@ -68,10 +68,7 @@ const sendPost = async (
 const checkForStems = async (
   callID: BananaCheckRequest['callID']
 ): Promise<BananaCheckResponse['modelOutputs']> => {
-  const checkRequest: BananaCheckRequest = {
-    callID,
-    longPoll: true,
-  }
+  const checkRequest: BananaCheckRequest = { callID }
 
   const { message, modelOutputs } = (await sendPost(
     CHECK_ENDPOINT,
@@ -82,7 +79,9 @@ const checkForStems = async (
     throw errorHandler('Error generating stems: ' + message)
 
   // if we don't have modelOutputs, we need to keep polling
-  return modelOutputs || (await checkForStems(callID))
+  return (
+    modelOutputs || setTimeout(async () => await checkForStems(callID), 5000)
+  )
 }
 
 const stemAudio = async (trackId: Track['id']) => {

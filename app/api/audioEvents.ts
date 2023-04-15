@@ -91,15 +91,19 @@ const audioEvents = {
       if (adjustedBpm) {
         ;({ bpm } = (await db.tracks.get(Number(id))) || {})
       }
-
+      console.log(
+        'adjustment bpm:',
+        adjustedBpm,
+        'bpm:',
+        bpm,
+        adjustedBpm / bpm
+      )
       // pull players from audioState for synchronized playback
       const [stems] = getAudioState[Number(id)!].stems()
 
       if (stems) {
         for (const [stem, { player }] of Object.entries(stems)) {
           if (!player) continue
-
-          if (adjustedBpm && bpm) player.playbackRate = adjustedBpm / bpm
 
           // connect Meter for volume monitoring
           const meter = new Meter({ normalRange: true })
@@ -108,12 +112,17 @@ const audioEvents = {
 
           player.start(contextStartTime, time)
         }
-      } else player.start(contextStartTime, time)
+      } else {
+        if (adjustedBpm && bpm) player.playbackRate = adjustedBpm / bpm
+        player.start(contextStartTime, time)
+      }
 
       // create interval for volume meters
       const newInterval = setInterval(() => {
         const volumes: number[] = []
 
+        // this is the waveform volume meter
+        setAudioState[Number(id)].volumeMeter(Math.max(...volumes))
         for (const [stem, meter] of Object.entries(meters)) {
           const vol = meter.getValue() as number
           volumes.push(vol)
@@ -122,12 +131,9 @@ const audioEvents = {
           setAudioState[Number(id)].stems[stem as Stem].volumeMeter(vol)
         }
 
-        const startTime = (time || 0) + now() - contextStartTime
-
-        // this is the waveform volume meter
-        setAudioState[Number(id)].volumeMeter(Math.max(...volumes))
-
         // time also moves the waveform drawer
+        const startTime =
+          ((time || 0) + now() - contextStartTime) * player.playbackRate
         setAudioState[Number(id)].time(startTime)
       }, 20)
 
@@ -324,15 +330,12 @@ const audioEvents = {
     trackId: Track['id'],
     adjustedBpm: TrackPrefs['adjustedBpm']
   ): Promise<void> => {
-    const [{ stems, waveform }] = getAudioState[trackId!]()
+    const [{ stems, waveform, player }] = getAudioState[trackId!]()
     if (!waveform || !adjustedBpm) return
 
     const { bpm } = (await db.tracks.get(trackId!)) || {}
 
     const playbackRate = adjustedBpm / (bpm || adjustedBpm)
-
-    // Update waveform playback rate
-    waveform.setPlaybackRate(playbackRate)
 
     // update stem playback rate in realtime
     if (stems) {
@@ -341,6 +344,8 @@ const audioEvents = {
 
         player.playbackRate = playbackRate
       }
+    } else {
+      if (player) player.playbackRate = playbackRate
     }
 
     // Update mixPrefs

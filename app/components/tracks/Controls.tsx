@@ -310,11 +310,6 @@ const BeatResolutionControl = ({
 }
 
 const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
-  const nudgeIndicator = (direction: 'forward' | 'backward') => {
-    setAudioState[trackId!].nudged(direction)
-    setTimeout(() => setAudioState[trackId!].nudged(), 200)
-  }
-
   const navEvent = (nav: string) => {
     switch (nav) {
       case 'Play':
@@ -696,7 +691,6 @@ const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => (
 
 const TrackTime = ({ trackId, sx }: { trackId: Track['id']; sx?: SxProps }) => {
   const [time = 0] = audioState[trackId!].time()
-  const [nudged] = audioState[trackId!].nudged()
 
   // adjust time marker on waveform
   const [waveform] = audioState[trackId!].waveform()
@@ -712,10 +706,7 @@ const TrackTime = ({ trackId, sx }: { trackId: Track['id']; sx?: SxProps }) => {
   }
 
   return (
-    <Typography sx={{ fontSize: 'sm', ...sx }}>
-      {timeFormat(time)}
-      {nudged ? (nudged == 'backward' ? ' -' : ' +') : ''}
-    </Typography>
+    <Typography sx={{ fontSize: 'sm', ...sx }}>{timeFormat(time)}</Typography>
   )
 }
 
