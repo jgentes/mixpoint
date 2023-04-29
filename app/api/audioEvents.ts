@@ -1,5 +1,5 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform around
-import { Meter, now, PitchShift, Player, start, Transport } from 'tone'
+import { Meter, now, Player, start, Transport } from 'tone'
 import { getAudioState, setAudioState, setTableState } from '~/api/appState'
 import { calcMarkers } from '~/api/audioHandlers'
 import {
@@ -20,6 +20,7 @@ const clearVolumeMeter = (trackId: Track['id']) => {
   const [volumeMeterInterval] =
     getAudioState[Number(trackId)].volumeMeterInterval()
   clearInterval(volumeMeterInterval)
+  setAudioState[Number(trackId)].volumeMeter(0)
 }
 
 const _getAllPlayers = (): Player[] => {
@@ -124,7 +125,8 @@ const audioEvents = {
       // create interval for volume meters and drawer progress
       const newInterval: ReturnType<typeof setInterval> | number = setInterval(
         () => {
-          if (!setAudioState[Number(id)]) return clearInterval(newInterval)
+          if (!getAudioState[Number(id)].playing())
+            return clearInterval(newInterval)
 
           const volumes: number[] = []
 
@@ -136,7 +138,7 @@ const audioEvents = {
             if (stem != 'main')
               setAudioState[Number(id)].stems[stem as Stem].volumeMeter(vol)
           }
-          console.log('update volume on ', id, volumes)
+
           // this is the waveform volume meter
           setAudioState[Number(id)].volumeMeter(Math.max(...volumes))
 
@@ -192,9 +194,6 @@ const audioEvents = {
       }
 
       clearVolumeMeter(Number(id))
-
-      setAudioState[Number(id)].volumeMeter(0)
-      setAudioState[Number(id)].volumeMeterInterval(-1)
       setAudioState[Number(id)].playing(false)
     }
   },
