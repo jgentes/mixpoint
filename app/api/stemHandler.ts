@@ -1,4 +1,4 @@
-import { setAudioState, Stems } from '~/api/appState'
+import { getAudioState, setAudioState, Stems } from '~/api/appState'
 import { db, Stem, storeTrackCache, Track } from '~/api/db/dbHandlers'
 import { getStemsDirHandle } from '~/api/fileHandlers'
 import { convertWav } from '~/api/mp3Converter'
@@ -50,13 +50,18 @@ const sendPost = async (
   endpoint: string,
   body: BananaStartRequest | BananaCheckRequest
 ): Promise<BananaStartResponse | BananaCheckResponse> => {
-  const res = await fetch(endpoint, {
-    method: 'post',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  })
+  let res
+  try {
+    res = await fetch(endpoint, {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
+  } catch (e) {
+    throw errorHandler('Error connecting to server')
+  }
   if (!res.ok) {
     const message = `An error has occurred: ${res.status} - ${res.statusText}`
     throw errorHandler(message)
@@ -66,23 +71,34 @@ const sendPost = async (
 }
 
 const checkForStems = async (
-  callID: BananaCheckRequest['callID']
+  callID: BananaCheckRequest['callID'],
+  trackId: Track['id']
 ): Promise<BananaCheckResponse['modelOutputs']> => {
   const checkRequest: BananaCheckRequest = { callID }
 
+  const handleErr = (msg?: string) => {
+    setAudioState[trackId!].stemState('error')
+    throw errorHandler('Error generating stems: ' + msg)
+  }
+
   return new Promise(resolve =>
     setTimeout(async () => {
-      const { message, modelOutputs } = (await sendPost(
-        CHECK_ENDPOINT,
-        checkRequest
-      )) as BananaCheckResponse
+      let message, modelOutputs
+      try {
+        ;({ message, modelOutputs } = (await sendPost(
+          CHECK_ENDPOINT,
+          checkRequest
+        )) as BananaCheckResponse)
+      } catch (err) {
+        handleErr()
+      }
 
-      if (message.includes('error') || (message == 'success' && !modelOutputs))
-        throw errorHandler('Error generating stems: ' + message)
+      if (message?.includes('error') || (message == 'success' && !modelOutputs))
+        handleErr(message)
 
       // if we don't have modelOutputs, we need to keep polling
-      resolve(modelOutputs || (await checkForStems(callID)))
-    }, 5000)
+      resolve(modelOutputs || (await checkForStems(callID, trackId)))
+    }, 10000)
   )
 }
 
@@ -127,9 +143,9 @@ const stemAudio = async (trackId: Track['id']) => {
   )) as BananaStartResponse
 
   // if finished, we have modelOutputs, otherwise we need to poll using callID
-  if (!finished) modelOutputs = await checkForStems(callID)
+  if (!finished) modelOutputs = await checkForStems(callID, trackId)
 
-  const { name: filename, data: stems } = modelOutputs[0]
+  let { name: filename, data: stems } = modelOutputs[0]
 
   setAudioState[trackId!].stemState('convertingStems')
 
@@ -138,12 +154,9 @@ const stemAudio = async (trackId: Track['id']) => {
   // create a new dir with name of audio file
   let audioDirHandle
   try {
-    audioDirHandle = await dirHandle.getDirectoryHandle(
-      `${filename.split('.')[0]} - stems`,
-      {
-        create: true,
-      }
-    )
+    audioDirHandle = await dirHandle.getDirectoryHandle(`${filename} - stems`, {
+      create: true,
+    })
   } catch (e) {
     return errorHandler('Error creating directory for stems.')
   }
@@ -151,7 +164,8 @@ const stemAudio = async (trackId: Track['id']) => {
   const stemType = `audio/${startBody.modelInputs.mp3 ? 'mp3' : 'wav'}`
 
   for (const { name, data } of stems) {
-    const rename = `${name.toString().slice(0, -4)}.mp3`
+    const stemName = name.toString().slice(0, -4)
+    const rename = `${stemName}.mp3`
     const stemFile = await audioDirHandle.getFileHandle(rename, {
       create: true,
     })
@@ -177,16 +191,23 @@ const stemAudio = async (trackId: Track['id']) => {
       await writer.write(file)
       await writer.close()
 
-      console.log(`Stem saved: ${filename.split('.')[0]} - ${rename}`)
+      console.log(`Stem saved: ${filename} - ${rename}`)
 
       // store stem in cache
-      storeTrackCache({
+      await storeTrackCache({
         id: trackId,
-        stems: { [name.toString().slice(0, -4) as Stem]: { file } },
+        stems: { [stemName as Stem]: { file } },
       })
+
+      // give a couple of seconds before trying to render the stem waveform
+      if (stemName == 'other')
+        // 'other' is always the last stem
+        setTimeout(() => setAudioState[trackId!].stemState('ready'), 2000)
     }
 
     if (!startBody.modelInputs.mp3) {
+      console.log(`Converting stem: ${filename} - ${rename}`)
+
       convertWav(
         audioBlob,
         finalize,
@@ -195,10 +216,8 @@ const stemAudio = async (trackId: Track['id']) => {
         },
         (error: string) => errorHandler(error)
       )
-    } else finalize(audioBlob)
+    } else await finalize(audioBlob)
   }
-
-  setAudioState[trackId!].stemState('ready')
 }
 
 export { stemAudio }

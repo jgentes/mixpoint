@@ -22,13 +22,8 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
     }
   }
 
-  const stemHandler = () => {
-    if (stemState == 'getStems') {
-      return stemAudio(trackId)
-    }
-
-    getStemsDir()
-  }
+  const stemHandler = () =>
+    stemState == 'getStems' ? stemAudio(trackId) : getStemsDir()
 
   const stemStates: {
     [key in StemState]: {
@@ -78,6 +73,16 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
       secondaryText: 'Converting stems to MP3 (320kbps)',
     },
     ready: { icon: <></>, primaryText: '', secondaryText: '' },
+    error: {
+      icon: (
+        <Icon
+          icon='material-symbols:error-outline'
+          style={{ fontSize: 38, color: 'text.secondary' }}
+        />
+      ),
+      primaryText: 'Something went wrong',
+      secondaryText: 'Please refresh the page and try again',
+    },
   }
 
   return (

@@ -45,6 +45,7 @@ type StemState =
   | 'processingStems'
   | 'convertingStems'
   | 'ready'
+  | 'error'
 
 // TableState captures the state of the table, such as search value, which which rows are selected and track drawer open/closed state
 const {

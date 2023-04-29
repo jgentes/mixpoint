@@ -13,7 +13,7 @@ const convertWav = (
     mp3Worker.postMessage({ cmd: 'encode', rawInput: e?.target?.result })
     mp3Worker.postMessage({ cmd: 'finish' })
 
-    mp3Worker.onmessage = e => {
+    mp3Worker.onmessage = async e => {
       switch (e.data.cmd) {
         case 'error':
           onError('Error converting to MP3: ' + e.data.msg)
@@ -26,8 +26,7 @@ const convertWav = (
         case 'end':
           const mp3Blob = new Blob(e.data.buf, { type: 'audio/mp3' })
           onProgress(1)
-          onSuccess(mp3Blob)
-          mp3Worker.terminate()
+          await onSuccess(mp3Blob)
       }
     }
   }
