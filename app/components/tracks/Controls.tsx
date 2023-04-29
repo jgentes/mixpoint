@@ -500,9 +500,6 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
 
-  const { duration } =
-    useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
-
   const { mixpointTime } =
     useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
 
@@ -531,12 +528,11 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
       <Input
         variant='outlined'
         startDecorator={inputText('Mixpoint:')}
-        endDecorator={inputText(`/ ${timeFormat(duration || 0).slice(0, -3)}`)}
         value={mixpointVal}
         onChange={e => setMixpointVal(e.target.value)}
         onBlur={() => adjustMixpoint(mixpointVal)}
         sx={{
-          width: 175,
+          width: 135,
           borderRadius: '5px',
           borderColor: 'action.selected',
           '& div': {
@@ -691,7 +687,7 @@ const TrackTime = ({ trackId, sx }: { trackId: Track['id']; sx?: SxProps }) => {
   const [time = 0] = audioState[trackId!].time()
 
   return (
-    <Typography sx={{ fontSize: 'sm', ...sx }}>{timeFormat(time)}</Typography>
+    <Typography sx={{ fontSize: 'xs', ...sx }}>{timeFormat(time)}</Typography>
   )
 }
 

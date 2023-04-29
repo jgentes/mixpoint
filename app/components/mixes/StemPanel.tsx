@@ -1,7 +1,12 @@
 import { Box } from '@mui/joy'
 import { useEffect } from 'react'
 import { WaveSurferParams } from 'wavesurfer.js/types/params'
-import { audioState, getAudioState } from '~/api/appState'
+import {
+  audioState,
+  getAudioState,
+  getTableState,
+  setAudioState,
+} from '~/api/appState'
 import { STEMS, Stem, Track, db } from '~/api/db/dbHandlers'
 import { validateTrackStemAccess } from '~/api/fileHandlers'
 import { initWaveform } from '~/api/renderWaveform'

@@ -1,6 +1,6 @@
 import { Box, Card, Typography } from '@mui/joy'
 import { tableState } from '~/api/appState'
-import { Track } from '~/api/db/dbHandlers'
+import { Track, db, useLiveQuery } from '~/api/db/dbHandlers'
 import Waveform from '~/api/renderWaveform'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import {
@@ -11,10 +11,13 @@ import {
 } from '~/components/tracks/Controls'
 import Dropzone from '~/components/tracks/Dropzone'
 import Loader from '~/components/tracks/TrackLoader'
+import { timeFormat } from '~/utils/tableOps'
 
 const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
   const [analyzingTracks] = tableState.analyzing()
   const analyzing = analyzingTracks.includes(trackId)
+
+  const { duration = 0 } = useLiveQuery(() => db.tracks.get(trackId!)) || {}
 
   const trackHeader = (
     <Box
@@ -27,7 +30,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
     >
       <Typography
         sx={{
-          fontSize: 'sm',
+          fontSize: 'xs',
           fontWeight: 'md',
           pl: '3px',
           color: 'text.secondary',
@@ -35,7 +38,10 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
       >
         Time:
       </Typography>
-      <TrackTime trackId={trackId} />
+      <TrackTime sx={{ mr: '-4px' }} trackId={trackId} />
+      <Typography sx={{ fontSize: 'xs', color: 'text.secondary' }}>
+        / {timeFormat(duration).slice(0, -3)}
+      </Typography>
       <BeatResolutionControl trackId={trackId} sx={{ marginLeft: 'auto' }} />
     </Box>
   )
