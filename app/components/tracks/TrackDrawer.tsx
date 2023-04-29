@@ -14,7 +14,7 @@ const TrackDrawer = () => {
       PaperProps={{
         sx: {
           height: '80%',
-          bgcolor: 'background.surface',
+          backgroundColor: 'background.surface',
         },
         variant: 'outlined',
         elevation: 0,

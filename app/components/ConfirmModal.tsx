@@ -27,7 +27,11 @@ const ConfirmModal = () => {
       onClose={() => closeModal()}
       disableEnforceFocus={true}
     >
-      <ModalDialog variant='outlined' role='alertdialog'>
+      <ModalDialog
+        variant='outlined'
+        role='alertdialog'
+        sx={{ borderColor: 'action.focus' }}
+      >
         <Typography
           id='alert-dialog-modal-title'
           component='h2'

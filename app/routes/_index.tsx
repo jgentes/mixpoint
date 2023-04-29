@@ -2,7 +2,7 @@
 import { useSnackbar, VariantType } from 'notistack'
 import { useEffect } from 'react'
 
-import { useRouteError, isRouteErrorResponse } from '@remix-run/react'
+import { isRouteErrorResponse, useRouteError } from '@remix-run/react'
 
 import InitialLoader from '~/components/InitialLoader'
 import Layout from '~/components/layout/Layout'

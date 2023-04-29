@@ -19,7 +19,7 @@ const VolumeMeter = ({
     <LinearProgress
       id={`volume-container_${trackId}${stemType || ''}`}
       variant='determinate'
-      value={100 - volumeMeter}
+      value={100 - volumeMeter * 100}
       sx={{
         mx: '3px',
         zIndex: 0,

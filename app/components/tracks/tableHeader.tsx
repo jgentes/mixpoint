@@ -91,7 +91,7 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
         borderColor: 'divider',
         position: 'sticky',
         ...(numSelected > 0 && {
-          bgcolor: theme =>
+          backgroundColor: theme =>
             alpha(
               theme.palette.primary.main,
               theme.palette.action.activatedOpacity
@@ -141,7 +141,10 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
               </IconButton>
             )
           }
+          size='sm'
           sx={{
+            border: '1px solid',
+            borderColor: 'action.focus',
             fontWeight: 'thin',
             flexBasis: '500px',
             mx: 2,
@@ -155,9 +158,11 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
       {numSelected == 0 ? (
         <Button
           size='sm'
-          variant='soft'
+          variant='outlined'
           onClick={browseFile}
-          sx={{ whiteSpace: 'nowrap' }}
+          sx={{
+            whiteSpace: 'nowrap',
+          }}
         >
           <Icon icon='material-symbols:add' height='20px' />
           Add Track
@@ -170,7 +175,7 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
           color='neutral'
           onClick={() => showRemoveTracksModal()}
         >
-          <Icon icon='material-symbols:delete' height='20px' />
+          <Icon icon='ri:recycle-line' height='20px' />
         </IconButton>
       )}
     </Toolbar>

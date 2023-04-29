@@ -7,9 +7,10 @@ import { validateTrackStemAccess } from '~/api/fileHandlers'
 import { initWaveform } from '~/api/renderWaveform'
 import StemAccessButton from '~/components/mixes/StemAccessButton'
 import { StemControl } from '~/components/tracks/Controls'
+import { errorHandler } from '~/utils/notifications'
 
 const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
-  if (!trackId) return
+  if (!trackId) throw errorHandler('No track ID provided to StemPanel')
 
   const [stemState] = audioState[trackId].stemState()
 

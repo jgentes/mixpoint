@@ -22,7 +22,7 @@ type AudioState = Partial<{
   gainNode: Gain<'normalRange'> // gain controls actual volume
   volume: number // volume is the crossfader value
   volumeMeter: number
-  volumeMeterInterval: ReturnType<typeof setInterval> | number
+  volumeMeterInterval: ReturnType<typeof setInterval> | number // this is also what moves the track header
   stems: Stems
   stemState: StemState
 }>

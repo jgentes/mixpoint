@@ -10,7 +10,7 @@ import TrackTable from '~/components/tracks/TrackTable'
 
 const Layout: React.FunctionComponent = () => {
   const { tracks } = useLiveQuery(() => getPrefs('mix', 'tracks')) || {}
-
+  console.log({ tracks })
   const mixViewVisible = !!tracks?.length
 
   useEffect(() => {
@@ -34,6 +34,7 @@ const Layout: React.FunctionComponent = () => {
       ) : (
         <TrackTable />
       )}
+
       <TrackDrawer />
     </Sheet>
   )

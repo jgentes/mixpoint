@@ -85,7 +85,6 @@ const TrackTable = () => {
             sx={{
               border: '1px solid',
               borderRadius: '4px',
-              bgcolor: 'background.body',
               overflow: 'auto',
 
               borderColor: dragOver ? '#30b2e9' : 'action.selected',

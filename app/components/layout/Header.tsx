@@ -10,7 +10,7 @@ const Header = () => (
     component='header'
     sx={{
       p: 2,
-      bgcolor: 'background.surface',
+      backgroundColor: 'background.surface',
       display: 'flex',
       flexDirection: 'row',
       justifyContent: 'space-between',

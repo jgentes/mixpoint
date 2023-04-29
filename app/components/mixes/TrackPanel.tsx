@@ -60,7 +60,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
     borderColor: 'action.focus',
     borderRadius: '4px',
     borderBottom: 'none',
-    bgcolor: 'background.body',
+    backgroundColor: 'background.body',
     overflow: 'hidden',
     zIndex: 1,
   }

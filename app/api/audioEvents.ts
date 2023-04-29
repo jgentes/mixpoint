@@ -1,5 +1,5 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform around
-import { Meter, now, Player, start, Transport } from 'tone'
+import { Meter, now, PitchShift, Player, start, Transport } from 'tone'
 import { getAudioState, setAudioState, setTableState } from '~/api/appState'
 import { calcMarkers } from '~/api/audioHandlers'
 import {
@@ -48,7 +48,7 @@ const audioEvents = {
 
     if (!stem) {
       // Generate beat markers and apply them to waveform
-      calcMarkers(trackId, waveform)
+      await calcMarkers(trackId, waveform)
 
       // Adjust zoom based on previous mixPrefs
       waveform.zoom(beatResolution == 1 ? 80 : beatResolution == 0.5 ? 40 : 20)
@@ -63,10 +63,11 @@ const audioEvents = {
       waveform.setPlaybackRate(adjustedBpm / (bpm || adjustedBpm))
     }
 
-    // Set playhead to mixpoint if it exists
-    setAudioState[trackId!].time(
-      mixpointTime || waveform.markers.markers?.[0]?.time || 0
-    )
+    // Update time
+    const time = mixpointTime || waveform.markers.markers?.[0]?.time || 0
+    setAudioState[trackId!].time(time)
+
+    audioEvents.seek(trackId, time)
   },
 
   play: async (trackId?: Track['id']) => {
@@ -75,8 +76,11 @@ const audioEvents = {
     const contextStartTime = now()
 
     const [audioState] = getAudioState()
+    const { duration = 1 } = (await db.tracks.get(trackId!)) || {}
 
-    for (const [id, { waveform, player, time }] of Object.entries(audioState)) {
+    for (const [id, { waveform, player, time = 0 }] of Object.entries(
+      audioState
+    )) {
       if (!waveform || !player || (trackId && id !== String(trackId))) continue
 
       // clear any running volume meter timers
@@ -91,51 +95,67 @@ const audioEvents = {
       if (adjustedBpm) {
         ;({ bpm } = (await db.tracks.get(Number(id))) || {})
       }
-      console.log(
-        'adjustment bpm:',
-        adjustedBpm,
-        'bpm:',
-        bpm,
-        adjustedBpm / bpm
-      )
+
       // pull players from audioState for synchronized playback
       const [stems] = getAudioState[Number(id)!].stems()
+
+      const addMeter = (player: Player, stem?: Stem) => {
+        // connect Meter for volume monitoring
+        const meter = new Meter({ normalRange: true })
+        player.connect(meter)
+        meters[(stem as Stem) || 'main'] = meter
+        return player
+      }
 
       if (stems) {
         for (const [stem, { player }] of Object.entries(stems)) {
           if (!player) continue
 
-          // connect Meter for volume monitoring
-          const meter = new Meter({ normalRange: true })
-          player.connect(meter)
-          meters[stem as Stem] = meter
+          addMeter(player, stem as Stem)
 
           player.start(contextStartTime, time)
         }
       } else {
         if (adjustedBpm && bpm) player.playbackRate = adjustedBpm / bpm
+        addMeter(player)
         player.start(contextStartTime, time)
       }
 
-      // create interval for volume meters
-      const newInterval = setInterval(() => {
-        const volumes: number[] = []
+      // create interval for volume meters and drawer progress
+      const newInterval: ReturnType<typeof setInterval> | number = setInterval(
+        () => {
+          if (!setAudioState[Number(id)]) return clearInterval(newInterval)
 
-        // this is the waveform volume meter
-        setAudioState[Number(id)].volumeMeter(Math.max(...volumes))
-        for (const [stem, meter] of Object.entries(meters)) {
-          const vol = meter.getValue() as number
-          volumes.push(vol)
+          const volumes: number[] = []
 
-          // each stem volume is set here
-          setAudioState[Number(id)].stems[stem as Stem].volumeMeter(vol)
-        }
+          for (const [stem, meter] of Object.entries(meters)) {
+            const vol = meter.getValue() as number
+            volumes.push(vol)
 
-        // time also moves the waveform drawer
-        const startTime =
-          ((time || 0) + now() - contextStartTime) * player.playbackRate
-        setAudioState[Number(id)].time(startTime)
-      }, 20)
+            // each stem volume is set here
+            if (stem != 'main')
+              setAudioState[Number(id)].stems[stem as Stem].volumeMeter(vol)
+          }
+          console.log('update volume on ', id, volumes)
+          // this is the waveform volume meter
+          setAudioState[Number(id)].volumeMeter(Math.max(...volumes))
+
+          // update track timer
+          const startTime =
+            ((time || 0) + now() - contextStartTime) * player.playbackRate
+          setAudioState[Number(id)].time(startTime)
+
+          // pause if we're at the end of the track
+          const drawerTime = 1 / (duration / startTime) || 0
+          if (drawerTime >= 1) audioEvents.pause(Number(id))
+
+          // update waveform and minimap progress
+          waveform.drawer.progress(drawerTime)
+          //@ts-ignore - minimap does indeed have a drawer.progress method
+          waveform.minimap.drawer.progress(drawerTime)
+        },
+        20
+      )
 
       // store the interval so it can be cleared later
       setAudioState[Number(id)].volumeMeterInterval(newInterval)
@@ -207,8 +227,10 @@ const audioEvents = {
 
     startTime = startTime || trackTime || 1
 
+    const skipLength = markers[1]?.time - markers[0]?.time
+
     // Find the closest marker to the current time
-    const currentMarkerIndex = Math.floor(startTime / waveform.skipLength)
+    const currentMarkerIndex = Math.floor(startTime / skipLength) || 0
 
     const newIndex =
       currentMarkerIndex + (direction ? (direction == 'next' ? 1 : -1) : 0)
@@ -222,6 +244,18 @@ const audioEvents = {
     }
 
     if (playing) audioEvents.play(trackId)
+
+    const { duration = 1 } = (await db.tracks.get(trackId!)) || {}
+    if (waveform) {
+      // TODO: this should probably not be in the TrackTime component :/
+      const drawerTime = 1 / (duration / time) || 0
+
+      if (drawerTime >= 1) audioEvents.pause(trackId!)
+
+      waveform.drawer.progress(drawerTime)
+      //@ts-ignore - minimap does indeed have a drawer.progress method
+      waveform.minimap.drawer.progress(drawerTime)
+    }
   },
 
   seekMixpoint: async (trackId?: Track['id']) => {
@@ -249,7 +283,6 @@ const audioEvents = {
   // crossfade handles the sliders that mix between stems or full track
   crossfade: async (sliderVal: number, stemType?: Stem) => {
     const { tracks } = await getPrefs('mix')
-    if (!tracks?.length) return
 
     const sliderPercent = sliderVal / 100
 
@@ -260,7 +293,7 @@ const audioEvents = {
       Math.min(1, 1 + Math.cos((1 - sliderPercent) * Math.PI)),
     ]
 
-    tracks.forEach((track, i) => {
+    tracks?.forEach((track, i) => {
       if (track) audioEvents.updateVolume(Number(track), volumes[i], stemType)
     })
   },

@@ -28,12 +28,7 @@ import {
   useLiveQuery,
 } from '~/api/db/dbHandlers'
 
-import {
-  audioState,
-  getTableState,
-  setAudioState,
-  setTableState,
-} from '~/api/appState'
+import { audioState, getTableState, setTableState } from '~/api/appState'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
@@ -141,6 +136,7 @@ const NumberControl = ({
             fontSize: 12,
             color: 'text.secondary',
           },
+          backgroundColor: 'background.surface',
         }}
       />
     </FormControl>
@@ -253,6 +249,7 @@ const BeatResolutionControl = ({
       value={beatResolution}
       variant='outlined'
       sx={{
+        backgroundColor: 'background.surface',
         borderColor: 'action.selected',
         borderRadius: '5px',
         ...sx,
@@ -418,7 +415,7 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
       orientation={'horizontal'}
       name='mixControl'
       variant='outlined'
-      sx={{ height: radioSize, mb: 1 }}
+      sx={{ height: radioSize, mb: 1, backgroundColor: 'background.surface' }}
       onClick={e => {
         const el = e.target as HTMLInputElement
         navEvent(el.value)
@@ -551,6 +548,7 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
             fontSize: 12,
             color: 'text.secondary',
           },
+          backgroundColor: 'background.surface',
         }}
       />
     </FormControl>
@@ -589,7 +587,7 @@ const StemControl = ({
     borderColor: 'action.focus',
     borderRadius: '4px',
     borderBottom: 'none',
-    bgcolor: 'background.body',
+    backgroundColor: 'background.body',
     overflow: 'hidden',
     zIndex: 1,
   }
@@ -691,19 +689,6 @@ const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => (
 
 const TrackTime = ({ trackId, sx }: { trackId: Track['id']; sx?: SxProps }) => {
   const [time = 0] = audioState[trackId!].time()
-
-  // adjust time marker on waveform
-  const [waveform] = audioState[trackId!].waveform()
-  const { duration = 1 } =
-    useLiveQuery(() => db.tracks.get(trackId!), [trackId]) || {}
-
-  if (waveform) {
-    // TODO: this should probably not be in the TrackTime component :/
-    const drawerTime = 1 / (duration / time) || 0
-    waveform.drawer.progress(drawerTime)
-    //@ts-ignore - minimap does indeed have a drawer.progress method
-    waveform.minimap.drawer.progress(drawerTime)
-  }
 
   return (
     <Typography sx={{ fontSize: 'sm', ...sx }}>{timeFormat(time)}</Typography>

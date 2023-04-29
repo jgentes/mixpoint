@@ -1,5 +1,6 @@
 // This file provides a few helper functions for interacting with the database
 import { useLiveQuery } from 'dexie-react-hooks'
+import { audioEvents } from '~/api/audioEvents'
 import {
   __db as db,
   __Mix as Mix,
@@ -116,6 +117,7 @@ const getPrefs = async <T extends keyof StoreTypes>(
 ): Promise<Partial<StoreTypes[T]>> => {
   const state =
     ((await db[`${table}Prefs`].orderBy('date').last()) as StoreTypes[T]) || {}
+
   return key ? ({ [key]: state[key] } as Partial<StoreTypes[T]>) : state
 }
 
@@ -134,7 +136,7 @@ const setPrefs = async (
 
 const getTrackPrefs = async (trackId: Track['id']): Promise<TrackPrefs> => {
   const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
-  const trackIndex = tracks.indexOf(trackId) ?? -1
+  const trackIndex = tracks.indexOf(trackId)
 
   return trackPrefs[trackIndex] || {}
 }
@@ -153,7 +155,7 @@ const setTrackPrefs = async (
   state: Partial<TrackPrefs>
 ): Promise<void> => {
   const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
-  const trackIndex = tracks.indexOf(trackId) ?? -1
+  const trackIndex = tracks.indexOf(trackId)
 
   if (trackIndex == -1) return errorHandler('Track not found in mix state')
 
@@ -164,16 +166,12 @@ const setTrackPrefs = async (
 }
 
 const addToMix = async (track: Track) => {
-  // retrieve cached file or store file for access on page refresh, don't add if we don't have perms
   const file = await getPermission(track)
   if (!file) return
 
   const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
-
-  // limit 2 tracks in the mix for now
-  // removing because destroy should occur on renderwaveform component unmount  if (tracks.length > 1) audioEvent.emit(tracks[1]!, 'destroy')
-
-  const index = tracks.length > 0 ? 1 : 0
+  // tracks should retain their position (ie. [0, 1])
+  const index = tracks[0] ? 1 : 0
   tracks[index] = track.id
   trackPrefs[index] = { id: track.id }
 
@@ -181,15 +179,15 @@ const addToMix = async (track: Track) => {
 }
 
 const removeFromMix = async (id: Track['id']) => {
-  // removing because destroy should occur on renderwaveform component unmount   if (id) audioEvent.emit(id, 'destroy')
-
   const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
 
-  const index = tracks.indexOf(id) ?? -1
+  audioEvents.pause(id)
+
+  const index = tracks.indexOf(id)
 
   if (index > -1) {
-    tracks.splice(index, 1)
-    trackPrefs.splice(index, 1)
+    delete tracks[index]
+    delete trackPrefs[index]
   }
 
   await setPrefs('mix', { tracks, trackPrefs })

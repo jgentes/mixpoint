@@ -23,7 +23,7 @@ const LeftNav = () => {
         display: 'flex',
         flexDirection: 'column',
         p: 2,
-        bgcolor: 'background.surface',
+        backgroundColor: 'background.surface',
         borderRight: '1px solid',
         borderColor: 'divider',
       }}
@@ -143,7 +143,7 @@ const LeftNav = () => {
                       width: '10px',
                       height: '10px',
                       borderRadius: '99px',
-                      bgcolor: 'primary.300',
+                      backgroundColor: 'primary.300',
                     }}
                   />
                 </ListItemDecorator>
@@ -158,7 +158,7 @@ const LeftNav = () => {
                       width: '10px',
                       height: '10px',
                       borderRadius: '99px',
-                      bgcolor: 'danger.400',
+                      backgroundColor: 'danger.400',
                     }}
                   />
                 </ListItemDecorator>
@@ -173,7 +173,7 @@ const LeftNav = () => {
                       width: '10px',
                       height: '10px',
                       borderRadius: '99px',
-                      bgcolor: 'warning.500',
+                      backgroundColor: 'warning.500',
                     }}
                   />
                 </ListItemDecorator>
@@ -188,7 +188,7 @@ const LeftNav = () => {
                       width: '10px',
                       height: '10px',
                       borderRadius: '99px',
-                      bgcolor: 'success.400',
+                      backgroundColor: 'success.400',
                     }}
                   />
                 </ListItemDecorator>

@@ -70,17 +70,19 @@ const checkForStems = async (
 ): Promise<BananaCheckResponse['modelOutputs']> => {
   const checkRequest: BananaCheckRequest = { callID }
 
-  const { message, modelOutputs } = (await sendPost(
-    CHECK_ENDPOINT,
-    checkRequest
-  )) as BananaCheckResponse
+  return new Promise(resolve =>
+    setTimeout(async () => {
+      const { message, modelOutputs } = (await sendPost(
+        CHECK_ENDPOINT,
+        checkRequest
+      )) as BananaCheckResponse
 
-  if (message.includes('error') || (message == 'success' && !modelOutputs))
-    throw errorHandler('Error generating stems: ' + message)
+      if (message.includes('error') || (message == 'success' && !modelOutputs))
+        throw errorHandler('Error generating stems: ' + message)
 
-  // if we don't have modelOutputs, we need to keep polling
-  return (
-    modelOutputs || setTimeout(async () => await checkForStems(callID), 5000)
+      // if we don't have modelOutputs, we need to keep polling
+      resolve(modelOutputs || (await checkForStems(callID)))
+    }, 5000)
   )
 }
 
@@ -182,8 +184,6 @@ const stemAudio = async (trackId: Track['id']) => {
         id: trackId,
         stems: { [name.toString().slice(0, -4) as Stem]: { file } },
       })
-
-      setAudioState[trackId!].stemState('ready')
     }
 
     if (!startBody.modelInputs.mp3) {
@@ -197,6 +197,8 @@ const stemAudio = async (trackId: Track['id']) => {
       )
     } else finalize(audioBlob)
   }
+
+  setAudioState[trackId!].stemState('ready')
 }
 
 export { stemAudio }

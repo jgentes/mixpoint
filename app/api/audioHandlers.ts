@@ -227,9 +227,6 @@ const calcMarkers = async (
   const beatInterval = 60 / (bpm || 1)
   const skipLength = beatInterval * (1 / beatResolution)
 
-  // SkipLength is used while calculating nearest Marker during seek events
-  waveform.skipLength = skipLength
-
   let startPoint = adjustedOffset || offset || 0
 
   // Work backward from initialPeak to start of track (zerotime) based on bpm
@@ -239,9 +236,6 @@ const calcMarkers = async (
   for (let time = startPoint; time < duration; time += skipLength) {
     waveform.markers.add({ time })
   }
-
-  const mixpointTime = trackPrefs.mixpointTime || startPoint
-  await setTrackPrefs(trackId, { mixpointTime })
 }
 
 // const createMix = async (TrackPrefsArray: TrackPrefs[]) => {
