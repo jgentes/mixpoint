@@ -138,13 +138,9 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
     const [trackWithId] = await putTracks([updatedTrack])
     updatedTracks.push(trackWithId)
 
-    // Give Dexie a few ms to update the UI before removing analyzing state. This is to avoid the 'analyze' button appearing briefly.
-    setTimeout(
-      () =>
-        setTableState.analyzing(analyzing =>
-          analyzing.filter(id => id !== track.id)
-        ),
-      250
+    // Remove from analyzing state
+    setTableState.analyzing(analyzing =>
+      analyzing.filter(id => id !== track.id)
     )
   }
   return updatedTracks

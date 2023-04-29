@@ -101,7 +101,6 @@ const Waveform = ({
 
   useEffect(() => {
     // Retrieve track, file and region data, then store waveform in audioState
-
     const init = async () => {
       const [analyzingTracks] = getTableState.analyzing()
       const analyzing = analyzingTracks.includes(trackId)
@@ -161,6 +160,7 @@ const Waveform = ({
 
     init()
 
+    // add track to analyzing state
     setTableState.analyzing(prev =>
       prev.includes(trackId) ? prev : [...prev, trackId]
     )
