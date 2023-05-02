@@ -71,7 +71,7 @@ const audioEvents = {
     audioEvents.seek(trackId, time)
   },
 
-  play: async (trackId?: Track['id']) => {
+  play: async (trackId?: Track['id'], startTime?: number) => {
     // use the same Tonejs audio context timer for all stems
     await start()
     const contextStartTime = now()
@@ -79,11 +79,12 @@ const audioEvents = {
     const [audioState] = getAudioState()
     const { duration = 1 } = (await db.tracks.get(trackId!)) || {}
 
-    for (const [id, { waveform, player, time = 0 }] of Object.entries(
+    for (let [id, { waveform, player, time = 0 }] of Object.entries(
       audioState
     )) {
       if (!waveform || !player || (trackId && id !== String(trackId))) continue
 
+      time = startTime || time
       // clear any running volume meter timers
       clearVolumeMeter(Number(id))
 
@@ -144,7 +145,7 @@ const audioEvents = {
 
           // update track timer
           const startTime =
-            ((time || 0) + now() - contextStartTime) * player.playbackRate
+            ((time || 0) + now() - contextStartTime) * player!.playbackRate
           setAudioState[Number(id)].time(startTime)
 
           // pause if we're at the end of the track
@@ -152,7 +153,7 @@ const audioEvents = {
           if (drawerTime >= 1) audioEvents.pause(Number(id))
 
           // update waveform and minimap progress
-          waveform.drawer.progress(drawerTime)
+          waveform!.drawer.progress(drawerTime)
           //@ts-ignore - minimap does indeed have a drawer.progress method
           waveform.minimap.drawer.progress(drawerTime)
         },
@@ -231,33 +232,32 @@ const audioEvents = {
     // Find the closest marker to the current time
     const currentMarkerIndex = Math.floor(startTime / skipLength) || 0
 
-    const newIndex =
-      currentMarkerIndex + (direction ? (direction == 'next' ? 1 : -1) : 0)
+    // ensure we don't go below the first or past last marker
+    const newIndex = Math.max(
+      0,
+      Math.min(
+        markers.length - 1,
+        currentMarkerIndex + (direction ? (direction == 'next' ? 1 : -1) : 0)
+      )
+    )
 
     const { time } = markers[newIndex] || {}
-
+    const drawerTime = 1 / (waveform.getDuration() / time) || 0
+    console.log(time, startTime, time - startTime)
     // avoid looping if the time is within 5ms of the current time
     if (time && (time > startTime + 0.005 || time < startTime - 0.005)) {
-      waveform.playhead.setPlayheadTime(time)
-      setAudioState[trackId!].time(time)
+      // TODO figure out why this code doesnt' do anythingon render
+      //waveform.playhead.setPlayheadTime(time)
+      //setAudioState[trackId!].time(time)
+      //waveform.seekAndCenter(time)
     }
 
-    if (playing) audioEvents.play(trackId)
-
-    const { duration = 1 } = (await db.tracks.get(trackId!)) || {}
-    if (waveform) {
-      // TODO: this should probably not be in the TrackTime component :/
-      const drawerTime = 1 / (duration / time) || 0
-
-      if (drawerTime >= 1) audioEvents.pause(trackId!)
-
-      waveform.drawer.progress(drawerTime)
-      //@ts-ignore - minimap does indeed have a drawer.progress method
-      waveform.minimap.drawer.progress(drawerTime)
-    }
+    // resume playing if not at the end of track
+    if (playing && drawerTime < 1) audioEvents.play(trackId, time)
   },
 
   seekMixpoint: async (trackId?: Track['id']) => {
+    // the need for this as a separate function is questionable - use seek
     let tracks
     if (trackId) tracks = [trackId]
     else {
@@ -267,15 +267,7 @@ const audioEvents = {
 
     for (const trackId of tracks) {
       const { mixpointTime = 0 } = (await getTrackPrefs(Number(trackId))) || {}
-      const [{ playing, waveform }] = getAudioState[Number(trackId)]()
-      if (!waveform) return
-
-      const time =
-        mixpointTime > 0 ? 1 / (waveform.getDuration() / mixpointTime) : 0
-
-      waveform.seekAndCenter(time)
-
-      if (playing) audioEvents.play(Number(trackId))
+      audioEvents.seek(Number(trackId), mixpointTime)
     }
   },
 

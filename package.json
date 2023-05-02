@@ -4,10 +4,7 @@
   "private": true,
   "scripts": {
     "build": "remix build",
-    "dev": "run-p 'dev:*'",
-    "dev:build": "cross-env NODE_ENV=development remix dev",
-    "dev:serve": "cross-env NODE_ENV=development nodemon --watch build node_modules/.bin/remix-serve build",
-    "start": "remix-serve ./build"
+    "dev": "remix dev"
   },
   "dependencies": {
     "@emotion/react": "~11.10.6",
@@ -15,12 +12,11 @@
     "@fontsource/public-sans": "~4.5.11",
     "@mui/joy": "~5.0.0-alpha.65",
     "@mui/material": "~5.11.7",
-    "@remix-run/node": "^1.15.0",
-    "@remix-run/react": "^1.15.0",
-    "@remix-run/server-runtime": "^1.15.0",
+    "@remix-run/node": "^1.16.0",
+    "@remix-run/react": "^1.16.0",
+    "@remix-run/server-runtime": "^1.16.0",
     "@vercel/analytics": "^0.1.11",
-    "@vercel/remix": "^1.15.0",
-    "cross-env": "^7.0.3",
+    "@vercel/remix": "^1.16.0",
     "dexie": "~3.2.2",
     "dexie-react-hooks": "~1.1.1",
     "isbot": "latest",
@@ -36,17 +32,15 @@
   },
   "devDependencies": {
     "@iconify-icon/react": "^1.0.7",
-    "@remix-run/dev": "^1.15.0",
-    "@remix-run/serve": "^1.15.0",
+    "@remix-run/dev": "^1.16.0",
+    "@remix-run/serve": "^1.16.0",
     "@types/node": "~18.7.3",
     "@types/react": "~18.0.17",
     "@types/react-dom": "~18.0.6",
     "@types/wavesurfer.js": "~6.0.3",
     "@types/wicg-file-system-access": "~2020.9.5",
-    "npm-run-all": "^4.1.5",
     "remix-utils": "^6.0.0",
-    "typescript": "^5.0.2",
-    "zod": "^3.21.4"
+    "typescript": "^5.0.2"
   },
   "packageManager": "yarn@3.5.0"
 }
