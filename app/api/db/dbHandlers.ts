@@ -170,7 +170,7 @@ const setTrackPrefs = async (
 	await setPrefs("mix", { tracks, trackPrefs });
 };
 
-const addToMix = async (track: Track, position?: 0 | 1) => {
+const addToMix = async (track: Track, trackSlot?: 0 | 1) => {
 	const file = await getPermission(track);
 	if (!file) return;
 
@@ -178,7 +178,7 @@ const addToMix = async (track: Track, position?: 0 | 1) => {
 
 	// tracks should retain their position (ie. [0, 1])
 	// is there a track in first position? if not, put this track there
-	const index = position ?? tracks[0] ? 1 : 0;
+	const index = trackSlot ?? tracks[0] ? 1 : 0;
 
 	// if there's already a track in this position, remove it first
 	if (tracks[index]) await audioEvents.ejectTrack(tracks[index]);

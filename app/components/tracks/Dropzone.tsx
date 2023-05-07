@@ -3,9 +3,10 @@ import { Box, Sheet, Typography } from "@mui/joy";
 import { SxProps } from "@mui/material";
 import { useState } from "react";
 import { processTracks } from "~/api/audioHandlers";
+import { addToMix } from "~/api/db/dbHandlers";
 import { browseFile } from "~/api/fileHandlers";
 
-const itemsDropped = async (items: DataTransferItemList) => {
+const itemsDropped = async (items: DataTransferItemList, trackSlot?: 0 | 1) => {
 	const handleArray: (FileSystemFileHandle | FileSystemDirectoryHandle)[] = [];
 	const itemQueue = [];
 
@@ -28,15 +29,16 @@ const itemsDropped = async (items: DataTransferItemList) => {
 	// Must use a promise queue with DataTransferItemList
 	// https://stackoverflow.com/q/55658851/1058302
 	await Promise.all(itemQueue);
-	processTracks(handleArray);
+	const tracks = await processTracks(handleArray);
+	if (tracks[0]) addToMix(tracks[0], trackSlot);
 };
 
 const Dropzone = ({
 	sx = {},
-	position,
-}: { sx?: SxProps; position?: number }) => {
+	trackSlot,
+}: { sx?: SxProps; trackSlot?: 0 | 1 }) => {
 	const [dragOver, setDragOver] = useState(false);
-	// TODO: dragging a song onto the mix view doesn't set the song as active in the mix
+
 	return (
 		<Sheet
 			variant="soft"
@@ -63,7 +65,7 @@ const Dropzone = ({
 			onClick={browseFile}
 			onDrop={(e) => {
 				e.preventDefault();
-				itemsDropped(e.dataTransfer.items);
+				itemsDropped(e.dataTransfer.items, trackSlot);
 				setDragOver(false);
 			}}
 			onDragOver={(e) => {

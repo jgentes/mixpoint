@@ -16,7 +16,7 @@ const MixCard = ({
 	trackId,
 	trackSlot,
 	sx,
-}: { trackId: Track["id"]; trackSlot: number; sx?: SxProps }) => {
+}: { trackId: Track["id"]; trackSlot: 0 | 1; sx?: SxProps }) => {
 	const [analyzingTracks] = tableState.analyzing();
 	const analyzing = analyzingTracks.includes(trackId);
 
