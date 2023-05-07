@@ -5,7 +5,7 @@ const notFound = () => {
   const url = useParams()?.['*']
   return (
     <InitialLoader
-      message={url == 'loader' ? '' : `Page not found at "${url}"`}
+      message={url === 'loader' ? '' : `Page not found at "${url}"`}
     />
   )
 }
