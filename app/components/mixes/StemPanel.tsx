@@ -7,6 +7,7 @@ import {
 	getTableState,
 	setTableState,
 } from "~/api/appState";
+import { audioEvents } from "~/api/audioEvents";
 import { STEMS, Stem, Track, db } from "~/api/db/dbHandlers";
 import { validateTrackStemAccess } from "~/api/fileHandlers";
 import { initWaveform } from "~/api/renderWaveform";
@@ -63,15 +64,7 @@ const StemPanel = ({ trackId }: { trackId: Track["id"] }) => {
 			prev.includes(trackId) ? prev : [...prev, trackId],
 		);
 
-		return () => {
-			const [stems] = getAudioState[trackId].stems();
-
-			if (stems) {
-				for (const stem of Object.values(stems)) {
-					stem?.waveform?.destroy();
-				}
-			}
-		};
+		return () => audioEvents.destroyStems(trackId);
 	}, [trackId, stemState]);
 
 	return stemState !== "ready" ? (

@@ -393,7 +393,7 @@ const MixControl = ({ tracks }: { tracks: MixPrefs["tracks"] }) => {
 				audioEvents.pause();
 				break;
 			case "Go to Mixpoint":
-				audioEvents.seekMixpoint();
+				for (const track of tracks) audioEvents.seekMixpoint(track);
 				break;
 		}
 	};
@@ -405,7 +405,7 @@ const MixControl = ({ tracks }: { tracks: MixPrefs["tracks"] }) => {
 			orientation={"horizontal"}
 			name="mixControl"
 			variant="outlined"
-			sx={{ height: radioSize, mb: 1, backgroundColor: "background.surface" }}
+			sx={{ height: radioSize, my: 1, backgroundColor: "background.surface" }}
 			onClick={(e) => {
 				const el = e.target as HTMLInputElement;
 				navEvent(el.value);
