@@ -72,12 +72,12 @@ const NumberControl = ({
 	const valDiff = !isNaN(Number(adjustedVal)) && adjustedVal !== val;
 
 	const adjustVal = async (newVal?: number) => {
-		newVal = newVal ?? val;
-		if (typeof newVal !== "number") return;
+		const value = newVal ?? val;
+		if (typeof value !== "number") return;
 
-		setInputVal(newVal);
+		setInputVal(value);
 
-		audioEvents[emitEvent](trackId, newVal);
+		audioEvents[emitEvent](trackId, value);
 	};
 
 	const ResetValLink = () => (

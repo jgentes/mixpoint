@@ -1,6 +1,6 @@
 import moment from "moment";
 import React, { ChangeEvent, MouseEvent } from "react";
-import { getTableState, setTableState, tableState } from "~/api/appState";
+import { getTableState, setTableState } from "~/api/appState";
 import { db, getPrefs, setPrefs, Track } from "~/api/db/dbHandlers";
 import { errorHandler } from "~/utils/notifications";
 

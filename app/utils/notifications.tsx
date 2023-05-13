@@ -1,21 +1,21 @@
-import { notificationState } from '~/api/appState'
+import { notificationState } from "~/api/appState";
 
 type Notification = {
-  message?: string
-  variant?: 'success' | 'error' | 'warning' | 'info'
-}
+	message?: string;
+	variant?: "success" | "error" | "warning" | "info";
+};
 
 const errorHandler = (error: Error | string) => {
-  if (typeof error == 'string') error = Error(error)
+	const err = typeof error === "string" ? Error(error) : error;
 
-  console.error(error.message)
+	console.error(err.message);
 
-  window.dispatchEvent(
-    new CustomEvent('notify', {
-      detail: { message: error?.message, variant: 'error' },
-    })
-  )
-}
+	window.dispatchEvent(
+		new CustomEvent("notify", {
+			detail: { message: err?.message, variant: "error" },
+		}),
+	);
+};
 
-export type { Notification }
-export { errorHandler, notificationState }
+export type { Notification };
+export { errorHandler, notificationState };
