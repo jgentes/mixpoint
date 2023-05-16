@@ -12,11 +12,12 @@ import {
 import Loader from "~/components/tracks/TrackLoader";
 import { timeFormat } from "~/utils/tableOps";
 
-const TrackPanel = ({ trackId }: { trackId: Track["id"] }) => {
-	const [analyzingTracks] = tableState.analyzing();
+const TrackPanel = ({ trackId }: { trackId: Track[ "id" ] }) => {
+	const [ analyzingTracks ] = tableState.analyzing();
 	const analyzing = analyzingTracks.includes(trackId);
 
-	const { duration = 0 } = useLiveQuery(() => db.tracks.get(trackId)) || {};
+	const { duration = 0 } =
+		useLiveQuery(() => db.tracks.get(trackId), [ trackId ]) || {};
 
 	const trackHeader = (
 		<Box

@@ -1,11 +1,11 @@
 import { guess as detectBPM } from "web-audio-beat-detector";
-import { setModalState, setTableState } from "~/api/appState";
+import { getAudioState, setModalState, setTableState } from "~/api/appState";
 import {
+	Track,
 	db,
 	getTrackPrefs,
 	putTracks,
 	setPrefs,
-	Track,
 } from "~/api/db/dbHandlers";
 import { getPermission } from "~/api/fileHandlers";
 import { errorHandler } from "~/utils/notifications";
@@ -197,12 +197,15 @@ const getAudioDetails = async (
 
 // CalcMarkers can be called independently for changes in beat offset or beat resolution
 const calcMarkers = async (
-	trackId: Track["id"],
-	waveform: WaveSurfer,
+	trackId: Track["id"]
 ): Promise<void> => {
-	if (!trackId || !waveform) return;
+	if (!trackId) return;
+	
+	const [waveform] = getAudioState[trackId].waveform();
+	if (!waveform) return;
+	
 	waveform.markers.clear();
-
+	
 	const track = await db.tracks.get(trackId);
 	if (!track) return;
 	let { name, duration, offset, adjustedOffset, bpm } = track || {};
@@ -212,14 +215,12 @@ const calcMarkers = async (
 
 	if (valsMissing) {
 		const analyzedTracks = await analyzeTracks([track]);
-		({ duration, bpm, offset } = analyzedTracks[0]);
+		({ bpm, offset } = analyzedTracks[0]);
 	}
 
 	if (!duration) return errorHandler(`Please try adding ${name} again.`);
 
-	const trackPrefs = await getTrackPrefs(trackId);
-
-	const beatResolution = trackPrefs.beatResolution || 1;
+	const {beatResolution = 1} = await getTrackPrefs(trackId);
 
 	const beatInterval = 60 / (bpm || 1);
 	const skipLength = beatInterval * (1 / beatResolution);
@@ -286,5 +287,5 @@ export {
 	getAudioDetails,
 	//createMix,
 	analyzeTracks,
-	calcMarkers,
+	calcMarkers
 };

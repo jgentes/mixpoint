@@ -43,14 +43,13 @@ const audioEvents = {
 		if (!waveform) return;
 
 		const {
-			adjustedBpm,
 			mixpointTime,
 			beatResolution = 1,
 		} = await getTrackPrefs(trackId);
 
 		if (!stem) {
 			// Generate beat markers and apply them to waveform
-			await calcMarkers(trackId, waveform);
+			await calcMarkers(trackId);
 
 			// Adjust zoom based on previous mixPrefs
 			waveform.zoom(
@@ -65,17 +64,13 @@ const audioEvents = {
 			);
 		}
 
-		// Adjust playbackrate if bpm has been modified
-		if (adjustedBpm) {
-			const { bpm } = (await db.tracks.get(trackId)) || {};
-			waveform.setPlaybackRate(adjustedBpm / (bpm || adjustedBpm));
-		}
-
 		// Update time
 		const time = mixpointTime || waveform.markers.markers?.[0]?.time || 0;
 		setAudioState[trackId].time(time);
 
-		audioEvents.seek(trackId, time);
+		const {duration = 1} = await db.tracks.get(trackId) || {}
+
+		audioEvents.seek(trackId, time / duration);
 	},
 
 	ejectTrack: async (trackId: Track["id"]) => {
@@ -110,7 +105,6 @@ const audioEvents = {
 		const contextStartTime = now();
 
 		const [audioState] = getAudioState();
-		const { duration = 1 } = (await db.tracks.get(trackId)) || {};
 
 		for (let [id, { waveform, player, time = 0 }] of Object.entries(
 			audioState,
@@ -118,6 +112,7 @@ const audioEvents = {
 			if (!waveform || !player || id !== String(trackId)) continue;
 
 			time = startTime || time;
+
 			// clear any running volume meter timers
 			clearVolumeMeter(Number(id));
 
@@ -125,11 +120,8 @@ const audioEvents = {
 			const meters: Partial<{ [key in Stem]: Meter }> = {};
 
 			// check for bpm adjustment
-			let bpm;
 			const { adjustedBpm } = await getTrackPrefs(Number(id));
-			if (adjustedBpm) {
-				({ bpm } = (await db.tracks.get(Number(id))) || {});
-			}
+			const { bpm = 1, duration = 1 } = (await db.tracks.get(Number(id))) || {}
 
 			// pull players from audioState for synchronized playback
 			const [stems] = getAudioState[Number(id)].stems();
@@ -145,6 +137,8 @@ const audioEvents = {
 			if (stems) {
 				for (const [stem, { player }] of Object.entries(stems)) {
 					if (!player) continue;
+					
+				if (adjustedBpm && bpm) player.playbackRate = adjustedBpm / bpm;
 
 					addMeter(player, stem as Stem);
 
@@ -153,6 +147,7 @@ const audioEvents = {
 			} else {
 				if (adjustedBpm && bpm) player.playbackRate = adjustedBpm / bpm;
 				addMeter(player);
+
 				player.start(contextStartTime, time);
 			}
 
@@ -178,8 +173,7 @@ const audioEvents = {
 
 					// update track timer
 					if (player) {
-						const startTime =
-							((time || 0) + now() - contextStartTime) * player.playbackRate;
+						const startTime = (time || 0) + now() - contextStartTime;
 						setAudioState[Number(id)].time(startTime || 0);
 
 						// pause if we're at the end of the track
@@ -204,6 +198,7 @@ const audioEvents = {
 	},
 
 	pause: async (trackId?: Track["id"]) => {
+		// this needs to pause all stems so requires a bit of logic
 		let players;
 		let trackIds;
 
@@ -243,68 +238,58 @@ const audioEvents = {
 		if (waveform) waveform.setMute(true);
 	},
 
-	// onSeek is the handler for the WaveSurfer 'seek' event
-	onSeek: (trackId: Track["id"], percentageTime: number) => {
-		const [waveform] = getAudioState[trackId].waveform();
-		if (!waveform) return;
-
-		audioEvents.seek(trackId, waveform.getDuration() * percentageTime);
-	},
-
 	// Scroll to previous/next beat marker
 	seek: async (
 		trackId: Track["id"],
-		offset?: number,
+		percentageTime: number = 0,
 		direction?: "previous" | "next",
 	) => {
 		if (!trackId) return;
 
-		const [{ waveform, playing, time: trackTime }] = getAudioState[trackId]();
+		const [{ waveform, playing }] = getAudioState[trackId]();
 		if (!waveform) return;
-
+		
 		if (playing) await audioEvents.pause(trackId);
 
-		const { markers = [] } = waveform.markers || {};
-
-		const startTime = direction
-			? waveform.playhead.playheadTime
-			: offset || trackTime || 1;
-
-		const skipLength = markers[1]?.time - markers[0]?.time;
+		const {duration = 1} = await db.tracks.get(trackId) || {}
+		const startTime = duration * percentageTime
 
 		// find the closest marker to the current time
-		const currentMarkerIndex = Math.floor(startTime / skipLength) || 0;
+		const { markers = [] } = waveform.markers || {};
+const currentMarkerIndex = markers.findIndex(m => m.time > startTime) - 1;
+const closestIndex = currentMarkerIndex < 0 ? 0 :
+    currentMarkerIndex >= markers.length - 1 ? markers.length - 2 :
+    startTime - markers[currentMarkerIndex].time < markers[currentMarkerIndex + 1].time - startTime ? currentMarkerIndex : currentMarkerIndex + 1;
 
 		// ensure we don't go below the first or past last marker
 		const newIndex = Math.max(
 			0,
 			Math.min(
 				markers.length - 1,
-				currentMarkerIndex + (direction ? (direction === "next" ? 1 : -1) : 0),
+				closestIndex + (direction ? (direction === "next" ? 1 : -1) : 0),
 			),
 		);
 
-		const { time: closestMarker } = markers[newIndex] || {};
-		const percentageTime = 1 / (waveform.getDuration() / closestMarker) || 0;
-		const notAtClosestMarker =
-			closestMarker &&
-			(closestMarker > startTime + 0.005 || closestMarker < startTime - 0.005);
+		let { time = 0 } = markers[newIndex] || {};
+
+		const notAtClosestMarker = time && (time > startTime + 0.005 || time < startTime - 0.005);
+				
+		const progressTime = time / duration;
 
 		// avoid looping if the closestMarker is within 5ms of the current time
-		if (notAtClosestMarker) {
-			setAudioState[trackId].time(closestMarker);
-			waveform.playhead.setPlayheadTime(closestMarker);
-			waveform.drawer.progress(percentageTime);
-			waveform.drawer.recenter(percentageTime);
-		}
+		if (notAtClosestMarker) waveform.seekTo(progressTime);
+
+		setAudioState[trackId].time(time);
+		waveform.drawer.progress(progressTime);
 
 		// resume playing if not at the end of track
-		if (playing && percentageTime < 1) audioEvents.play(trackId, closestMarker);
+		if (playing && percentageTime < 1) audioEvents.play(trackId, time);
 	},
 
 	seekMixpoint: async (trackId: Track["id"]) => {
 		const { mixpointTime = 0 } = (await getTrackPrefs(trackId)) || {};
-		audioEvents.seek(trackId, mixpointTime);
+		const {duration = 1} = await db.tracks.get(trackId) || {}
+		audioEvents.seek(trackId, mixpointTime / duration);
 	},
 
 	// crossfade handles the sliders that mix between stems or full track
@@ -384,15 +369,15 @@ const audioEvents = {
 				break;
 		}
 
-		calcMarkers(trackId, waveform);
+		calcMarkers(trackId);
 	},
 
 	bpm: async (
 		trackId: Track["id"],
 		adjustedBpm: TrackPrefs["adjustedBpm"],
 	): Promise<void> => {
-		const [{ stems, waveform, player }] = getAudioState[trackId]();
-		if (!waveform || !adjustedBpm) return;
+		const [{ stems, player }] = getAudioState[trackId]();
+		if (!adjustedBpm) return;
 
 		const { bpm } = (await db.tracks.get(trackId)) || {};
 
@@ -409,6 +394,8 @@ const audioEvents = {
 			if (player) player.playbackRate = playbackRate;
 		}
 
+		Transport.bpm.value = adjustedBpm;
+
 		// Update mixPrefs
 		await setTrackPrefs(trackId, { adjustedBpm });
 	},
@@ -419,10 +406,7 @@ const audioEvents = {
 	): Promise<void> => {
 		await updateTrack(trackId, { adjustedOffset });
 
-		const [waveform] = getAudioState[trackId].waveform();
-		if (!waveform) return;
-
-		calcMarkers(trackId, waveform);
+		calcMarkers(trackId);
 	},
 
 	setMixpoint: async (
@@ -442,7 +426,10 @@ const audioEvents = {
 		if (newMixpoint === mixpointTime) return;
 
 		setTrackPrefs(trackId, { mixpointTime: newMixpoint });
-		audioEvents.seek(trackId, newMixpoint);
+
+		const {duration = 1} = await db.tracks.get(trackId) || {}
+
+		audioEvents.seek(trackId, newMixpoint / duration);
 	},
 
 	stemVolume: (trackId: Track["id"], stemType: Stem, volume: number) => {

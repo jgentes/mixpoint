@@ -18,14 +18,14 @@ import { getPermission } from "./fileHandlers";
 let WaveSurfer: typeof import("wavesurfer.js");
 let PlayheadPlugin: typeof import("wavesurfer.js/src/plugin/playhead").default;
 let CursorPlugin: typeof import("wavesurfer.js/src/plugin/cursor").default;
-let RegionsPlugin: typeof import("wavesurfer.js/src/plugin/regions").default;
+// let RegionsPlugin: typeof import("wavesurfer.js/src/plugin/regions").default;
 let MinimapPlugin: typeof import("wavesurfer.js/src/plugin/minimap").default;
 let MarkersPlugin: typeof import("wavesurfer.js/src/plugin/markers").default;
 if (typeof document !== "undefined") {
 	WaveSurfer = require("wavesurfer.js");
 	PlayheadPlugin = require("wavesurfer.js/src/plugin/playhead").default;
 	CursorPlugin = require("wavesurfer.js/src/plugin/cursor").default;
-	RegionsPlugin = require("wavesurfer.js/src/plugin/regions").default;
+	// RegionsPlugin = require("wavesurfer.js/src/plugin/regions").default;
 	MinimapPlugin = require("wavesurfer.js/src/plugin/minimap").default;
 	MarkersPlugin = require("wavesurfer.js/src/plugin/markers").default;
 }
@@ -38,7 +38,7 @@ const initWaveform = async ({
 	stem,
 	waveformConfig,
 }: {
-	trackId: Track["id"];
+	trackId: Track[ "id" ];
 	file: File;
 	stem?: Stem;
 	waveformConfig: WaveSurferParams;
@@ -76,7 +76,7 @@ const initWaveform = async ({
 
 	// Save waveform in audioState to track user interactions with the waveform and show progress
 	if (stem) {
-		setAudioState[trackId].stems[stem as Stem]({
+		setAudioState[ trackId ].stems[ stem as Stem ]({
 			player,
 			gainNode,
 			volume: 1,
@@ -84,14 +84,14 @@ const initWaveform = async ({
 			waveform,
 		});
 	} else {
-		setAudioState[trackId].waveform(waveform);
-		setAudioState[trackId].gainNode(gainNode);
-		setAudioState[trackId].player(player);
+		setAudioState[ trackId ].waveform(waveform);
+		setAudioState[ trackId ].gainNode(gainNode);
+		setAudioState[ trackId ].player(player);
 	}
 
 	// Initialize wavesurfer event listeners
 	// Must happen after storing the waveform in state
-	waveform.on("seek", (time) => audioEvents.onSeek(trackId, time));
+	waveform.on("seek", (percentageTime) => audioEvents.seek(trackId, percentageTime));
 	waveform.on("ready", () => audioEvents.onReady(trackId, stem));
 };
 
@@ -99,7 +99,7 @@ const Waveform = ({
 	trackId,
 	sx,
 }: {
-	trackId: Track["id"];
+	trackId: Track[ "id" ];
 	sx: SxProps;
 }): JSX.Element | null => {
 	if (!trackId) throw errorHandler("No track to initialize.");
@@ -124,7 +124,7 @@ const Waveform = ({
 				barGap: 1,
 				plugins: [
 					PlayheadPlugin.create({
-						moveOnSeek: false,
+						moveOnSeek: true,
 						returnOnPause: false,
 						draw: true,
 					}),
@@ -161,18 +161,18 @@ const Waveform = ({
 		};
 
 		// prevent duplication on re-render while loading
-		const [analyzingTracks] = getTableState.analyzing();
+		const [ analyzingTracks ] = getTableState.analyzing();
 		const analyzing = analyzingTracks.includes(trackId);
 
 		if (!analyzing) init();
 
 		// add track to analyzing state
 		setTableState.analyzing((prev) =>
-			prev.includes(trackId) ? prev : [...prev, trackId],
+			prev.includes(trackId) ? prev : [ ...prev, trackId ],
 		);
 
 		return () => audioEvents.destroy(trackId);
-	}, [trackId]);
+	}, [ trackId ]);
 
 	return (
 		<Card
