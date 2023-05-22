@@ -30,14 +30,14 @@ const itemsDropped = async (items: DataTransferItemList, trackSlot?: 0 | 1) => {
 	// https://stackoverflow.com/q/55658851/1058302
 	await Promise.all(itemQueue);
 	const tracks = await processTracks(handleArray);
-	if (tracks[0]) addToMix(tracks[0], trackSlot);
+	if (tracks[ 0 ]) addToMix(tracks[ 0 ], trackSlot);
 };
 
 const Dropzone = ({
 	sx = {},
 	trackSlot,
 }: { sx?: SxProps; trackSlot?: 0 | 1 }) => {
-	const [dragOver, setDragOver] = useState(false);
+	const [ dragOver, setDragOver ] = useState(false);
 
 	return (
 		<Sheet
@@ -62,7 +62,7 @@ const Dropzone = ({
 				},
 				...sx,
 			}}
-			onClick={browseFile}
+			onClick={() => browseFile(trackSlot)}
 			onDrop={(e) => {
 				e.preventDefault();
 				itemsDropped(e.dataTransfer.items, trackSlot);

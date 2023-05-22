@@ -35,8 +35,8 @@ import { createColumnDefinitions } from "~/components/tracks/tableColumns";
 
 // Toolbar is on top of the table, includes search, info, and button bar
 const EnhancedTableToolbar = (props: { numSelected: number }) => {
-	const [search, setSearch] = tableState.search();
-	const [selected, setSelected] = tableState.selected();
+	const [ search, setSearch ] = tableState.search();
+	const [ selected, setSelected ] = tableState.selected();
 
 	const { numSelected } = props;
 
@@ -65,9 +65,8 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
 		setModalState({
 			openState: true,
 			headerText: "Are you sure?",
-			bodyText: `This will analyze ${dirtyTracks.length} track${
-				dirtyTracks.length > 1 ? "s" : ""
-			}.`,
+			bodyText: `This will analyze ${dirtyTracks.length} track${dirtyTracks.length > 1 ? "s" : ""
+				}.`,
 			confirmColor: "success",
 			confirmText: `Analyze track${dirtyTracks.length > 1 ? "s" : ""}`,
 			onConfirm: async () => {
@@ -161,7 +160,7 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
 				<Button
 					size="sm"
 					variant="outlined"
-					onClick={browseFile}
+					onClick={() => browseFile()}
 					sx={{
 						whiteSpace: "nowrap",
 					}}
@@ -189,8 +188,8 @@ const EnhancedTableHead = (props: {
 	numSelected: number;
 	onRequestSort: (event: MouseEvent<unknown>, property: keyof Track) => void;
 	onSelectAllClick: (event: ChangeEvent<HTMLInputElement>) => void;
-	sortDirection: UserPrefs["sortDirection"];
-	sortColumn: UserPrefs["sortColumn"];
+	sortDirection: UserPrefs[ "sortDirection" ];
+	sortColumn: UserPrefs[ "sortColumn" ];
 	rowCount: number;
 }) => {
 	const {

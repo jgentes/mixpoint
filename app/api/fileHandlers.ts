@@ -68,12 +68,10 @@ const getPermission = async (track: Track): Promise<File | null> => {
 	return await _getFile(track);
 };
 
-const browseFile = async (): Promise<void> => {
+const browseFile = async (trackSlot?: 0 | 1): Promise<void> => {
 	// if the track drawer isn't open and we're in mix view, open it, otherwise show file picker
 	const [openDrawer] = getTableState.openDrawer();
-	const { tracks } = (await getPrefs("mix", "tracks")) || {};
-
-	if (!openDrawer && tracks?.length) return setTableState.openDrawer(true);
+	if (!openDrawer) return setTableState.openDrawer(true);
 
 	const files: FileSystemFileHandle[] | undefined = await window
 		.showOpenFilePicker({ multiple: true })
@@ -83,9 +81,7 @@ const browseFile = async (): Promise<void> => {
 
 	if (files) {
 		const tracks = (await processTracks(files)) || [];
-
-		// Automatically add the track to the mix (usually because there is only 1 track in the mix)
-		if (tracks.length === 1) addToMix(tracks[0]);
+		addToMix(tracks[trackSlot || 0]);
 	}
 };
 

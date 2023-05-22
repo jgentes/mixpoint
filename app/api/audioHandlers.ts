@@ -79,7 +79,7 @@ async function getTracksRecursively(
 			openState: true,
 			headerText: "More than 100 tracks added",
 			bodyText:
-				"Analyzing audio is memory intensive. If your browser runs out of memory, just refresh the page to release memory and resume analyzing tracks.",
+				"Analyzing audio is memory intensive. If your browser runs out of memory, just refresh the page to release memory and continue analyzing tracks.",
 			confirmText: "Continue",
 			confirmColor: "success",
 			onConfirm: async () => {
@@ -196,16 +196,14 @@ const getAudioDetails = async (
 };
 
 // CalcMarkers can be called independently for changes in beat offset or beat resolution
-const calcMarkers = async (
-	trackId: Track["id"]
-): Promise<void> => {
+const calcMarkers = async (trackId: Track["id"]): Promise<void> => {
 	if (!trackId) return;
-	
+
 	const [waveform] = getAudioState[trackId].waveform();
 	if (!waveform) return;
-	
+
 	waveform.markers.clear();
-	
+
 	const track = await db.tracks.get(trackId);
 	if (!track) return;
 	let { name, duration, offset, adjustedOffset, bpm } = track || {};
@@ -220,7 +218,7 @@ const calcMarkers = async (
 
 	if (!duration) return errorHandler(`Please try adding ${name} again.`);
 
-	const {beatResolution = 1} = await getTrackPrefs(trackId);
+	const { beatResolution = 1 } = await getTrackPrefs(trackId);
 
 	const beatInterval = 60 / (bpm || 1);
 	const skipLength = beatInterval * (1 / beatResolution);
@@ -287,5 +285,5 @@ export {
 	getAudioDetails,
 	//createMix,
 	analyzeTracks,
-	calcMarkers
+	calcMarkers,
 };

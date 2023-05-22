@@ -52,7 +52,7 @@ const NumberControl = ({
 	emitEvent,
 	styles,
 }: {
-	trackId: Track["id"];
+	trackId: Track[ "id" ];
 	val: number | undefined;
 	adjustedVal: number | undefined;
 	toFixedVal?: number;
@@ -62,11 +62,11 @@ const NumberControl = ({
 	emitEvent: "bpm" | "offset";
 	styles?: object;
 }) => {
-	const [inputVal, setInputVal] = useState<string | number>(0);
+	const [ inputVal, setInputVal ] = useState<string | number>(0);
 
 	useEffect(
 		() => setInputVal((adjustedVal ?? val ?? 0).toFixed(toFixedVal)),
-		[adjustedVal, val],
+		[ adjustedVal, val ],
 	);
 
 	const valDiff = !isNaN(Number(adjustedVal)) && adjustedVal !== val;
@@ -77,7 +77,7 @@ const NumberControl = ({
 
 		setInputVal(value);
 
-		audioEvents[emitEvent](trackId, value);
+		audioEvents[ emitEvent ](trackId, value);
 	};
 
 	const ResetValLink = () => (
@@ -141,7 +141,7 @@ const NumberControl = ({
 	);
 };
 
-const EjectControl = ({ trackId }: { trackId: Track["id"] }) => {
+const EjectControl = ({ trackId }: { trackId: Track[ "id" ] }) => {
 	return (
 		<Chip
 			variant="outlined"
@@ -166,15 +166,15 @@ const BpmControl = ({
 	trackId,
 	styles,
 }: {
-	trackId: Track["id"];
+	trackId: Track[ "id" ];
 	styles: object;
 }) => {
 	if (!trackId) return null;
 
-	const { bpm } = useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {};
+	const { bpm } = useLiveQuery(() => db.tracks.get(trackId), [ trackId ]) || {};
 
 	const { adjustedBpm } =
-		useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {};
+		useLiveQuery(() => getTrackPrefs(trackId), [ trackId ]) || {};
 
 	return (
 		<NumberControl
@@ -195,7 +195,7 @@ const OffsetControl = ({
 	trackId,
 	styles,
 }: {
-	trackId: TrackPrefs["id"];
+	trackId: TrackPrefs[ "id" ];
 	styles?: object;
 }) => {
 	if (!trackId) return null;
@@ -221,15 +221,15 @@ const BeatResolutionControl = ({
 	trackId,
 	sx,
 }: {
-	trackId: TrackPrefs["id"];
+	trackId: TrackPrefs[ "id" ];
 	sx?: SxProps;
 }) => {
 	if (!trackId) return null;
 
 	const { beatResolution = 1 } =
-		useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {};
+		useLiveQuery(() => getTrackPrefs(trackId), [ trackId ]) || {};
 
-	const changeBeatResolution = (beatResolution: TrackPrefs["beatResolution"]) =>
+	const changeBeatResolution = (beatResolution: TrackPrefs[ "beatResolution" ]) =>
 		audioEvents.beatResolution(trackId, beatResolution);
 
 	return (
@@ -245,10 +245,10 @@ const BeatResolutionControl = ({
 				...sx,
 			}}
 			onChange={(e) =>
-				changeBeatResolution(+e.target.value as TrackPrefs["beatResolution"])
+				changeBeatResolution(+e.target.value as TrackPrefs[ "beatResolution" ])
 			}
 		>
-			{[0.25, 0.5, 1].map((item) => (
+			{[ 0.25, 0.5, 1 ].map((item) => (
 				<Box
 					key={item}
 					sx={(theme) => ({
@@ -262,11 +262,11 @@ const BeatResolutionControl = ({
 							borderLeft: "1px solid",
 							borderColor: theme.palette.divider,
 						},
-						[`&[data-first-child] .${radioClasses.action}`]: {
+						[ `&[data-first-child] .${radioClasses.action}` ]: {
 							borderTopLeftRadius: "5px",
 							borderBottomLeftRadius: "5px",
 						},
-						[`&[data-last-child] .${radioClasses.action}`]: {
+						[ `&[data-last-child] .${radioClasses.action}` ]: {
 							borderTopRightRadius: "5px",
 							borderBottomRightRadius: "5px",
 						},
@@ -296,7 +296,7 @@ const BeatResolutionControl = ({
 	);
 };
 
-const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs["id"] }) => {
+const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs[ "id" ] }) => {
 	const navEvent = (nav: string) => {
 		switch (nav) {
 			case "Play":
@@ -320,7 +320,7 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs["id"] }) => {
 		}
 	};
 
-	const [isPlaying] = audioState[trackId].playing();
+	const [ isPlaying ] = audioState[ trackId ].playing();
 
 	return (
 		<ButtonGroup variant="text" color="inherit" disableRipple id="navControl">
@@ -381,7 +381,7 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs["id"] }) => {
 	);
 };
 
-const MixControl = ({ tracks }: { tracks: MixPrefs["tracks"] }) => {
+const MixControl = ({ tracks }: { tracks: MixPrefs[ "tracks" ] }) => {
 	if (!tracks?.length) return null;
 
 	const navEvent = (nav: string) => {
@@ -445,13 +445,13 @@ const MixControl = ({ tracks }: { tracks: MixPrefs["tracks"] }) => {
 								borderColor: `${theme.palette.divider} !important`,
 								height: "99%",
 							},
-							[`&[data-first-child] .${radioClasses.action}`]: {
+							[ `&[data-first-child] .${radioClasses.action}` ]: {
 								borderTopLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
 								borderBottomLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
 								bottom: "2px",
 								left: "-1px",
 							},
-							[`&[data-last-child] .${radioClasses.action}`]: {
+							[ `&[data-last-child] .${radioClasses.action}` ]: {
 								borderTopRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
 								borderBottomRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
 								height: "101%",
@@ -487,17 +487,17 @@ const MixControl = ({ tracks }: { tracks: MixPrefs["tracks"] }) => {
 	);
 };
 
-const MixpointControl = ({ trackId }: { trackId: Track["id"] }) => {
+const MixpointControl = ({ trackId }: { trackId: Track[ "id" ] }) => {
 	if (!trackId) return null;
 
 	const { mixpointTime } =
-		useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {};
+		useLiveQuery(() => getTrackPrefs(trackId), [ trackId ]) || {};
 
-	const [mixpointVal, setMixpointVal] = useState<string>("0:00.00");
+	const [ mixpointVal, setMixpointVal ] = useState<string>("0:00.00");
 
 	useEffect(
 		() => setMixpointVal(timeFormat(mixpointTime || 0)),
-		[mixpointTime],
+		[ mixpointTime ],
 	);
 
 	const adjustMixpoint = async (newMixpoint: string) => {
@@ -548,21 +548,21 @@ const StemControl = ({
 	trackId,
 	stemType,
 }: {
-	trackId: Track["id"];
+	trackId: Track[ "id" ];
 	stemType: Stem;
 }) => {
 	if (!trackId) return null;
 
-	const [volume = 100] = audioState[trackId].stems[stemType].volume();
-	const [mute = false] = audioState[trackId].stems[stemType].mute();
+	const [ volume = 100 ] = audioState[ trackId ].stems[ stemType ].volume();
+	const [ mute = false ] = audioState[ trackId ].stems[ stemType ].mute();
 
-	const [solo, setSolo] = useState(false);
+	const [ solo, setSolo ] = useState(false);
 
 	// adjust stem time marker based on main waveform
-	const [time = 0] = audioState[trackId].time();
+	const [ time = 0 ] = audioState[ trackId ].time();
 	const { duration = 1 } =
-		useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {};
-	const [waveform] = audioState[trackId].stems[stemType].waveform();
+		useLiveQuery(() => db.tracks.get(trackId), [ trackId ]) || {};
+	const [ waveform ] = audioState[ trackId ].stems[ stemType ].waveform();
 	if (waveform) waveform.drawer.progress(1 / (duration / time));
 
 	const toggleSolo = () => {
@@ -599,7 +599,7 @@ const StemControl = ({
 						width: "60px",
 					}}
 				>
-					{stemType[0].toUpperCase() + stemType.slice(1).toLowerCase()}
+					{stemType[ 0 ].toUpperCase() + stemType.slice(1).toLowerCase()}
 				</Typography>
 				<Box sx={{ width: "100%" }}>
 					<Card
@@ -660,7 +660,7 @@ const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => (
 		max={100}
 		step={2}
 		track={false}
-		marks={[0, 50, 100].map((v) => ({ value: v }))}
+		marks={[ 0, 50, 100 ].map((v) => ({ value: v }))}
 		valueLabelDisplay="off"
 		variant="soft"
 		size="md"
@@ -676,8 +676,8 @@ const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => (
 	/>
 );
 
-const TrackTime = ({ trackId, sx }: { trackId: Track["id"]; sx?: SxProps }) => {
-	const [time = 0] = audioState[trackId].time();
+const TrackTime = ({ trackId, sx }: { trackId: Track[ "id" ]; sx?: SxProps }) => {
+	const [ time = 0 ] = audioState[ trackId ].time();
 
 	return (
 		<Typography sx={{ fontSize: "xs", ...sx }}>{timeFormat(time)}</Typography>

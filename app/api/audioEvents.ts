@@ -42,10 +42,7 @@ const audioEvents = {
 		const [waveform] = getAudioState[trackId].waveform();
 		if (!waveform) return;
 
-		const {
-			mixpointTime,
-			beatResolution = 1,
-		} = await getTrackPrefs(trackId);
+		const { mixpointTime, beatResolution = 1 } = await getTrackPrefs(trackId);
 
 		if (!stem) {
 			// Generate beat markers and apply them to waveform
@@ -68,7 +65,7 @@ const audioEvents = {
 		const time = mixpointTime || waveform.markers.markers?.[0]?.time || 0;
 		setAudioState[trackId].time(time);
 
-		const {duration = 1} = await db.tracks.get(trackId) || {}
+		const { duration = 1 } = (await db.tracks.get(trackId)) || {};
 
 		audioEvents.seek(trackId, time / duration);
 	},
@@ -99,19 +96,17 @@ const audioEvents = {
 		for (const trackId of tracks) audioEvents.play(trackId);
 	},
 
-	play: async (trackId: Track["id"], startTime?: number) => {
+	play: async (trackId: Track["id"], startTime = 0) => {
 		// use the same Tonejs audio context timer for all stems
 		await start();
 		const contextStartTime = now();
 
 		const [audioState] = getAudioState();
 
-		for (let [id, { waveform, player, time = 0 }] of Object.entries(
+		for (const [id, { waveform, player, time = startTime }] of Object.entries(
 			audioState,
 		)) {
 			if (!waveform || !player || id !== String(trackId)) continue;
-
-			time = startTime || time;
 
 			// clear any running volume meter timers
 			clearVolumeMeter(Number(id));
@@ -121,7 +116,8 @@ const audioEvents = {
 
 			// check for bpm adjustment
 			const { adjustedBpm } = await getTrackPrefs(Number(id));
-			const { bpm = 1, duration = 1 } = (await db.tracks.get(Number(id))) || {}
+			const { bpm = 1, duration = 1 } = (await db.tracks.get(Number(id))) || {};
+			const playbackRate = (adjustedBpm || bpm) / bpm;
 
 			// pull players from audioState for synchronized playback
 			const [stems] = getAudioState[Number(id)].stems();
@@ -134,22 +130,61 @@ const audioEvents = {
 				return player;
 			};
 
+			// start playback
+			const startPlayback = (player: Player, stem?: Stem) => {
+				player.playbackRate = playbackRate;
+				addMeter(player, stem);
+				player.start(contextStartTime, time);
+			};
+
 			if (stems) {
 				for (const [stem, { player }] of Object.entries(stems)) {
 					if (!player) continue;
-					
-				if (adjustedBpm && bpm) player.playbackRate = adjustedBpm / bpm;
 
-					addMeter(player, stem as Stem);
-
-					player.start(contextStartTime, time);
+					startPlayback(player, stem as Stem);
 				}
-			} else {
-				if (adjustedBpm && bpm) player.playbackRate = adjustedBpm / bpm;
-				addMeter(player);
+			} else startPlayback(player);
 
-				player.start(contextStartTime, time);
-			}
+			setAudioState[Number(id)].playing(true);
+
+			const updateProgress = () => {
+				// complex calc to account for start time changes due to adjusted bpm [thanks chatgpt!]
+				const startTime =
+					time +
+					now() -
+					contextStartTime -
+					(time * playbackRate * (adjustedBpm || bpm)) / duration;
+
+				// update track timer
+				setAudioState[Number(id)].time(startTime || 0);
+
+				// pause if we're at the end of the track
+				const percentageTime = (1 / (duration / playbackRate)) * startTime;
+				if (percentageTime >= 1) audioEvents.pause(Number(id));
+
+				// update waveform and minimap drawer (progress indicator)
+				if (waveform) {
+					waveform.drawer.progress(percentageTime);
+					//@ts-ignore - minimap does indeed have a drawer.progress method
+					waveform.minimap.drawer.progress(percentageTime);
+				}
+			};
+
+			const updateVolume = () => {
+				const volumes: number[] = [];
+
+				for (const [stem, meter] of Object.entries(meters)) {
+					const vol = meter.getValue() as number;
+					volumes.push(vol);
+
+					// each stem volume is set here
+					if (stem !== "main")
+						setAudioState[Number(id)].stems[stem as Stem].volumeMeter(vol);
+				}
+
+				// this is the waveform volume meter
+				setAudioState[Number(id)].volumeMeter(Math.max(...volumes));
+			};
 
 			// create interval for volume meters and drawer progress
 			const newInterval: ReturnType<typeof setInterval> | number = setInterval(
@@ -157,43 +192,14 @@ const audioEvents = {
 					if (!getAudioState[Number(id)].playing())
 						return clearInterval(newInterval);
 
-					const volumes: number[] = [];
-
-					for (const [stem, meter] of Object.entries(meters)) {
-						const vol = meter.getValue() as number;
-						volumes.push(vol);
-
-						// each stem volume is set here
-						if (stem !== "main")
-							setAudioState[Number(id)].stems[stem as Stem].volumeMeter(vol);
-					}
-
-					// this is the waveform volume meter
-					setAudioState[Number(id)].volumeMeter(Math.max(...volumes));
-
-					// update track timer
-					if (player) {
-						const startTime = (time || 0) + now() - contextStartTime;
-						setAudioState[Number(id)].time(startTime || 0);
-
-						// pause if we're at the end of the track
-						const percentageTime = 1 / (duration / (startTime || 1)) || 0;
-						if (percentageTime >= 1) audioEvents.pause(Number(id));
-
-						// update waveform and minimap drawer (progress indicator)
-						if (waveform) {
-							waveform.drawer.progress(percentageTime);
-							//@ts-ignore - minimap does indeed have a drawer.progress method
-							waveform.minimap.drawer.progress(percentageTime);
-						}
-					}
+					updateVolume();
+					updateProgress();
 				},
 				20,
 			);
 
 			// store the interval so it can be cleared later
 			setAudioState[Number(id)].volumeMeterInterval(newInterval);
-			setAudioState[Number(id)].playing(true);
 		}
 	},
 
@@ -241,25 +247,31 @@ const audioEvents = {
 	// Scroll to previous/next beat marker
 	seek: async (
 		trackId: Track["id"],
-		percentageTime: number = 0,
+		percentageTime = 0,
 		direction?: "previous" | "next",
 	) => {
 		if (!trackId) return;
 
 		const [{ waveform, playing }] = getAudioState[trackId]();
 		if (!waveform) return;
-		
+
 		if (playing) await audioEvents.pause(trackId);
 
-		const {duration = 1} = await db.tracks.get(trackId) || {}
-		const startTime = duration * percentageTime
+		const { duration = 1 } = (await db.tracks.get(trackId)) || {};
+		const startTime = duration * percentageTime;
 
 		// find the closest marker to the current time
 		const { markers = [] } = waveform.markers || {};
-const currentMarkerIndex = markers.findIndex(m => m.time > startTime) - 1;
-const closestIndex = currentMarkerIndex < 0 ? 0 :
-    currentMarkerIndex >= markers.length - 1 ? markers.length - 2 :
-    startTime - markers[currentMarkerIndex].time < markers[currentMarkerIndex + 1].time - startTime ? currentMarkerIndex : currentMarkerIndex + 1;
+		const currentMarkerIndex = markers.findIndex((m) => m.time > startTime) - 1;
+		const closestIndex =
+			currentMarkerIndex < 0
+				? 0
+				: currentMarkerIndex >= markers.length - 1
+				? markers.length - 2
+				: startTime - markers[currentMarkerIndex].time <
+				  markers[currentMarkerIndex + 1].time - startTime
+				? currentMarkerIndex
+				: currentMarkerIndex + 1;
 
 		// ensure we don't go below the first or past last marker
 		const newIndex = Math.max(
@@ -270,14 +282,15 @@ const closestIndex = currentMarkerIndex < 0 ? 0 :
 			),
 		);
 
-		let { time = 0 } = markers[newIndex] || {};
+		const { time = 0 } = markers[newIndex] || {};
 
-		const notAtClosestMarker = time && (time > startTime + 0.005 || time < startTime - 0.005);
-				
+		const notAtClosestMarker =
+			time && (time > startTime + 0.005 || time < startTime - 0.005);
+
 		const progressTime = time / duration;
 
 		// avoid looping if the closestMarker is within 5ms of the current time
-		if (notAtClosestMarker) waveform.seekTo(progressTime);
+		if (notAtClosestMarker) waveform.seekAndCenter(progressTime);
 
 		setAudioState[trackId].time(time);
 		waveform.drawer.progress(progressTime);
@@ -288,7 +301,7 @@ const closestIndex = currentMarkerIndex < 0 ? 0 :
 
 	seekMixpoint: async (trackId: Track["id"]) => {
 		const { mixpointTime = 0 } = (await getTrackPrefs(trackId)) || {};
-		const {duration = 1} = await db.tracks.get(trackId) || {}
+		const { duration = 1 } = (await db.tracks.get(trackId)) || {};
 		audioEvents.seek(trackId, mixpointTime / duration);
 	},
 
@@ -427,7 +440,7 @@ const closestIndex = currentMarkerIndex < 0 ? 0 :
 
 		setTrackPrefs(trackId, { mixpointTime: newMixpoint });
 
-		const {duration = 1} = await db.tracks.get(trackId) || {}
+		const { duration = 1 } = (await db.tracks.get(trackId)) || {};
 
 		audioEvents.seek(trackId, newMixpoint / duration);
 	},
