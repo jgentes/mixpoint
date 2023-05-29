@@ -1,10 +1,10 @@
 import { Card } from "@mui/joy";
 import { SxProps } from "@mui/joy/styles/types";
 import { useEffect, useRef } from "react";
-import { Gain, Player } from "tone";
-import { WaveSurferParams } from "wavesurfer.js/types/params";
+import WaveSurfer, { type WaveSurferOptions } from 'wavesurfer.js';
+import Minimap from "wavesurfer.js/dist/plugins/minimap.js";
+import RegionsPlugin from "wavesurfer.js/dist/plugins/regions.js";
 import {
-	getAudioState,
 	getTableState,
 	setAudioState,
 	setTableState,
@@ -14,24 +14,8 @@ import { Stem, Track, db } from "~/api/db/dbHandlers";
 import { errorHandler } from "~/utils/notifications";
 import { getPermission } from "./fileHandlers";
 
-// Only load WaveSurfer on the client
-let WaveSurfer: typeof import("wavesurfer.js");
-let PlayheadPlugin: typeof import("wavesurfer.js/src/plugin/playhead").default;
-let CursorPlugin: typeof import("wavesurfer.js/src/plugin/cursor").default;
-// let RegionsPlugin: typeof import("wavesurfer.js/src/plugin/regions").default;
-let MinimapPlugin: typeof import("wavesurfer.js/src/plugin/minimap").default;
-let MarkersPlugin: typeof import("wavesurfer.js/src/plugin/markers").default;
-if (typeof document !== "undefined") {
-	WaveSurfer = require("wavesurfer.js");
-	PlayheadPlugin = require("wavesurfer.js/src/plugin/playhead").default;
-	CursorPlugin = require("wavesurfer.js/src/plugin/cursor").default;
-	// RegionsPlugin = require("wavesurfer.js/src/plugin/regions").default;
-	MinimapPlugin = require("wavesurfer.js/src/plugin/minimap").default;
-	MarkersPlugin = require("wavesurfer.js/src/plugin/markers").default;
-}
 
 // This function accepts either a full track (with no stem) or an individual stem ('bass', etc)
-// It generates the waveform container and Tone player
 const initWaveform = async ({
 	trackId,
 	file,
@@ -41,22 +25,24 @@ const initWaveform = async ({
 	trackId: Track[ "id" ];
 	file: File;
 	stem?: Stem;
-	waveformConfig: WaveSurferParams;
+	waveformConfig: WaveSurferOptions;
 }): Promise<void> => {
 	if (!trackId) throw errorHandler("No track ID provided to initWaveform");
 
-	const config: WaveSurferParams = {
+	// an Audio object is required for Wavesurfer to use Web Audio
+	const media = new Audio();
+	media.src = URL.createObjectURL(file);
+
+	const config: WaveSurferOptions = {
+		media,
 		pixelRatio: 1,
 		cursorColor: "secondary.mainChannel",
 		interact: true,
-		closeAudioContext: true,
-		//@ts-ignore - author hasn't updated types for gradients
 		waveColor: [
 			"rgb(200, 165, 49)",
-			"rgb(200, 165, 49)",
-			"rgb(200, 165, 49)",
+			"rgb(211, 194, 138)",
 			"rgb(205, 124, 49)",
-			"rgb(205, 124, 49)",
+			"rgb(205, 98, 49)",
 		],
 		progressColor: "rgba(0, 0, 0, 0.45)",
 		...waveformConfig,
@@ -64,20 +50,27 @@ const initWaveform = async ({
 
 	const waveform = WaveSurfer.create(config);
 
-	// create a GainNode to control volume using 0 -> 1 scale rather than decibels
-	const gainNode = new Gain({ units: "normalRange" }).toDestination();
+	// Create Web Audio context
+	const audioContext = new AudioContext()
 
-	// create the Tone Player
-	const source = URL.createObjectURL(file);
-	const player: Player = new Player(source, () => {
-		// use Tonejs buffer to render waveform
-		waveform.loadDecodedBuffer(player.buffer.get());
-	}).connect(gainNode);
+	// gainNode is used to control volume of all stems at once
+	const gainNode = audioContext.createGain();
+	gainNode.connect(audioContext.destination)
+
+	// Connect the audio to the equalizer
+	media.addEventListener(
+		'canplay',
+		() => {
+			// Create a MediaElementSourceNode from the audio element
+			const mediaNode = audioContext.createMediaElementSource(media)
+			mediaNode.connect(gainNode)
+		},
+		{ once: true },
+	)
 
 	// Save waveform in audioState to track user interactions with the waveform and show progress
 	if (stem) {
 		setAudioState[ trackId ].stems[ stem as Stem ]({
-			player,
 			gainNode,
 			volume: 1,
 			mute: false,
@@ -86,13 +79,11 @@ const initWaveform = async ({
 	} else {
 		setAudioState[ trackId ].waveform(waveform);
 		setAudioState[ trackId ].gainNode(gainNode);
-		setAudioState[ trackId ].player(player);
 	}
 
-	// Initialize wavesurfer event listeners
-	// Must happen after storing the waveform in state
-	waveform.on("seek", (percentageTime) => audioEvents.seek(trackId, percentageTime));
-	waveform.on("ready", () => audioEvents.onReady(trackId, stem));
+	waveform.once('ready', () => audioEvents.onReady(trackId, stem));
+	waveform.on('seeking', (time: number) => audioEvents.seek(trackId, time));
+	waveform.on('timeupdate', (time: number) => { });
 };
 
 const Waveform = ({
@@ -115,34 +106,36 @@ const Waveform = ({
 			const file = await getPermission(track);
 			if (!file) throw errorHandler(`Please try adding ${track.name} again.`);
 
-			const waveformConfig: WaveSurferParams = {
+			const waveformConfig: WaveSurferOptions = {
 				container: zoomviewRef.current || "",
-				scrollParent: true,
-				fillParent: false,
+				height: 60,
+				autoScroll: true,
+				autoCenter: true,
+				hideScrollbar: false,
 				barWidth: 2,
 				barHeight: 0.9,
 				barGap: 1,
 				plugins: [
-					PlayheadPlugin.create({
-						moveOnSeek: true,
-						returnOnPause: false,
-						draw: true,
-					}),
-					CursorPlugin.create({
-						showTime: true,
-						opacity: "1",
-						customShowTimeStyle: {
-							color: "#eee",
-							padding: "0 4px",
-							"font-size": "10px",
-							backgroundColor: "rgba(0, 0, 0, 0.3)",
-						},
-					}),
-					MarkersPlugin.create({ markers: [] }),
-					MinimapPlugin.create({
+					// Playhead.create({
+					// 	moveOnSeek: true,
+					// 	returnOnPause: false,
+					// 	draw: true,
+					// }),
+					// CursorPlugin.create({
+					// 	showTime: true,
+					// 	opacity: "1",
+					// 	customShowTimeStyle: {
+					// 		color: "#eee",
+					// 		padding: "0 4px",
+					// 		"font-size": "10px",
+					// 		backgroundColor: "rgba(0, 0, 0, 0.3)",
+					// 	},
+					// }),
+					RegionsPlugin.create(),
+					Minimap.create({
 						container: `#overview-container_${trackId}`,
+						height: 25,
 						waveColor: [
-							"rgba(145, 145, 145, 0.8)",
 							"rgba(145, 145, 145, 0.8)",
 							"rgba(145, 145, 145, 0.8)",
 							"rgba(145, 145, 145, 0.5)",

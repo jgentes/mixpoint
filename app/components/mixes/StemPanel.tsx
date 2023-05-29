@@ -1,9 +1,8 @@
 import { Box } from "@mui/joy";
 import { useEffect } from "react";
-import { WaveSurferParams } from "wavesurfer.js/types/params";
+import { type WaveSurferParams } from "wavesurfer.js";
 import {
 	audioState,
-	getAudioState,
 	getTableState,
 	setTableState,
 } from "~/api/appState";
@@ -15,26 +14,27 @@ import StemAccessButton from "~/components/mixes/StemAccessButton";
 import { StemControl } from "~/components/tracks/Controls";
 import { errorHandler } from "~/utils/notifications";
 
-const StemPanel = ({ trackId }: { trackId: Track["id"] }) => {
+const StemPanel = ({ trackId }: { trackId: Track[ "id" ] }) => {
 	if (!trackId) throw errorHandler("No track ID provided to StemPanel");
 
-	const [stemState] = audioState[trackId].stemState();
+	const [ stemState ] = audioState[ trackId ].stemState();
 
 	// check stems on disk to determine component state
 	useEffect(() => {
 		const initStems = async () => {
 			await validateTrackStemAccess(trackId);
 
-			// if stems exist, generate Tonejs players for each
+			// if stems exist, generate waveforms for each
 			if (stemState === "ready") {
 				const { stems: stemCache } = (await db.trackCache.get(trackId)) || {};
 
 				if (stemCache) {
-					for (const [stem, { file }] of Object.entries(stemCache)) {
+					for (const [ stem, { file } ] of Object.entries(stemCache)) {
 						if (!file) continue;
 
 						const waveformConfig: WaveSurferParams = {
 							container: `#zoomview-container_${trackId}_${stem}`,
+							height: 17,
 							scrollParent: false,
 							fillParent: true,
 							hideScrollbar: true,
@@ -54,18 +54,18 @@ const StemPanel = ({ trackId }: { trackId: Track["id"] }) => {
 		};
 
 		// prevent duplication on re-render while loading
-		const [analyzingTracks] = getTableState.stemsAnalyzing();
+		const [ analyzingTracks ] = getTableState.stemsAnalyzing();
 		const analyzing = analyzingTracks.includes(trackId);
 
 		if (!analyzing) initStems();
 
 		// add stems to analyzing state
 		setTableState.stemsAnalyzing((prev) =>
-			prev.includes(trackId) ? prev : [...prev, trackId],
+			prev.includes(trackId) ? prev : [ ...prev, trackId ],
 		);
 
 		return () => audioEvents.destroyStems(trackId);
-	}, [trackId, stemState]);
+	}, [ trackId, stemState ]);
 
 	return stemState !== "ready" ? (
 		<StemAccessButton trackId={trackId} />

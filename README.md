@@ -52,7 +52,6 @@ The app is built using `Remix` which uses esBuild for really fast hot reloads. O
 - Teaful for App State
 - Dexie (IndexedDb) for Persistent State
 - WaveSurfer
-- Tone.js (Web Audio API)
 
 ## Roadmap
 

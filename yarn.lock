@@ -2754,13 +2754,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/debounce@npm:*":
-  version: 1.2.1
-  resolution: "@types/debounce@npm:1.2.1"
-  checksum: bea6d414acefbee50adfe87cee10f8a855d033e4778567ab03bdc3cb2648b6bf9237ca53f4ee76fe4be75f77f86d4688411499626fe409bc870f53631d24231f
-  languageName: node
-  linkType: hard
-
 "@types/debug@npm:^4.0.0":
   version: 4.1.7
   resolution: "@types/debug@npm:4.1.7"
@@ -2946,15 +2939,6 @@ __metadata:
   version: 2.0.6
   resolution: "@types/unist@npm:2.0.6"
   checksum: 25cb860ff10dde48b54622d58b23e66214211a61c84c0f15f88d38b61aa1b53d4d46e42b557924a93178c501c166aa37e28d7f6d994aba13d24685326272d5db
-  languageName: node
-  linkType: hard
-
-"@types/wavesurfer.js@npm:~6.0.3":
-  version: 6.0.3
-  resolution: "@types/wavesurfer.js@npm:6.0.3"
-  dependencies:
-    "@types/debounce": "*"
-  checksum: 41b45e1863474da106ea95573134171142d26b11775922f153775ed0b070b2a430146f9f293353df12de4991f2d224b1413f1b9dc6a60e1383aeacfa83fc4177
   languageName: node
   linkType: hard
 
@@ -6937,7 +6921,6 @@ isbot@latest:
     "@types/node": ~18.7.3
     "@types/react": ~18.0.17
     "@types/react-dom": ~18.0.6
-    "@types/wavesurfer.js": ~6.0.3
     "@types/wicg-file-system-access": ~2020.9.5
     "@vercel/analytics": ^0.1.11
     "@vercel/remix": ^1.16.1
@@ -6951,9 +6934,8 @@ isbot@latest:
     react-dom: ~18
     remix-utils: ^6.3.0
     teaful: ~0.11.1
-    tone: ~14.7.77
     typescript: ^5.0.4
-    wavesurfer.js: ^6.6.2
+    wavesurfer.js: "file:/home/jgentes/wavesurfer.js"
     web-audio-beat-detector: ~8.1.37
     zod: ^3.21.4
   languageName: unknown
@@ -8574,7 +8556,7 @@ isbot@latest:
   languageName: node
   linkType: hard
 
-"standardized-audio-context@npm:^25.1.8, standardized-audio-context@npm:^25.3.38":
+"standardized-audio-context@npm:^25.3.38":
   version: 25.3.41
   resolution: "standardized-audio-context@npm:25.3.41"
   dependencies:
@@ -8835,16 +8817,6 @@ isbot@latest:
   version: 3.0.0
   resolution: "toml@npm:3.0.0"
   checksum: 5d7f1d8413ad7780e9bdecce8ea4c3f5130dd53b0a4f2e90b93340979a137739879d7b9ce2ce05c938b8cc828897fe9e95085197342a1377dd8850bf5125f15f
-  languageName: node
-  linkType: hard
-
-"tone@npm:~14.7.77":
-  version: 14.7.77
-  resolution: "tone@npm:14.7.77"
-  dependencies:
-    standardized-audio-context: ^25.1.8
-    tslib: ^2.0.1
-  checksum: cb0dfea08fddd38d7cacdc23eaa4ab98660ca4b60fe7b7431413d79937deee790b3237aa51b2c440ebd5477dace00e1f72d48dd09553c5cad83e9750eba17ea0
   languageName: node
   linkType: hard
 
@@ -9382,10 +9354,10 @@ isbot@latest:
   languageName: node
   linkType: hard
 
-"wavesurfer.js@npm:^6.6.2":
-  version: 6.6.2
-  resolution: "wavesurfer.js@npm:6.6.2"
-  checksum: e8c0bb3ad3bf50362d91ab27f4d4901621700fc6e72f14725e13839503c04432d79267929888d59f24f1e6c60cfae6b6b096b0130d55d0b48057d06e1b60cfe7
+"wavesurfer.js@file:/home/jgentes/wavesurfer.js::locator=mixpoint%40workspace%3A.":
+  version: 7.0.0-beta.4
+  resolution: "wavesurfer.js@file:/home/jgentes/wavesurfer.js#/home/jgentes/wavesurfer.js::hash=19700c&locator=mixpoint%40workspace%3A."
+  checksum: 8685f8fad9bb70d706c8bcd2831e4ea91429d5d678650d42027e3d84edcff6da25f4598c10f4e96522f18a05c2eaf682f09b903df2200f9c0f6bf64d5558d442
   languageName: node
   linkType: hard
 

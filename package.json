@@ -26,8 +26,7 @@
     "react": "~18",
     "react-dom": "~18",
     "teaful": "~0.11.1",
-    "tone": "~14.7.77",
-    "wavesurfer.js": "^6.6.2",
+    "wavesurfer.js": "file:/home/jgentes/wavesurfer.js",
     "web-audio-beat-detector": "~8.1.37"
   },
   "devDependencies": {
@@ -37,7 +36,6 @@
     "@types/node": "~18.7.3",
     "@types/react": "~18.0.17",
     "@types/react-dom": "~18.0.6",
-    "@types/wavesurfer.js": "~6.0.3",
     "@types/wicg-file-system-access": "~2020.9.5",
     "remix-utils": "^6.3.0",
     "typescript": "^5.0.4",

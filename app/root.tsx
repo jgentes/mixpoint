@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 import { ClientOnly } from 'remix-utils'
 import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
+import styles from '~/root.css'
 import { theme } from '~/theme'
 
 // @ts-ignore
@@ -29,6 +30,7 @@ const links: LinksFunction = () => [
     sizes: '32x32',
   },
   { rel: 'stylesheet', href: PublicSansFont },
+  { rel: 'stylesheet', href: styles },
 ]
 
 const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
@@ -48,7 +50,7 @@ const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
 }
 
 const ThemeLoader = ({ noSplash }: { noSplash?: boolean }) => {
-  const [loading, setLoading] = useState(true)
+  const [ loading, setLoading ] = useState(true)
 
   // InitialLoader is used to hide the flash of unstyled content
   useEffect(() => {

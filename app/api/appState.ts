@@ -1,8 +1,8 @@
 // This file handles application state that is not persisted through page refreshes, therefore not in IndexedDB. appState is different from Prefs in that it isn't persistent.
 
 import { ButtonProps } from "@mui/joy";
+import type WaveSurfer from "wavesurfer.js";
 import createStore from "teaful";
-import { Gain, Player } from "tone";
 import { Stem, Track } from "~/api/db/dbHandlers";
 
 // AudioState captures whether audio is being analyzed, processed, or played
@@ -16,13 +16,11 @@ const {
 
 type AudioState = Partial<{
 	waveform: WaveSurfer;
-	player: Player;
 	playing: boolean;
 	time: number;
-	gainNode: Gain<"normalRange">; // gain controls actual loudness of track
+	gainNode: GainNode; // gain controls actual loudness of track
 	volume: number; // volume is the crossfader value
 	volumeMeter: number; // value between 0 and 1
-	volumeMeterInterval: ReturnType<typeof setInterval> | number;
 	stems: Stems;
 	stemState: StemState;
 }>;
@@ -30,8 +28,7 @@ type AudioState = Partial<{
 type Stems = Partial<{
 	[key in Stem]: Partial<{
 		waveform: WaveSurfer;
-		player: Player;
-		gainNode: Gain<"normalRange">; // gain controls actual loudness of stem
+		gainNode: GainNode; // gain controls actual loudness of stem
 		volume: number; // volume is the crossfader value
 		volumeMeter: number;
 		mute: boolean;

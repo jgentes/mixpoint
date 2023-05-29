@@ -1,3 +1,4 @@
+import type RegionsPlugin from "wavesurfer.js/dist/plugins/regions.js";
 import { guess as detectBPM } from "web-audio-beat-detector";
 import { getAudioState, setModalState, setTableState } from "~/api/appState";
 import {
@@ -202,7 +203,11 @@ const calcMarkers = async (trackId: Track["id"]): Promise<void> => {
 	const [waveform] = getAudioState[trackId].waveform();
 	if (!waveform) return;
 
-	waveform.markers.clear();
+	const regionsPlugin = waveform
+		.getActivePlugins()
+		.find((plugin: RegionsPlugin) => plugin.regions);
+
+	regionsPlugin.clearRegions();
 
 	const track = await db.tracks.get(trackId);
 	if (!track) return;
@@ -230,7 +235,12 @@ const calcMarkers = async (trackId: Track["id"]): Promise<void> => {
 
 	// Now that we have zerotime, move forward with markers based on the bpm
 	for (let time = startPoint; time < duration; time += skipLength) {
-		waveform.markers.add({ time });
+		regionsPlugin.addRegion({
+			start: time,
+			end: time,
+			color: "rgba(4, 146, 247, 0.757)",
+			drag: false,
+		});
 	}
 };
 

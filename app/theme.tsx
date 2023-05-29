@@ -10,87 +10,6 @@ const muiTheme = extendMuiTheme({
   // This is required to point to `var(--joy-*)` because we are using `CssVarsProvider` from Joy UI.
   cssVarPrefix: 'joy',
   components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        html: {
-          height: '100%',
-        },
-
-        body: {
-          margin: 0,
-          height: '100%',
-        },
-
-        'tr:hover .visibleOnHover': {
-          visibility: 'visible',
-        },
-
-        '.visibleOnHover': {
-          visibility: 'hidden',
-        },
-
-        '.visible': {
-          visibility: 'visible',
-        },
-
-        // wavesurfer ui tweaks
-        '.wavesurfer-playhead': {
-          width: 0,
-          height: 0,
-          marginLeft: '4px',
-          borderStyle: 'solid',
-          borderWidth: '7px 7px 0 7px',
-          borderColor: '#0492f7c1 transparent transparent transparent',
-        },
-
-        '.wavesurfer-playhead svg, .wavesurfer-playhead div': {
-          display: 'none',
-        },
-
-        // '.wavesurfer-region': {
-        //   borderLeft: '2px solid #0492f79e',
-        // },
-
-        '.MuiLinearProgress-bar': {
-          // for the volume meter
-          transition: 'none !important',
-        },
-
-        '.wavesurfer-marker': {
-          marginLeft: '4px',
-          borderLeft: '2px solid rgba(4, 146, 247, 0.757)',
-          zIndex: 3,
-        },
-
-        '.wavesurfer-marker > *': {
-          display: 'none !important',
-        },
-
-        '.zoomview-container > wave': {
-          scrollbarColor: 'rgba(4, 146, 247, 0.5)transparent' /* track thumb */,
-          scrollbarWidth: 'thin' /* none, thin, or auto */,
-
-          '&::-webkit-scrollbar': {
-            width: '20px',
-          },
-
-          '&::-webkit-scrollbar-corner, &::-webkit-scrollbar-track': {
-            borderTop: '1px solid var(--joy-palette-divider)',
-            backgroundColor: 'var(--joy-palette-background-surface)',
-          },
-
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: 'rgba(4, 146, 247, 0.5)',
-            borderRadius: '10px',
-            border: '6px solid transparent',
-            backgroundClip: 'content-box',
-            '&:hover': {
-              backgroundColor: 'rgb(4, 146, 247)',
-            },
-          },
-        },
-      },
-    },
     MuiTable: {
       styleOverrides: {
         root: {
@@ -108,11 +27,11 @@ const joyTheme = extendJoyTheme({
       styleOverrides: {
         root: ({ theme }) => ({
           backgroundColor:
-            theme.palette.mode == 'dark'
+            theme.palette.mode === 'dark'
               ? 'rgba(0, 30, 60, 0.2)'
               : 'rgba(243, 246, 249, 0.2)',
           backgroundImage:
-            theme.palette.mode == 'dark'
+            theme.palette.mode === 'dark'
               ? darkGraphBackground
               : lightGraphBackground,
         }),

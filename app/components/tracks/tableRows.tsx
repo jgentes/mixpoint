@@ -20,11 +20,11 @@ const TableRows = ({
   row: Track
   isItemSelected: boolean
 }) => {
-  const [open, setOpen] = useState(false)
-  const [showButton, setShowButton] = tableState.showButton()
+  const [ open, setOpen ] = useState(false)
+  const [ showButton, setShowButton ] = tableState.showButton()
 
   // This is being done to refresh the 'Updated' column periodically
-  const [, updateState] = useState({})
+  const [ , updateState ] = useState({})
   useEffect(() => {
     const interval = setInterval(() => updateState({}), 30000)
     return () => clearInterval(interval)
@@ -51,9 +51,9 @@ const TableRows = ({
         >
           <Checkbox color='primary' checked={isItemSelected} title={row.name} />
         </TableCell>
-        {columnDefs.map((column, i) => (
+        {columnDefs.map(column => (
           <TableCell
-            key={i}
+            key={row.id}
             id={`${column.dbKey}-${row.id}`}
             sx={{
               cursor: 'default',
