@@ -19,7 +19,7 @@
     "@vercel/remix": "^1.16.0",
     "dexie": "~3.2.2",
     "dexie-react-hooks": "~1.1.1",
-    "isbot": "latest",
+    "isbot": "3.6.10",
     "jsdom": "^21.1.1",
     "moment": "~2.29.4",
     "notistack": "~2.0.5",

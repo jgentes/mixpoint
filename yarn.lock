@@ -4837,7 +4837,7 @@ __metadata:
 
 "fsevents@patch:fsevents@~2.3.2#~builtin<compat/fsevents>":
   version: 2.3.2
-  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=df0bf1"
+  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=18f3a7"
   dependencies:
     node-gyp: latest
   conditions: os=darwin
@@ -5641,14 +5641,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-isbot@latest:
-  version: 3.6.6
-  resolution: "isbot@npm:3.6.6"
-  checksum: bd7fe95ed05b708650822040cb72f77a5f0c922207e8d3ccc0e3d9788fb6039e15c64d79b9c9f7dd91f88904c63a4dd1cd4974d918accfd203cb55dbfe4adcac
-  languageName: node
-  linkType: hard
-
-"isbot@npm:^3.6.8":
+"isbot@npm:3.6.10, isbot@npm:^3.6.8":
   version: 3.6.10
   resolution: "isbot@npm:3.6.10"
   checksum: 85b7163444376986cbd222f6376a6bd2a7fd5ea3dd77019ef168be099b805b7e445e52a2ed69572683150174e82bfc724da280759d3bbb730c4d5a70590d72ae
@@ -6736,7 +6729,7 @@ isbot@latest:
     "@vercel/remix": ^1.16.0
     dexie: ~3.2.2
     dexie-react-hooks: ~1.1.1
-    isbot: latest
+    isbot: 3.6.10
     jsdom: ^21.1.1
     moment: ~2.29.4
     notistack: ~2.0.5
@@ -7955,7 +7948,7 @@ isbot@latest:
 
 "resolve@patch:resolve@^1.14.2#~builtin<compat/resolve>, resolve@patch:resolve@^1.19.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.22.1#~builtin<compat/resolve>":
   version: 1.22.1
-  resolution: "resolve@patch:resolve@npm%3A1.22.1#~builtin<compat/resolve>::version=1.22.1&hash=c3c19d"
+  resolution: "resolve@patch:resolve@npm%3A1.22.1#~builtin<compat/resolve>::version=1.22.1&hash=07638b"
   dependencies:
     is-core-module: ^2.9.0
     path-parse: ^1.0.7
@@ -8739,11 +8732,11 @@ isbot@latest:
 
 "typescript@patch:typescript@^5.0.4#~builtin<compat/typescript>":
   version: 5.0.4
-  resolution: "typescript@patch:typescript@npm%3A5.0.4#~builtin<compat/typescript>::version=5.0.4&hash=85af82"
+  resolution: "typescript@patch:typescript@npm%3A5.0.4#~builtin<compat/typescript>::version=5.0.4&hash=701156"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: bb309d320c59a26565fb3793dba550576ab861018ff3fd1b7fccabbe46ae4a35546bc45f342c0a0b6f265c801ccdf64ffd68f548f117ceb7f0eac4b805cd52a9
+  checksum: 6a1fe9a77bb9c5176ead919cc4a1499ee63e46b4e05bf667079f11bf3a8f7887f135aa72460a4c3b016e6e6bb65a822cb8689a6d86cbfe92d22cc9f501f09213
   languageName: node
   linkType: hard
 
