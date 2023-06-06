@@ -11,7 +11,7 @@
     "@emotion/styled": "~11.10.6",
     "@fontsource/public-sans": "~4.5.11",
     "@mui/joy": "~5.0.0-alpha.65",
-    "@mui/material": "~5.11.7",
+    "@mui/material": "~5.13.0",
     "@remix-run/node": "^1.16.0",
     "@remix-run/react": "^1.16.0",
     "@remix-run/server-runtime": "^1.16.0",
