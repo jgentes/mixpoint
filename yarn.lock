@@ -1271,6 +1271,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.22.3":
+  version: 7.22.3
+  resolution: "@babel/runtime@npm:7.22.3"
+  dependencies:
+    regenerator-runtime: ^0.13.11
+  checksum: 8fc50785ca4cba749fed90bffca7e6fd52d4709755654e95b8d2a945fc034b56fb8c2e8a0183fea7c4abb86bf5fa77678c0ea35163b6920649833d180c34c234
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.18.10, @babel/template@npm:^7.20.7":
   version: 7.20.7
   resolution: "@babel/template@npm:7.20.7"
@@ -3089,6 +3098,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"automation-events@npm:^6.0.3":
+  version: 6.0.3
+  resolution: "automation-events@npm:6.0.3"
+  dependencies:
+    "@babel/runtime": ^7.22.3
+    tslib: ^2.5.2
+  checksum: d0b190b950f10159ca87235e9d7c01d3d1d0fb78f321ec354ba0576eee19929e42584fe460d88d96d3d30f1d0a5562b10de2d4b379f9c7ffcffc01eb478c5274
+  languageName: node
+  linkType: hard
+
 "available-typed-arrays@npm:^1.0.5":
   version: 1.0.5
   resolution: "available-typed-arrays@npm:1.0.5"
@@ -4837,7 +4856,7 @@ __metadata:
 
 "fsevents@patch:fsevents@~2.3.2#~builtin<compat/fsevents>":
   version: 2.3.2
-  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=df0bf1"
+  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=18f3a7"
   dependencies:
     node-gyp: latest
   conditions: os=darwin
@@ -6744,7 +6763,7 @@ isbot@latest:
     react-dom: ~18
     remix-utils: ^6.3.0
     teaful: ~0.11.1
-    tone: ~14.7.77
+    tone: ~14.8.48
     typescript: ^5.0.4
     wavesurfer.js: ^6.6.2
     web-audio-beat-detector: ~8.1.37
@@ -7955,7 +7974,7 @@ isbot@latest:
 
 "resolve@patch:resolve@^1.14.2#~builtin<compat/resolve>, resolve@patch:resolve@^1.19.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.22.1#~builtin<compat/resolve>":
   version: 1.22.1
-  resolution: "resolve@patch:resolve@npm%3A1.22.1#~builtin<compat/resolve>::version=1.22.1&hash=c3c19d"
+  resolution: "resolve@patch:resolve@npm%3A1.22.1#~builtin<compat/resolve>::version=1.22.1&hash=07638b"
   dependencies:
     is-core-module: ^2.9.0
     path-parse: ^1.0.7
@@ -8367,7 +8386,18 @@ isbot@latest:
   languageName: node
   linkType: hard
 
-"standardized-audio-context@npm:^25.1.8, standardized-audio-context@npm:^25.3.38":
+"standardized-audio-context@npm:^25.3.29":
+  version: 25.3.50
+  resolution: "standardized-audio-context@npm:25.3.50"
+  dependencies:
+    "@babel/runtime": ^7.22.3
+    automation-events: ^6.0.3
+    tslib: ^2.5.2
+  checksum: 3b1c219940ff37bb9e88310d60ef02ef57b5909dcc9af9e810478c8ef67af6845bf9087fe9eb86bf82202362c1f27f8b0a1e069196ba516fd70cd4dd30b11179
+  languageName: node
+  linkType: hard
+
+"standardized-audio-context@npm:^25.3.38":
   version: 25.3.41
   resolution: "standardized-audio-context@npm:25.3.41"
   dependencies:
@@ -8631,13 +8661,13 @@ isbot@latest:
   languageName: node
   linkType: hard
 
-"tone@npm:~14.7.77":
-  version: 14.7.77
-  resolution: "tone@npm:14.7.77"
+"tone@npm:~14.8.48":
+  version: 14.8.49
+  resolution: "tone@npm:14.8.49"
   dependencies:
-    standardized-audio-context: ^25.1.8
-    tslib: ^2.0.1
-  checksum: cb0dfea08fddd38d7cacdc23eaa4ab98660ca4b60fe7b7431413d79937deee790b3237aa51b2c440ebd5477dace00e1f72d48dd09553c5cad83e9750eba17ea0
+    standardized-audio-context: ^25.3.29
+    tslib: ^2.3.1
+  checksum: ffc0d81f77e9030b5c5074b690f415a72be415edcda5ef01768de1ed89a7176392759ae1aae1cd70c5540da5616754b9c17fdf2a25c1d85dcb0ff64d9cac99c6
   languageName: node
   linkType: hard
 
@@ -8694,6 +8724,13 @@ isbot@latest:
   languageName: node
   linkType: hard
 
+"tslib@npm:^2.3.1, tslib@npm:^2.5.2":
+  version: 2.5.3
+  resolution: "tslib@npm:2.5.3"
+  checksum: 88902b309afaf83259131c1e13da1dceb0ad1682a213143a1346a649143924d78cf3760c448b84d796938fd76127183894f8d85cbb3bf9c4fddbfcc140c0003c
+  languageName: node
+  linkType: hard
+
 "type-check@npm:~0.3.2":
   version: 0.3.2
   resolution: "type-check@npm:0.3.2"
@@ -8739,11 +8776,11 @@ isbot@latest:
 
 "typescript@patch:typescript@^5.0.4#~builtin<compat/typescript>":
   version: 5.0.4
-  resolution: "typescript@patch:typescript@npm%3A5.0.4#~builtin<compat/typescript>::version=5.0.4&hash=85af82"
+  resolution: "typescript@patch:typescript@npm%3A5.0.4#~builtin<compat/typescript>::version=5.0.4&hash=701156"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: bb309d320c59a26565fb3793dba550576ab861018ff3fd1b7fccabbe46ae4a35546bc45f342c0a0b6f265c801ccdf64ffd68f548f117ceb7f0eac4b805cd52a9
+  checksum: 6a1fe9a77bb9c5176ead919cc4a1499ee63e46b4e05bf667079f11bf3a8f7887f135aa72460a4c3b016e6e6bb65a822cb8689a6d86cbfe92d22cc9f501f09213
   languageName: node
   linkType: hard
 
