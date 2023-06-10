@@ -26,7 +26,7 @@
     "react": "~18",
     "react-dom": "~18",
     "teaful": "~0.11.1",
-    "wavesurfer.js": "file:/home/jgentes/wavesurfer.js",
+    "wavesurfer.js": "beta",
     "web-audio-beat-detector": "~8.1.37"
   },
   "devDependencies": {
@@ -40,6 +40,5 @@
     "remix-utils": "^6.3.0",
     "typescript": "^5.0.4",
     "zod": "^3.21.4"
-  },
-  "packageManager": "yarn@3.5.0"
+  }
 }

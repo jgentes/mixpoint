@@ -6935,7 +6935,7 @@ isbot@latest:
     remix-utils: ^6.3.0
     teaful: ~0.11.1
     typescript: ^5.0.4
-    wavesurfer.js: "file:/home/jgentes/wavesurfer.js"
+    wavesurfer.js: beta
     web-audio-beat-detector: ~8.1.37
     zod: ^3.21.4
   languageName: unknown
@@ -9354,10 +9354,10 @@ isbot@latest:
   languageName: node
   linkType: hard
 
-"wavesurfer.js@file:/home/jgentes/wavesurfer.js::locator=mixpoint%40workspace%3A.":
-  version: 7.0.0-beta.4
-  resolution: "wavesurfer.js@file:/home/jgentes/wavesurfer.js#/home/jgentes/wavesurfer.js::hash=19700c&locator=mixpoint%40workspace%3A."
-  checksum: 8685f8fad9bb70d706c8bcd2831e4ea91429d5d678650d42027e3d84edcff6da25f4598c10f4e96522f18a05c2eaf682f09b903df2200f9c0f6bf64d5558d442
+"wavesurfer.js@npm:beta":
+  version: 7.0.0-beta.7
+  resolution: "wavesurfer.js@npm:7.0.0-beta.7"
+  checksum: 9f7507a11e3b8d45880715fdcb01265cc36ba776b66cc00c17f9f154345512366ded7c5c7e2a48bec3d3cdd84a2c4a1fa1741817cf285364992f4be39763516b
   languageName: node
   linkType: hard
 
