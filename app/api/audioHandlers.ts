@@ -207,6 +207,7 @@ const calcMarkers = async (trackId: Track["id"]): Promise<void> => {
 		.getActivePlugins()
 		.find((plugin: RegionsPlugin) => plugin.regions);
 
+	if (!regionsPlugin) return;
 	regionsPlugin.clearRegions();
 
 	const track = await db.tracks.get(trackId);
@@ -290,10 +291,4 @@ const calcMarkers = async (trackId: Track["id"]): Promise<void> => {
 //   return finalMix
 // }
 
-export {
-	processTracks,
-	getAudioDetails,
-	//createMix,
-	analyzeTracks,
-	calcMarkers,
-};
+export { analyzeTracks, calcMarkers, getAudioDetails, processTracks };
