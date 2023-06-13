@@ -1,7 +1,7 @@
 import { Box } from '@mui/joy'
 import { useEffect } from 'react'
 import { type WaveSurferParams } from 'wavesurfer.js'
-import { audioState, getTableState, setTableState } from '~/api/appState'
+import { audioState, getAppState, setAppState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
 import { STEMS, Stem, Track, db } from '~/api/db/dbHandlers'
 import { validateTrackStemAccess } from '~/api/fileHandlers'
@@ -50,13 +50,13 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
 		}
 
 		// prevent duplication on re-render while loading
-		const [analyzingTracks] = getTableState.stemsAnalyzing()
+		const [analyzingTracks] = getAppState.stemsAnalyzing()
 		const analyzing = analyzingTracks.includes(trackId)
 
 		if (!analyzing) initStems()
 
 		// add stems to analyzing state
-		setTableState.stemsAnalyzing((prev) =>
+		setAppState.stemsAnalyzing((prev) =>
 			prev.includes(trackId) ? prev : [...prev, trackId]
 		)
 

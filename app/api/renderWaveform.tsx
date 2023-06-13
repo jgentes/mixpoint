@@ -19,8 +19,7 @@ const initWaveform = async ({
 	if (!trackId) throw errorHandler('No track ID provided to initWaveform')
 
 	// an Audio object is required for Wavesurfer to use Web Audio
-	const media = new Audio()
-	media.src = URL.createObjectURL(file)
+	const media = new Audio(URL.createObjectURL(file))
 
 	const config: WaveSurferOptions = {
 		media,
@@ -42,18 +41,18 @@ const initWaveform = async ({
 	const waveform = WaveSurfer.create(config)
 
 	// Create Web Audio context
-	const audioContext = new AudioContext()
+	waveform.audioContext = new AudioContext()
 
 	// gainNode is used to control volume of all stems at once
-	const gainNode = audioContext.createGain()
-	gainNode.connect(audioContext.destination)
+	const gainNode = waveform.audioContext.createGain()
+	gainNode.connect(waveform.audioContext.destination)
 
 	// Connect the audio to the equalizer
 	media.addEventListener(
 		'canplay',
 		() => {
 			// Create a MediaElementSourceNode from the audio element
-			const mediaNode = audioContext.createMediaElementSource(media)
+			const mediaNode = waveform.audioContext.createMediaElementSource(media)
 			mediaNode.connect(gainNode)
 		},
 		{ once: true }

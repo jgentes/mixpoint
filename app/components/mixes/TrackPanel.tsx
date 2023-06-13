@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react'
 import { type WaveSurferOptions } from 'wavesurfer.js'
 import Minimap from 'wavesurfer.js/dist/plugins/minimap.js'
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
-import { getTableState, setTableState, tableState } from '~/api/appState'
+import { AppState, getAppState, setAppState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
 import { Track, db, useLiveQuery } from '~/api/db/dbHandlers'
 import { getPermission } from '~/api/fileHandlers'
@@ -76,7 +76,6 @@ const Waveform = ({
 							'rgba(145, 145, 145, 0.8)'
 						],
 						progressColor: 'rgba(0, 0, 0, 0.25)',
-						interact: true,
 						scrollParent: false,
 						hideScrollbar: true,
 						pixelRatio: 1
@@ -88,13 +87,13 @@ const Waveform = ({
 		}
 
 		// prevent duplication on re-render while loading
-		const [analyzingTracks] = getTableState.analyzing()
+		const [analyzingTracks] = getAppState.analyzing()
 		const analyzing = analyzingTracks.includes(trackId)
 
 		if (!analyzing) init()
 
 		// add track to analyzing state
-		setTableState.analyzing((prev) =>
+		setAppState.analyzing((prev) =>
 			prev.includes(trackId) ? prev : [...prev, trackId]
 		)
 
@@ -113,12 +112,25 @@ const Waveform = ({
 			onWheel={(e) =>
 				audioEvents.seek(trackId, undefined, e.deltaY > 0 ? 'next' : 'previous')
 			}
-		/>
+		>
+			<div
+				className='cursor'
+				style={{
+					height: '100%',
+					position: 'absolute',
+					zIndex: 10,
+					top: 0,
+					left: 0,
+					backgroundColor: '#000',
+					width: '1px'
+				}}
+			/>
+		</Card>
 	)
 }
 
 const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
-	const [analyzingTracks] = tableState.analyzing()
+	const [analyzingTracks] = AppState.analyzing()
 	const analyzing = analyzingTracks.includes(trackId)
 
 	const { duration = 0 } =

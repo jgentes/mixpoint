@@ -1,6 +1,6 @@
 import { Box, Card, Typography } from '@mui/joy'
 import { SxProps } from '@mui/material'
-import { tableState } from '~/api/appState'
+import { AppState } from '~/api/appState'
 import { Track, getTrackName, useLiveQuery } from '~/api/db/dbHandlers'
 import StemPanel from '~/components/mixes/StemPanel'
 import TrackPanel from '~/components/mixes/TrackPanel'
@@ -17,7 +17,7 @@ const MixCard = ({
 	trackSlot,
 	sx
 }: { trackId: Track['id']; trackSlot: 0 | 1; sx?: SxProps }) => {
-	const [analyzingTracks] = tableState.analyzing()
+	const [analyzingTracks] = AppState.analyzing()
 	const analyzing = analyzingTracks.includes(trackId)
 
 	const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
