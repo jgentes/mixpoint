@@ -1,3 +1,4 @@
+// @ts-ignore until https://github.com/katspaugh/wavesurfer.js/issues/2877
 import WaveSurfer, { type WaveSurferOptions } from 'wavesurfer.js'
 import { setAudioState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
@@ -41,18 +42,18 @@ const initWaveform = async ({
 	const waveform = WaveSurfer.create(config)
 
 	// Create Web Audio context
-	waveform.audioContext = new AudioContext()
+	const audioContext = new AudioContext()
 
 	// gainNode is used to control volume of all stems at once
-	const gainNode = waveform.audioContext.createGain()
-	gainNode.connect(waveform.audioContext.destination)
+	const gainNode = audioContext.createGain()
+	gainNode.connect(audioContext.destination)
 
 	// Connect the audio to the equalizer
 	media.addEventListener(
 		'canplay',
 		() => {
 			// Create a MediaElementSourceNode from the audio element
-			const mediaNode = waveform.audioContext.createMediaElementSource(media)
+			const mediaNode = audioContext.createMediaElementSource(media)
 			mediaNode.connect(gainNode)
 		},
 		{ once: true }

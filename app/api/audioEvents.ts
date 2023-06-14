@@ -1,9 +1,12 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform around
+// @ts-ignore until https://github.com/katspaugh/wavesurfer.js/issues/2877
 import type WaveSurfer from 'wavesurfer.js'
+// @ts-ignore until https://github.com/katspaugh/wavesurfer.js/issues/2877
 import type MinimapPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 import type {
 	Region,
 	RegionsPlugin
+	// @ts-ignore until https://github.com/katspaugh/wavesurfer.js/issues/2877
 } from 'wavesurfer.js/dist/plugins/regions.js'
 import {
 	getAppState,
@@ -101,7 +104,8 @@ const audioEvents = {
 		audioEvents.seek(trackId, time)
 	},
 
-	click: async (trackId: Track['id'], e: React.MouseEvent) => {
+	clickToSeek: async (trackId: Track['id'], e: React.MouseEvent) => {
+		// get click position of parent element and convert to time
 		const parent = e.currentTarget.firstElementChild as HTMLElement
 		const shadowRoot = parent.shadowRoot as ShadowRoot
 		const wrapper = shadowRoot.querySelector('.wrapper') as HTMLElement
@@ -316,7 +320,7 @@ const audioEvents = {
 	// Scroll to previous/next beat marker
 	seek: async (
 		trackId: Track['id'],
-		seconds = 0,
+		seconds: number, // no default here, we want to be able to seek to 0
 		direction?: 'previous' | 'next'
 	) => {
 		if (!trackId) return
@@ -341,7 +345,7 @@ const audioEvents = {
 			})
 		}
 
-		let currentIndex = findClosestRegion(seconds || time)
+		let currentIndex = findClosestRegion(!direction ? seconds ?? time : time)
 		currentIndex = currentIndex === -1 ? regions.length - 1 : currentIndex
 
 		const previous = regions[(currentIndex || 1) - 1]
@@ -423,14 +427,14 @@ const audioEvents = {
 			// adjust the gain of the stem as a percentage of the track volume
 			// (75% crossfader x 50% stem fader = 37.5% stem volume)
 			const stemGain = stems[stemType]?.gainNode
-			stemGain?.gain.setValueAtTime(trackVol * volume, currentTime)
+			stemGain?.gain.setValueAtTime(trackVol * volume, 0)
 			setAudioState[trackId].stems[stemType].volume(volume)
 			return
 		}
 
 		// otherwise this is main crossfader
 		if (stemState !== 'ready') {
-			gainNode?.gain.setValueAtTime(volume, currentTime)
+			gainNode?.gain.setValueAtTime(volume, 0)
 		} else if (stems) {
 			for (const stem of Object.keys(stems)) {
 				const [stemGain] = getAudioState[trackId].stems[stem as Stem].gainNode()
@@ -439,7 +443,7 @@ const audioEvents = {
 
 				// adjust the gain of the stem as a percentage of the track volume
 				// (75% crossfader x 50% stem fader = 37.5% stem volume)
-				stemGain?.gain.setValueAtTime(trackVol * stemVol, currentTime)
+				stemGain?.gain.setValueAtTime(trackVol * stemVol, 0)
 			}
 
 			setAudioState[trackId].volume(volume)
@@ -523,11 +527,10 @@ const audioEvents = {
 
 		audioEvents.pause(trackId)
 
-		const { mixpointTime } = (await getTrackPrefs(trackId)) || {}
+		const [time = 0] = getAudioState[trackId].time()
+		const { mixpointTime = 0 } = (await getTrackPrefs(trackId)) || {}
 
-		const newMixpoint = convertToSecs(
-			mixpoint || timeFormat(waveform.playhead.playheadTime)
-		)
+		const newMixpoint = mixpoint ? convertToSecs(mixpoint) : time
 		if (newMixpoint === mixpointTime) return
 
 		setTrackPrefs(trackId, { mixpointTime: newMixpoint })
@@ -540,7 +543,7 @@ const audioEvents = {
 		if (!stems) return
 
 		const gainNode = stems[stemType as Stem]?.gainNode
-		if (gainNode) gainNode.gain.setValueAtTime(volume, now())
+		if (gainNode) gainNode.gain.setValueAtTime(volume, 0)
 
 		// set volume in state, which in turn will update components (volume sliders)
 		setAudioState[trackId].stems[stemType as Stem].volume(volume)
@@ -553,7 +556,7 @@ const audioEvents = {
 		const stem = stems[stemType as Stem]
 		const { gainNode, volume } = stem || {}
 
-		gainNode?.gain.setValueAtTime(mute ? 0 : volume || 1, now())
+		gainNode?.gain.setValueAtTime(mute ? 0 : volume || 1, 0)
 
 		setAudioState[trackId].stems[stemType as Stem].mute(mute)
 	},

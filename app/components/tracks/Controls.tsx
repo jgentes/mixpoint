@@ -312,10 +312,10 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
 				audioEvents.setMixpoint(trackId)
 				break
 			case 'Previous Beat Marker':
-				audioEvents.seek(trackId, undefined, 'previous')
+				audioEvents.seek(trackId, 0, 'previous')
 				break
 			case 'Next Beat Marker':
-				audioEvents.seek(trackId, undefined, 'next')
+				audioEvents.seek(trackId, 0, 'next')
 				break
 		}
 	}
@@ -599,7 +599,7 @@ const StemControl = ({
 							height: '20px',
 							pt: '3px'
 						}}
-						onClick={(e) => audioEvents.click(trackId, e)}
+						onClick={(e) => audioEvents.clickToSeek(trackId, e)}
 					/>
 					<VolumeMeter trackId={trackId} stemType={stemType} />
 				</Box>

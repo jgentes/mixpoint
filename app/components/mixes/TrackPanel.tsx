@@ -108,7 +108,7 @@ const Waveform = ({
 				...sx,
 				zIndex: 1
 			}}
-			onClick={(e) => audioEvents.click(trackId, e)}
+			onClick={(e) => audioEvents.clickToSeek(trackId, e)}
 			onWheel={(e) =>
 				audioEvents.seek(trackId, undefined, e.deltaY > 0 ? 'next' : 'previous')
 			}
