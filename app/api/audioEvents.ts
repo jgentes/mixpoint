@@ -1,5 +1,6 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform around
 import type WaveSurfer from 'wavesurfer.js'
+import type MinimapPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 import type {
 	Region,
 	RegionsPlugin
@@ -29,7 +30,7 @@ import { convertToSecs, timeFormat } from '~/utils/tableOps'
 type MultiSyncTrack = {
 	trackId: Track['id']
 	duration: number
-	startTime: number
+	mixpointTime: TrackPrefs['mixpointTime']
 	media: HTMLAudioElement[]
 	getWrapper: Function
 }
@@ -58,8 +59,18 @@ const audioEvents = {
 
 		const plugins = waveform.getActivePlugins()
 		const regionspPlugin = plugins.find(
-			(plugin: RegionsPlugin) => plugin.miniWavesurfer
+			(plugin: RegionsPlugin) => plugin.regions
 		)
+
+		const minimapPlugin = plugins.find(
+			(plugin: MinimapPlugin) => plugin.miniWavesurfer
+		)
+
+		if (minimapPlugin) {
+			minimapPlugin.miniWavesurfer.on('interaction', (time: number) =>
+				audioEvents.seek(trackId, time)
+			)
+		}
 
 		const { mixpointTime, beatResolution = 1 } = await getTrackPrefs(trackId)
 
@@ -115,17 +126,14 @@ const audioEvents = {
 		const [{ playing, time = 0 }] = getAudioState[track.trackId]()
 
 		if (Math.abs(syncTime - time) > 0.05) {
-			console.log('time')
 			setAudioState[track.trackId].time(syncTime)
-			audioEvents.updateCursor(track, syncTime / track.duration, true)
 		}
 
 		// Update the current time of each audio
 		for (const audio of track.media) {
-			const newTime = syncTime - track.startTime
+			const newTime = syncTime - (track.mixpointTime || 0)
 
 			if (Math.abs(audio.currentTime - newTime) > precisionSeconds) {
-				console.log('adjusts')
 				audio.currentTime = newTime
 			}
 
@@ -146,17 +154,19 @@ const audioEvents = {
 		const tracks: MultiSyncTrack[] = []
 
 		for (const [index, trackId] of trackIds.entries()) {
+			const { mixpointTime } = await getTrackPrefs(trackId)
 			const { duration = 1 } = (await db.tracks.get(trackId)) || {}
-			const [{ waveform, stems, time = 0 }] = getAudioState[trackId]()
+			const [{ waveform, stems }] = getAudioState[trackId]()
 
 			if (!waveform) continue
 
+			// if we have stems, mute the main waveform
 			if (stems) waveform.media.volume = 0
 
 			tracks.push({
 				trackId,
 				duration,
-				startTime: time,
+				mixpointTime,
 				media: [waveform.media],
 				getWrapper: waveform.getWrapper.bind(waveform)
 			})
@@ -174,7 +184,10 @@ const audioEvents = {
 				const syncTime = track.media.reduce<number>((pos, audio) => {
 					let position = pos
 					if (!audio.paused) {
-						position = Math.max(pos, audio.currentTime + track.startTime)
+						position = Math.max(
+							pos,
+							audio.currentTime + (track.mixpointTime || 0)
+						)
 					}
 					return position
 				}, time)
@@ -195,40 +208,6 @@ const audioEvents = {
 				audio.play()
 			}
 		}
-	},
-
-	// Update cursor position
-	updateCursor: (
-		track: MultiSyncTrack,
-		position: number,
-		autoCenter: boolean
-	) => {
-		const wrapper = track.getWrapper()
-		const cursor = wrapper.querySelector('.cursor') as HTMLElement
-		cursor.style.left = `${Math.min(100, position * 100)}%`
-
-		// // Update scroll
-		// const { clientWidth, scrollLeft } = scroll
-		// const center = clientWidth / 2
-		// const minScroll = autoCenter ? center : clientWidth
-		// const pos = position * mainWidth
-
-		// if (pos > scrollLeft + minScroll || pos < scrollLeft) {
-		// 	scroll.scrollLeft = pos - center
-		// }
-	},
-
-	multiPlay: () => {
-		audioEvents.multiSync(time, waveforms)
-
-		const indexes = this.findCurrentTracks()
-		indexes.forEach((index) => {
-			this.audios[index]?.play()
-		})
-	},
-
-	multiPause: () => {
-		this.audios.forEach((audio) => audio.pause())
 	},
 
 	ejectTrack: async (trackId: Track['id']) => {
@@ -396,6 +375,13 @@ const audioEvents = {
 		}
 
 		waveform.seekTo(closestTime / duration)
+
+		const [stems] = getAudioState[trackId].stems()
+		if (stems) {
+			for (const [, { waveform }] of Object.entries(stems)) {
+				waveform?.seekTo(closestTime / duration)
+			}
+		}
 
 		setAudioState[trackId].time(closestTime)
 

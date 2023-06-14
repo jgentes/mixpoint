@@ -72,6 +72,7 @@ const initWaveform = async ({
 	}
 
 	waveform.once('ready', () => audioEvents.onReady(trackId, stem))
+
 	// no due to click event seek? waveform.on('seeking', (time: number) => audioEvents.seek(trackId, time))
 	// not for every stem! waveform.on('timeupdate', (time: number) => { });
 }

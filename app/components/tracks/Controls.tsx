@@ -599,6 +599,7 @@ const StemControl = ({
 							height: '20px',
 							pt: '3px'
 						}}
+						onClick={(e) => audioEvents.click(trackId, e)}
 					/>
 					<VolumeMeter trackId={trackId} stemType={stemType} />
 				</Box>
@@ -675,15 +676,15 @@ const TrackTime = ({ trackId, sx }: { trackId: Track['id']; sx?: SxProps }) => {
 }
 
 export {
-	BpmControl,
-	OffsetControl,
 	BeatResolutionControl,
+	BpmControl,
+	CrossfaderControl,
 	EjectControl,
 	MixControl,
 	MixpointControl,
-	TrackNavControl,
+	OffsetControl,
 	StemControl,
-	CrossfaderControl,
 	StemsCrossfaders,
+	TrackNavControl,
 	TrackTime
 }

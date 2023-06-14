@@ -112,20 +112,7 @@ const Waveform = ({
 			onWheel={(e) =>
 				audioEvents.seek(trackId, undefined, e.deltaY > 0 ? 'next' : 'previous')
 			}
-		>
-			<div
-				className='cursor'
-				style={{
-					height: '100%',
-					position: 'absolute',
-					zIndex: 10,
-					top: 0,
-					left: 0,
-					backgroundColor: '#000',
-					width: '1px'
-				}}
-			/>
-		</Card>
+		/>
 	)
 }
 
