@@ -69,7 +69,7 @@ const NumberControl = ({
 		[adjustedVal, val]
 	)
 
-	const valDiff = !isNaN(Number(adjustedVal)) && adjustedVal !== val
+	const valDiff = !Number.isNaN(Number(adjustedVal)) && adjustedVal !== val
 
 	const adjustVal = async (newVal?: number) => {
 		const value = newVal ?? val

@@ -166,17 +166,17 @@ const audioEvents = {
 		setAudioState[trackId].volumeMeter(Math.max(...volumes))
 	},
 
-	play: async (trackId: Track['id']) => {
+	play: async (trackId?: Track['id']) => {
 		// stem volume meters
 		//const meters: Partial<{ [key in Stem]: Meter }> = {}
 		// pull players from audioState for synchronized playback
 		const { tracks = [trackId] } = await getPrefs('mix')
 
 		for (const trackId of tracks) {
-			setAudioState[trackId].playing(true)
+			if (trackId) setAudioState[trackId].playing(true)
 		}
 
-		audioEvents.multiSync(tracks)
+		audioEvents.multiSync(tracks.filter((id): id is number => !!id))
 	},
 
 	updatePosition: (track: MultiSyncTrack, syncTime: number) => {

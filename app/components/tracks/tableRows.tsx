@@ -53,7 +53,7 @@ const TableRows = ({
 				</TableCell>
 				{columnDefs.map((column) => (
 					<TableCell
-						key={row.id}
+						key={column.dbKey}
 						id={`${column.dbKey}-${row.id}`}
 						sx={{
 							cursor: 'default',

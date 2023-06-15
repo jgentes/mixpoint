@@ -1,3 +1,4 @@
+// @ts-ignore until https://github.com/katspaugh/wavesurfer.js/issues/2877
 import type RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 import { guess as detectBPM } from 'web-audio-beat-detector'
 import { getAudioState, setAppState, setModalState } from '~/api/appState'
