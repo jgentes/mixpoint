@@ -175,6 +175,7 @@ const getAudioDetails = async (
 	let bpm = 1
 
 	try {
+		// rome-ignore lint/complexity/noExtraSemicolon: contradicts formatting rule
 		;({ offset, bpm } = await detectBPM(audioBuffer))
 	} catch (e) {
 		errorHandler(`Unable to determine BPM for ${name}`)
@@ -215,7 +216,8 @@ const calcMarkers = async (trackId: Track['id']): Promise<void> => {
 	let { name, duration, offset, adjustedOffset, bpm } = track || {}
 
 	// isNaN check here to allow for zero values
-	const valsMissing = !duration || isNaN(Number(bpm)) || isNaN(Number(offset))
+	const valsMissing =
+		!duration || Number.isNaN(Number(bpm)) || Number.isNaN(Number(offset))
 
 	if (valsMissing) {
 		const analyzedTracks = await analyzeTracks([track])

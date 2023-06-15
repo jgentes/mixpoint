@@ -124,6 +124,61 @@ const audioEvents = {
 		audioEvents.seek(trackId, duration * position)
 	},
 
+	ejectTrack: async (trackId: Track['id']) => {
+		if (!trackId) return
+
+		// If this is not the last track in the mix, open drawer, otherwise the drawer will open automatically
+		const { tracks = [] } = await getPrefs('mix')
+		if (tracks.length > 1) setAppState.openDrawer(true)
+
+		audioEvents.pause(trackId)
+
+		// Destroy waveform and stems before removing from audioState
+		audioEvents.destroy(trackId)
+
+		// Remove track from mix state (dexie)
+		await _removeFromMix(trackId)
+
+		// Remove track from audioState (teaful)
+		const [audioState] = getAudioState()
+		const { [trackId]: _, ...rest } = audioState
+		setAudioState(rest)
+	},
+
+	updateVolumeMeter: (trackId: Track['id']) => {
+		const volumes: number[] = []
+
+		const [stems] = getAudioState[trackId].stems()
+
+		if (stems) {
+			for (const [stem, { waveform }] of Object.entries(stems)) {
+				if (!waveform) continue
+				const vol = waveform.getVolume()
+				volumes.push(vol)
+				setAudioState[trackId].stems[stem as Stem].volumeMeter(vol)
+			}
+		} else {
+			const [waveform] = getAudioState[trackId].waveform()
+			volumes.push(waveform.getVolume())
+		}
+
+		// this is the waveform volume meter
+		setAudioState[trackId].volumeMeter(Math.max(...volumes))
+	},
+
+	play: async (trackId: Track['id']) => {
+		// stem volume meters
+		//const meters: Partial<{ [key in Stem]: Meter }> = {}
+		// pull players from audioState for synchronized playback
+		const { tracks = [trackId] } = await getPrefs('mix')
+
+		for (const trackId of tracks) {
+			setAudioState[trackId].playing(true)
+		}
+
+		audioEvents.multiSync(tracks)
+	},
+
 	updatePosition: (track: MultiSyncTrack, syncTime: number) => {
 		const precisionSeconds = 0.1
 
@@ -212,63 +267,6 @@ const audioEvents = {
 				audio.play()
 			}
 		}
-	},
-
-	ejectTrack: async (trackId: Track['id']) => {
-		if (!trackId) return
-
-		// If this is not the last track in the mix, open drawer, otherwise the drawer will open automatically
-		const { tracks = [] } = await getPrefs('mix')
-		if (tracks.length > 1) setAppState.openDrawer(true)
-
-		audioEvents.pause(trackId)
-
-		// Destroy waveform and stems before removing from audioState
-		audioEvents.destroy(trackId)
-
-		// Remove track from mix state (dexie)
-		await _removeFromMix(trackId)
-
-		// Remove track from audioState (teaful)
-		const [audioState] = getAudioState()
-		const { [trackId]: _, ...rest } = audioState
-		setAudioState(rest)
-	},
-
-	playAll: async () => {
-		const { tracks = [] } = await getPrefs('mix')
-		for (const trackId of tracks) audioEvents.play(trackId)
-	},
-
-	updateVolumeMeter: (trackId: Track['id']) => {
-		const volumes: number[] = []
-
-		const [stems] = getAudioState[trackId].stems()
-
-		if (stems) {
-			for (const [stem, { waveform }] of Object.entries(stems)) {
-				if (!waveform) continue
-				const vol = waveform.getVolume()
-				volumes.push(vol)
-				setAudioState[trackId].stems[stem as Stem].volumeMeter(vol)
-			}
-		} else {
-			const [waveform] = getAudioState[trackId].waveform()
-			volumes.push(waveform.getVolume())
-		}
-
-		// this is the waveform volume meter
-		setAudioState[trackId].volumeMeter(Math.max(...volumes))
-	},
-
-	play: async (trackId: Track['id']) => {
-		// stem volume meters
-		//const meters: Partial<{ [key in Stem]: Meter }> = {}
-
-		// pull players from audioState for synchronized playback
-		audioEvents.multiSync([trackId])
-
-		setAudioState[trackId].playing(true)
 	},
 
 	pause: async (trackId?: Track['id']) => {

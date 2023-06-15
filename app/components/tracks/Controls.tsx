@@ -387,7 +387,7 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 	const navEvent = (nav: string) => {
 		switch (nav) {
 			case 'Play':
-				audioEvents.playAll()
+				audioEvents.play()
 				break
 			case 'Pause':
 				audioEvents.pause()
