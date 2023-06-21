@@ -1,14 +1,11 @@
-// This file allows events to be received which need access to the waveform, rather than passing waveform around
-// @ts-ignore until https://github.com/katspaugh/wavesurfer.js/issues/2877
+// This file allows events to be received which need access to the waveform, rather than passing waveform aroun'
 import type WaveSurfer from 'wavesurfer.js'
-// @ts-ignore until https://github.com/katspaugh/wavesurfer.js/issues/2877
 import type MinimapPlugin from 'wavesurfer.js/dist/plugins/regions.js'
-import type {
-	Region,
-	RegionsPlugin
-	// @ts-ignore until https://github.com/katspaugh/wavesurfer.js/issues/2877
+import RegionsPlugin, {
+	type Region
 } from 'wavesurfer.js/dist/plugins/regions.js'
 import {
+	Stems,
 	getAppState,
 	getAudioState,
 	setAppState,
@@ -26,7 +23,7 @@ import {
 	setTrackPrefs,
 	updateTrack
 } from '~/api/db/dbHandlers'
-import { convertToSecs, timeFormat } from '~/utils/tableOps'
+import { convertToSecs } from '~/utils/tableOps'
 
 // audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
 
@@ -34,8 +31,7 @@ type MultiSyncTrack = {
 	trackId: Track['id']
 	duration: number
 	mixpointTime: TrackPrefs['mixpointTime']
-	media: HTMLAudioElement[]
-	getWrapper: Function
+	waveforms: { waveform: WaveSurfer; stem?: Stem; analyserNode: AnalyserNode }[]
 }
 
 const clearVolumeMeter = (trackId: Track['id']) => {
@@ -61,9 +57,7 @@ const audioEvents = {
 		if (!waveform) return
 
 		const plugins = waveform.getActivePlugins()
-		const regionspPlugin = plugins.find(
-			(plugin: RegionsPlugin) => plugin.regions
-		)
+		const regionsPlugin = plugins.find((plugin) => plugin.regions)
 
 		const minimapPlugin = plugins.find(
 			(plugin: MinimapPlugin) => plugin.miniWavesurfer
@@ -93,7 +87,7 @@ const audioEvents = {
 		}
 
 		// Update time
-		const time = mixpointTime || regionspPlugin.regions?.[0]?.start || 0
+		const time = mixpointTime || regionsPlugin.regions?.[0]?.start || 0
 		setAudioState[trackId].time(time)
 
 		const { adjustedBpm } = await getTrackPrefs(trackId)
@@ -128,8 +122,8 @@ const audioEvents = {
 		if (!trackId) return
 
 		// If this is not the last track in the mix, open drawer, otherwise the drawer will open automatically
-		const { tracks = [] } = await getPrefs('mix')
-		if (tracks.length > 1) setAppState.openDrawer(true)
+		const [tracks] = getAppState()
+		if (Object.keys(tracks).length > 1) setAppState.openDrawer(true)
 
 		audioEvents.pause(trackId)
 
@@ -145,38 +139,105 @@ const audioEvents = {
 		setAudioState(rest)
 	},
 
-	updateVolumeMeter: (trackId: Track['id']) => {
-		const volumes: number[] = []
-
-		const [stems] = getAudioState[trackId].stems()
-
-		if (stems) {
-			for (const [stem, { waveform }] of Object.entries(stems)) {
-				if (!waveform) continue
-				const vol = waveform.getVolume()
-				volumes.push(vol)
-				setAudioState[trackId].stems[stem as Stem].volumeMeter(vol)
-			}
-		} else {
-			const [waveform] = getAudioState[trackId].waveform()
-			volumes.push(waveform.getVolume())
-		}
-
-		// this is the waveform volume meter
-		setAudioState[trackId].volumeMeter(Math.max(...volumes))
-	},
-
 	play: async (trackId?: Track['id']) => {
-		// stem volume meters
-		//const meters: Partial<{ [key in Stem]: Meter }> = {}
-		// pull players from audioState for synchronized playback
-		const { tracks = [trackId] } = await getPrefs('mix')
+		let tracks
+		if (!trackId) {
+			// pull players from audioState to play all
+			;[tracks] = getAudioState()
+			tracks = Object.keys(tracks) as Track['id'][]
+		} else tracks = [trackId]
 
 		for (const trackId of tracks) {
-			if (trackId) setAudioState[trackId].playing(true)
+			if (trackId) setAudioState[trackId as number].playing(true)
 		}
 
+		// synchronize playback of all tracks
 		audioEvents.multiSync(tracks.filter((id): id is number => !!id))
+	},
+
+	multiSync: async (trackIds: Track['id'][]) => {
+		// Sync all waveforms to the same position
+		let [syncTimer] = getAudioState.syncTimer()
+		if (syncTimer) clearInterval(syncTimer)
+
+		// Collect audio data to use for sync
+		const tracks: MultiSyncTrack[] = []
+
+		for (const [index, trackId] of trackIds.entries()) {
+			const { mixpointTime } = await getTrackPrefs(trackId)
+			const { duration = 1 } = (await db.tracks.get(trackId)) || {}
+
+			const [{ waveform, stems, analyserNode }] = getAudioState[trackId]()
+
+			if (!waveform) continue
+
+			// if we have stems, mute the main waveform
+			if (stems) waveform.setVolume(0)
+
+			// add tracks to sync loop
+			tracks.push({
+				trackId,
+				duration,
+				mixpointTime,
+				waveforms: [{ waveform, analyserNode }]
+			})
+
+			if (stems) {
+				for (const [stem, { waveform, analyserNode }] of Object.entries(
+					stems
+				)) {
+					if (waveform) {
+						tracks[index].waveforms.push({ waveform, stem, analyserNode })
+					}
+				}
+			}
+		}
+
+		// setup analyser node
+		const bufferLength = 2048 // fftSize
+		const dataArray = new Float32Array(bufferLength)
+
+		// setup sync loop
+		syncTimer = setInterval(() => {
+			for (const track of tracks) {
+				const volumes: number[] = [] // to aggregate for main volume meter
+				const [time = 0] = getAudioState[track.trackId].time()
+				const syncTime = track.waveforms.reduce<number>((pos, audio) => {
+					let position = pos
+					const waveform = audio.waveform
+					if (!waveform.isPlaying()) {
+						position = Math.max(
+							pos,
+							waveform.getCurrentTime() + (track.mixpointTime || 0)
+						)
+					}
+
+					// this is unreleated to synctime but leveraging the reduce loop to perform the volume analysis operation
+					audio.analyserNode.getFloatTimeDomainData(dataArray)
+					const vol = Math.max(...dataArray)
+					volumes.push(vol)
+					if (audio.stem)
+						setAudioState[track.trackId].stems[audio.stem].volumeMeter(vol)
+
+					return position
+				}, time)
+
+				// aggregate stem volumes for main volume meter
+				setAudioState[track.trackId].volumeMeter(Math.max(...volumes))
+
+				if (syncTime > time) {
+					audioEvents.updatePosition(track, syncTime)
+				}
+			}
+		}, 15)
+
+		setAudioState.syncTimer(syncTimer)
+
+		for (const track of tracks) {
+			for (const audio of track.waveforms) {
+				audio.waveform.play()
+			}
+		}
 	},
 
 	updatePosition: (track: MultiSyncTrack, syncTime: number) => {
@@ -189,82 +250,20 @@ const audioEvents = {
 		}
 
 		// Update the current time of each audio
-		for (const audio of track.media) {
+		for (const { waveform } of track.waveforms) {
 			const newTime = syncTime - (track.mixpointTime || 0)
 
-			if (Math.abs(audio.currentTime - newTime) > precisionSeconds) {
-				audio.currentTime = newTime
+			if (Math.abs(waveform.getCurrentTime() - newTime) > precisionSeconds) {
+				console.log('adjust')
+				waveform.setTime(newTime)
 			}
 
 			// If the position is out of the track bounds, pause it
 			if (!playing || newTime < 0 || newTime > track.duration) {
-				!audio.paused && audio.pause()
+				waveform.isPlaying() && waveform.pause()
 			} else if (playing) {
 				// If the position is in the track bounds, play it
-				audio.paused && audio.play()
-			}
-		}
-	},
-
-	multiSync: async (trackIds: Track['id'][]) => {
-		// Sync all waveforms to the same position
-
-		// Collect audio data to use for sync
-		const tracks: MultiSyncTrack[] = []
-
-		for (const [index, trackId] of trackIds.entries()) {
-			const { mixpointTime } = await getTrackPrefs(trackId)
-			const { duration = 1 } = (await db.tracks.get(trackId)) || {}
-			const [{ waveform, stems }] = getAudioState[trackId]()
-
-			if (!waveform) continue
-
-			// if we have stems, mute the main waveform
-			if (stems) waveform.media.volume = 0
-
-			tracks.push({
-				trackId,
-				duration,
-				mixpointTime,
-				media: [waveform.media],
-				getWrapper: waveform.getWrapper.bind(waveform)
-			})
-
-			if (stems) {
-				for (const [, { waveform }] of Object.entries(stems)) {
-					if (waveform) tracks[index].media.push(waveform.media)
-				}
-			}
-		}
-
-		const onFrame = () => {
-			for (const track of tracks) {
-				const [time = 0] = getAudioState[track.trackId].time()
-				const syncTime = track.media.reduce<number>((pos, audio) => {
-					let position = pos
-					if (!audio.paused) {
-						position = Math.max(
-							pos,
-							audio.currentTime + (track.mixpointTime || 0)
-						)
-					}
-					return position
-				}, time)
-
-				if (syncTime > time) {
-					audioEvents.updatePosition(track, syncTime)
-				}
-			}
-
-			const frameRequest = requestAnimationFrame(onFrame)
-			setAppState.multiSyncAnimation(frameRequest)
-		}
-
-		onFrame()
-
-		for (const track of tracks) {
-			for (const audio of track.media) {
-				audio.play()
+				!waveform.isPlaying() && waveform.play()
 			}
 		}
 	},
@@ -274,14 +273,17 @@ const audioEvents = {
 		let waveforms
 		let trackIds
 
+		const [syncTimer] = getAudioState.syncTimer()
+		if (syncTimer) clearInterval(syncTimer)
+
 		if (trackId) {
 			const [waveform] = getAudioState[trackId].waveform()
 			waveforms = [waveform]
 			trackIds = [trackId]
 		} else {
 			waveforms = _getAllWaveforms()
-			const [audioState] = getAudioState()
-			trackIds = Object.keys(audioState)
+			const [tracks] = getAudioState()
+			trackIds = Object.keys(tracks)
 		}
 
 		const stopWaveform = (waveform: WaveSurfer) => waveform.pause()
@@ -300,19 +302,9 @@ const audioEvents = {
 					if (waveform) stopWaveform(waveform)
 				}
 			}
-
-			clearVolumeMeter(Number(id))
 			setAudioState[Number(id)].playing(false)
+			setAudioState[Number(id)].volumeMeter(0)
 		}
-
-		// stop multi-sync animation
-		const [sync] = getAppState.multiSyncAnimation()
-		if (sync) cancelAnimationFrame(sync)
-	},
-
-	mute: (trackId: Track['id']) => {
-		const [waveform] = getAudioState[trackId].waveform()
-		if (waveform) waveform.setMute(true)
 	},
 
 	// Scroll to previous/next beat marker

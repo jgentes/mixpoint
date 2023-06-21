@@ -1,6 +1,5 @@
-// @ts-ignore until https://github.com/katspaugh/wavesurfer.js/issues/2877
 import WaveSurfer, { type WaveSurferOptions } from 'wavesurfer.js'
-import { setAudioState } from '~/api/appState'
+import { getAudioState, setAudioState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
 import { Stem, Track } from '~/api/db/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
@@ -24,7 +23,6 @@ const initWaveform = async ({
 
 	const config: WaveSurferOptions = {
 		media,
-		pixelRatio: 1,
 		cursorColor: 'secondary.mainChannel',
 		interact: false,
 		waveColor: [
@@ -41,20 +39,25 @@ const initWaveform = async ({
 
 	const waveform = WaveSurfer.create(config)
 
-	// Create Web Audio context
-	const audioContext = new AudioContext()
+	// Get shared audioContext
+	const [audioContext] = getAudioState.audioContext()
+	if (!audioContext) throw errorHandler('No audio context found')
 
 	// gainNode is used to control volume of all stems at once
 	const gainNode = audioContext.createGain()
 	gainNode.connect(audioContext.destination)
 
+	const analyserNode = audioContext.createAnalyser()
+
 	// Connect the audio to the equalizer
 	media.addEventListener(
 		'canplay',
-		() => {
+		async () => {
 			// Create a MediaElementSourceNode from the audio element
 			const mediaNode = audioContext.createMediaElementSource(media)
+
 			mediaNode.connect(gainNode)
+			mediaNode.connect(analyserNode)
 		},
 		{ once: true }
 	)
@@ -63,12 +66,15 @@ const initWaveform = async ({
 	if (stem) {
 		setAudioState[trackId].stems[stem as Stem]({
 			gainNode,
+			analyserNode,
 			volume: 1,
+			volumeMeter: 0,
 			mute: false,
 			waveform
 		})
 	} else {
 		setAudioState[trackId].waveform(waveform)
+		setAudioState[trackId].analyserNode(analyserNode)
 		setAudioState[trackId].gainNode(gainNode)
 	}
 

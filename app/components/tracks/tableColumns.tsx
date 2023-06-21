@@ -22,9 +22,9 @@ const createColumnDefinitions = (): {
 }[] => {
 	const analyzeButton = (t: Track) => (
 		<Chip
-			variant='outlined'
-			startDecorator={<Icon icon='material-symbols:graphic-eq' height='16px' />}
-			size='sm'
+			variant="outlined"
+			startDecorator={<Icon icon="material-symbols:graphic-eq" height="16px" />}
+			size="sm"
 			onClick={() => analyzeTracks([t])}
 		>
 			Analyze
@@ -52,17 +52,17 @@ const createColumnDefinitions = (): {
 
 		return (
 			<Chip
-				variant='outlined'
+				variant="outlined"
 				className={isInMix ? 'visible' : 'visibleOnHover'}
 				startDecorator={
 					isInMix ? (
-						<Icon icon='material-symbols:check' height='16px' />
+						<Icon icon="material-symbols:check" height="16px" />
 					) : (
-						<Icon icon='material-symbols:add' height='16px' />
+						<Icon icon="material-symbols:add" height="16px" />
 					)
 				}
 				color={isInMix ? 'success' : 'primary'}
-				size='sm'
+				size="sm"
 				disabled={isBeingAnalyzed}
 				sx={{
 					maxHeight: '30px',

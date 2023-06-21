@@ -3,37 +3,42 @@
 import { ButtonProps } from '@mui/joy'
 import createStore from 'teaful'
 import type WaveSurfer from 'wavesurfer.js'
-import { Stem, Track } from '~/api/db/dbHandlers'
+import { Track, Stem } from '~/api/db/dbHandlers'
 
 // AudioState captures whether audio is being analyzed, processed, or played
+// It's worth mentioning that mixPrefs also has the keys of tracks current being mixed. The difference is that the database is intended to retain state after refresh, and appState will retain data for a large number of tracks for efficiency (ie. don't re-analyze a waveform you've already analyzed), so references should generally be made to appstate for what tracks are currently being mixed
 const {
 	getStore: getAudioState,
 	useStore: audioState,
 	setStore: setAudioState
 } = createStore<{
 	[trackId: number]: AudioState
-}>({})
+	syncTimer: ReturnType<typeof setInterval> | undefined
+	audioContext?: AudioContext
+}>({ syncTimer: undefined })
 
-type AudioState = Partial<{
+type AudioState = {
 	waveform: WaveSurfer
 	playing: boolean
 	time: number
 	gainNode: GainNode // gain controls actual loudness of track
+	analyserNode: AnalyserNode // analyzerNode is used for volumeMeter
 	volume: number // volume is the crossfader value
 	volumeMeter: number // value between 0 and 1
 	stems: Stems
 	stemState: StemState
-}>
+}
 
-type Stems = Partial<{
-	[key in Stem]: Partial<{
+type Stems = {
+	[key in Stem]: {
 		waveform: WaveSurfer
 		gainNode: GainNode // gain controls actual loudness of stem
+		analyserNode: AnalyserNode // analyzerNode is used for volumeMeter
 		volume: number // volume is the crossfader value
 		volumeMeter: number
 		mute: boolean
-	}>
-}>
+	}
+}
 
 type StemState =
 	| 'selectStemDir'
@@ -59,7 +64,6 @@ const {
 	processing: boolean
 	analyzing: Track['id'][]
 	stemsAnalyzing: Track['id'][]
-	multiSyncAnimation: number // a non-zero value returned from requestAnimationFrame
 }>({
 	search: '',
 	selected: [],
@@ -69,8 +73,7 @@ const {
 	openDrawer: false,
 	processing: false,
 	analyzing: [],
-	stemsAnalyzing: [],
-	multiSyncAnimation: 0
+	stemsAnalyzing: []
 })
 
 // ModalState is a generic handler for various modals, usually when doing something significant like deleting tracks

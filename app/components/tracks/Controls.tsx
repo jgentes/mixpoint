@@ -33,7 +33,7 @@ import { convertToSecs, timeFormat } from '~/utils/tableOps'
 const inputText = (text: string) => {
 	return (
 		<Typography
-			textColor='#888'
+			textColor="#888"
 			sx={{ fontSize: 12, lineHeight: 0, cursor: 'default' }}
 		>
 			{text}
@@ -82,9 +82,9 @@ const NumberControl = ({
 
 	const ResetValLink = () => (
 		<Link
-			underline='none'
+			underline="none"
 			onClick={() => adjustVal()}
-			color='neutral'
+			color="neutral"
 			title={title}
 			disabled={!valDiff}
 			sx={{
@@ -94,7 +94,7 @@ const NumberControl = ({
 		>
 			{inputText(text)}
 			{valDiff ? (
-				<Icon icon='ic:round-replay' height='14px' style={{ marginLeft: 2 }} />
+				<Icon icon="ic:round-replay" height="14px" style={{ marginLeft: 2 }} />
 			) : (
 				''
 			)}
@@ -115,7 +115,7 @@ const NumberControl = ({
 			}}
 		>
 			<Input
-				variant='outlined'
+				variant="outlined"
 				startDecorator={<ResetValLink />}
 				value={inputVal}
 				onChange={(e) => setInputVal(e.target.value)}
@@ -144,10 +144,10 @@ const NumberControl = ({
 const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
 	return (
 		<Chip
-			variant='outlined'
-			color='primary'
-			size='sm'
-			title='Load Track'
+			variant="outlined"
+			color="primary"
+			size="sm"
+			title="Load Track"
 			onClick={() => audioEvents.ejectTrack(trackId)}
 			sx={{
 				minHeight: '21px',
@@ -157,7 +157,7 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
 				'--Icon-fontSize': '16px'
 			}}
 		>
-			<Icon icon='material-symbols:eject-rounded' height='20px' />
+			<Icon icon="material-symbols:eject-rounded" height="20px" />
 		</Chip>
 	)
 }
@@ -182,9 +182,9 @@ const BpmControl = ({
 			val={bpm}
 			adjustedVal={adjustedBpm}
 			toFixedVal={1}
-			title='Reset BPM'
-			text='BPM:'
-			emitEvent='bpm'
+			title="Reset BPM"
+			text="BPM:"
+			emitEvent="bpm"
 			width={115}
 			styles={styles}
 		/>
@@ -209,9 +209,9 @@ const OffsetControl = ({
 			val={offset}
 			adjustedVal={adjustedOffset}
 			toFixedVal={2}
-			title='Reset Beat Offset'
-			text='Beat Offset:'
-			emitEvent='offset'
+			title="Reset Beat Offset"
+			text="Beat Offset:"
+			emitEvent="offset"
 			styles={styles}
 		/>
 	)
@@ -235,9 +235,9 @@ const BeatResolutionControl = ({
 	return (
 		<RadioGroup
 			orientation={'horizontal'}
-			name='beatResolution'
+			name="beatResolution"
 			value={beatResolution}
-			variant='outlined'
+			variant="outlined"
 			sx={{
 				backgroundColor: 'background.surface',
 				borderColor: 'action.selected',
@@ -278,7 +278,7 @@ const BeatResolutionControl = ({
 						overlay
 						label={`${item * 100}%`}
 						variant={beatResolution === item ? 'outlined' : 'plain'}
-						color='primary'
+						color="primary"
 						sx={{
 							fontSize: 12,
 							color: 'text.secondary'
@@ -323,44 +323,44 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
 	const [isPlaying] = audioState[trackId].playing()
 
 	return (
-		<ButtonGroup variant='text' color='inherit' disableRipple id='navControl'>
+		<ButtonGroup variant="text" color="inherit" disableRipple id="navControl">
 			{[
 				{
 					val: 'Previous Beat Marker',
-					icon: <Icon icon='material-symbols:skip-previous' height='20px' />
+					icon: <Icon icon="material-symbols:skip-previous" height="20px" />
 				},
 				{
 					val: 'Go to Mixpoint',
 					icon: (
 						<Icon
-							icon='material-symbols:settings-backup-restore'
-							height='20px'
+							icon="material-symbols:settings-backup-restore"
+							height="20px"
 						/>
 					)
 				},
 
 				{
 					val: 'Set Mixpoint',
-					icon: <Icon icon='material-symbols:adjust-outline' height='18px' />
+					icon: <Icon icon="material-symbols:adjust-outline" height="18px" />
 				},
 				{
 					val: isPlaying ? 'Pause' : 'Play',
 					icon: isPlaying ? (
-						<Icon icon='material-symbols:pause' height='20px' />
+						<Icon icon="material-symbols:pause" height="20px" />
 					) : (
-						<Icon icon='material-symbols:play-arrow' height='20px' />
+						<Icon icon="material-symbols:play-arrow" height="20px" />
 					)
 				},
 				{
 					val: 'Next Beat Marker',
-					icon: <Icon icon='material-symbols:skip-next' height='20px' />
+					icon: <Icon icon="material-symbols:skip-next" height="20px" />
 				}
 			].map((item) => {
 				const noNudge = item.val.includes('Nudge') && !isPlaying
 
 				return (
 					<Button
-						component='button'
+						component="button"
 						onClick={(e) => navEvent(e.currentTarget.value)}
 						key={item.val}
 						value={item.val}
@@ -403,8 +403,8 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 	return (
 		<RadioGroup
 			orientation={'horizontal'}
-			name='mixControl'
-			variant='outlined'
+			name="mixControl"
+			variant="outlined"
 			sx={{ height: radioSize, my: 1, backgroundColor: 'background.surface' }}
 			onClick={(e) => {
 				const el = e.target as HTMLInputElement
@@ -416,18 +416,18 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 					val: 'Go to Mixpoint',
 					icon: (
 						<Icon
-							icon='material-symbols:settings-backup-restore'
-							height='18px'
+							icon="material-symbols:settings-backup-restore"
+							height="18px"
 						/>
 					)
 				},
 				{
 					val: 'Pause',
-					icon: <Icon icon='material-symbols:pause' height='20px' />
+					icon: <Icon icon="material-symbols:pause" height="20px" />
 				},
 				{
 					val: 'Play',
-					icon: <Icon icon='material-symbols:play-arrow' height='20px' />
+					icon: <Icon icon="material-symbols:play-arrow" height="20px" />
 				}
 			].map((item) => (
 				<Box
@@ -464,8 +464,8 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 						disableIcon
 						overlay
 						label={item.icon}
-						variant='plain'
-						color='primary'
+						variant="plain"
+						color="primary"
 						slotProps={{
 							root: {
 								sx: {
@@ -516,7 +516,7 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
 			}}
 		>
 			<Input
-				variant='outlined'
+				variant="outlined"
 				startDecorator={inputText('Mixpoint:')}
 				value={mixpointVal}
 				onChange={(e) => setMixpointVal(e.target.value)}
@@ -605,8 +605,8 @@ const StemControl = ({
 				</Box>
 				<Icon
 					icon={solo ? 'ic:baseline-headset-off' : 'ic:baseline-headset'}
-					height='16px'
-					title='Solo'
+					height="16px"
+					title="Solo"
 					style={{
 						color: '#aaa',
 						cursor: 'pointer'
@@ -615,17 +615,17 @@ const StemControl = ({
 				/>
 				{!volume || mute ? (
 					<Icon
-						icon='material-symbols:volume-off'
-						title='Mute'
-						height='16px'
+						icon="material-symbols:volume-off"
+						title="Mute"
+						height="16px"
 						style={{ color: '#aaa', cursor: 'pointer' }}
 						onClick={() => audioEvents.stemMuteToggle(trackId, stemType, false)}
 					/>
 				) : (
 					<Icon
-						icon='material-symbols:volume-up'
-						title='Unmute'
-						height='16px'
+						icon="material-symbols:volume-up"
+						title="Unmute"
+						height="16px"
 						style={{ color: '#aaa', cursor: 'pointer' }}
 						onClick={() => audioEvents.stemMuteToggle(trackId, stemType, true)}
 					/>
@@ -645,16 +645,16 @@ const StemsCrossfaders = () => (
 
 const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => (
 	<Slider
-		aria-label='crossfader'
+		aria-label="crossfader"
 		defaultValue={50}
 		min={0}
 		max={100}
 		step={2}
 		track={false}
 		marks={[0, 50, 100].map((v) => ({ value: v }))}
-		valueLabelDisplay='off'
-		variant='soft'
-		size='md'
+		valueLabelDisplay="off"
+		variant="soft"
+		size="md"
 		onChange={(_, val) => audioEvents.crossfade(val as number, stemType)}
 		sx={{
 			padding: '15px 0',

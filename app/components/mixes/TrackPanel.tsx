@@ -103,7 +103,7 @@ const Waveform = ({
 	return (
 		<Card
 			ref={zoomviewRef}
-			className='zoomview-container'
+			className="zoomview-container"
 			sx={{
 				...sx,
 				zIndex: 1

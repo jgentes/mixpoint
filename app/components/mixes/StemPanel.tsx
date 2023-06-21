@@ -1,6 +1,6 @@
 import { Box } from '@mui/joy'
 import { useEffect } from 'react'
-import { type WaveSurferParams } from 'wavesurfer.js'
+import { type WaveSurferOptions } from 'wavesurfer.js'
 import { audioState, getAppState, setAppState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
 import { STEMS, Stem, Track, db } from '~/api/db/dbHandlers'
@@ -28,10 +28,9 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
 					for (const [stem, { file }] of Object.entries(stemCache)) {
 						if (!file) continue
 
-						const waveformConfig: WaveSurferParams = {
+						const waveformConfig: WaveSurferOptions = {
 							container: `#zoomview-container_${trackId}_${stem}`,
 							height: 17,
-							scrollParent: false,
 							fillParent: true,
 							hideScrollbar: true,
 							barWidth: 1,
