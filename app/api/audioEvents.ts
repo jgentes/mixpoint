@@ -1,9 +1,7 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform aroun'
 import type WaveSurfer from 'wavesurfer.js'
-import type MinimapPlugin from 'wavesurfer.js/dist/plugins/regions.js'
-import RegionsPlugin, {
-	type Region
-} from 'wavesurfer.js/dist/plugins/regions.js'
+import type MinimapPlugin from 'wavesurfer.js/dist/plugins/minimap'
+import RegionsPlugin, { type Region } from 'wavesurfer.js/dist/plugins/regions'
 import {
 	Stems,
 	getAppState,
@@ -34,10 +32,6 @@ type MultiSyncTrack = {
 	waveforms: { waveform: WaveSurfer; stem?: Stem; analyserNode: AnalyserNode }[]
 }
 
-const clearVolumeMeter = (trackId: Track['id']) => {
-	setAudioState[Number(trackId)].volumeMeter(0)
-}
-
 const _getAllWaveforms = (): WaveSurfer[] => {
 	const [audioState] = getAudioState()
 
@@ -57,17 +51,7 @@ const audioEvents = {
 		if (!waveform) return
 
 		const plugins = waveform.getActivePlugins()
-		const regionsPlugin = plugins.find((plugin) => plugin.regions)
-
-		const minimapPlugin = plugins.find(
-			(plugin: MinimapPlugin) => plugin.miniWavesurfer
-		)
-
-		if (minimapPlugin) {
-			minimapPlugin.miniWavesurfer.on('interaction', (time: number) =>
-				audioEvents.seek(trackId, time)
-			)
-		}
+		const regionsPlugin = plugins[0] as RegionsPlugin
 
 		const { mixpointTime, beatResolution = 1 } = await getTrackPrefs(trackId)
 
@@ -87,7 +71,7 @@ const audioEvents = {
 		}
 
 		// Update time
-		const time = mixpointTime || regionsPlugin.regions?.[0]?.start || 0
+		const time = mixpointTime || regionsPlugin.getRegions()[0]?.start || 0
 		setAudioState[trackId].time(time)
 
 		const { adjustedBpm } = await getTrackPrefs(trackId)
@@ -98,10 +82,13 @@ const audioEvents = {
 		audioEvents.seek(trackId, time)
 	},
 
-	clickToSeek: async (trackId: Track['id'], e: React.MouseEvent) => {
+	clickToSeek: async (
+		trackId: Track['id'],
+		e: React.MouseEvent,
+		parentElement: HTMLElement
+	) => {
 		// get click position of parent element and convert to time
-		const parent = e.currentTarget.firstElementChild as HTMLElement
-		const shadowRoot = parent.shadowRoot as ShadowRoot
+		const shadowRoot = parentElement.shadowRoot as ShadowRoot
 		const wrapper = shadowRoot.querySelector('.wrapper') as HTMLElement
 		const scrollbar = shadowRoot.querySelector('.scroll') as HTMLElement
 		const boundary = wrapper.getBoundingClientRect()
@@ -144,7 +131,7 @@ const audioEvents = {
 		if (!trackId) {
 			// pull players from audioState to play all
 			;[tracks] = getAudioState()
-			tracks = Object.keys(tracks) as Track['id'][]
+			tracks = Object.keys(tracks).map(Number)
 		} else tracks = [trackId]
 
 		for (const trackId of tracks) {
@@ -152,7 +139,7 @@ const audioEvents = {
 		}
 
 		// synchronize playback of all tracks
-		audioEvents.multiSync(tracks.filter((id): id is number => !!id))
+		audioEvents.multiSync(tracks.filter((id) => !!id))
 	},
 
 	multiSync: async (trackIds: Track['id'][]) => {
@@ -183,11 +170,16 @@ const audioEvents = {
 			})
 
 			if (stems) {
+				// using typescript, how to indicate the type of stem?
 				for (const [stem, { waveform, analyserNode }] of Object.entries(
 					stems
 				)) {
 					if (waveform) {
-						tracks[index].waveforms.push({ waveform, stem, analyserNode })
+						tracks[index].waveforms.push({
+							waveform,
+							stem: stem as Stem,
+							analyserNode
+						})
 					}
 				}
 			}
@@ -228,6 +220,8 @@ const audioEvents = {
 				if (syncTime > time) {
 					audioEvents.updatePosition(track, syncTime)
 				}
+				console.log('updating time', syncTime, time)
+				//setAudioState[track.trackId].time(syncTime)
 			}
 		}, 15)
 
@@ -242,7 +236,7 @@ const audioEvents = {
 
 	updatePosition: (track: MultiSyncTrack, syncTime: number) => {
 		const precisionSeconds = 0.1
-
+		console.log('updating pso')
 		const [{ playing, time = 0 }] = getAudioState[track.trackId]()
 
 		if (Math.abs(syncTime - time) > 0.05) {
@@ -254,7 +248,6 @@ const audioEvents = {
 			const newTime = syncTime - (track.mixpointTime || 0)
 
 			if (Math.abs(waveform.getCurrentTime() - newTime) > precisionSeconds) {
-				console.log('adjust')
 				waveform.setTime(newTime)
 			}
 
@@ -322,12 +315,10 @@ const audioEvents = {
 
 		const { duration = 1 } = (await db.tracks.get(trackId)) || {}
 
-		const regionsPlugin = waveform
-			.getActivePlugins()
-			.find((plugin: RegionsPlugin) => plugin.regions)
+		const regionsPlugin = waveform.getActivePlugins()[0] as RegionsPlugin
 
 		// find the closest marker to the current time
-		const { regions = [] } = regionsPlugin || {}
+		const regions = regionsPlugin.getRegions()
 
 		const findClosestRegion = (time: number) => {
 			return regions.findIndex((region: Region) => {

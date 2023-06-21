@@ -2,6 +2,7 @@ import { Box, Card, Typography } from '@mui/joy'
 import { SxProps } from '@mui/material'
 import { useEffect } from 'react'
 import { AppState, setAppState, setAudioState } from '~/api/appState'
+import { audioEvents } from '~/api/audioEvents'
 import { Track, getTrackName, useLiveQuery } from '~/api/db/dbHandlers'
 import StemPanel from '~/components/mixes/StemPanel'
 import TrackPanel from '~/components/mixes/TrackPanel'
@@ -115,6 +116,11 @@ const MixCard = ({
 							...loaderSx,
 							pt: '1px',
 							height: '25px'
+						}}
+						onClick={(e) => {
+							const parents = e.currentTarget.firstElementChild as HTMLElement
+							const parent = parents.children[1] as HTMLElement
+							audioEvents.clickToSeek(trackId, e, parent)
 						}}
 					/>
 

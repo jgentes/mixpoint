@@ -50,6 +50,21 @@ const Waveform = ({
 				barHeight: 0.9,
 				barGap: 1,
 				plugins: [
+					// Do not change the order of plugins! They are referenced by index :(
+					RegionsPlugin.create(),
+					Minimap.create({
+						container: `#overview-container_${trackId}`,
+						height: 22,
+						waveColor: [
+							'rgba(117, 116, 116, 0.5)',
+							'rgba(145, 145, 145, 0.8)',
+							'rgba(145, 145, 145, 0.8)',
+							'rgba(145, 145, 145, 0.8)'
+						],
+						progressColor: 'rgba(0, 0, 0, 0.25)',
+						hideScrollbar: true
+					})
+
 					// Playhead.create({
 					// 	moveOnSeek: true,
 					// 	returnOnPause: false,
@@ -65,21 +80,6 @@ const Waveform = ({
 					// 		backgroundColor: "rgba(0, 0, 0, 0.3)",
 					// 	},
 					// }),
-					RegionsPlugin.create(),
-					Minimap.create({
-						container: `#overview-container_${trackId}`,
-						height: 22,
-						waveColor: [
-							'rgba(117, 116, 116, 0.5)',
-							'rgba(145, 145, 145, 0.8)',
-							'rgba(145, 145, 145, 0.8)',
-							'rgba(145, 145, 145, 0.8)'
-						],
-						progressColor: 'rgba(0, 0, 0, 0.25)',
-						scrollParent: false,
-						hideScrollbar: true,
-						pixelRatio: 1
-					})
 				]
 			}
 
@@ -108,9 +108,12 @@ const Waveform = ({
 				...sx,
 				zIndex: 1
 			}}
-			onClick={(e) => audioEvents.clickToSeek(trackId, e)}
+			onClick={(e) => {
+				const parent = e.currentTarget.firstElementChild as HTMLElement
+				audioEvents.clickToSeek(trackId, e, parent)
+			}}
 			onWheel={(e) =>
-				audioEvents.seek(trackId, undefined, e.deltaY > 0 ? 'next' : 'previous')
+				audioEvents.seek(trackId, 0, e.deltaY > 0 ? 'next' : 'previous')
 			}
 		/>
 	)

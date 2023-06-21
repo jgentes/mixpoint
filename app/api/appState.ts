@@ -12,7 +12,7 @@ const {
 	useStore: audioState,
 	setStore: setAudioState
 } = createStore<{
-	[trackId: number]: AudioState
+	[trackId: Track['id']]: AudioState
 	syncTimer: ReturnType<typeof setInterval> | undefined
 	audioContext?: AudioContext
 }>({ syncTimer: undefined })
