@@ -9355,9 +9355,9 @@ isbot@latest:
   linkType: hard
 
 "wavesurfer.js@npm:beta":
-  version: 7.0.0-beta.7
-  resolution: "wavesurfer.js@npm:7.0.0-beta.7"
-  checksum: 9f7507a11e3b8d45880715fdcb01265cc36ba776b66cc00c17f9f154345512366ded7c5c7e2a48bec3d3cdd84a2c4a1fa1741817cf285364992f4be39763516b
+  version: 7.0.0-beta.10
+  resolution: "wavesurfer.js@npm:7.0.0-beta.10"
+  checksum: 916eb3f1db3f2883e231effc18d50cbe94342a81978583f8ef9a5ad9830b4be368be6ae67027eebd508fce6ccaf642db327d30ebd5ec582aad7cd9ebcd527a23
   languageName: node
   linkType: hard
 

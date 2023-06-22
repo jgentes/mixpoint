@@ -1,3 +1,4 @@
 {
-  "prettier.arrowParens": "avoid"
+  "prettier.arrowParens": "avoid",
+  "rome.requireConfiguration": false
 }

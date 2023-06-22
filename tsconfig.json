@@ -1,15 +1,21 @@
 {
   "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ES2020"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2020"
+    ],
     "isolatedModules": true,
     "jsx": "react-jsx",
     "resolveJsonModule": true,
     "module": "NodeNext",
-    "moduleResolution": "node16",
+    "moduleResolution": "node",
     "baseUrl": ".",
     "noEmit": true,
     "paths": {
-      "~/*": ["./app/*"]
+      "~/*": [
+        "./app/*"
+      ]
     },
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
@@ -19,5 +25,10 @@
     "strictNullChecks": true,
     "esModuleInterop": true
   },
-  "include": ["**/*.ts", "**/*.tsx", "remix.env.d.ts", "./global.d.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "remix.env.d.ts",
+    "./global.d.ts"
+  ]
 }
