@@ -1,9 +1,7 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform aroun'
 import type WaveSurfer from 'wavesurfer.js'
-import type MinimapPlugin from 'wavesurfer.js/dist/plugins/minimap'
 import RegionsPlugin, { type Region } from 'wavesurfer.js/dist/plugins/regions'
 import {
-	Stems,
 	getAppState,
 	getAudioState,
 	setAppState,

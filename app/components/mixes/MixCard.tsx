@@ -85,6 +85,7 @@ const MixCard = ({
 				borderRadius: '4px',
 				border: '1px solid',
 				borderColor: 'action.selected',
+				backgroundColor: 'background.surface',
 				width: '40%',
 				...sx
 			}}

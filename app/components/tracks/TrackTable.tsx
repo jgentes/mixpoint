@@ -79,16 +79,15 @@ const TrackTable = () => {
 			>
 				<LeftNav />
 
-				<Box component='main' sx={{ p: 2 }}>
+				<Box component="main" sx={{ p: 2 }}>
 					<Box
-						id='track-table'
+						id="track-table"
 						sx={{
 							border: '1px solid',
 							borderRadius: '4px',
 							overflow: 'auto',
-
 							borderColor: dragOver ? '#30b2e9' : 'action.selected',
-							backgroundColor: dragOver ? 'rgba(48, 178, 233, 0.1)' : undefined
+							backgroundColor: 'background.surface'
 						}}
 						onDrop={(e) => {
 							e.preventDefault()
@@ -106,9 +105,9 @@ const TrackTable = () => {
 						<EnhancedTableToolbar numSelected={selected.length} />
 						<TableContainer>
 							<Table
-								aria-labelledby='tableTitle'
-								size='small'
-								padding='checkbox'
+								aria-labelledby="tableTitle"
+								size="small"
+								padding="checkbox"
 							>
 								<EnhancedTableHead
 									numSelected={selected.length}
@@ -158,7 +157,7 @@ const TrackTable = () => {
 						)}
 						<TablePagination
 							rowsPerPageOptions={[5, 10, 25]}
-							component='div'
+							component="div"
 							count={tracks.length || 0}
 							rowsPerPage={rowsPerPage}
 							page={page}

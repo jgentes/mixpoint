@@ -204,9 +204,7 @@ const calcMarkers = async (trackId: Track['id']): Promise<void> => {
 	const [waveform] = getAudioState[trackId].waveform()
 	if (!waveform) return
 
-	const regionsPlugin = waveform
-		.getActivePlugins()
-		.find((plugin: RegionsPlugin) => plugin.regions)
+	const regionsPlugin = waveform.getActivePlugins()[0] as RegionsPlugin
 
 	if (!regionsPlugin) return
 	regionsPlugin.clearRegions()
