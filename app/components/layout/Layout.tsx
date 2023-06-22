@@ -10,8 +10,7 @@ import TrackTable from '~/components/tracks/TrackTable'
 
 const Layout: React.FunctionComponent = () => {
 	const { tracks } = useLiveQuery(() => getPrefs('mix', 'tracks')) || {}
-
-	const mixViewVisible = !!tracks?.length
+	const mixViewVisible = !!tracks?.filter((t) => t).length
 
 	useEffect(() => {
 		if (!mixViewVisible) setAppState.openDrawer(false)

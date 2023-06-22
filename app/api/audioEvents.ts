@@ -104,10 +104,6 @@ const audioEvents = {
 	ejectTrack: async (trackId: Track['id']) => {
 		if (!trackId) return
 
-		// If this is not the last track in the mix, open drawer, otherwise the drawer will open automatically
-		const [tracks] = getAppState()
-		if (Object.keys(tracks).length > 1) setAppState.openDrawer(true)
-
 		audioEvents.pause(trackId)
 
 		// Destroy waveform and stems before removing from audioState
@@ -120,6 +116,12 @@ const audioEvents = {
 		const [audioState] = getAudioState()
 		const { [trackId]: _, ...rest } = audioState
 		setAudioState(rest)
+
+		// If this is not the last track in the mix, open drawer, otherwise the drawer will open automatically
+		const { tracks } = (await getPrefs('mix', 'tracks')) || {}
+		const mixViewVisible = !!tracks?.filter((t) => t).length
+
+		if (mixViewVisible) setAppState.openDrawer(true)
 	},
 
 	play: async (trackId?: Track['id']) => {
