@@ -1,5 +1,5 @@
 import WaveSurfer, { type WaveSurferOptions } from 'wavesurfer.js'
-import { getAudioState, setAudioState } from '~/api/appState'
+import { getAppState, setAudioState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
 import { Stem, Track } from '~/api/db/dbHandlers'
 import { errorHandler } from '~/utils/notifications'
@@ -40,7 +40,7 @@ const initWaveform = async ({
 	const waveform = WaveSurfer.create(config)
 
 	// Get shared audioContext
-	const [audioContext] = getAudioState.audioContext()
+	const [audioContext] = getAppState.audioContext()
 	if (!audioContext) throw errorHandler('No audio context found')
 
 	// gainNode is used to control volume of all stems at once

@@ -13,9 +13,7 @@ const {
 	setStore: setAudioState
 } = createStore<{
 	[trackId: Track['id']]: AudioState
-	syncTimer: ReturnType<typeof setInterval> | undefined
-	audioContext?: AudioContext
-}>({ syncTimer: undefined })
+}>({})
 
 type AudioState = {
 	waveform: WaveSurfer
@@ -64,6 +62,8 @@ const {
 	processing: boolean
 	analyzing: Track['id'][]
 	stemsAnalyzing: Track['id'][]
+	syncTimer: ReturnType<typeof setInterval> | undefined
+	audioContext?: AudioContext
 }>({
 	search: '',
 	selected: [],
@@ -73,7 +73,8 @@ const {
 	openDrawer: false,
 	processing: false,
 	analyzing: [],
-	stemsAnalyzing: []
+	stemsAnalyzing: [],
+	syncTimer: undefined
 })
 
 // ModalState is a generic handler for various modals, usually when doing something significant like deleting tracks

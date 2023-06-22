@@ -27,8 +27,6 @@ import { convertToSecs } from '~/utils/tableOps'
 
 type MultiSyncTrack = {
 	trackId: Track['id']
-	duration: number
-	mixpointTime: TrackPrefs['mixpointTime']
 	waveforms: { waveform: WaveSurfer; stem?: Stem; analyserNode: AnalyserNode }[]
 }
 
@@ -144,16 +142,13 @@ const audioEvents = {
 
 	multiSync: async (trackIds: Track['id'][]) => {
 		// Sync all waveforms to the same position
-		let [syncTimer] = getAudioState.syncTimer()
+		let [syncTimer] = getAppState.syncTimer()
 		if (syncTimer) clearInterval(syncTimer)
 
 		// Collect audio data to use for sync
 		const tracks: MultiSyncTrack[] = []
 
 		for (const [index, trackId] of trackIds.entries()) {
-			const { mixpointTime } = await getTrackPrefs(trackId)
-			const { duration = 1 } = (await db.tracks.get(trackId)) || {}
-
 			const [{ waveform, stems, analyserNode }] = getAudioState[trackId]()
 
 			if (!waveform) continue
@@ -164,13 +159,10 @@ const audioEvents = {
 			// add tracks to sync loop
 			tracks.push({
 				trackId,
-				duration,
-				mixpointTime,
 				waveforms: [{ waveform, analyserNode }]
 			})
 
 			if (stems) {
-				// using typescript, how to indicate the type of stem?
 				for (const [stem, { waveform, analyserNode }] of Object.entries(
 					stems
 				)) {
@@ -193,70 +185,27 @@ const audioEvents = {
 		syncTimer = setInterval(() => {
 			for (const track of tracks) {
 				const volumes: number[] = [] // to aggregate for main volume meter
-				const [time = 0] = getAudioState[track.trackId].time()
-				const syncTime = track.waveforms.reduce<number>((pos, audio) => {
-					let position = pos
-					const waveform = audio.waveform
-					if (!waveform.isPlaying()) {
-						position = Math.max(
-							pos,
-							waveform.getCurrentTime() + (track.mixpointTime || 0)
-						)
-					}
 
-					// this is unreleated to synctime but leveraging the reduce loop to perform the volume analysis operation
+				track.waveforms.forEach((audio) => {
 					audio.analyserNode.getFloatTimeDomainData(dataArray)
 					const vol = Math.max(...dataArray)
 					volumes.push(vol)
 					if (audio.stem)
 						setAudioState[track.trackId].stems[audio.stem].volumeMeter(vol)
 
-					return position
-				}, time)
+					setAudioState[track.trackId].time(audio.waveform.getCurrentTime())
+				})
 
 				// aggregate stem volumes for main volume meter
 				setAudioState[track.trackId].volumeMeter(Math.max(...volumes))
-
-				if (syncTime > time) {
-					audioEvents.updatePosition(track, syncTime)
-				}
-				console.log('updating time', syncTime, time)
-				//setAudioState[track.trackId].time(syncTime)
 			}
 		}, 15)
 
-		setAudioState.syncTimer(syncTimer)
+		setAppState.syncTimer(syncTimer)
 
 		for (const track of tracks) {
 			for (const audio of track.waveforms) {
 				audio.waveform.play()
-			}
-		}
-	},
-
-	updatePosition: (track: MultiSyncTrack, syncTime: number) => {
-		const precisionSeconds = 0.1
-		console.log('updating pso')
-		const [{ playing, time = 0 }] = getAudioState[track.trackId]()
-
-		if (Math.abs(syncTime - time) > 0.05) {
-			setAudioState[track.trackId].time(syncTime)
-		}
-
-		// Update the current time of each audio
-		for (const { waveform } of track.waveforms) {
-			const newTime = syncTime - (track.mixpointTime || 0)
-
-			if (Math.abs(waveform.getCurrentTime() - newTime) > precisionSeconds) {
-				waveform.setTime(newTime)
-			}
-
-			// If the position is out of the track bounds, pause it
-			if (!playing || newTime < 0 || newTime > track.duration) {
-				waveform.isPlaying() && waveform.pause()
-			} else if (playing) {
-				// If the position is in the track bounds, play it
-				!waveform.isPlaying() && waveform.play()
 			}
 		}
 	},
@@ -266,7 +215,7 @@ const audioEvents = {
 		let waveforms
 		let trackIds
 
-		const [syncTimer] = getAudioState.syncTimer()
+		const [syncTimer] = getAppState.syncTimer()
 		if (syncTimer) clearInterval(syncTimer)
 
 		if (trackId) {

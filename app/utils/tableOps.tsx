@@ -98,10 +98,14 @@ const formatMinutes = (mins: number) => {
 
 // Convert seconds to mm:ss.ms
 const timeFormat = (seconds: number): string => {
-	const min = Math.floor(seconds / 60)
-	const sec = Math.floor(seconds % 60)
-	const ms = Math.floor((seconds - Math.floor(seconds)) * 100)
-	return `${min}:${sec}.${ms}`
+	const mm = String(Math.floor(seconds / 60)).padStart(1, '0')
+	const ss = String(Math.floor(seconds % 60)).padStart(2, '0')
+	const ms = String(Math.floor((seconds - Math.floor(seconds)) * 10)).padStart(
+		1,
+		'0'
+	)
+
+	return `${mm}:${ss}.${ms}`
 }
 
 // Convert time string to ms

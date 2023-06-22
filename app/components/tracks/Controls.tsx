@@ -599,7 +599,10 @@ const StemControl = ({
 							height: '20px',
 							pt: '3px'
 						}}
-						onClick={(e) => audioEvents.clickToSeek(trackId, e)}
+						onClick={(e) => {
+							const parent = e.currentTarget.firstElementChild as HTMLElement
+							audioEvents.clickToSeek(trackId, e, parent)
+						}}
 					/>
 					<VolumeMeter trackId={trackId} stemType={stemType} />
 				</Box>

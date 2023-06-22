@@ -130,7 +130,6 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 		<Box
 			sx={{
 				display: 'flex',
-				gap: 1,
 				mb: 1,
 				alignItems: 'center'
 			}}
@@ -139,15 +138,15 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 				sx={{
 					fontSize: 'xs',
 					fontWeight: 'md',
-					pl: '3px',
+					px: '3px',
 					color: 'text.secondary'
 				}}
 			>
 				Time:
 			</Typography>
-			<TrackTime sx={{ mr: '-4px' }} trackId={trackId} />
+			<TrackTime sx={{ px: '3px', flexBasis: '42px' }} trackId={trackId} />
 			<Typography sx={{ fontSize: 'xs', color: 'text.secondary' }}>
-				/ {timeFormat(duration).slice(0, -3)}
+				/ {timeFormat(duration)}
 			</Typography>
 			<BeatResolutionControl trackId={trackId} sx={{ marginLeft: 'auto' }} />
 		</Box>
