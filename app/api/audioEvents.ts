@@ -132,10 +132,6 @@ const audioEvents = {
 			tracks = Object.keys(tracks).map(Number)
 		} else tracks = [trackId]
 
-		for (const trackId of tracks) {
-			if (trackId) setAudioState[trackId as number].playing(true)
-		}
-
 		// synchronize playback of all tracks
 		audioEvents.multiSync(tracks.filter((id) => !!id))
 	},
@@ -143,70 +139,55 @@ const audioEvents = {
 	multiSync: async (trackIds: Track['id'][]) => {
 		// Sync all waveforms to the same position
 		let [syncTimer] = getAppState.syncTimer()
-		if (syncTimer) clearInterval(syncTimer)
+		if (syncTimer) cancelAnimationFrame(syncTimer)
 
-		// Collect audio data to use for sync
-		const tracks: MultiSyncTrack[] = []
+		const dataArray = new Uint8Array(2048) // fftSize
 
-		for (const [index, trackId] of trackIds.entries()) {
-			const [{ waveform, stems, analyserNode }] = getAudioState[trackId]()
+		const getVolume = (analyserNode: AnalyserNode) => {
+			analyserNode.getByteTimeDomainData(dataArray)
+			return (Math.max(...dataArray) - 128) / 128
+		}
 
-			if (!waveform) continue
+		// setup sync loop
+		const syncLoop = () => {
+			syncTimer = requestAnimationFrame(syncLoop)
+			setAppState.syncTimer(syncTimer)
 
-			// if we have stems, mute the main waveform
-			if (stems) waveform.setVolume(0)
+			for (const trackId of trackIds) {
+				const [{ waveform, stems, analyserNode }] = getAudioState[trackId]()
 
-			// add tracks to sync loop
-			tracks.push({
-				trackId,
-				waveforms: [{ waveform, analyserNode }]
-			})
+				const volumes: number[] = [] // to aggregate for main volume meter
 
-			if (stems) {
-				for (const [stem, { waveform, analyserNode }] of Object.entries(
-					stems
-				)) {
-					if (waveform) {
-						tracks[index].waveforms.push({
-							waveform,
-							stem: stem as Stem,
-							analyserNode
-						})
+				if (stems) {
+					for (const [stem, { analyserNode }] of Object.entries(stems)) {
+						const vol = getVolume(analyserNode)
+						volumes.push(vol)
+						setAudioState[trackId].stems[stem as Stem].volumeMeter(vol)
 					}
-				}
+				} else volumes.push(getVolume(analyserNode))
+
+				// aggregate stem volumes for main volume meter
+				setAudioState[trackId].volumeMeter(Math.max(...volumes))
+				setAudioState[trackId].time(waveform.getCurrentTime())
 			}
 		}
 
-		// setup analyser node
-		const bufferLength = 2048 // fftSize
-		const dataArray = new Float32Array(bufferLength)
+		syncTimer = requestAnimationFrame(syncLoop)
 
-		// setup sync loop
-		syncTimer = setInterval(() => {
-			for (const track of tracks) {
-				const volumes: number[] = [] // to aggregate for main volume meter
+		for (const trackId of trackIds) {
+			const [{ waveform, stems }] = getAudioState[trackId]()
+			if (!waveform) continue
 
-				track.waveforms.forEach((audio) => {
-					audio.analyserNode.getFloatTimeDomainData(dataArray)
-					const vol = Math.max(...dataArray)
-					volumes.push(vol)
-					if (audio.stem)
-						setAudioState[track.trackId].stems[audio.stem].volumeMeter(vol)
+			setAudioState[trackId as number].playing(true)
 
-					setAudioState[track.trackId].time(audio.waveform.getCurrentTime())
-				})
+			if (stems) {
+				// if we have stems, mute the main waveform
+				waveform.setVolume(0)
 
-				// aggregate stem volumes for main volume meter
-				setAudioState[track.trackId].volumeMeter(Math.max(...volumes))
-			}
-		}, 15)
-
-		setAppState.syncTimer(syncTimer)
-
-		for (const track of tracks) {
-			for (const audio of track.waveforms) {
-				audio.waveform.play()
-			}
+				for (const [, { waveform }] of Object.entries(stems)) {
+					if (waveform) waveform.play()
+				}
+			} else waveform.play()
 		}
 	},
 
@@ -216,7 +197,7 @@ const audioEvents = {
 		let trackIds
 
 		const [syncTimer] = getAppState.syncTimer()
-		if (syncTimer) clearInterval(syncTimer)
+		if (syncTimer) cancelAnimationFrame(syncTimer)
 
 		if (trackId) {
 			const [waveform] = getAudioState[trackId].waveform()

@@ -62,7 +62,7 @@ const {
 	processing: boolean
 	analyzing: Track['id'][]
 	stemsAnalyzing: Track['id'][]
-	syncTimer: ReturnType<typeof setInterval> | undefined
+	syncTimer: ReturnType<typeof requestAnimationFrame> | undefined
 	audioContext?: AudioContext
 }>({
 	search: '',
