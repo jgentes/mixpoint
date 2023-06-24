@@ -29,8 +29,6 @@ const Waveform = ({
 }): JSX.Element | null => {
 	if (!trackId) throw errorHandler('No track to initialize.')
 
-	const zoomviewRef = useRef(null)
-
 	useEffect(() => {
 		// Retrieve track, file and region data, then store waveform in audioState
 		const init = async () => {
@@ -41,7 +39,7 @@ const Waveform = ({
 			if (!file) throw errorHandler(`Please try adding ${track.name} again.`)
 
 			const waveformConfig: WaveSurferOptions = {
-				container: zoomviewRef.current || '',
+				container: `#zoomview-container_${trackId}`,
 				height: 60,
 				autoScroll: true,
 				autoCenter: true,
@@ -102,7 +100,7 @@ const Waveform = ({
 
 	return (
 		<Card
-			ref={zoomviewRef}
+			id={`zoomview-container_${trackId}`}
 			className="zoomview-container"
 			sx={{
 				...sx,
@@ -188,14 +186,14 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 						...loaderSx,
 						zIndex: 2,
 						position: 'absolute',
-						inset: '262px 16px calc(100% - 343px)'
+						inset: '262px 16px calc(100% - 341px)'
 					}}
 				>
 					<Loader style={{ margin: 'auto' }} />
 				</Card>
 			)}
 
-			<Waveform trackId={trackId} sx={{ ...loaderSx, height: '80px' }} />
+			<Waveform trackId={trackId} sx={{ ...loaderSx, height: '78px' }} />
 
 			<VolumeMeter trackId={trackId} />
 

@@ -28,31 +28,3 @@ tr:hover .visibleOnHover {
 .wavesurfer-playhead svg, .wavesurfer-playhead div {
   display: 'none';
 }
-
-.MuiLinearProgress-bar {
-  /* for the volume meter */
-  transition: 'none !important';
-}
-
-.zoomview-container ::part(scroll)::-webkit-scrollbar {
-  scrollbar-color: rgba(4, 146, 247, 0.5)transparent /* track thumb */;
-  scrollbar-width: thin /* none, thin, or auto */;
-  width: 20px;
-  background-color: red;
-}
-
-/* .zoomview-container ::part(scroll)::-webkit-scrollbar-corner, .zoomview-container ::part(scroll)::-webkit-scrollbar-track {
-  border-top: '1px solid var(--joy-palette-divider)';
-  background-color: 'var(--joy-palette-background-surface)';
-} */
-
-.zoomview-container ::part(scroll)::-webkit-scrollbar-thumb {
-  background-color: 'rgba(4, 146, 247, 0.5)';
-  border-radius: '10px';
-  border: '6px solid transparent';
-  background-clip: 'content-box';
-}
-
-.zoomview-container ::part(scroll)::-webkit-scrollbar-thumb :hover {
-  background-color: 'rgb(4, 146, 247)',
-}

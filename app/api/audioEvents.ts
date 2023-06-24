@@ -23,11 +23,6 @@ import { convertToSecs } from '~/utils/tableOps'
 
 // audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
 
-type MultiSyncTrack = {
-	trackId: Track['id']
-	waveforms: { waveform: WaveSurfer; stem?: Stem; analyserNode: AnalyserNode }[]
-}
-
 const _getAllWaveforms = (): WaveSurfer[] => {
 	const [audioState] = getAudioState()
 
@@ -62,6 +57,27 @@ const audioEvents = {
 
 			// Remove analyzing overlay
 			setAppState.analyzing((prev) => prev.filter((id) => id !== trackId))
+
+			// Style scrollbar (this is a workaround for https://github.com/katspaugh/wavesurfer.js/issues/2933)
+			const style = document.createElement('style')
+			style.textContent = `::-webkit-scrollbar {
+				background: rgba(4, 146, 247, 0.5);
+				height: 18px;
+			}
+
+			::-webkit-scrollbar-corner, ::-webkit-scrollbar-track {
+				border-top: 1px solid var(--joy-palette-divider);
+				background-color: var(--joy-palette-background-surface);
+			}
+
+			::-webkit-scrollbar-thumb {
+				background-color: rgba(4, 146, 247, 0.5);
+				border-radius: 8px;
+				border: 6px solid transparent;
+				width: 15%;
+				background-clip: content-box;
+			}`
+			waveform.getWrapper().appendChild(style)
 		} else {
 			setAppState.stemsAnalyzing((prev) => prev.filter((id) => id !== trackId))
 		}
@@ -70,6 +86,7 @@ const audioEvents = {
 		const time = mixpointTime || regionsPlugin.getRegions()[0]?.start || 0
 		setAudioState[trackId].time(time)
 
+		// Update BPM if adjusted
 		const { adjustedBpm } = await getTrackPrefs(trackId)
 		const { bpm = 1 } = (await db.tracks.get(trackId)) || {}
 		const playbackRate = (adjustedBpm || bpm) / bpm
