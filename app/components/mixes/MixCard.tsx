@@ -1,7 +1,12 @@
 import { Box, Card, Typography } from '@mui/joy'
 import { SxProps } from '@mui/material'
 import { useEffect } from 'react'
-import { AppState, setAppState } from '~/api/appState'
+import {
+	AppState,
+	audioState,
+	getAudioState,
+	setAppState
+} from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
 import { Track, getTrackName, useLiveQuery } from '~/api/db/dbHandlers'
 import StemPanel from '~/components/mixes/StemPanel'
@@ -23,6 +28,8 @@ const MixCard = ({
 	const analyzing = analyzingTracks.includes(trackId)
 
 	const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
+
+	const [stems] = getAudioState[trackId].stems()
 
 	useEffect(() => {
 		// Create audioContext used by all tracks
@@ -86,7 +93,6 @@ const MixCard = ({
 				border: '1px solid',
 				borderColor: 'action.selected',
 				backgroundColor: 'background.surface',
-				width: '40%',
 				...sx
 			}}
 		>
@@ -125,22 +131,24 @@ const MixCard = ({
 						}}
 					/>
 
-					<Box sx={{ mt: 1 }}>
-						<StemPanel trackId={trackId} />
-					</Box>
-
-					<Box
-						sx={{
-							p: 1,
-							mt: 1,
-							borderRadius: '4px',
-							border: '1px solid',
-							borderColor: 'action.selected',
-							backgroundColor: 'background.level1'
-						}}
-					>
-						<TrackPanel trackId={trackId} />
-					</Box>
+					{Object.keys(stems || {}).length ? (
+						<Box sx={{ mt: 1 }}>
+							<StemPanel trackId={trackId} />
+						</Box>
+					) : (
+						<Box
+							sx={{
+								p: 1,
+								mt: 1,
+								borderRadius: '4px',
+								border: '1px solid',
+								borderColor: 'action.selected',
+								backgroundColor: 'background.level1'
+							}}
+						>
+							<TrackPanel trackId={trackId} />
+						</Box>
+					)}
 
 					{mixCardFooter}
 				</>

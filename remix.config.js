@@ -8,7 +8,7 @@ module.exports = {
 		'wavesurfer.js/dist/plugins/regions.js'
 	],
 	future: {
-		unstable_dev: process.env.NODE_ENV !== 'production', // for HMR
+		v2_dev: true,
 		v2_routeConvention: true,
 		v2_errorBoundary: true,
 		v2_meta: true,
