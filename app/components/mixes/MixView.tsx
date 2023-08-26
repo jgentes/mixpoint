@@ -13,11 +13,11 @@ const MixView = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 	return (
 		<Box sx={{ p: 2 }}>
 			<MixCard trackId={tracks[0]} trackSlot={0} />
-			{/* <Box sx={{ display: "flex", flexDirection: "column" }}>
+			<Box sx={{ display: 'flex', flexDirection: 'column' }}>
 				<CrossfaderControl />
 				<MixControl tracks={tracks} />
 				<StemsCrossfaders />
-			</Box> */}
+			</Box>
 			<MixCard trackId={tracks[1]} trackSlot={1} />
 		</Box>
 	)
