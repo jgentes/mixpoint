@@ -186,7 +186,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 						...loaderSx,
 						zIndex: 2,
 						position: 'absolute',
-						inset: '262px 16px calc(100% - 341px)'
+						inset: '116px 16px calc(100% - 195px)'
 					}}
 				>
 					<Loader style={{ margin: 'auto' }} />

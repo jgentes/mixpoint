@@ -9,21 +9,22 @@ const DrawerButton = () => {
 
 	return (
 		<Button
-			variant='soft'
-			size='sm'
+			variant="soft"
+			size="sm"
 			fullWidth
 			title={direction === 'up' ? 'Open drawer' : 'Close drawer'}
 			sx={{
-				marginTop: 'auto',
 				borderTop: '1px solid',
 				borderColor: 'divider',
-				borderRadius: 0
+				borderRadius: 0,
+				position: 'fixed',
+				bottom: 0
 			}}
-			onClick={() => setOpenDrawer(direction == 'up' ? true : false)}
+			onClick={() => setOpenDrawer(direction === 'up' ? true : false)}
 		>
 			<Icon
 				icon={`material-symbols:keyboard-arrow-${direction}`}
-				height='24px'
+				height="24px"
 			/>
 		</Button>
 	)

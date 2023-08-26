@@ -8,13 +8,14 @@ const TrackDrawer = () => {
 
 	return (
 		<Drawer
-			anchor='bottom'
+			anchor="bottom"
 			open={openDrawer}
 			onClose={() => setOpenDrawer(false)}
 			PaperProps={{
 				sx: {
 					height: '80%',
-					backgroundColor: 'background.surface'
+					backgroundColor: 'background.surface',
+					marginTop: 'auto'
 				},
 				variant: 'outlined',
 				elevation: 0

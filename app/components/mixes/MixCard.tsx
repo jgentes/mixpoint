@@ -90,6 +90,8 @@ const MixCard = ({
 		<Card
 			sx={{
 				p: 1,
+				m: 2,
+				width: '40%',
 				borderRadius: '4px',
 				border: '1px solid',
 				borderColor: 'action.selected',
