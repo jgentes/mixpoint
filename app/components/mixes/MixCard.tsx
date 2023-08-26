@@ -30,7 +30,8 @@ const MixCard = ({
 	const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
 
 	const [stems] = getAudioState[trackId].stems()
-
+	const [stemState] = getAudioState[trackId].stemState()
+	console.log(stemState)
 	useEffect(() => {
 		// Create audioContext used by all tracks
 		if (!trackId) return
