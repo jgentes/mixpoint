@@ -3,12 +3,11 @@
     "lib": [
       "DOM",
       "DOM.Iterable",
-      "ES2020"
+      "ES2019"
     ],
     "isolatedModules": true,
     "jsx": "react-jsx",
     "resolveJsonModule": true,
-    "module": "NodeNext",
     "moduleResolution": "node",
     "baseUrl": ".",
     "noEmit": true,
@@ -20,7 +19,7 @@
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "target": "ESNext",
+    "target": "ES2019",
     "noImplicitAny": true,
     "strictNullChecks": true,
     "esModuleInterop": true

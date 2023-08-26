@@ -3,8 +3,8 @@
 import PublicSansFont from '@fontsource/public-sans/latin.css'
 import { CssVarsProvider } from '@mui/joy/styles'
 import { CssBaseline } from '@mui/material'
+import { LinksFunction, V2_MetaFunction } from '@remix-run/cloudflare'
 import { Links, LiveReload, Meta, Outlet, Scripts } from '@remix-run/react'
-import { LinksFunction, V2_MetaFunction } from '@vercel/remix'
 import { SnackbarProvider } from 'notistack'
 import { useEffect, useState } from 'react'
 import { createHead } from 'remix-island'
@@ -13,9 +13,6 @@ import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import styles from '~/root.css'
 import { theme } from '~/theme'
-
-// @ts-ignore
-import { Analytics } from '@vercel/analytics/react'
 
 // this is needed to address React 18.2 hydration issues
 // TODO - remove this once React 18.3 is released
@@ -48,7 +45,6 @@ const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
 		<>
 			{children}
 			<LiveReload />
-			<Analytics />
 		</>
 	)
 }

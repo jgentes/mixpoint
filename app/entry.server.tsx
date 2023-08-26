@@ -1,17 +1,9 @@
-import type { EntryContext } from '@remix-run/node'
-import { Response } from '@remix-run/node'
+import type { EntryContext } from '@remix-run/cloudflare'
 import { RemixServer } from '@remix-run/react'
-import isbot from 'isbot'
-import { renderToPipeableStream } from 'react-dom/server'
-import { renderHeadToString } from 'remix-island'
-import { PassThrough } from 'stream'
 import { Head } from './root'
+import { renderHeadToString } from 'remix-island'
 
-const ABORT_DELAY = 5000
-const COMMON_HEAD = `
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-`
+import { renderToReadableStream } from 'react-dom/server'
 
 export default function handleRequest(
 	request: Request,
@@ -19,108 +11,67 @@ export default function handleRequest(
 	responseHeaders: Headers,
 	remixContext: EntryContext
 ) {
-	return isbot(request.headers.get('user-agent'))
-		? handleBotRequest(
-				request,
-				responseStatusCode,
-				responseHeaders,
-				remixContext
-		  )
-		: handleBrowserRequest(
-				request,
-				responseStatusCode,
-				responseHeaders,
-				remixContext
-		  )
+	return handleBrowserRequest(
+		request,
+		responseStatusCode,
+		responseHeaders,
+		remixContext
+	)
 }
 
-function handleBotRequest(
+async function handleBrowserRequest(
 	request: Request,
 	responseStatusCode: number,
 	responseHeaders: Headers,
 	remixContext: EntryContext
 ) {
-	return new Promise((resolve, reject) => {
-		let didError = false
+	const didError = false
+	const readable = await renderToReadableStream(
+		<RemixServer context={remixContext} url={request.url} />
+	)
 
-		const { pipe, abort } = renderToPipeableStream(
-			<RemixServer context={remixContext} url={request.url} />,
-			{
-				onAllReady() {
-					const head = renderHeadToString({ request, remixContext, Head })
-					const body = new PassThrough()
-
-					responseHeaders.set('Content-Type', 'text/html')
-
-					resolve(
-						new Response(body, {
-							headers: responseHeaders,
-							status: didError ? 500 : responseStatusCode
-						})
+	responseHeaders.set('Content-Type', 'text/html')
+	const stream = new ReadableStream({
+		start(controller) {
+			// Add the HTML head to the response
+			const head = renderHeadToString({ request, remixContext, Head })
+			controller.enqueue(
+				new Uint8Array(
+					new TextEncoder().encode(
+						`<!DOCTYPE html><html><head>${head}</head><body><div id="root">`
 					)
-					body.write(
-						`<!DOCTYPE html><html><head>${COMMON_HEAD}${head}</head><body><div id="root">`
-					)
-					pipe(body)
-					body.write('</div></body></html>')
-				},
-				onShellError(error: unknown) {
-					reject(error)
-				},
-				onError(error: unknown) {
-					didError = true
+				)
+			)
 
-					console.error(error)
-				}
+			const reader = readable.getReader()
+			function read() {
+				reader
+					.read()
+					.then(({ done, value }) => {
+						if (done) {
+							controller.enqueue(
+								new Uint8Array(new TextEncoder().encode('</div></body></html>'))
+							)
+							controller.close()
+							return
+						}
+						controller.enqueue(value)
+						read()
+					})
+					.catch((error) => {
+						controller.error(error)
+						readable.cancel()
+					})
 			}
-		)
-
-		setTimeout(abort, ABORT_DELAY)
+			read()
+		},
+		cancel() {
+			readable.cancel()
+		}
 	})
-}
 
-function handleBrowserRequest(
-	request: Request,
-	responseStatusCode: number,
-	responseHeaders: Headers,
-	remixContext: EntryContext
-) {
-	return new Promise((resolve, reject) => {
-		let didError = false
-
-		const { pipe, abort } = renderToPipeableStream(
-			<RemixServer context={remixContext} url={request.url} />,
-			{
-				onShellReady() {
-					const head = renderHeadToString({ request, remixContext, Head })
-					const body = new PassThrough()
-
-					responseHeaders.set('Content-Type', 'text/html')
-
-					resolve(
-						new Response(body, {
-							headers: responseHeaders,
-							status: didError ? 500 : responseStatusCode
-						})
-					)
-
-					body.write(
-						`<!DOCTYPE html><html><head>${COMMON_HEAD}${head}</head><body><div id="root">`
-					)
-					pipe(body)
-					body.write('</div></body></html>')
-				},
-				onShellError(err: unknown) {
-					reject(err)
-				},
-				onError(error: unknown) {
-					didError = true
-
-					console.error(error)
-				}
-			}
-		)
-
-		setTimeout(abort, ABORT_DELAY)
+	return new Response(stream, {
+		headers: responseHeaders,
+		status: didError ? 500 : responseStatusCode
 	})
 }
