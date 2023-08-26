@@ -18,7 +18,7 @@ const DrawerButton = () => {
 				borderColor: 'divider',
 				borderRadius: 0,
 				position: 'fixed',
-				bottom: 0
+				bottom: direction === 'up' ? '0' : '80%'
 			}}
 			onClick={() => setOpenDrawer(direction === 'up' ? true : false)}
 		>
