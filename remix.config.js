@@ -9,11 +9,7 @@ export default {
 	serverMinify: true,
 	serverModuleFormat: 'esm',
 	serverPlatform: 'neutral',
-	serverNodeBuiltinsPolyfill: {
-		modules: {
-			path: true
-		}
-	},
+	serverNodeBuiltinsPolyfill: {},
 	future: {
 		v2_dev: true,
 		v2_routeConvention: true,

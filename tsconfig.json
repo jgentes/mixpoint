@@ -3,7 +3,7 @@
     "lib": [
       "DOM",
       "DOM.Iterable",
-      "ES2019"
+      "ES2020"
     ],
     "isolatedModules": true,
     "jsx": "react-jsx",
@@ -19,7 +19,7 @@
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "target": "ES2019",
+    "target": "ES2020",
     "noImplicitAny": true,
     "strictNullChecks": true,
     "esModuleInterop": true
