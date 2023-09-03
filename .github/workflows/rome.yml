@@ -1,8 +1,7 @@
 name: Rome Linter
-run-name: Linting with Rome
-on: [push, pull_request]
+on: [pull_request]
 jobs:
-  install-rome:
+  linting-with-rome:
     runs-on: ubuntu/latest
     steps:
       - uses: rome/setup-rome@v0.4
