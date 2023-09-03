@@ -2,7 +2,7 @@ name: Rome Linter
 on: [pull_request]
 jobs:
   linting-with-rome:
-    runs-on: ubuntu/latest
+    runs-on: ubuntu-latest
     steps:
       - uses: rome/setup-rome@v0.4
         with:
