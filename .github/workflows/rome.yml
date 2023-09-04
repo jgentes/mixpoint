@@ -8,4 +8,4 @@ jobs:
         with:
           version: latest
       - uses: actions/checkout@v2
-      - run: rome ci .
+      - run: rome ci app
