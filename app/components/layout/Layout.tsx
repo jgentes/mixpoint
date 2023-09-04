@@ -1,6 +1,6 @@
 import { Sheet } from '@mui/joy'
 import { useEffect } from 'react'
-import { setAppState } from '~/api/appState'
+import { setAppState } from '~/api/db/appState'
 import { getPrefs, useLiveQuery } from '~/api/db/dbHandlers'
 import Header from '~/components/layout/Header'
 import MixView from '~/components/mixes/MixView'

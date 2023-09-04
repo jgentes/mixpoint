@@ -1,14 +1,17 @@
 /** @type {import('@remix-run/dev').AppConfig} */
-module.exports = {
+export default {
 	ignoredRouteFiles: ['**/.*'],
-	serverModuleFormat: 'cjs',
-	serverDependenciesToBundle: [
-		'wavesurfer.js',
-		'wavesurfer.js/dist/plugins/minimap.js',
-		'wavesurfer.js/dist/plugins/regions.js'
-	],
+	server: './server.ts',
+	serverBuildPath: 'functions/[[path]].js',
+	serverConditions: ['workerd', 'worker', 'browser'],
+	serverDependenciesToBundle: 'all',
+	serverMainFields: ['browser', 'module', 'main'],
+	serverMinify: true,
+	serverModuleFormat: 'esm',
+	serverPlatform: 'neutral',
+	serverNodeBuiltinsPolyfill: {},
 	future: {
-		unstable_dev: process.env.NODE_ENV !== 'production', // for HMR
+		v2_dev: true,
 		v2_routeConvention: true,
 		v2_errorBoundary: true,
 		v2_meta: true,

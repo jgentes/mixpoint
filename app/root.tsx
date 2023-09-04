@@ -3,86 +3,86 @@
 import PublicSansFont from '@fontsource/public-sans/latin.css'
 import { CssVarsProvider } from '@mui/joy/styles'
 import { CssBaseline } from '@mui/material'
+import { LinksFunction, V2_MetaFunction } from '@remix-run/cloudflare'
 import { Links, LiveReload, Meta, Outlet, Scripts } from '@remix-run/react'
-import { LinksFunction, V2_MetaFunction } from '@vercel/remix'
 import { SnackbarProvider } from 'notistack'
 import { useEffect, useState } from 'react'
+import { createHead } from 'remix-island'
 import { ClientOnly } from 'remix-utils'
 import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import styles from '~/root.css'
 import { theme } from '~/theme'
 
-// @ts-ignore
-import { Analytics } from '@vercel/analytics/react'
+// this is needed to address React 18.2 hydration issues
+// TODO - remove this once React 18.3 is released
+export const Head = createHead(() => (
+	<>
+		<Meta />
+		<Links />
+	</>
+))
 
 const meta: V2_MetaFunction = () => [
-  { title: 'Mixpoint' },
-  { description: 'Mixpoint is multi-track audio mixing app for the browser' },
-  { viewport: 'width=device-width, initial-scale=1' },
+	{ title: 'Mixpoint' },
+	{ description: 'Mixpoint is multi-track audio mixing app for the browser' },
+	{ viewport: 'width=device-width, initial-scale=1' }
 ]
 
 const links: LinksFunction = () => [
-  {
-    rel: 'icon',
-    type: 'image/png',
-    href: '/media/innerjoin32.png',
-    sizes: '32x32',
-  },
-  { rel: 'stylesheet', href: PublicSansFont },
-  { rel: 'stylesheet', href: styles },
+	{
+		rel: 'icon',
+		type: 'image/png',
+		href: '/media/innerjoin32.png',
+		sizes: '32x32'
+	},
+	{ rel: 'stylesheet', href: PublicSansFont },
+	{ rel: 'stylesheet', href: styles }
 ]
 
 const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <html lang='en'>
-      <head>
-        <Meta />
-        <Links />
-      </head>
-      <body>
-        {children}
-        <LiveReload />
-        <Analytics />
-      </body>
-    </html>
-  )
+	return (
+		<>
+			{children}
+			<LiveReload />
+		</>
+	)
 }
 
 const ThemeLoader = ({ noSplash }: { noSplash?: boolean }) => {
-  const [ loading, setLoading ] = useState(true)
+	const [loading, setLoading] = useState(true)
 
-  // InitialLoader is used to hide the flash of unstyled content
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false)
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [])
+	// InitialLoader is used to hide the flash of unstyled content
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setLoading(false)
+		}, 500)
+		return () => clearTimeout(timer)
+	}, [])
 
-  return (
-    <SnackbarProvider preventDuplicate maxSnack={3}>
-      <CssVarsProvider theme={theme} defaultMode={'light'}>
-        {/* CSS Baseline is used to inject global styles */}
-        <CssBaseline />
-        {loading && !noSplash ? (
-          <ClientOnly>{() => <InitialLoader />}</ClientOnly>
-        ) : (
-          <>
-            <Outlet />
-            <ConfirmModal />
-          </>
-        )}
-      </CssVarsProvider>
-    </SnackbarProvider>
-  )
+	return (
+		<SnackbarProvider preventDuplicate maxSnack={3}>
+			<CssVarsProvider theme={theme} defaultMode={'light'}>
+				{/* CSS Baseline is used to inject global styles */}
+				<CssBaseline />
+				{loading && !noSplash ? (
+					<ClientOnly>{() => <InitialLoader />}</ClientOnly>
+				) : (
+					<>
+						<Outlet />
+						<ConfirmModal />
+					</>
+				)}
+			</CssVarsProvider>
+		</SnackbarProvider>
+	)
 }
 
 const App = () => (
-  <HtmlDoc>
-    <ThemeLoader />
-    <Scripts />
-  </HtmlDoc>
+	<HtmlDoc>
+		<ThemeLoader />
+		<Scripts />
+	</HtmlDoc>
 )
 
-export { App as default, ThemeLoader, meta, links }
+export { ThemeLoader, App as default, links, meta }

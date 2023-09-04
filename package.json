@@ -1,10 +1,13 @@
 {
 	"name": "mixpoint",
+	"sideEffects": false,
+	"type": "module",
 	"version": "0.3.0",
 	"private": true,
 	"scripts": {
 		"build": "remix build",
-		"dev": "remix dev"
+		"dev": "remix dev --manual -c \"yarn start\"",
+		"start": "wrangler pages dev --compatibility-date=2023-06-21 ./public"
 	},
 	"dependencies": {
 		"@emotion/react": "~11.10.6",
@@ -12,11 +15,9 @@
 		"@fontsource/public-sans": "~4.5.11",
 		"@mui/joy": "~5.0.0-alpha.65",
 		"@mui/material": "~5.11.7",
-		"@remix-run/node": "^1.17.0",
-		"@remix-run/react": "^1.17.0",
-		"@remix-run/server-runtime": "^1.17.0",
-		"@vercel/analytics": "^0.1.11",
-		"@vercel/remix": "^1.17.0",
+		"@remix-run/cloudflare": "^1.19.3",
+		"@remix-run/cloudflare-pages": "^1.19.3",
+		"@remix-run/react": "^1.19.3",
 		"dexie": "~3.2.2",
 		"dexie-react-hooks": "~1.1.1",
 		"isbot": "latest",
@@ -25,20 +26,26 @@
 		"notistack": "~2.0.5",
 		"react": "~18",
 		"react-dom": "~18",
+		"remix-island": "^0.1.2",
 		"teaful": "~0.11.1",
-		"wavesurfer.js": "beta",
+		"wavesurfer.js": "^7.2.1",
 		"web-audio-beat-detector": "~8.1.37"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "1.0.0",
+		"@cloudflare/workers-types": "^4.20230821.0",
 		"@iconify-icon/react": "^1.0.7",
-		"@remix-run/dev": "^1.17.0",
-		"@remix-run/serve": "^1.17.0",
+		"@remix-run/dev": "^1.19.3",
 		"@types/node": "~18.7.3",
 		"@types/react": "~18.0.17",
 		"@types/react-dom": "~18.0.6",
 		"@types/wicg-file-system-access": "~2020.9.5",
 		"remix-utils": "^6.3.0",
 		"typescript": "^5.0.4",
+		"wrangler": "^3.6.0",
 		"zod": "^3.21.4"
+	},
+	"engines": {
+		"node": ">=18.17.1"
 	}
 }

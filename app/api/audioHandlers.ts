@@ -1,6 +1,6 @@
 import type RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 import { guess as detectBPM } from 'web-audio-beat-detector'
-import { getAudioState, setAppState, setModalState } from '~/api/appState'
+import { getAudioState, setAppState, setModalState } from '~/api/db/appState'
 import {
 	Track,
 	db,
@@ -175,7 +175,6 @@ const getAudioDetails = async (
 	let bpm = 1
 
 	try {
-		// rome-ignore lint/complexity/noExtraSemicolon: contradicts formatting rule
 		;({ offset, bpm } = await detectBPM(audioBuffer))
 	} catch (e) {
 		errorHandler(`Unable to determine BPM for ${name}`)

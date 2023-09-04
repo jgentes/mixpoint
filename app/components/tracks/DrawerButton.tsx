@@ -1,6 +1,6 @@
 import { Icon } from '@iconify-icon/react'
 import { Button } from '@mui/joy'
-import { AppState } from '~/api/appState'
+import { AppState } from '~/api/db/appState'
 
 const DrawerButton = () => {
 	const [openDrawer, setOpenDrawer] = AppState.openDrawer()
@@ -9,21 +9,22 @@ const DrawerButton = () => {
 
 	return (
 		<Button
-			variant='soft'
-			size='sm'
+			variant="soft"
+			size="sm"
 			fullWidth
 			title={direction === 'up' ? 'Open drawer' : 'Close drawer'}
 			sx={{
-				marginTop: 'auto',
 				borderTop: '1px solid',
 				borderColor: 'divider',
-				borderRadius: 0
+				borderRadius: 0,
+				position: 'fixed',
+				bottom: direction === 'up' ? '0' : '80%'
 			}}
-			onClick={() => setOpenDrawer(direction == 'up' ? true : false)}
+			onClick={() => setOpenDrawer(direction === 'up' ? true : false)}
 		>
 			<Icon
 				icon={`material-symbols:keyboard-arrow-${direction}`}
-				height='24px'
+				height="24px"
 			/>
 		</Button>
 	)

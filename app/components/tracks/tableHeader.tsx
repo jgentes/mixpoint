@@ -19,9 +19,9 @@ import {
 import { alpha } from '@mui/material/styles'
 import { visuallyHidden } from '@mui/utils'
 import { ChangeEvent, MouseEvent, useMemo } from 'react'
-import { AppState, setModalState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
 import { analyzeTracks } from '~/api/audioHandlers'
+import { AppState, setModalState } from '~/api/db/appState'
 import {
 	Track,
 	UserPrefs,
@@ -102,16 +102,16 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
 			}}
 		>
 			{numSelected > 0 ? (
-				<Typography component='div'>{numSelected} selected</Typography>
+				<Typography component="div">{numSelected} selected</Typography>
 			) : (
-				<Typography id='tableTitle' component='div' sx={{ flexBasis: '200px' }}>
+				<Typography id="tableTitle" component="div" sx={{ flexBasis: '200px' }}>
 					{trackCount} Track{trackCount === 1 ? '' : 's'}
 					{!dirtyTracks.length ? null : (
 						<Link
 							onClick={() => showAnalyzeDirtyModal()}
-							variant='plain'
-							level='body3'
-							underline='none'
+							variant="plain"
+							level="body3"
+							underline="none"
 							sx={{ p: '2px 6px', ml: 1 }}
 						>
 							{dirtyTracks.length} to analyze
@@ -126,24 +126,24 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
 				}}
 			>
 				<Input
-					variant='soft'
-					placeholder='Search...'
-					startDecorator={<Icon icon='material-symbols:search' height='20px' />}
+					variant="soft"
+					placeholder="Search..."
+					startDecorator={<Icon icon="material-symbols:search" height="20px" />}
 					onChange={(e) => setSearch(e.target.value)}
 					value={search}
 					endDecorator={
 						!search ? null : (
 							<IconButton
-								variant='outlined'
-								size='sm'
-								color='neutral'
+								variant="outlined"
+								size="sm"
+								color="neutral"
 								onClick={() => setSearch('')}
 							>
-								<Icon icon='material-symbols:clear' height='20px' />
+								<Icon icon="material-symbols:clear" height="20px" />
 							</IconButton>
 						)
 					}
-					size='sm'
+					size="sm"
 					sx={{
 						border: '1px solid',
 						borderColor: 'action.focus',
@@ -159,25 +159,25 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
 			</FormControl>
 			{numSelected === 0 ? (
 				<Button
-					size='sm'
-					variant='outlined'
+					size="sm"
+					variant="outlined"
 					onClick={() => browseFile()}
 					sx={{
 						whiteSpace: 'nowrap'
 					}}
 				>
-					<Icon icon='material-symbols:add' height='20px' />
+					<Icon icon="material-symbols:add" height="20px" />
 					Add Track
 				</Button>
 			) : (
 				<IconButton
-					variant='plain'
-					title='Remove tracks'
-					size='sm'
-					color='neutral'
+					variant="plain"
+					title="Remove tracks"
+					size="sm"
+					color="neutral"
 					onClick={() => showRemoveTracksModal()}
 				>
-					<Icon icon='ri:recycle-line' height='20px' />
+					<Icon icon="ri:recycle-line" height="20px" />
 				</IconButton>
 			)}
 		</Toolbar>
@@ -213,13 +213,13 @@ const EnhancedTableHead = (props: {
 	return (
 		<TableHead>
 			<TableRow>
-				<TableCell padding='none' sx={{ padding: '7px 12px 0 16px' }}>
+				<TableCell padding="none" sx={{ padding: '7px 12px 0 16px' }}>
 					<Checkbox
-						color='primary'
+						color="primary"
 						indeterminate={numSelected > 0 && numSelected < rowCount}
 						checked={rowCount > 0 && numSelected === rowCount}
 						onChange={onSelectAllClick}
-						title='Select all'
+						title="Select all"
 					/>
 				</TableCell>
 				{columnDefs.map((column, i) => (
@@ -241,7 +241,7 @@ const EnhancedTableHead = (props: {
 						>
 							{column.label}
 							{sortColumn === column.dbKey ? (
-								<Card component='span' sx={visuallyHidden}>
+								<Card component="span" sx={visuallyHidden}>
 									{sortDirection === 'desc'
 										? 'sorted descending'
 										: 'sorted ascending'}

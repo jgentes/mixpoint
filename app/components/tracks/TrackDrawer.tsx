@@ -1,5 +1,5 @@
 import { Drawer } from '@mui/material'
-import { AppState } from '~/api/appState'
+import { AppState } from '~/api/db/appState'
 import TrackTable from '~/components//tracks/TrackTable'
 import DrawerButton from '~/components/tracks/DrawerButton'
 
@@ -8,13 +8,14 @@ const TrackDrawer = () => {
 
 	return (
 		<Drawer
-			anchor='bottom'
+			anchor="bottom"
 			open={openDrawer}
 			onClose={() => setOpenDrawer(false)}
 			PaperProps={{
 				sx: {
 					height: '80%',
-					backgroundColor: 'background.surface'
+					backgroundColor: 'background.surface',
+					marginTop: 'auto'
 				},
 				variant: 'outlined',
 				elevation: 0

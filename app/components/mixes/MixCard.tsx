@@ -1,8 +1,8 @@
 import { Box, Card, Typography } from '@mui/joy'
 import { SxProps } from '@mui/material'
 import { useEffect } from 'react'
-import { AppState, setAppState } from '~/api/appState'
 import { audioEvents } from '~/api/audioEvents'
+import { AppState, getAppState, setAppState } from '~/api/db/appState'
 import { Track, getTrackName, useLiveQuery } from '~/api/db/dbHandlers'
 import StemPanel from '~/components/mixes/StemPanel'
 import TrackPanel from '~/components/mixes/TrackPanel'
@@ -23,12 +23,6 @@ const MixCard = ({
 	const analyzing = analyzingTracks.includes(trackId)
 
 	const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
-
-	useEffect(() => {
-		// Create audioContext used by all tracks
-		if (!trackId) return
-		setAppState.audioContext(new AudioContext())
-	})
 
 	const mixCardHeader = (
 		<Box
@@ -82,11 +76,12 @@ const MixCard = ({
 		<Card
 			sx={{
 				p: 1,
+				m: 2,
+				width: '40%',
 				borderRadius: '4px',
 				border: '1px solid',
 				borderColor: 'action.selected',
 				backgroundColor: 'background.surface',
-				width: '40%',
 				...sx
 			}}
 		>
