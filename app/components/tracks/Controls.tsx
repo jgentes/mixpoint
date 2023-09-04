@@ -26,7 +26,7 @@ import {
 	useLiveQuery
 } from '~/api/db/dbHandlers'
 
-import { audioState } from '~/api/appState'
+import { audioState } from '~/api/db/appState'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
@@ -619,7 +619,7 @@ const StemControl = ({
 				{!volume || mute ? (
 					<Icon
 						icon="material-symbols:volume-off"
-						title="Mute"
+						title="Unmute"
 						height="16px"
 						style={{ color: '#aaa', cursor: 'pointer' }}
 						onClick={() => audioEvents.stemMuteToggle(trackId, stemType, false)}
@@ -627,7 +627,7 @@ const StemControl = ({
 				) : (
 					<Icon
 						icon="material-symbols:volume-up"
-						title="Unmute"
+						title="Mute"
 						height="16px"
 						style={{ color: '#aaa', cursor: 'pointer' }}
 						onClick={() => audioEvents.stemMuteToggle(trackId, stemType, true)}

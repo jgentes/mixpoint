@@ -1,13 +1,13 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform aroun'
 import type WaveSurfer from 'wavesurfer.js'
 import RegionsPlugin, { type Region } from 'wavesurfer.js/dist/plugins/regions'
+import { calcMarkers } from '~/api/audioHandlers'
 import {
 	getAppState,
 	getAudioState,
 	setAppState,
 	setAudioState
-} from '~/api/appState'
-import { calcMarkers } from '~/api/audioHandlers'
+} from '~/api/db/appState'
 import {
 	Stem,
 	Track,
@@ -19,6 +19,7 @@ import {
 	setTrackPrefs,
 	updateTrack
 } from '~/api/db/dbHandlers'
+import { initAudioContext } from '~/api/renderWaveform'
 import { convertToSecs } from '~/utils/tableOps'
 
 // audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
@@ -170,6 +171,7 @@ const audioEvents = {
 			syncTimer = requestAnimationFrame(syncLoop)
 			setAppState.syncTimer(syncTimer)
 
+			// for volume meters
 			for (const trackId of trackIds) {
 				const [{ waveform, stems, analyserNode }] = getAudioState[trackId]()
 
@@ -177,9 +179,11 @@ const audioEvents = {
 
 				if (stems) {
 					for (const [stem, { analyserNode }] of Object.entries(stems)) {
-						const vol = getVolume(analyserNode)
-						volumes.push(vol)
-						setAudioState[trackId].stems[stem as Stem].volumeMeter(vol)
+						if (analyserNode) {
+							const vol = getVolume(analyserNode)
+							volumes.push(vol)
+							setAudioState[trackId].stems[stem as Stem].volumeMeter(vol)
+						}
 					}
 				} else volumes.push(getVolume(analyserNode))
 
@@ -191,20 +195,36 @@ const audioEvents = {
 
 		syncTimer = requestAnimationFrame(syncLoop)
 
+		const initPlay = (
+			trackId: Track['id'],
+			waveform: WaveSurfer,
+			stem?: Stem
+		) => {
+			initAudioContext({
+				trackId,
+				stem: stem as Stem,
+				media: waveform.getMediaElement()
+			})
+
+			waveform.play()
+		}
+
 		for (const trackId of trackIds) {
 			const [{ waveform, stems }] = getAudioState[trackId]()
 			if (!waveform) continue
 
 			setAudioState[trackId as number].playing(true)
 
+			initPlay(trackId, waveform)
+
 			if (stems) {
-				// if we have stems, mute the main waveform
+				// if we have stems, mute the main waveforms
 				waveform.setVolume(0)
 
-				for (const [, { waveform }] of Object.entries(stems)) {
-					if (waveform) waveform.play()
+				for (const [stem, { waveform }] of Object.entries(stems)) {
+					if (waveform) initPlay(trackId, waveform, stem as Stem)
 				}
-			} else waveform.play()
+			}
 		}
 	},
 

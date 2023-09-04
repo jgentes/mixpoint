@@ -8,7 +8,7 @@ import {
 	TableRow
 } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
-import { AppState } from '~/api/appState'
+import { AppState } from '~/api/db/appState'
 import { Track } from '~/api/db/dbHandlers'
 import { rowClick } from '~/utils/tableOps'
 import { createColumnDefinitions } from './tableColumns'
@@ -42,14 +42,14 @@ const TableRows = ({
 				onMouseLeave={() => setShowButton(null)}
 			>
 				<TableCell
-					padding='none'
+					padding="none"
 					onClick={(event) => rowClick(event, row.id)}
-					role='checkbox'
+					role="checkbox"
 					aria-checked={isItemSelected}
 					tabIndex={-1}
 					sx={{ cursor: 'pointer', padding: '7px 12px 0 16px' }}
 				>
-					<Checkbox color='primary' checked={isItemSelected} title={row.name} />
+					<Checkbox color="primary" checked={isItemSelected} title={row.name} />
 				</TableCell>
 				{columnDefs.map((column) => (
 					<TableCell
@@ -77,15 +77,15 @@ const TableRows = ({
           </IconButton> */}
 			<TableRow hover selected={isItemSelected}>
 				<TableCell sx={{ pb: 0, pt: 0, border: 0 }} colSpan={6}>
-					<Collapse in={open} timeout='auto' unmountOnExit>
+					<Collapse in={open} timeout="auto" unmountOnExit>
 						<Card sx={{ margin: 1 }}>
-							<Table size='small' aria-label='mixes'>
+							<Table size="small" aria-label="mixes">
 								<TableHead>
 									<TableRow>
 										<TableCell>Mixes</TableCell>
 										<TableCell>From Track</TableCell>
-										<TableCell align='right'>To Track</TableCell>
-										<TableCell align='right'>Duration</TableCell>
+										<TableCell align="right">To Track</TableCell>
+										<TableCell align="right">Duration</TableCell>
 									</TableRow>
 								</TableHead>
 								<TableBody>

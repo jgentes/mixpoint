@@ -28,10 +28,11 @@
 		"react-dom": "~18",
 		"remix-island": "^0.1.2",
 		"teaful": "~0.11.1",
-		"wavesurfer.js": "^7.0.3",
+		"wavesurfer.js": "^7.2.1",
 		"web-audio-beat-detector": "~8.1.37"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "1.0.0",
 		"@cloudflare/workers-types": "^4.20230821.0",
 		"@iconify-icon/react": "^1.0.7",
 		"@remix-run/dev": "^1.19.3",

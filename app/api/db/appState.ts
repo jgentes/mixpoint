@@ -30,8 +30,8 @@ type AudioState = {
 type Stems = {
 	[key in Stem]: {
 		waveform: WaveSurfer
-		gainNode: GainNode // gain controls actual loudness of stem
-		analyserNode: AnalyserNode // analyzerNode is used for volumeMeter
+		gainNode?: GainNode // gain controls actual loudness of stem
+		analyserNode?: AnalyserNode // analyzerNode is used for volumeMeter
 		volume: number // volume is the crossfader value
 		volumeMeter: number
 		mute: boolean

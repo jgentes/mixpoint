@@ -9,7 +9,7 @@ import {
 	Typography
 } from '@mui/joy'
 
-import { AppState } from '~/api/appState'
+import { AppState } from '~/api/db/appState'
 import Dropzone from '~/components/tracks/Dropzone'
 
 const LeftNav = () => {
@@ -17,8 +17,8 @@ const LeftNav = () => {
 
 	return (
 		<Box
-			component='nav'
-			height='100%'
+			component="nav"
+			height="100%"
 			sx={{
 				display: 'flex',
 				flexDirection: 'column',
@@ -28,7 +28,7 @@ const LeftNav = () => {
 				borderColor: 'divider'
 			}}
 		>
-			<List size='sm' sx={{ '--List-item-radius': '8px' }}>
+			<List size="sm" sx={{ '--List-item-radius': '8px' }}>
 				<ListItem nested sx={{ p: 0 }}>
 					<Box
 						sx={{
@@ -39,8 +39,8 @@ const LeftNav = () => {
 						}}
 					>
 						<Typography
-							id='nav-list-browse'
-							textColor='neutral.500'
+							id="nav-list-browse"
+							textColor="neutral.500"
 							fontWeight={700}
 							sx={{
 								fontSize: '10px',
@@ -52,7 +52,7 @@ const LeftNav = () => {
 						</Typography>
 					</Box>
 					<List
-						aria-labelledby='nav-list-browse'
+						aria-labelledby="nav-list-browse"
 						sx={{
 							'& .MuiListItemButton-root': { p: '8px' }
 						}}
@@ -64,7 +64,7 @@ const LeftNav = () => {
 							>
 								<ListItemDecorator sx={{ color: 'inherit' }}>
 									<Icon
-										icon='material-symbols:lens-outline'
+										icon="material-symbols:lens-outline"
 										style={{
 											fontSize: '20px',
 											color: '#2ca3d6'
@@ -78,7 +78,7 @@ const LeftNav = () => {
 							<ListItemButton>
 								<ListItemDecorator sx={{ color: 'inherit' }}>
 									<img
-										src='/media/innerjoin32.png'
+										src="/media/innerjoin32.png"
 										style={{ height: '22px', marginRight: '8px' }}
 									/>
 								</ListItemDecorator>
@@ -91,7 +91,7 @@ const LeftNav = () => {
 							<ListItemButton>
 								<ListItemDecorator sx={{ color: 'inherit' }}>
 									<Icon
-										icon='material-symbols:animation'
+										icon="material-symbols:animation"
 										style={{
 											fontSize: '22px',
 											transform: 'rotate(45deg)',
@@ -115,8 +115,8 @@ const LeftNav = () => {
 						}}
 					>
 						<Typography
-							id='nav-list-playlists'
-							textColor='neutral.500'
+							id="nav-list-playlists"
+							textColor="neutral.500"
 							fontWeight={700}
 							sx={{
 								fontSize: '10px',
@@ -128,8 +128,8 @@ const LeftNav = () => {
 						</Typography>
 					</Box>
 					<List
-						aria-labelledby='nav-list-playlists'
-						size='sm'
+						aria-labelledby="nav-list-playlists"
+						size="sm"
 						sx={{
 							'--List-decorator-size': '32px',
 							'& .MuiListItemButton-root': { p: '8px' }
