@@ -93,7 +93,7 @@ const initAudioContext = ({
 
 	// Connect the audio to the equalizer
 	media.addEventListener(
-		"canplay",
+		"play",
 		async () => {
 			// Create a MediaElementSourceNode from the audio element
 			const mediaNode = audioContext?.createMediaElementSource(media);
