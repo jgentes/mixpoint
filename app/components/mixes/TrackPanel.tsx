@@ -1,74 +1,83 @@
-import { Box, Card, Typography } from '@mui/joy'
-import { AppState } from '~/api/db/appState'
-import { Track, db, useLiveQuery } from '~/api/db/dbHandlers'
-import { Waveform } from '~/api/renderWaveform'
-import VolumeMeter from '~/components/mixes/VolumeMeter'
+import { Box, Card, Typography } from "@mui/joy";
+import { AppState } from "~/api/db/appState";
+import { Track, db, useLiveQuery } from "~/api/db/dbHandlers";
+import { Waveform } from "~/api/renderWaveform";
+import VolumeMeter from "~/components/mixes/VolumeMeter";
 import {
 	BeatResolutionControl,
 	MixpointControl,
 	OffsetControl,
-	TrackTime
-} from '~/components/tracks/Controls'
-import Loader from '~/components/tracks/TrackLoader'
-import { timeFormat } from '~/utils/tableOps'
+	TrackTime,
+	ZoomSelectControl,
+} from "~/components/tracks/Controls";
+import Loader from "~/components/tracks/TrackLoader";
+import { timeFormat } from "~/utils/tableOps";
 
-const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
-	const [analyzingTracks] = AppState.analyzing()
-	const analyzing = analyzingTracks.includes(trackId)
+const TrackPanel = ({ trackId }: { trackId: Track["id"] }) => {
+	const [analyzingTracks] = AppState.analyzing();
+	const analyzing = analyzingTracks.includes(trackId);
 
 	const { duration = 0 } =
-		useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
+		useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {};
 
 	const trackHeader = (
 		<Box
 			sx={{
-				display: 'flex',
+				display: "flex",
+				justifyContent: "space-between",
 				mb: 1,
-				alignItems: 'center'
+				alignItems: "center",
 			}}
 		>
-			<Typography
-				sx={{
-					fontSize: 'xs',
-					fontWeight: 'md',
-					px: '3px',
-					color: 'text.secondary'
-				}}
-			>
-				Time:
-			</Typography>
-			<TrackTime sx={{ px: '3px', flexBasis: '42px' }} trackId={trackId} />
-			<Typography sx={{ fontSize: 'xs', color: 'text.secondary' }}>
-				/ {timeFormat(duration)}
-			</Typography>
-			<BeatResolutionControl trackId={trackId} sx={{ marginLeft: 'auto' }} />
+			<div style={{ display: "flex" }}>
+				<Typography
+					sx={{
+						fontSize: "xs",
+						fontWeight: "md",
+						px: "3px",
+						color: "text.secondary",
+					}}
+				>
+					Time:
+				</Typography>
+				<TrackTime sx={{ px: "3px", flexBasis: "42px" }} trackId={trackId} />
+				<Typography
+					sx={{ fontSize: "xs", color: "text.secondary", whiteSpace: "nowrap" }}
+				>
+					/ {timeFormat(duration)}
+				</Typography>
+			</div>
+
+			<ZoomSelectControl trackId={trackId} sx={{}} />
+
+			<BeatResolutionControl trackId={trackId} sx={{}} />
 		</Box>
-	)
+	);
 
 	const trackFooter = (
 		<Box
 			sx={{
-				display: 'flex',
+				display: "flex",
 				gap: 1,
 				mt: 1,
-				alignItems: 'center'
+				alignItems: "center",
 			}}
 		>
 			<MixpointControl trackId={trackId} />
-			<OffsetControl trackId={trackId} styles={{ marginLeft: 'auto' }} />
+			<OffsetControl trackId={trackId} styles={{ marginLeft: "auto" }} />
 		</Box>
-	)
+	);
 
 	const loaderSx = {
 		p: 0,
-		border: '1px solid',
-		borderColor: 'action.focus',
-		borderRadius: '4px',
-		borderBottom: 'none',
-		backgroundColor: 'background.body',
-		overflow: 'hidden',
-		zIndex: 1
-	}
+		border: "1px solid",
+		borderColor: "action.focus",
+		borderRadius: "4px",
+		borderBottom: "none",
+		backgroundColor: "background.body",
+		overflow: "hidden",
+		zIndex: 1,
+	};
 
 	return (
 		<>
@@ -80,21 +89,21 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 					sx={{
 						...loaderSx,
 						zIndex: 2,
-						position: 'absolute',
-						inset: '116px 16px calc(100% - 195px)'
+						position: "absolute",
+						inset: "116px 16px calc(100% - 195px)",
 					}}
 				>
-					<Loader style={{ margin: 'auto' }} />
+					<Loader style={{ margin: "auto" }} />
 				</Card>
 			)}
 
-			<Waveform trackId={trackId} sx={{ ...loaderSx, height: '78px' }} />
+			<Waveform trackId={trackId} sx={{ ...loaderSx, height: "78px" }} />
 
 			<VolumeMeter trackId={trackId} />
 
 			{trackFooter}
 		</>
-	)
-}
+	);
+};
 
-export { TrackPanel as default }
+export { TrackPanel as default };

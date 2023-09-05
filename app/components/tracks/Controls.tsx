@@ -6,8 +6,10 @@ import {
 	FormControl,
 	Input,
 	Link,
+	Option,
 	Radio,
 	RadioGroup,
+	Select,
 	Slider,
 	Typography,
 	radioClasses,
@@ -159,6 +161,43 @@ const EjectControl = ({ trackId }: { trackId: Track["id"] }) => {
 		>
 			<Icon icon="material-symbols:eject-rounded" height="20px" />
 		</Chip>
+	);
+};
+
+const ZoomSelectControl = ({
+	trackId,
+	sx,
+}: { trackId: Track["id"]; sx?: SxProps }) => {
+	return (
+		<Select
+			variant="outlined"
+			color="primary"
+			size="sm"
+			title="Load Track"
+			defaultValue="all"
+			onClick={() => audioEvents.ejectTrack(trackId)}
+			sx={{
+				minHeight: "24px",
+				fontSize: 12,
+				borderRadius: "5px",
+				borderColor: "action.selected",
+				"+ .MuiSelect-listbox": {
+					paddingTop: 0,
+					"> .MuiOption-root": {
+						fontSize: "12px",
+						marginTop: 0,
+						"--List-item-minHeight": "1rem",
+					},
+				},
+			}}
+		>
+			<Option value="all">All Stems</Option>
+			{STEMS.map((stem) => (
+				<Option value={stem}>
+					{stem[0].toUpperCase() + stem.slice(1).toLowerCase()}
+				</Option>
+			))}
+		</Select>
 	);
 };
 
@@ -694,4 +733,5 @@ export {
 	StemsCrossfaders,
 	TrackNavControl,
 	TrackTime,
+	ZoomSelectControl,
 };
