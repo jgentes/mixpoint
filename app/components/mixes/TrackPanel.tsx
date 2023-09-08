@@ -48,9 +48,9 @@ const TrackPanel = ({ trackId }: { trackId: Track["id"] }) => {
 				</Typography>
 			</div>
 
-			<ZoomSelectControl trackId={trackId} sx={{}} />
+			<ZoomSelectControl trackId={trackId} />
 
-			<BeatResolutionControl trackId={trackId} sx={{}} />
+			<BeatResolutionControl trackId={trackId} />
 		</Box>
 	);
 

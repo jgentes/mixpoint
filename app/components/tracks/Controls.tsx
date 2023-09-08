@@ -168,14 +168,21 @@ const ZoomSelectControl = ({
 	trackId,
 	sx,
 }: { trackId: Track["id"]; sx?: SxProps }) => {
+	if (!trackId) return null;
+
+	const { stemZoom } =
+		useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {};
+
 	return (
 		<Select
 			variant="outlined"
-			color="primary"
 			size="sm"
 			title="Load Track"
-			defaultValue="all"
-			onClick={() => audioEvents.ejectTrack(trackId)}
+			value={stemZoom || "all"}
+			onChange={(e, newValue) => {
+				if (newValue)
+					audioEvents.stemZoom(trackId, newValue as TrackPrefs["stemZoom"]);
+			}}
 			sx={{
 				minHeight: "24px",
 				fontSize: 12,
@@ -189,11 +196,12 @@ const ZoomSelectControl = ({
 						"--List-item-minHeight": "1rem",
 					},
 				},
+				...sx,
 			}}
 		>
 			<Option value="all">All Stems</Option>
 			{STEMS.map((stem) => (
-				<Option value={stem}>
+				<Option value={stem} key={stem}>
 					{stem[0].toUpperCase() + stem.slice(1).toLowerCase()}
 				</Option>
 			))}
@@ -269,9 +277,6 @@ const BeatResolutionControl = ({
 	const { beatResolution = 1 } =
 		useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {};
 
-	const changeBeatResolution = (beatResolution: TrackPrefs["beatResolution"]) =>
-		audioEvents.beatResolution(trackId, beatResolution);
-
 	return (
 		<RadioGroup
 			orientation={"horizontal"}
@@ -285,7 +290,10 @@ const BeatResolutionControl = ({
 				...sx,
 			}}
 			onChange={(e) =>
-				changeBeatResolution(+e.target.value as TrackPrefs["beatResolution"])
+				audioEvents.beatResolution(
+					trackId,
+					+e.target.value as TrackPrefs["beatResolution"],
+				)
 			}
 		>
 			{[0.25, 0.5, 1].map((item) => (

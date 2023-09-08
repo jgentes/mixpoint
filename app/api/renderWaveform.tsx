@@ -114,6 +114,16 @@ const initAudioContext = ({
 	}
 };
 
+const initWavesurfer = ({
+	trackId,
+	stem,
+	wavesurferOptions,
+}: {
+	trackId: Track["id"];
+	stem: Stem;
+	wavesurferOptions: WaveSurferOptions;
+}) => {};
+
 const Waveform = ({
 	trackId,
 	sx,

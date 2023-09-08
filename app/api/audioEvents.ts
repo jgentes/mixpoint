@@ -517,6 +517,23 @@ const audioEvents = {
 		}
 	},
 
+	stemZoom: async (
+		trackId: Track["id"],
+		stemZoom: TrackPrefs["stemZoom"] | "all",
+	) => {
+		if (stemZoom === "all") {
+			await setTrackPrefs(trackId, { stemZoom: undefined });
+		} else {
+			const [stems] = getAudioState[trackId].stems();
+			if (!stems) return;
+
+			const stem = stems[stemZoom as Stem];
+			console.log(stem);
+			const { waveform } = stem || {};
+			waveform.setOptions({ container: `zoomview-container_${trackId}` });
+		}
+	},
+
 	destroy: (trackId: Track["id"]) => {
 		const [waveform] = getAudioState[trackId].waveform();
 
