@@ -8,5 +8,23 @@
 		"rules": {
 			"recommended": true
 		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single",
+			"trailingComma": "none",
+			"semicolons": "asNeeded",
+			"arrowParentheses": "asNeeded"
+		}
+	},
+	"formatter": {
+		"ignore": [
+			"public/build/*",
+			"*.min.js",
+			"node_modules/*",
+			".cache/*",
+			"build/*",
+			"functions/*"
+		]
 	}
 }
