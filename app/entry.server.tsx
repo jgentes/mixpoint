@@ -1,7 +1,7 @@
 import type { EntryContext } from '@remix-run/cloudflare'
 import { RemixServer } from '@remix-run/react'
-import { Head } from './root'
 import { renderHeadToString } from 'remix-island'
+import { Head } from './root'
 
 import { renderToReadableStream } from 'react-dom/server'
 
@@ -58,7 +58,7 @@ async function handleBrowserRequest(
 						controller.enqueue(value)
 						read()
 					})
-					.catch((error) => {
+					.catch(error => {
 						controller.error(error)
 						readable.cancel()
 					})

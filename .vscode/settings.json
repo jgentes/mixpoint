@@ -1,7 +1,7 @@
 {
-  "prettier.arrowParens": "avoid",
-  "rome.requireConfiguration": false,
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  }
+	"prettier.arrowParens": "avoid",
+	"rome.requireConfiguration": false,
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	}
 }

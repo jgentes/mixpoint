@@ -93,7 +93,7 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
 				borderColor: 'divider',
 				position: 'sticky',
 				...(numSelected > 0 && {
-					backgroundColor: (theme) =>
+					backgroundColor: theme =>
 						alpha(
 							theme.palette.primary.main,
 							theme.palette.action.activatedOpacity
@@ -129,7 +129,7 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
 					variant="soft"
 					placeholder="Search..."
 					startDecorator={<Icon icon="material-symbols:search" height="20px" />}
-					onChange={(e) => setSearch(e.target.value)}
+					onChange={e => setSearch(e.target.value)}
 					value={search}
 					endDecorator={
 						!search ? null : (

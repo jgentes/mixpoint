@@ -1,11 +1,11 @@
 import { RemixBrowser } from '@remix-run/react'
-import { startTransition, StrictMode } from 'react'
+import { StrictMode, startTransition } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 
 function hydrate() {
 	startTransition(() => {
 		hydrateRoot(
-			// rome-ignore lint/style/noNonNullAssertion: from remix-island
+			// biome-ignore lint/style/noNonNullAssertion: from remix-island
 			document.getElementById('root')!,
 			<StrictMode>
 				<RemixBrowser />

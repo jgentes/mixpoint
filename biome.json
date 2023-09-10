@@ -7,6 +7,18 @@
 		"enabled": true,
 		"rules": {
 			"recommended": true
+		},
+		"ignore": ["*.min.js", "node_modules", ".cache", "build", "functions"]
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single",
+			"trailingComma": "none",
+			"semicolons": "asNeeded",
+			"arrowParentheses": "asNeeded"
 		}
+	},
+	"formatter": {
+		"ignore": ["*.min.js", "node_modules", ".cache", "build", "functions"]
 	}
 }

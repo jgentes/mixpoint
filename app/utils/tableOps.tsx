@@ -24,8 +24,8 @@ const selectAll = async (event: ChangeEvent<HTMLInputElement>) => {
 	if (!event.target.checked) return setAppState.selected([])
 	const tracks = await db.tracks.toArray()
 
-	const newSelected = tracks?.map((n) => n.id)
-	setAppState.selected(newSelected.filter((n) => n) as number[])
+	const newSelected = tracks?.map(n => n.id)
+	setAppState.selected(newSelected.filter(n => n) as number[])
 }
 
 const rowClick = (
@@ -52,7 +52,7 @@ const rowClick = (
 		)
 	}
 
-	setAppState.selected(newSelected.filter((n) => n) as number[])
+	setAppState.selected(newSelected.filter(n => n) as number[])
 }
 
 const changePage = (event: unknown, newPage: number) => {
@@ -79,7 +79,7 @@ const descendingComparator = <T,>(a: T, b: T, orderBy: keyof T) => {
 	return 0
 }
 
-// rome-ignore lint/suspicious/noExplicitAny: this is a generic function
+// biome-ignore lint/suspicious/noExplicitAny: this is a generic function
 const getComparator = <Key extends keyof any>(
 	order: 'asc' | 'desc',
 	orderBy: Key

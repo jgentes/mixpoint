@@ -8,12 +8,12 @@ const convertWav = (
 
 	const fileReader = new FileReader()
 
-	fileReader.onload = (e) => {
+	fileReader.onload = e => {
 		mp3Worker.postMessage({ cmd: 'init' })
 		mp3Worker.postMessage({ cmd: 'encode', rawInput: e?.target?.result })
 		mp3Worker.postMessage({ cmd: 'finish' })
 
-		mp3Worker.onmessage = async (e) => {
+		mp3Worker.onmessage = async e => {
 			switch (e.data.cmd) {
 				case 'error':
 					onError(`Error converting to MP3: ${e.data.msg}`)

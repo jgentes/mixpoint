@@ -12,12 +12,12 @@ import { AppState } from '~/api/db/appState'
 import { db, getPrefs, useLiveQuery } from '~/api/db/dbHandlers'
 import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
 import LeftNav from '~/components/tracks/LeftNav'
+import TrackLoader from '~/components/tracks/TrackLoader'
 import {
 	EnhancedTableHead,
 	EnhancedTableToolbar
 } from '~/components/tracks/tableHeader'
 import TableRows from '~/components/tracks/tableRows'
-import TrackLoader from '~/components/tracks/TrackLoader'
 import {
 	changePage,
 	changeRows,
@@ -48,7 +48,7 @@ const TrackTable = () => {
 		() =>
 			db.tracks
 				.filter(
-					(t) =>
+					t =>
 						t.name?.toLowerCase().includes(`${search}`.toLowerCase()) ||
 						t.bpm?.toString().includes(`${search}`) ||
 						formatMinutes((t.duration || 60) / 60)
@@ -89,12 +89,12 @@ const TrackTable = () => {
 							borderColor: dragOver ? '#30b2e9' : 'action.selected',
 							backgroundColor: 'background.surface'
 						}}
-						onDrop={(e) => {
+						onDrop={e => {
 							e.preventDefault()
 							itemsDropped(e.dataTransfer.items)
 							setDragOver(false)
 						}}
-						onDragOver={(e) => {
+						onDragOver={e => {
 							e.stopPropagation()
 							e.preventDefault()
 							setDragOver(true)
