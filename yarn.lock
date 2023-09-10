@@ -7010,7 +7010,7 @@ isbot@latest:
     remix-utils: ^6.3.0
     teaful: ~0.11.1
     typescript: ^5.0.4
-    wavesurfer.js: ^7.2.1
+    wavesurfer.js: ^7.3.0
     web-audio-beat-detector: ~8.1.37
     wrangler: ^3.6.0
     zod: ^3.21.4
@@ -9566,10 +9566,10 @@ isbot@latest:
   languageName: node
   linkType: hard
 
-"wavesurfer.js@npm:^7.2.1":
-  version: 7.2.1
-  resolution: "wavesurfer.js@npm:7.2.1"
-  checksum: 9d6009d843470e160b894c766fab94f58472dbfa4851202d13b83ba986b6b2e9b59ad56b2eaff7ffff22bbb453096d85b32819be9493542f0650997c4cbef049
+"wavesurfer.js@npm:^7.3.0":
+  version: 7.3.0
+  resolution: "wavesurfer.js@npm:7.3.0"
+  checksum: 6a319ce41eadc871bc6bef0f8803092819fd0b7a149e2588b0d2e61932c9ba7216418d0f0039d6b9941327f3635bdb5a595f79c6c709b570055aabb71c1d2cbc
   languageName: node
   linkType: hard
 

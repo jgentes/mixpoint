@@ -15,6 +15,16 @@ import { Stem, Track, db } from "~/api/db/dbHandlers";
 import { getPermission } from "~/api/fileHandlers";
 import { errorHandler } from "~/utils/notifications";
 
+const PRIMARY_WAVEFORM_CONFIG: Partial<WaveSurferOptions> = {
+	height: 60,
+	autoScroll: true,
+	autoCenter: true,
+	hideScrollbar: false,
+	barWidth: 2,
+	barHeight: 0.9,
+	barGap: 1,
+};
+
 // This function accepts either a full track (with no stem) or an individual stem ('bass', etc)
 const initWaveform = async ({
 	trackId,
@@ -134,13 +144,7 @@ const Waveform = ({
 
 			const waveformConfig: WaveSurferOptions = {
 				container: `#zoomview-container_${trackId}`,
-				height: 60,
-				autoScroll: true,
-				autoCenter: true,
-				hideScrollbar: false,
-				barWidth: 2,
-				barHeight: 0.9,
-				barGap: 1,
+				...PRIMARY_WAVEFORM_CONFIG,
 				plugins: [
 					// Do not change the order of plugins! They are referenced by index :(
 					RegionsPlugin.create(),
@@ -211,4 +215,4 @@ const Waveform = ({
 	);
 };
 
-export { Waveform, initAudioContext, initWaveform };
+export { PRIMARY_WAVEFORM_CONFIG, Waveform, initAudioContext, initWaveform };
