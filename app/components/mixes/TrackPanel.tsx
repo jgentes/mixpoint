@@ -1,5 +1,5 @@
 import { Box, Card, Typography } from "@mui/joy";
-import { AppState } from "~/api/db/appState";
+import { AppState, audioState } from "~/api/db/appState";
 import { Track, db, useLiveQuery } from "~/api/db/dbHandlers";
 import { Waveform } from "~/api/renderWaveform";
 import VolumeMeter from "~/components/mixes/VolumeMeter";
@@ -19,6 +19,8 @@ const TrackPanel = ({ trackId }: { trackId: Track["id"] }) => {
 
 	const { duration = 0 } =
 		useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {};
+
+	const [stemState] = audioState[trackId].stemState();
 
 	const trackHeader = (
 		<Box
@@ -48,7 +50,7 @@ const TrackPanel = ({ trackId }: { trackId: Track["id"] }) => {
 				</Typography>
 			</div>
 
-			<ZoomSelectControl trackId={trackId} />
+			{stemState !== "ready" ? null : <ZoomSelectControl trackId={trackId} />}
 
 			<BeatResolutionControl trackId={trackId} />
 		</Box>

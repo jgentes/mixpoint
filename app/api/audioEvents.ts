@@ -1,6 +1,9 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform aroun'
 import type WaveSurfer from "wavesurfer.js";
-import RegionsPlugin, { type Region } from "wavesurfer.js/dist/plugins/regions";
+import { WaveSurferOptions } from "wavesurfer.js";
+import RegionsPlugin, {
+	type Region,
+} from "wavesurfer.js/dist/plugins/regions.js";
 import { calcMarkers } from "~/api/audioHandlers";
 import {
 	getAppState,
@@ -19,7 +22,11 @@ import {
 	setTrackPrefs,
 	updateTrack,
 } from "~/api/db/dbHandlers";
-import { initAudioContext } from "~/api/renderWaveform";
+import {
+	PRIMARY_WAVEFORM_CONFIG,
+	initAudioContext,
+	initWaveform,
+} from "~/api/renderWaveform";
 import { convertToSecs } from "~/utils/tableOps";
 
 // audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
@@ -42,14 +49,14 @@ const audioEvents = {
 		const [waveform] = getAudioState[trackId].waveform();
 		if (!waveform) return;
 
-		const plugins = waveform.getActivePlugins();
-		const regionsPlugin = plugins[0] as RegionsPlugin;
-
-		const { mixpointTime, beatResolution = 1 } = await getTrackPrefs(trackId);
-
 		if (!stem) {
-			// Generate beat markers and apply them to waveform
+			// Generate beat markers (regions) and apply them to waveform
 			await calcMarkers(trackId);
+
+			const plugins = waveform.getActivePlugins();
+			const regionsPlugin = plugins[0] as RegionsPlugin;
+
+			const { mixpointTime, beatResolution = 1 } = await getTrackPrefs(trackId);
 
 			// Adjust zoom based on previous mixPrefs
 			waveform.zoom(
@@ -79,21 +86,24 @@ const audioEvents = {
 				background-clip: content-box;
 			}`;
 			waveform.getWrapper().appendChild(style);
+
+			// Update time
+			let [time] = getAudioState[trackId].time();
+			if (!time) {
+				time = mixpointTime || regionsPlugin.getRegions()[0]?.start || 0;
+				setAudioState[trackId].time(time);
+			}
+
+			waveform.on("redraw", () => audioEvents.seek(trackId));
 		} else {
 			setAppState.stemsAnalyzing((prev) => prev.filter((id) => id !== trackId));
 		}
-
-		// Update time
-		const time = mixpointTime || regionsPlugin.getRegions()[0]?.start || 0;
-		setAudioState[trackId].time(time);
 
 		// Update BPM if adjusted
 		const { adjustedBpm } = await getTrackPrefs(trackId);
 		const { bpm = 1 } = (await db.tracks.get(trackId)) || {};
 		const playbackRate = (adjustedBpm || bpm) / bpm;
 		waveform.setPlaybackRate(playbackRate);
-
-		audioEvents.seek(trackId, time);
 	},
 
 	clickToSeek: async (
@@ -268,14 +278,15 @@ const audioEvents = {
 	// Scroll to previous/next beat marker
 	seek: async (
 		trackId: Track["id"],
-		seconds: number, // no default here, we want to be able to seek to 0
+		seconds?: number, // no default here, we want to be able to seek to 0
 		direction?: "previous" | "next",
 	) => {
 		if (!trackId) return;
 
-		const [{ waveform, playing, time = 0 }] = getAudioState[trackId]();
+		const [{ waveform, playing, time }] = getAudioState[trackId]();
 		if (!waveform) return;
 
+		const currentTime = seconds ?? time;
 		if (playing) await audioEvents.pause(trackId);
 
 		const { duration = 1 } = (await db.tracks.get(trackId)) || {};
@@ -291,16 +302,16 @@ const audioEvents = {
 			});
 		};
 
-		let currentIndex = findClosestRegion(!direction ? seconds ?? time : time);
+		let currentIndex = findClosestRegion(!direction ? currentTime : time);
 		currentIndex = currentIndex === -1 ? regions.length - 1 : currentIndex;
 
 		const previous = regions[(currentIndex || 1) - 1];
 		const current = regions[currentIndex];
 		const next = regions[Math.min(currentIndex, regions.length - 2) + 1];
 
-		const previousDiff = Math.abs(seconds - previous.start);
-		const currentDiff = Math.abs(seconds - current.start);
-		const nextDiff = Math.abs(seconds - next.start);
+		const previousDiff = Math.abs(currentTime - previous.start);
+		const currentDiff = Math.abs(currentTime - current.start);
+		const nextDiff = Math.abs(currentTime - next.start);
 
 		let closestTime = current.start; // default current wins
 		if (direction) {
@@ -324,16 +335,16 @@ const audioEvents = {
 			}
 		}
 
-		waveform.seekTo(closestTime / duration);
+		setAudioState[trackId].time(closestTime);
 
 		const [stems] = getAudioState[trackId].stems();
 		if (stems) {
-			for (const [, { waveform }] of Object.entries(stems)) {
-				waveform?.seekTo(closestTime / duration);
+			for (const [, { waveform: stemWave }] of Object.entries(stems)) {
+				stemWave?.seekTo(closestTime / duration);
 			}
 		}
 
-		setAudioState[trackId].time(closestTime);
+		waveform.seekTo(closestTime / duration);
 
 		// resume playing if not at the end of track
 		if (playing && closestTime < duration) audioEvents.play(trackId);
@@ -519,19 +530,42 @@ const audioEvents = {
 
 	stemZoom: async (
 		trackId: Track["id"],
-		stemZoom: TrackPrefs["stemZoom"] | "all",
+		stem: TrackPrefs["stemZoom"] | "all",
 	) => {
-		if (stemZoom === "all") {
-			await setTrackPrefs(trackId, { stemZoom: undefined });
+		const [{ waveform }] = getAudioState[trackId]();
+		if (waveform) waveform.destroy();
+
+		let file;
+
+		if (stem === "all") {
+			({ file } = (await db.trackCache.get(trackId)) || {});
 		} else {
-			const [stems] = getAudioState[trackId].stems();
+			const { stems } = (await db.trackCache.get(trackId)) || {};
 			if (!stems) return;
 
-			const stem = stems[stemZoom as Stem];
-			console.log(stem);
-			const { waveform } = stem || {};
-			waveform.setOptions({ container: `zoomview-container_${trackId}` });
+			file = stems[stem as Stem]?.file;
 		}
+
+		if (!file) return;
+
+		const waveformConfig: WaveSurferOptions = {
+			container: `#zoomview-container_${trackId}`,
+			...PRIMARY_WAVEFORM_CONFIG,
+			plugins: [
+				// Do not change the order of plugins! They are referenced by index :(
+				RegionsPlugin.create(),
+			],
+		};
+
+		await initWaveform({
+			trackId,
+			file,
+			waveformConfig,
+		});
+
+		await setTrackPrefs(trackId, {
+			stemZoom: stem === "all" ? undefined : stem,
+		});
 	},
 
 	destroy: (trackId: Track["id"]) => {
