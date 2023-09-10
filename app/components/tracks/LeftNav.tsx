@@ -80,6 +80,7 @@ const LeftNav = () => {
 									<img
 										src="/media/innerjoin32.png"
 										style={{ height: '22px', marginRight: '8px' }}
+										alt="Inner joined circles"
 									/>
 								</ListItemDecorator>
 								<ListItemContent>

@@ -7,7 +7,8 @@
 		"enabled": true,
 		"rules": {
 			"recommended": true
-		}
+		},
+		"ignore": ["*.min.js", "node_modules", ".cache", "build", "functions"]
 	},
 	"javascript": {
 		"formatter": {
@@ -18,13 +19,6 @@
 		}
 	},
 	"formatter": {
-		"ignore": [
-			"public/build/*",
-			"*.min.js",
-			"node_modules/*",
-			".cache/*",
-			"build/*",
-			"functions/*"
-		]
+		"ignore": ["*.min.js", "node_modules", ".cache", "build", "functions"]
 	}
 }

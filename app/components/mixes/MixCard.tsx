@@ -113,7 +113,7 @@ const MixCard = ({
 							pt: '1px',
 							height: '25px'
 						}}
-						onClick={(e) => {
+						onClick={e => {
 							const parents = e.currentTarget.firstElementChild as HTMLElement
 							const parent = parents.children[1] as HTMLElement
 							audioEvents.clickToSeek(trackId, e, parent)

@@ -71,14 +71,14 @@ const getPermission = async (track: Track): Promise<File | null> => {
 const browseFile = async (trackSlot?: 0 | 1): Promise<void> => {
 	// if the track drawer isn't open and we're in mix view, open it, otherwise show file picker
 	const { tracks } = (await getPrefs('mix', 'tracks')) || {}
-	const mixViewVisible = !!tracks?.filter((t) => t).length
+	const mixViewVisible = !!tracks?.filter(t => t).length
 
 	const [openDrawer] = getAppState.openDrawer()
 	if (!openDrawer && mixViewVisible) return setAppState.openDrawer(true)
 
 	const files: FileSystemFileHandle[] | undefined = await window
 		.showOpenFilePicker({ multiple: true })
-		.catch((e) => {
+		.catch(e => {
 			if (e?.message?.includes('user aborted a request')) return []
 		})
 
@@ -197,7 +197,7 @@ const validateTrackStemAccess = async (
 	const state = await checkAccess()
 	if (state === 'ready') {
 		// remove analyzing
-		setAppState.stemsAnalyzing((prev) => prev.filter((id) => id !== trackId))
+		setAppState.stemsAnalyzing(prev => prev.filter(id => id !== trackId))
 	}
 
 	if (stemState !== state) setAudioState[trackId].stemState(state)

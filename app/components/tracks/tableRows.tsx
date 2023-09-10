@@ -43,7 +43,7 @@ const TableRows = ({
 			>
 				<TableCell
 					padding="none"
-					onClick={(event) => rowClick(event, row.id)}
+					onClick={event => rowClick(event, row.id)}
 					role="checkbox"
 					aria-checked={isItemSelected}
 					tabIndex={-1}
@@ -51,7 +51,7 @@ const TableRows = ({
 				>
 					<Checkbox color="primary" checked={isItemSelected} title={row.name} />
 				</TableCell>
-				{columnDefs.map((column) => (
+				{columnDefs.map(column => (
 					<TableCell
 						key={column.dbKey}
 						id={`${column.dbKey}-${row.id}`}

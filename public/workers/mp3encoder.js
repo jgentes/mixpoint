@@ -1,6 +1,4 @@
 ;(function () {
-	'use strict'
-
 	importScripts('/workers/lame.min.js')
 
 	const maxSamples = 1152
@@ -14,11 +12,11 @@
 		dataBuffer = []
 	}
 
-	const appendToBuffer = (mp3Buf) => dataBuffer.push(new Int8Array(mp3Buf))
+	const appendToBuffer = mp3Buf => dataBuffer.push(new Int8Array(mp3Buf))
 
 	const init = () => clearBuffer()
 
-	const encode = (arrayBuffer) => {
+	const encode = arrayBuffer => {
 		wav = lamejs.WavHeader.readHeader(new DataView(arrayBuffer))
 
 		if (!wav) {
@@ -83,7 +81,7 @@
 		clearBuffer() //free up memory
 	}
 
-	self.onmessage = (e) => {
+	self.onmessage = e => {
 		switch (e.data.cmd) {
 			case 'init':
 				init(e.data.config)

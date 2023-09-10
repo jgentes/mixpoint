@@ -48,7 +48,7 @@ const createColumnDefinitions = (): {
 		const isInMix = tracks.includes(track.id)
 
 		// Prevent user from adding a new track before previous added track finishes analyzing
-		const isBeingAnalyzed = tracks.some((id) => analyzingTracks.includes(id))
+		const isBeingAnalyzed = tracks.some(id => analyzingTracks.includes(id))
 
 		return (
 			<Chip
@@ -82,7 +82,7 @@ const createColumnDefinitions = (): {
 
 		return (
 			t.bpm?.toFixed(0) ||
-			(!analyzingTracks.some((id) => id === t.id) ? (
+			(!analyzingTracks.some(id => id === t.id) ? (
 				analyzeButton(t)
 			) : (
 				<TrackLoader style={{ margin: 'auto', height: '15px' }} />
@@ -97,7 +97,7 @@ const createColumnDefinitions = (): {
 			align: 'left',
 			padding: 'none',
 			width: '60%',
-			formatter: (t) => (
+			formatter: t => (
 				<Box
 					sx={{
 						display: 'flex',
@@ -107,8 +107,8 @@ const createColumnDefinitions = (): {
 					}}
 				>
 					<div
-						onClick={(event) => rowClick(event, t.id)}
-						onKeyUp={(event) => rowClick(event, t.id)}
+						onClick={event => rowClick(event, t.id)}
+						onKeyUp={event => rowClick(event, t.id)}
 					>
 						{t.name?.replace(/\.[^/.]+$/, '') || 'Track name not found'}
 					</div>
@@ -130,7 +130,7 @@ const createColumnDefinitions = (): {
 			align: 'center',
 			padding: 'normal',
 			width: '10%',
-			formatter: (t) => t.duration && formatMinutes(t.duration / 60)
+			formatter: t => t.duration && formatMinutes(t.duration / 60)
 		},
 		{
 			dbKey: 'mixpoints',
@@ -138,7 +138,7 @@ const createColumnDefinitions = (): {
 			align: 'center',
 			padding: 'normal',
 			width: '5%',
-			formatter: (t) => ''
+			formatter: t => ''
 		},
 		{
 			dbKey: 'sets',
@@ -146,7 +146,7 @@ const createColumnDefinitions = (): {
 			align: 'center',
 			padding: 'normal',
 			width: '5%',
-			formatter: (t) => ''
+			formatter: t => ''
 		},
 		{
 			dbKey: 'lastModified',
@@ -155,7 +155,7 @@ const createColumnDefinitions = (): {
 			padding: 'normal',
 			width: '10%',
 			sx: { whiteSpace: 'nowrap' },
-			formatter: (t) => moment(t.lastModified).fromNow()
+			formatter: t => moment(t.lastModified).fromNow()
 		}
 	]
 }

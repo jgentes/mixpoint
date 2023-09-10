@@ -1,5 +1,5 @@
-import { getAudioState, setAudioState, Stems } from '~/api/db/appState'
-import { db, Stem, storeTrackCache, Track } from '~/api/db/dbHandlers'
+import { Stems, getAudioState, setAudioState } from '~/api/db/appState'
+import { Stem, Track, db, storeTrackCache } from '~/api/db/dbHandlers'
 import { getStemsDirHandle } from '~/api/fileHandlers'
 import { convertWav } from '~/api/mp3Converter'
 import { errorHandler } from '~/utils/notifications'
@@ -81,7 +81,7 @@ const checkForStems = async (
 		throw errorHandler(`Error generating stems: ${msg}`)
 	}
 
-	return new Promise((resolve) =>
+	return new Promise(resolve =>
 		setTimeout(async () => {
 			let message
 			let modelOutputs
@@ -180,7 +180,7 @@ const stemAudio = async (trackId: Track['id']) => {
 
 		// Create a Uint8Array from the binary data string
 		const audioArray = new Uint8Array(
-			audioData.split('').map((c) => c.charCodeAt(0))
+			audioData.split('').map(c => c.charCodeAt(0))
 		)
 
 		// create a Blob from the audio data

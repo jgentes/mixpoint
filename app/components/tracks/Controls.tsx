@@ -1,4 +1,4 @@
-import { Icon } from "@iconify-icon/react";
+import { Icon } from '@iconify-icon/react'
 import {
 	Box,
 	Card,
@@ -12,11 +12,11 @@ import {
 	Select,
 	Slider,
 	Typography,
-	radioClasses,
-} from "@mui/joy";
-import { Button, ButtonGroup, SxProps } from "@mui/material";
-import { useEffect, useState } from "react";
-import { audioEvents } from "~/api/audioEvents";
+	radioClasses
+} from '@mui/joy'
+import { Button, ButtonGroup, SxProps } from '@mui/material'
+import { useEffect, useState } from 'react'
+import { audioEvents } from '~/api/audioEvents'
 import {
 	MixPrefs,
 	STEMS,
@@ -25,23 +25,23 @@ import {
 	TrackPrefs,
 	db,
 	getTrackPrefs,
-	useLiveQuery,
-} from "~/api/db/dbHandlers";
+	useLiveQuery
+} from '~/api/db/dbHandlers'
 
-import { audioState } from "~/api/db/appState";
-import VolumeMeter from "~/components/mixes/VolumeMeter";
-import { convertToSecs, timeFormat } from "~/utils/tableOps";
+import { audioState } from '~/api/db/appState'
+import VolumeMeter from '~/components/mixes/VolumeMeter'
+import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
 const inputText = (text: string) => {
 	return (
 		<Typography
 			textColor="#888"
-			sx={{ fontSize: 12, lineHeight: 0, cursor: "default" }}
+			sx={{ fontSize: 12, lineHeight: 0, cursor: 'default' }}
 		>
 			{text}
 		</Typography>
-	);
-};
+	)
+}
 
 const NumberControl = ({
 	trackId,
@@ -52,35 +52,35 @@ const NumberControl = ({
 	text,
 	width = 144,
 	emitEvent,
-	styles,
+	styles
 }: {
-	trackId: Track["id"];
-	val: number | undefined;
-	adjustedVal: number | undefined;
-	toFixedVal?: number;
-	title: string;
-	text: string;
-	width?: number;
-	emitEvent: "bpm" | "offset";
-	styles?: object;
+	trackId: Track['id']
+	val: number | undefined
+	adjustedVal: number | undefined
+	toFixedVal?: number
+	title: string
+	text: string
+	width?: number
+	emitEvent: 'bpm' | 'offset'
+	styles?: object
 }) => {
-	const [inputVal, setInputVal] = useState<string | number>(0);
+	const [inputVal, setInputVal] = useState<string | number>(0)
 
 	useEffect(
 		() => setInputVal((adjustedVal ?? val ?? 0).toFixed(toFixedVal)),
-		[adjustedVal, val],
-	);
+		[adjustedVal, val]
+	)
 
-	const valDiff = !Number.isNaN(Number(adjustedVal)) && adjustedVal !== val;
+	const valDiff = !Number.isNaN(Number(adjustedVal)) && adjustedVal !== val
 
 	const adjustVal = async (newVal?: number) => {
-		const value = newVal ?? val;
-		if (typeof value !== "number") return;
+		const value = newVal ?? val
+		if (typeof value !== 'number') return
 
-		setInputVal(value);
+		setInputVal(value)
 
-		audioEvents[emitEvent](trackId, value);
-	};
+		audioEvents[emitEvent](trackId, value)
+	}
 
 	const ResetValLink = () => (
 		<Link
@@ -91,59 +91,59 @@ const NumberControl = ({
 			disabled={!valDiff}
 			sx={{
 				fontSize: 12,
-				WebkitTextFillColor: "divider",
+				WebkitTextFillColor: 'divider'
 			}}
 		>
 			{inputText(text)}
 			{valDiff ? (
 				<Icon icon="ic:round-replay" height="14px" style={{ marginLeft: 2 }} />
 			) : (
-				""
+				''
 			)}
 		</Link>
-	);
+	)
 
 	return (
 		<FormControl
 			style={{ ...styles }}
-			onSubmit={(e) => {
-				e.preventDefault();
-				adjustVal(Number(inputVal));
+			onSubmit={e => {
+				e.preventDefault()
+				adjustVal(Number(inputVal))
 			}}
 			sx={{
-				"& div": {
-					"--Input-minHeight": "24px",
-				},
+				'& div': {
+					'--Input-minHeight': '24px'
+				}
 			}}
 		>
 			<Input
 				variant="outlined"
 				startDecorator={<ResetValLink />}
 				value={inputVal}
-				onChange={(e) => setInputVal(e.target.value)}
+				onChange={e => setInputVal(e.target.value)}
 				onBlur={() => {
-					if (Number(inputVal) !== adjustedVal) adjustVal(Number(inputVal));
+					if (Number(inputVal) !== adjustedVal) adjustVal(Number(inputVal))
 				}}
 				sx={{
 					width,
-					borderRadius: "5px",
-					borderColor: "action.selected",
-					"& div": {
-						borderColor: "action.disabled",
+					borderRadius: '5px',
+					borderColor: 'action.selected',
+					'& div': {
+						borderColor: 'action.disabled'
 					},
-					"& input": {
-						textAlign: "right",
+					'& input': {
+						textAlign: 'right',
 						fontSize: 12,
-						color: "text.secondary",
+						color: 'text.secondary'
 					},
-					backgroundColor: "background.surface",
+					backgroundColor: 'background.surface'
 				}}
 			/>
 		</FormControl>
-	);
-};
+	)
+}
 
-const EjectControl = ({ trackId }: { trackId: Track["id"] }) => {
+const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
 	return (
 		<Chip
 			variant="outlined"
@@ -152,76 +152,76 @@ const EjectControl = ({ trackId }: { trackId: Track["id"] }) => {
 			title="Load Track"
 			onClick={() => audioEvents.ejectTrack(trackId)}
 			sx={{
-				minHeight: "21px",
+				minHeight: '21px',
 				lineHeight: 0,
-				"--Chip-radius": "5px",
-				"--Chip-paddingInline": "0.4rem",
-				"--Icon-fontSize": "16px",
+				'--Chip-radius': '5px',
+				'--Chip-paddingInline': '0.4rem',
+				'--Icon-fontSize': '16px'
 			}}
 		>
 			<Icon icon="material-symbols:eject-rounded" height="20px" />
 		</Chip>
-	);
-};
+	)
+}
 
 const ZoomSelectControl = ({
 	trackId,
-	sx,
-}: { trackId: Track["id"]; sx?: SxProps }) => {
-	if (!trackId) return null;
+	sx
+}: { trackId: Track['id']; sx?: SxProps }) => {
+	if (!trackId) return null
 
 	const { stemZoom } =
-		useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {};
+		useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
 
 	return (
 		<Select
 			variant="outlined"
 			size="sm"
 			title="Load Track"
-			value={stemZoom || "all"}
+			value={stemZoom || 'all'}
 			onChange={(e, newValue) => {
 				if (newValue)
-					audioEvents.stemZoom(trackId, newValue as TrackPrefs["stemZoom"]);
+					audioEvents.stemZoom(trackId, newValue as TrackPrefs['stemZoom'])
 			}}
 			sx={{
-				minHeight: "24px",
+				minHeight: '24px',
 				fontSize: 12,
-				borderRadius: "5px",
-				borderColor: "action.selected",
-				"+ .MuiSelect-listbox": {
+				borderRadius: '5px',
+				borderColor: 'action.selected',
+				'+ .MuiSelect-listbox': {
 					paddingTop: 0,
-					"> .MuiOption-root": {
-						fontSize: "12px",
+					'> .MuiOption-root': {
+						fontSize: '12px',
 						marginTop: 0,
-						"--List-item-minHeight": "1rem",
-					},
+						'--List-item-minHeight': '1rem'
+					}
 				},
-				...sx,
+				...sx
 			}}
 		>
 			<Option value="all">All Stems</Option>
-			{STEMS.map((stem) => (
+			{STEMS.map(stem => (
 				<Option value={stem} key={stem}>
 					{stem[0].toUpperCase() + stem.slice(1).toLowerCase()}
 				</Option>
 			))}
 		</Select>
-	);
-};
+	)
+}
 
 const BpmControl = ({
 	trackId,
-	styles,
+	styles
 }: {
-	trackId: Track["id"];
-	styles: object;
+	trackId: Track['id']
+	styles: object
 }) => {
-	if (!trackId) return null;
+	if (!trackId) return null
 
-	const { bpm } = useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {};
+	const { bpm } = useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
 
 	const { adjustedBpm } =
-		useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {};
+		useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
 
 	return (
 		<NumberControl
@@ -235,20 +235,20 @@ const BpmControl = ({
 			width={115}
 			styles={styles}
 		/>
-	);
-};
+	)
+}
 
 const OffsetControl = ({
 	trackId,
-	styles,
+	styles
 }: {
-	trackId: TrackPrefs["id"];
-	styles?: object;
+	trackId: TrackPrefs['id']
+	styles?: object
 }) => {
-	if (!trackId) return null;
+	if (!trackId) return null
 
 	const { offset, adjustedOffset } =
-		useLiveQuery(() => db.tracks.get(trackId)) || {};
+		useLiveQuery(() => db.tracks.get(trackId)) || {}
 
 	return (
 		<NumberControl
@@ -262,62 +262,62 @@ const OffsetControl = ({
 			width={155}
 			styles={styles}
 		/>
-	);
-};
+	)
+}
 
 const BeatResolutionControl = ({
 	trackId,
-	sx,
+	sx
 }: {
-	trackId: TrackPrefs["id"];
-	sx?: SxProps;
+	trackId: TrackPrefs['id']
+	sx?: SxProps
 }) => {
-	if (!trackId) return null;
+	if (!trackId) return null
 
 	const { beatResolution = 1 } =
-		useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {};
+		useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
 
 	return (
 		<RadioGroup
-			orientation={"horizontal"}
+			orientation={'horizontal'}
 			name="beatResolution"
 			value={beatResolution}
 			variant="outlined"
 			sx={{
-				backgroundColor: "background.surface",
-				borderColor: "action.selected",
-				borderRadius: "5px",
-				...sx,
+				backgroundColor: 'background.surface',
+				borderColor: 'action.selected',
+				borderRadius: '5px',
+				...sx
 			}}
-			onChange={(e) =>
+			onChange={e =>
 				audioEvents.beatResolution(
 					trackId,
-					+e.target.value as TrackPrefs["beatResolution"],
+					+e.target.value as TrackPrefs['beatResolution']
 				)
 			}
 		>
-			{[0.25, 0.5, 1].map((item) => (
+			{[0.25, 0.5, 1].map(item => (
 				<Box
 					key={item}
-					sx={(theme) => ({
-						position: "relative",
-						display: "flex",
-						justifyContent: "center",
-						alignItems: "center",
+					sx={theme => ({
+						position: 'relative',
+						display: 'flex',
+						justifyContent: 'center',
+						alignItems: 'center',
 						width: 48,
 						height: 24,
-						"&:not([data-first-child])": {
-							borderLeft: "1px solid",
-							borderColor: theme.palette.divider,
+						'&:not([data-first-child])': {
+							borderLeft: '1px solid',
+							borderColor: theme.palette.divider
 						},
 						[`&[data-first-child] .${radioClasses.action}`]: {
-							borderTopLeftRadius: "5px",
-							borderBottomLeftRadius: "5px",
+							borderTopLeftRadius: '5px',
+							borderBottomLeftRadius: '5px'
 						},
 						[`&[data-last-child] .${radioClasses.action}`]: {
-							borderTopRightRadius: "5px",
-							borderBottomRightRadius: "5px",
-						},
+							borderTopRightRadius: '5px',
+							borderBottomRightRadius: '5px'
+						}
 					})}
 				>
 					<Radio
@@ -325,186 +325,186 @@ const BeatResolutionControl = ({
 						disableIcon
 						overlay
 						label={`${item * 100}%`}
-						variant={beatResolution === item ? "outlined" : "plain"}
+						variant={beatResolution === item ? 'outlined' : 'plain'}
 						color="primary"
 						sx={{
 							fontSize: 12,
-							color: "text.secondary",
+							color: 'text.secondary'
 						}}
 						slotProps={{
 							action: {
-								sx: { borderRadius: 0, transition: "none" },
+								sx: { borderRadius: 0, transition: 'none' }
 							},
-							label: { sx: { lineHeight: 0 } },
+							label: { sx: { lineHeight: 0 } }
 						}}
 					/>
 				</Box>
 			))}
 		</RadioGroup>
-	);
-};
+	)
+}
 
-const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs["id"] }) => {
+const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
 	const navEvent = (nav: string) => {
 		switch (nav) {
-			case "Play":
-				audioEvents.play(trackId);
-				break;
-			case "Pause":
-				audioEvents.pause(trackId);
-				break;
-			case "Go to Mixpoint":
-				audioEvents.seekMixpoint(trackId);
-				break;
-			case "Set Mixpoint":
-				audioEvents.setMixpoint(trackId);
-				break;
-			case "Previous Beat Marker":
-				audioEvents.seek(trackId, 0, "previous");
-				break;
-			case "Next Beat Marker":
-				audioEvents.seek(trackId, 0, "next");
-				break;
+			case 'Play':
+				audioEvents.play(trackId)
+				break
+			case 'Pause':
+				audioEvents.pause(trackId)
+				break
+			case 'Go to Mixpoint':
+				audioEvents.seekMixpoint(trackId)
+				break
+			case 'Set Mixpoint':
+				audioEvents.setMixpoint(trackId)
+				break
+			case 'Previous Beat Marker':
+				audioEvents.seek(trackId, 0, 'previous')
+				break
+			case 'Next Beat Marker':
+				audioEvents.seek(trackId, 0, 'next')
+				break
 		}
-	};
+	}
 
-	const [isPlaying] = audioState[trackId].playing();
+	const [isPlaying] = audioState[trackId].playing()
 
 	return (
 		<ButtonGroup variant="text" color="inherit" disableRipple id="navControl">
 			{[
 				{
-					val: "Previous Beat Marker",
-					icon: <Icon icon="material-symbols:skip-previous" height="20px" />,
+					val: 'Previous Beat Marker',
+					icon: <Icon icon="material-symbols:skip-previous" height="20px" />
 				},
 				{
-					val: "Go to Mixpoint",
+					val: 'Go to Mixpoint',
 					icon: (
 						<Icon
 							icon="material-symbols:settings-backup-restore"
 							height="20px"
 						/>
-					),
+					)
 				},
 
 				{
-					val: "Set Mixpoint",
-					icon: <Icon icon="material-symbols:adjust-outline" height="18px" />,
+					val: 'Set Mixpoint',
+					icon: <Icon icon="material-symbols:adjust-outline" height="18px" />
 				},
 				{
-					val: isPlaying ? "Pause" : "Play",
+					val: isPlaying ? 'Pause' : 'Play',
 					icon: isPlaying ? (
 						<Icon icon="material-symbols:pause" height="20px" />
 					) : (
 						<Icon icon="material-symbols:play-arrow" height="20px" />
-					),
+					)
 				},
 				{
-					val: "Next Beat Marker",
-					icon: <Icon icon="material-symbols:skip-next" height="20px" />,
-				},
-			].map((item) => {
-				const noNudge = item.val.includes("Nudge") && !isPlaying;
+					val: 'Next Beat Marker',
+					icon: <Icon icon="material-symbols:skip-next" height="20px" />
+				}
+			].map(item => {
+				const noNudge = item.val.includes('Nudge') && !isPlaying
 
 				return (
 					<Button
 						component="button"
-						onClick={(e) => navEvent(e.currentTarget.value)}
+						onClick={e => navEvent(e.currentTarget.value)}
 						key={item.val}
 						value={item.val}
 						title={item.val}
 						disabled={noNudge}
-						sx={(theme) => ({
-							"--Icon-color": noNudge
+						sx={theme => ({
+							'--Icon-color': noNudge
 								? theme.palette.action.selected
 								: theme.palette.text.secondary,
-							borderColor: "transparent !important",
+							borderColor: 'transparent !important'
 						})}
 					>
 						{item.icon}
 					</Button>
-				);
+				)
 			})}
 		</ButtonGroup>
-	);
-};
+	)
+}
 
-const MixControl = ({ tracks }: { tracks: MixPrefs["tracks"] }) => {
-	if (!tracks?.length) return null;
+const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
+	if (!tracks?.length) return null
 
 	const navEvent = (nav: string) => {
 		switch (nav) {
-			case "Play":
-				audioEvents.play();
-				break;
-			case "Pause":
-				audioEvents.pause();
-				break;
-			case "Go to Mixpoint":
-				for (const track of tracks) audioEvents.seekMixpoint(track);
-				break;
+			case 'Play':
+				audioEvents.play()
+				break
+			case 'Pause':
+				audioEvents.pause()
+				break
+			case 'Go to Mixpoint':
+				for (const track of tracks) audioEvents.seekMixpoint(track)
+				break
 		}
-	};
+	}
 
-	const radioSize = 28;
+	const radioSize = 28
 
 	return (
 		<RadioGroup
-			orientation={"horizontal"}
+			orientation={'horizontal'}
 			name="mixControl"
 			variant="outlined"
-			sx={{ height: radioSize, my: 1, backgroundColor: "background.surface" }}
-			onClick={(e) => {
-				const el = e.target as HTMLInputElement;
-				navEvent(el.value);
+			sx={{ height: radioSize, my: 1, backgroundColor: 'background.surface' }}
+			onClick={e => {
+				const el = e.target as HTMLInputElement
+				navEvent(el.value)
 			}}
 		>
 			{[
 				{
-					val: "Go to Mixpoint",
+					val: 'Go to Mixpoint',
 					icon: (
 						<Icon
 							icon="material-symbols:settings-backup-restore"
 							height="18px"
 						/>
-					),
+					)
 				},
 				{
-					val: "Pause",
-					icon: <Icon icon="material-symbols:pause" height="20px" />,
+					val: 'Pause',
+					icon: <Icon icon="material-symbols:pause" height="20px" />
 				},
 				{
-					val: "Play",
-					icon: <Icon icon="material-symbols:play-arrow" height="20px" />,
-				},
-			].map((item) => (
+					val: 'Play',
+					icon: <Icon icon="material-symbols:play-arrow" height="20px" />
+				}
+			].map(item => (
 				<Box
 					key={item.val}
-					sx={(theme) => {
+					sx={theme => {
 						return {
-							position: "relative",
-							display: "flex",
-							justifyContent: "center",
-							alignItems: "center",
+							position: 'relative',
+							display: 'flex',
+							justifyContent: 'center',
+							alignItems: 'center',
 							width: radioSize * 2,
 							height: radioSize,
-							"&:not([data-first-child])": {
-								borderLeft: "1px solid",
+							'&:not([data-first-child])': {
+								borderLeft: '1px solid',
 								borderColor: `${theme.palette.divider} !important`,
-								height: "99%",
+								height: '99%'
 							},
 							[`&[data-first-child] .${radioClasses.action}`]: {
 								borderTopLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
 								borderBottomLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-								bottom: "2px",
-								left: "-1px",
+								bottom: '2px',
+								left: '-1px'
 							},
 							[`&[data-last-child] .${radioClasses.action}`]: {
 								borderTopRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
 								borderBottomRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-								height: "101%",
-							},
-						};
+								height: '101%'
+							}
+						}
 					}}
 				>
 					<Radio
@@ -517,153 +517,150 @@ const MixControl = ({ tracks }: { tracks: MixPrefs["tracks"] }) => {
 						slotProps={{
 							root: {
 								sx: {
-									"--Icon-fontSize": `${radioSize - 8}px`,
-								},
+									'--Icon-fontSize': `${radioSize - 8}px`
+								}
 							},
 							action: {
 								sx: {
 									borderRadius: 0,
-									transition: "none",
-								},
+									transition: 'none'
+								}
 							},
-							label: { sx: { lineHeight: 0 } },
+							label: { sx: { lineHeight: 0 } }
 						}}
 					/>
 				</Box>
 			))}
 		</RadioGroup>
-	);
-};
+	)
+}
 
-const MixpointControl = ({ trackId }: { trackId: Track["id"] }) => {
-	if (!trackId) return null;
+const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
+	if (!trackId) return null
 
 	const { mixpointTime } =
-		useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {};
+		useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
 
-	const [mixpointVal, setMixpointVal] = useState<string>("0:00.00");
+	const [mixpointVal, setMixpointVal] = useState<string>('0:00.00')
 
-	useEffect(
-		() => setMixpointVal(timeFormat(mixpointTime || 0)),
-		[mixpointTime],
-	);
+	useEffect(() => setMixpointVal(timeFormat(mixpointTime || 0)), [mixpointTime])
 
 	const adjustMixpoint = async (newMixpoint: string) => {
-		if (convertToSecs(newMixpoint) === mixpointTime) return null;
+		if (convertToSecs(newMixpoint) === mixpointTime) return null
 
-		audioEvents.setMixpoint(trackId, newMixpoint);
-	};
+		audioEvents.setMixpoint(trackId, newMixpoint)
+	}
 
 	return (
 		<FormControl
-			onSubmit={(e) => {
-				e.preventDefault();
-				adjustMixpoint(mixpointVal);
+			onSubmit={e => {
+				e.preventDefault()
+				adjustMixpoint(mixpointVal)
 			}}
 			sx={{
-				"& div": {
-					"--Input-minHeight": "24px",
-				},
+				'& div': {
+					'--Input-minHeight': '24px'
+				}
 			}}
 		>
 			<Input
 				variant="outlined"
-				startDecorator={inputText("Mixpoint:")}
+				startDecorator={inputText('Mixpoint:')}
 				value={mixpointVal}
-				onChange={(e) => setMixpointVal(e.target.value)}
+				onChange={e => setMixpointVal(e.target.value)}
 				onBlur={() => adjustMixpoint(mixpointVal)}
 				sx={{
 					width: 135,
-					borderRadius: "5px",
-					borderColor: "action.selected",
-					"& div": {
-						borderColor: "action.disabled",
-						"--Input-gap": "4px",
+					borderRadius: '5px',
+					borderColor: 'action.selected',
+					'& div': {
+						borderColor: 'action.disabled',
+						'--Input-gap': '4px'
 					},
-					"& input": {
-						textAlign: "right",
+					'& input': {
+						textAlign: 'right',
 						fontSize: 12,
-						color: "text.secondary",
+						color: 'text.secondary'
 					},
-					backgroundColor: "background.surface",
+					backgroundColor: 'background.surface'
 				}}
 			/>
 		</FormControl>
-	);
-};
+	)
+}
 
 const StemControl = ({
 	trackId,
-	stemType,
+	stemType
 }: {
-	trackId: Track["id"];
-	stemType: Stem;
+	trackId: Track['id']
+	stemType: Stem
 }) => {
-	if (!trackId) return null;
+	if (!trackId) return null
 
-	const [volume = 100] = audioState[trackId].stems[stemType].volume();
-	const [mute = false] = audioState[trackId].stems[stemType].mute();
+	const [volume = 100] = audioState[trackId].stems[stemType].volume()
+	const [mute = false] = audioState[trackId].stems[stemType].mute()
 
-	const [solo, setSolo] = useState(false);
+	const [solo, setSolo] = useState(false)
 
 	const toggleSolo = () => {
-		audioEvents.stemSoloToggle(trackId, stemType, !solo);
-		setSolo(!solo);
-	};
+		audioEvents.stemSoloToggle(trackId, stemType, !solo)
+		setSolo(!solo)
+	}
 
 	const loaderSx = {
 		p: 0,
-		border: "1px solid",
-		borderColor: "action.focus",
-		borderRadius: "4px",
-		borderBottom: "none",
-		backgroundColor: "background.body",
-		overflow: "hidden",
-		zIndex: 1,
-	};
+		border: '1px solid',
+		borderColor: 'action.focus',
+		borderRadius: '4px',
+		borderBottom: 'none',
+		backgroundColor: 'background.body',
+		overflow: 'hidden',
+		zIndex: 1
+	}
 
 	return (
 		<>
 			<Box
 				sx={{
-					display: "flex",
+					display: 'flex',
 					gap: 1,
-					alignItems: "center",
-					justifyContent: "space-between",
+					alignItems: 'center',
+					justifyContent: 'space-between'
 				}}
 			>
 				<Typography
 					sx={{
-						fontSize: "xs",
-						fontWeight: "md",
-						pl: "3px",
-						width: "60px",
+						fontSize: 'xs',
+						fontWeight: 'md',
+						pl: '3px',
+						width: '60px'
 					}}
 				>
 					{stemType[0].toUpperCase() + stemType.slice(1).toLowerCase()}
 				</Typography>
-				<Box sx={{ width: "100%" }}>
+				<Box sx={{ width: '100%' }}>
 					<Card
 						id={`zoomview-container_${trackId}_${stemType}`}
 						sx={{
 							...loaderSx,
-							height: "20px",
-							pt: "3px",
+							height: '20px',
+							pt: '3px'
 						}}
-						onClick={(e) => {
-							const parent = e.currentTarget.firstElementChild as HTMLElement;
-							audioEvents.clickToSeek(trackId, e, parent);
+						onClick={e => {
+							const parent = e.currentTarget.firstElementChild as HTMLElement
+							audioEvents.clickToSeek(trackId, e, parent)
 						}}
 					/>
 					<VolumeMeter trackId={trackId} stemType={stemType} />
 				</Box>
 				<Icon
-					icon={solo ? "ic:baseline-headset-off" : "ic:baseline-headset"}
+					icon={solo ? 'ic:baseline-headset-off' : 'ic:baseline-headset'}
 					height="16px"
 					title="Solo"
 					style={{
-						color: "#aaa",
-						cursor: "pointer",
+						color: '#aaa',
+						cursor: 'pointer'
 					}}
 					onClick={() => toggleSolo()}
 				/>
@@ -672,7 +669,7 @@ const StemControl = ({
 						icon="material-symbols:volume-off"
 						title="Unmute"
 						height="16px"
-						style={{ color: "#aaa", cursor: "pointer" }}
+						style={{ color: '#aaa', cursor: 'pointer' }}
 						onClick={() => audioEvents.stemMuteToggle(trackId, stemType, false)}
 					/>
 				) : (
@@ -680,22 +677,22 @@ const StemControl = ({
 						icon="material-symbols:volume-up"
 						title="Mute"
 						height="16px"
-						style={{ color: "#aaa", cursor: "pointer" }}
+						style={{ color: '#aaa', cursor: 'pointer' }}
 						onClick={() => audioEvents.stemMuteToggle(trackId, stemType, true)}
 					/>
 				)}
 			</Box>
 		</>
-	);
-};
+	)
+}
 
 const StemsCrossfaders = () => (
 	<Box sx={{ my: 1, lineHeight: 1.2 }}>
-		{STEMS.map((stem) => (
+		{STEMS.map(stem => (
 			<CrossfaderControl key={stem} stemType={stem as Stem} />
 		))}
 	</Box>
-);
+)
 
 const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => (
 	<Slider
@@ -705,29 +702,29 @@ const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => (
 		max={100}
 		step={2}
 		track={false}
-		marks={[0, 50, 100].map((v) => ({ value: v }))}
+		marks={[0, 50, 100].map(v => ({ value: v }))}
 		valueLabelDisplay="off"
 		variant="soft"
 		size="md"
 		onChange={(_, val) => audioEvents.crossfade(val as number, stemType)}
 		sx={{
-			padding: "15px 0",
-			"& .MuiSlider-thumb": {
-				width: "10px",
-				height: "20px",
-				borderRadius: "3px",
-			},
+			padding: '15px 0',
+			'& .MuiSlider-thumb': {
+				width: '10px',
+				height: '20px',
+				borderRadius: '3px'
+			}
 		}}
 	/>
-);
+)
 
-const TrackTime = ({ trackId, sx }: { trackId: Track["id"]; sx?: SxProps }) => {
-	const [time = 0] = audioState[trackId].time();
+const TrackTime = ({ trackId, sx }: { trackId: Track['id']; sx?: SxProps }) => {
+	const [time = 0] = audioState[trackId].time()
 
 	return (
-		<Typography sx={{ fontSize: "xs", ...sx }}>{timeFormat(time)}</Typography>
-	);
-};
+		<Typography sx={{ fontSize: 'xs', ...sx }}>{timeFormat(time)}</Typography>
+	)
+}
 
 export {
 	BeatResolutionControl,
@@ -741,5 +738,5 @@ export {
 	StemsCrossfaders,
 	TrackNavControl,
 	TrackTime,
-	ZoomSelectControl,
-};
+	ZoomSelectControl
+}

@@ -1,8 +1,8 @@
 // from https://mui.com/joy-ui/guides/using-joy-ui-and-material-ui-together/
 import { extendTheme as extendJoyTheme } from '@mui/joy/styles'
 import {
-	experimental_extendTheme as extendMuiTheme,
-	Theme
+	Theme,
+	experimental_extendTheme as extendMuiTheme
 } from '@mui/material/styles'
 import { deepmerge } from '@mui/utils'
 
@@ -51,11 +51,7 @@ const joyTheme = extendJoyTheme({
 					'600': '#0072E5',
 					'700': '#0059B2',
 					'800': '#004C99',
-					'900': '#003A75',
-					main: '#007FFF',
-					light: '#66B2FF',
-					dark: '#0059B2',
-					contrastText: '#fff'
+					'900': '#003A75'
 				},
 				divider: '#E7EBF0',
 				common: {
@@ -64,8 +60,7 @@ const joyTheme = extendJoyTheme({
 				},
 				text: {
 					primary: '#1A2027',
-					secondary: '#3E5060',
-					disabled: 'rgba(0, 0, 0, 0.38)'
+					secondary: '#3E5060'
 				},
 				error: {
 					mainChannel: '#EB0014',
@@ -83,11 +78,7 @@ const joyTheme = extendJoyTheme({
 					'600': '#1DB45A',
 					'700': '#1AA251',
 					'800': '#178D46',
-					'900': '#0F5C2E',
-					main: '#1AA251',
-					light: '#6AE79C',
-					dark: '#1AA251',
-					contrastText: '#fff'
+					'900': '#0F5C2E'
 				},
 				warning: {
 					'50': '#FFF9EB',
@@ -99,23 +90,13 @@ const joyTheme = extendJoyTheme({
 					'600': '#D18E00',
 					'700': '#AB6800',
 					'800': '#8C5800',
-					'900': '#5A3600',
-					main: '#DEA500',
-					light: '#FFDC48',
-					dark: '#AB6800',
-					contrastText: 'rgba(0, 0, 0, 0.87)'
+					'900': '#5A3600'
 				},
 				secondary: {
 					mainChannel: '#9c27b0',
 					lightChannel: '#ba68c8',
 					darkChannel: '#7b1fa2',
 					contrastTextChannel: '#fff'
-				},
-				info: {
-					main: '#0288d1',
-					light: '#03a9f4',
-					dark: '#01579b',
-					contrastText: '#fff'
 				},
 				background: {
 					surface: '#fff',
@@ -148,11 +129,7 @@ const joyTheme = extendJoyTheme({
 					'600': '#0072E5',
 					'700': '#0059B2',
 					'800': '#004C99',
-					'900': '#003A75',
-					main: '#3399FF',
-					light: '#66B2FF',
-					dark: '#0059B2',
-					contrastText: 'rgba(0, 0, 0, 0.87)'
+					'900': '#003A75'
 				},
 				divider: '#c2e0ff14',
 				background: {
@@ -165,8 +142,7 @@ const joyTheme = extendJoyTheme({
 				},
 				text: {
 					primary: '#fff',
-					secondary: '#B2BAC2',
-					disabled: 'rgba(255, 255, 255, 0.5)'
+					secondary: '#B2BAC2'
 				},
 				error: {
 					mainChannel: '#EB0014',
@@ -184,11 +160,7 @@ const joyTheme = extendJoyTheme({
 					'600': '#1DB45A',
 					'700': '#1AA251',
 					'800': '#178D46',
-					'900': '#0F5C2E',
-					main: '#1DB45A',
-					light: '#6AE79C',
-					dark: '#1AA251',
-					contrastText: 'rgba(0, 0, 0, 0.87)'
+					'900': '#0F5C2E'
 				},
 				warning: {
 					'50': '#FFF9EB',
@@ -200,23 +172,13 @@ const joyTheme = extendJoyTheme({
 					'600': '#D18E00',
 					'700': '#AB6800',
 					'800': '#8C5800',
-					'900': '#5A3600',
-					main: '#DEA500',
-					light: '#FFDC48',
-					dark: '#AB6800',
-					contrastText: 'rgba(0, 0, 0, 0.87)'
+					'900': '#5A3600'
 				},
 				secondary: {
 					mainChannel: '#ce93d8',
 					lightChannel: '#f3e5f5',
 					darkChannel: '#ab47bc',
 					contrastTextChannel: 'rgba(0, 0, 0, 0.87)'
-				},
-				info: {
-					main: '#29b6f6',
-					light: '#4fc3f7',
-					dark: '#0288d1',
-					contrastText: 'rgba(0, 0, 0, 0.87)'
 				},
 				action: {
 					active: '#fff',

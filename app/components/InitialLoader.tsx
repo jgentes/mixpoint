@@ -30,29 +30,29 @@ const LoaderRow = styled('div')`
 `
 
 const LoaderSubtext = styled('span')(({ theme }) => ({
-  color: theme.palette.text.primary,
+	color: theme.palette.text.primary
 }))
 
 const InitialLoader = ({ message }: { message?: string }) => (
-  <LoaderWrapDiv>
-    <LoaderDiv>
-      <LoaderRow style={{ paddingBottom: '4px' }}>
-        <Logo />
-        {message ? (
-          <Icon
-            icon='material-symbols:warning'
-            height='20px'
-            style={{ alignSelf: 'center', color: 'action', paddingTop: '4px' }}
-          />
-        ) : (
-          <CircularProgress color='primary' size='sm' variant='soft' />
-        )}
-      </LoaderRow>
-      <LoaderRow style={{ borderTop: '1px solid #e2e2e2' }}>
-        <LoaderSubtext>{message || 'Please Wait. Loading...'}</LoaderSubtext>
-      </LoaderRow>
-    </LoaderDiv>
-  </LoaderWrapDiv>
+	<LoaderWrapDiv>
+		<LoaderDiv>
+			<LoaderRow style={{ paddingBottom: '4px' }}>
+				<Logo />
+				{message ? (
+					<Icon
+						icon="material-symbols:warning"
+						height="20px"
+						style={{ alignSelf: 'center', color: 'action', paddingTop: '4px' }}
+					/>
+				) : (
+					<CircularProgress color="primary" size="sm" variant="soft" />
+				)}
+			</LoaderRow>
+			<LoaderRow style={{ borderTop: '1px solid #e2e2e2' }}>
+				<LoaderSubtext>{message || 'Please Wait. Loading...'}</LoaderSubtext>
+			</LoaderRow>
+		</LoaderDiv>
+	</LoaderWrapDiv>
 )
 
 export default InitialLoader
