@@ -2,7 +2,7 @@
 id: rwktda0r
 title: Mixpoint Glossary
 file_version: 1.1.3
-app_version: 1.17.0
+app_version: 1.17.1
 ---
 
 ## `Track`<swm-token data-swm-token=":app/api/db/__dbSchema.ts:45:2:2:`type Track = {`"/>
@@ -60,7 +60,7 @@ A **mixpoint** is a specific time on a track where the next track begins to mix 
 
 ## `Mix`<swm-token data-swm-token=":app/api/db/__dbSchema.ts:72:2:2:`type Mix = {`"/>
 
-A **mix** is
+A **mix** is a transition between two tracks.
 
 <br/>
 
