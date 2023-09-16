@@ -3,12 +3,11 @@
 import PublicSansFont from '@fontsource/public-sans/latin.css'
 import { CssVarsProvider } from '@mui/joy/styles'
 import { CssBaseline } from '@mui/material'
-import { LinksFunction, V2_MetaFunction } from '@remix-run/cloudflare'
+import { LinksFunction, MetaFunction } from '@remix-run/cloudflare'
 import { Links, LiveReload, Meta, Outlet, Scripts } from '@remix-run/react'
 import { SnackbarProvider } from 'notistack'
 import { useEffect, useState } from 'react'
 import { createHead } from 'remix-island'
-import { ClientOnly } from 'remix-utils'
 import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import styles from '~/root.css'
@@ -23,7 +22,7 @@ export const Head = createHead(() => (
 	</>
 ))
 
-const meta: V2_MetaFunction = () => [
+const meta: MetaFunction = () => [
 	{ title: 'Mixpoint' },
 	{ description: 'Mixpoint is multi-track audio mixing app for the browser' },
 	{ viewport: 'width=device-width, initial-scale=1' }
@@ -66,7 +65,7 @@ const ThemeLoader = ({ noSplash }: { noSplash?: boolean }) => {
 				{/* CSS Baseline is used to inject global styles */}
 				<CssBaseline />
 				{loading && !noSplash ? (
-					<ClientOnly>{() => <InitialLoader />}</ClientOnly>
+					<InitialLoader />
 				) : (
 					<>
 						<Outlet />
