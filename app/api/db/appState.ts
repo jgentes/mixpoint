@@ -85,8 +85,8 @@ const { useStore: modalState, setStore: setModalState } = createStore<
 		bodyText: string
 		confirmColor: ButtonProps['color']
 		confirmText: string
-		onConfirm: Function
-		onCancel: Function
+		onConfirm: () => void
+		onCancel: () => void
 	}>
 >({
 	openState: false

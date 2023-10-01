@@ -1,8 +1,12 @@
+type SuccessCallback = (mp3Blob: Blob) => Promise<void>
+type ProgressCallback = (progress: number) => void
+type ErrorCallback = (error: string) => void
+
 const convertWav = (
 	blob: Blob,
-	onSuccess: Function,
-	onProgress: Function,
-	onError: Function
+	onSuccess: SuccessCallback,
+	onProgress: ProgressCallback,
+	onError: ErrorCallback
 ) => {
 	const mp3Worker = new Worker('/workers/mp3encoder.js')
 

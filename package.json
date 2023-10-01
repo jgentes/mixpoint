@@ -33,7 +33,7 @@
 		"web-audio-beat-detector": "~8.1.37"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.1.2",
+		"@biomejs/biome": "1.2.2",
 		"@cloudflare/workers-types": "^4.20230821.0",
 		"@iconify-icon/react": "^1.0.7",
 		"@remix-run/dev": "^2.0.0",
