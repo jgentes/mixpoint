@@ -15,27 +15,60 @@ import { Stem, Track, db } from '~/api/db/dbHandlers'
 import { getPermission } from '~/api/fileHandlers'
 import { errorHandler } from '~/utils/notifications'
 
-const PRIMARY_WAVEFORM_CONFIG: Partial<WaveSurferOptions> = {
+const PRIMARY_WAVEFORM_CONFIG = (trackId: Track['id']): WaveSurferOptions => ({
+	container: `#zoomview-container_${trackId}`,
 	height: 60,
 	autoScroll: true,
 	autoCenter: true,
 	hideScrollbar: false,
 	barWidth: 2,
 	barHeight: 0.9,
-	barGap: 1
-}
+	barGap: 1,
+	plugins: [
+		// Do not change the order of plugins! They are referenced by index :(
+		RegionsPlugin.create(),
+		Minimap.create({
+			container: `#overview-container_${trackId}`,
+			height: 22,
+			waveColor: [
+				'rgba(117, 116, 116, 0.5)',
+				'rgba(145, 145, 145, 0.8)',
+				'rgba(145, 145, 145, 0.8)',
+				'rgba(145, 145, 145, 0.8)'
+			],
+			progressColor: 'rgba(0, 0, 0, 0.25)',
+			hideScrollbar: true
+		})
+
+		// Playhead.create({
+		// 	moveOnSeek: true,
+		// 	returnOnPause: false,
+		// 	draw: true,
+		// }),
+		// CursorPlugin.create({
+		// 	showTime: true,
+		// 	opacity: "1",
+		// 	customShowTimeStyle: {
+		// 		color: "#eee",
+		// 		padding: "0 4px",
+		// 		"font-size": "10px",
+		// 		backgroundColor: "rgba(0, 0, 0, 0.3)",
+		// 	},
+		// }),
+	]
+})
 
 // This function accepts either a full track (with no stem) or an individual stem ('bass', etc)
 const initWaveform = async ({
 	trackId,
 	file,
 	stem,
-	waveformConfig
+	waveformConfig = PRIMARY_WAVEFORM_CONFIG(trackId)
 }: {
 	trackId: Track['id']
 	file: File
 	stem?: Stem
-	waveformConfig: WaveSurferOptions
+	waveformConfig?: WaveSurferOptions
 }): Promise<void> => {
 	if (!trackId) throw errorHandler('No track ID provided to initWaveform')
 
@@ -142,44 +175,7 @@ const Waveform = ({
 			const file = await getPermission(track)
 			if (!file) throw errorHandler(`Please try adding ${track.name} again.`)
 
-			const waveformConfig: WaveSurferOptions = {
-				container: `#zoomview-container_${trackId}`,
-				...PRIMARY_WAVEFORM_CONFIG,
-				plugins: [
-					// Do not change the order of plugins! They are referenced by index :(
-					RegionsPlugin.create(),
-					Minimap.create({
-						container: `#overview-container_${trackId}`,
-						height: 22,
-						waveColor: [
-							'rgba(117, 116, 116, 0.5)',
-							'rgba(145, 145, 145, 0.8)',
-							'rgba(145, 145, 145, 0.8)',
-							'rgba(145, 145, 145, 0.8)'
-						],
-						progressColor: 'rgba(0, 0, 0, 0.25)',
-						hideScrollbar: true
-					})
-
-					// Playhead.create({
-					// 	moveOnSeek: true,
-					// 	returnOnPause: false,
-					// 	draw: true,
-					// }),
-					// CursorPlugin.create({
-					// 	showTime: true,
-					// 	opacity: "1",
-					// 	customShowTimeStyle: {
-					// 		color: "#eee",
-					// 		padding: "0 4px",
-					// 		"font-size": "10px",
-					// 		backgroundColor: "rgba(0, 0, 0, 0.3)",
-					// 	},
-					// }),
-				]
-			}
-
-			initWaveform({ trackId, file, waveformConfig })
+			initWaveform({ trackId, file })
 		}
 
 		// prevent duplication on re-render while loading

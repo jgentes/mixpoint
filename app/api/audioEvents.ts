@@ -94,6 +94,7 @@ const audioEvents = {
 				setAudioState[trackId].time(time)
 			}
 
+			// account for resize of browser window
 			waveform.on('redraw', () => audioEvents.seek(trackId))
 		} else {
 			setAppState.stemsAnalyzing(prev => prev.filter(id => id !== trackId))
@@ -531,6 +532,11 @@ const audioEvents = {
 		trackId: Track['id'],
 		stem: TrackPrefs['stemZoom'] | 'all'
 	) => {
+		// add track to analyzing state
+		setAppState.analyzing(prev =>
+			prev.includes(trackId) ? prev : [...prev, trackId]
+		)
+
 		const [{ waveform }] = getAudioState[trackId]()
 		if (waveform) waveform.destroy()
 
@@ -547,20 +553,7 @@ const audioEvents = {
 
 		if (!file) return
 
-		const waveformConfig: WaveSurferOptions = {
-			container: `#zoomview-container_${trackId}`,
-			...PRIMARY_WAVEFORM_CONFIG,
-			plugins: [
-				// Do not change the order of plugins! They are referenced by index :(
-				RegionsPlugin.create()
-			]
-		}
-
-		await initWaveform({
-			trackId,
-			file,
-			waveformConfig
-		})
+		await initWaveform({ trackId, file })
 
 		await setTrackPrefs(trackId, {
 			stemZoom: stem === 'all' ? undefined : stem

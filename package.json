@@ -7,7 +7,8 @@
 	"scripts": {
 		"build": "remix build",
 		"dev": "remix dev --manual -c \"yarn start\"",
-		"start": "wrangler pages dev --compatibility-date=2023-06-21 ./public"
+		"start": "wrangler pages dev --compatibility-date=2023-06-21 ./public",
+		"lint": "biome check . --apply"
 	},
 	"dependencies": {
 		"@emotion/react": "~11.10.6",
@@ -28,7 +29,7 @@
 		"react-dom": "~18",
 		"remix-island": "^0.1.2",
 		"teaful": "~0.11.1",
-		"wavesurfer.js": "^7.3.0",
+		"wavesurfer.js": "^7.3.3",
 		"web-audio-beat-detector": "~8.1.37"
 	},
 	"devDependencies": {

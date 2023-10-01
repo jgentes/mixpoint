@@ -16,7 +16,7 @@ import { timeFormat } from '~/utils/tableOps'
 const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 	const [analyzingTracks] = AppState.analyzing()
 	const analyzing = analyzingTracks.includes(trackId)
-
+	console.log('trackpanel analyzing:', trackId, analyzing)
 	const { duration = 0 } =
 		useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
 
@@ -70,7 +70,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 		</Box>
 	)
 
-	const loaderSx = {
+	const LOADER_SX = {
 		p: 0,
 		border: '1px solid',
 		borderColor: 'action.focus',
@@ -81,25 +81,26 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 		zIndex: 1
 	}
 
+	const loaderCover = (
+		<Card
+			sx={{
+				...LOADER_SX,
+				zIndex: 2,
+				position: 'absolute',
+				inset: '261px 16px calc(100% - 339px)'
+			}}
+		>
+			<Loader style={{ margin: 'auto' }} />
+		</Card>
+	)
+
 	return (
 		<>
 			{trackHeader}
 
-			{/* loader cover */}
-			{!analyzing ? null : (
-				<Card
-					sx={{
-						...loaderSx,
-						zIndex: 2,
-						position: 'absolute',
-						inset: '116px 16px calc(100% - 195px)'
-					}}
-				>
-					<Loader style={{ margin: 'auto' }} />
-				</Card>
-			)}
+			{analyzing ? loaderCover : null}
 
-			<Waveform trackId={trackId} sx={{ ...loaderSx, height: '78px' }} />
+			<Waveform trackId={trackId} sx={{ ...LOADER_SX, height: '78px' }} />
 
 			<VolumeMeter trackId={trackId} />
 
