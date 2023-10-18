@@ -16,7 +16,7 @@ import { timeFormat } from '~/utils/tableOps'
 const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 	const [analyzingTracks] = AppState.analyzing()
 	const analyzing = analyzingTracks.includes(trackId)
-	console.log('trackpanel analyzing:', trackId, analyzing)
+
 	const { duration = 0 } =
 		useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
 
@@ -31,7 +31,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 				alignItems: 'center'
 			}}
 		>
-			<div style={{ display: 'flex' }}>
+			<div style={{ display: 'flex', minWidth: '130px' }}>
 				<Typography
 					sx={{
 						fontSize: 'xs',
