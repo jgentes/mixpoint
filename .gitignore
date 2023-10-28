@@ -16,5 +16,5 @@ todo.md
 !.yarn/versions
 
 # cloudflare
-wrangler.toml
+.wrangler/
 functions/
