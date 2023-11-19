@@ -29,6 +29,7 @@
 		"react-dom": "~18",
 		"remix-island": "^0.1.2",
 		"teaful": "~0.11.1",
+		"use-count-up": "^3.0.1",
 		"wavesurfer.js": "^7.3.3",
 		"web-audio-beat-detector": "~8.1.37"
 	},
@@ -42,7 +43,7 @@
 		"@types/react-dom": "~18.0.6",
 		"@types/wicg-file-system-access": "~2020.9.5",
 		"typescript": "^5.0.4",
-		"wrangler": "^3.6.0",
+		"wrangler": "latest",
 		"zod": "^3.21.4"
 	},
 	"engines": {

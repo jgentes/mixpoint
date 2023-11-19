@@ -4,7 +4,6 @@ import { type WaveSurferOptions } from 'wavesurfer.js'
 import { audioEvents } from '~/api/audioEvents'
 import { audioState, getAppState, setAppState } from '~/api/db/appState'
 import { STEMS, Stem, Track, db, getTrackPrefs } from '~/api/db/dbHandlers'
-import { validateTrackStemAccess } from '~/api/fileHandlers'
 import { initWaveform } from '~/api/renderWaveform'
 import StemAccessButton from '~/components/mixes/StemAccessButton'
 import { StemControl } from '~/components/tracks/Controls'
@@ -18,8 +17,6 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
 	// check stems on disk to determine component state
 	useEffect(() => {
 		const initStems = async () => {
-			await validateTrackStemAccess(trackId)
-
 			// if stems exist, generate waveforms for each
 			if (stemState === 'ready') {
 				const { stems: stemCache } = (await db.trackCache.get(trackId)) || {}

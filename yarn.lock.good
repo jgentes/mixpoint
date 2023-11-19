@@ -5342,7 +5342,6 @@ isbot@latest:
     remix-island: ^0.1.2
     teaful: ~0.11.1
     typescript: ^5.0.4
-    use-count-up: ^3.0.1
     wavesurfer.js: ^7.3.3
     web-audio-beat-detector: ~8.1.37
     wrangler: latest
@@ -7357,26 +7356,6 @@ isbot@latest:
     querystringify: ^2.1.1
     requires-port: ^1.0.0
   checksum: fbdba6b1d83336aca2216bbdc38ba658d9cfb8fc7f665eb8b17852de638ff7d1a162c198a8e4ed66001ddbf6c9888d41e4798912c62b4fd777a31657989f7bdf
-  languageName: node
-  linkType: hard
-
-"use-count-up@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "use-count-up@npm:3.0.1"
-  dependencies:
-    use-elapsed-time: 3.0.2
-  peerDependencies:
-    react: ">=16.8.0"
-  checksum: 0e5b659acd52bdf401d943605d19c425bc7acdce5f4486b3bd6dfd6b70dadcb68f279df09140976b3038d6de34f3eb5fe47136af04e3789861dfecd943906ea3
-  languageName: node
-  linkType: hard
-
-"use-elapsed-time@npm:3.0.2":
-  version: 3.0.2
-  resolution: "use-elapsed-time@npm:3.0.2"
-  peerDependencies:
-    react: ">=16.8.0"
-  checksum: 9ba8ef6d05b8137fd715ace7303edc2fdc412f372f158bfa659926b0cb356654be84664f912d016f99deb2f3951236443feb84b78318755d5984c340dcb418a6
   languageName: node
   linkType: hard
 

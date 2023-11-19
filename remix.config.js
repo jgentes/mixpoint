@@ -9,5 +9,6 @@ export default {
 	serverMinify: true,
 	serverModuleFormat: 'esm',
 	serverPlatform: 'neutral',
-	serverNodeBuiltinsPolyfill: {}
+	serverNodeBuiltinsPolyfill: {},
+	browserNodeBuiltinsPolyfill: { modules: { http: true, https: true } }
 }

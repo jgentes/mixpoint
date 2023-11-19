@@ -21,6 +21,7 @@ const DarkMode = () => {
 					mode === 'light' ? 'dark' : 'light'
 				}-mode-outline`}
 				height="20px"
+				title={mode === 'light' ? 'Dark Mode' : 'Light Mode'}
 			/>
 		</IconButton>
 	)

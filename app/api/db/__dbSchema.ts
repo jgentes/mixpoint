@@ -151,7 +151,9 @@ const createHooks = (table: keyof StoreTypes) => {
 }
 
 const tables = ['mix', 'set', 'user'] as const
-tables.forEach(table => createHooks(table))
+for (const table of tables) {
+	createHooks(table)
+}
 
 // Avoid having two files export same type names
 export type {

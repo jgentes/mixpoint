@@ -154,17 +154,18 @@ const validateTrackStemAccess = async (
 			return 'selectStemDir'
 		}
 
-		if (stemState === 'processingStems' || stemState === 'convertingStems')
-			return stemState
+		if (stemState === 'processingStems') return stemState
 
 		const { name } = (await db.tracks.get(trackId)) || {}
 		if (!name) return 'getStems'
+
+		const FILENAME = name.substring(0, name.lastIndexOf('.'))
 
 		// does the stem dir for this track exist?
 		let trackStemDirHandle
 		try {
 			trackStemDirHandle = await stemsDirHandle.getDirectoryHandle(
-				`${name.slice(0, -4)} - stems`
+				`${FILENAME} - stems`
 			)
 		} catch (e) {
 			// directory doesn't exist
@@ -176,7 +177,7 @@ const validateTrackStemAccess = async (
 		try {
 			for await (const [name, fileHandle] of trackStemDirHandle.entries()) {
 				const file = (await fileHandle.getFile(name)) as File
-				const stemName = name.slice(0, -4)
+				const stemName = name.substring(0, name.lastIndexOf('.'))
 				if (stemName && STEMS.includes(stemName as Stem)) {
 					localStems[stemName as Stem] = { file }
 				}

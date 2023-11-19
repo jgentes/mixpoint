@@ -13,6 +13,7 @@ import {
 } from '~/api/db/appState'
 import { Stem, Track, db } from '~/api/db/dbHandlers'
 import { getPermission } from '~/api/fileHandlers'
+import { validateTrackStemAccess } from '~/api/fileHandlers'
 import { errorHandler } from '~/utils/notifications'
 
 const PRIMARY_WAVEFORM_CONFIG = (trackId: Track['id']): WaveSurferOptions => ({
@@ -188,6 +189,8 @@ const Waveform = ({
 		setAppState.analyzing(prev =>
 			prev.includes(trackId) ? prev : [...prev, trackId]
 		)
+
+		validateTrackStemAccess(trackId)
 
 		return () => audioEvents.destroy(trackId)
 	}, [trackId])

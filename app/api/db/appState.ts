@@ -25,6 +25,7 @@ type AudioState = {
 	volumeMeter: number // value between 0 and 1
 	stems: Stems
 	stemState: StemState
+	stemTimer: number
 }
 
 type Stems = {
@@ -42,8 +43,9 @@ type StemState =
 	| 'selectStemDir'
 	| 'grantStemDirAccess'
 	| 'getStems'
+	| 'uploadingFile'
 	| 'processingStems'
-	| 'convertingStems'
+	| 'downloadingStems'
 	| 'ready'
 	| 'error'
 

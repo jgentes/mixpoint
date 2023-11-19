@@ -1,6 +1,5 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform aroun'
 import type WaveSurfer from 'wavesurfer.js'
-import { WaveSurferOptions } from 'wavesurfer.js'
 import RegionsPlugin, {
 	type Region
 } from 'wavesurfer.js/dist/plugins/regions.js'
@@ -22,11 +21,7 @@ import {
 	setTrackPrefs,
 	updateTrack
 } from '~/api/db/dbHandlers'
-import {
-	PRIMARY_WAVEFORM_CONFIG,
-	initAudioContext,
-	initWaveform
-} from '~/api/renderWaveform'
+import { initAudioContext, initWaveform } from '~/api/renderWaveform'
 import { convertToSecs } from '~/utils/tableOps'
 
 // audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
@@ -97,6 +92,7 @@ const audioEvents = {
 			// account for resize of browser window
 			waveform.on('redraw', () => audioEvents.seek(trackId))
 		} else {
+			// Remove from stemsAnalyzing
 			setAppState.stemsAnalyzing(prev => prev.filter(id => id !== trackId))
 		}
 
@@ -369,9 +365,11 @@ const audioEvents = {
 			Math.min(1, 1 + Math.cos((1 - sliderPercent) * Math.PI))
 		]
 
-		tracks?.forEach((track, i) => {
-			if (track) audioEvents.updateVolume(Number(track), volumes[i], stemType)
-		})
+		if (tracks) {
+			for (const [i, track] of tracks.entries()) {
+				if (track) audioEvents.updateVolume(Number(track), volumes[i], stemType)
+			}
+		}
 	},
 
 	updateVolume: (trackId: number, volume: number, stemType?: Stem) => {
@@ -575,6 +573,9 @@ const audioEvents = {
 				stem?.waveform?.destroy()
 			}
 		}
+
+		// Remove from stemsAnalyzing
+		setAppState.stemsAnalyzing(prev => prev.filter(id => id !== trackId))
 	}
 }
 
