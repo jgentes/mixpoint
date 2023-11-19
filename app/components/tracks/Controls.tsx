@@ -68,7 +68,7 @@ const NumberControl = ({
 
 	useEffect(
 		() => setInputVal((adjustedVal ?? val ?? 0).toFixed(toFixedVal)),
-		[adjustedVal, val]
+		[adjustedVal, val, toFixedVal]
 	)
 
 	const valDiff = !Number.isNaN(Number(adjustedVal)) && adjustedVal !== val

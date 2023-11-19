@@ -14,7 +14,7 @@ const Layout: React.FunctionComponent = () => {
 
 	useEffect(() => {
 		if (!mixViewVisible) setAppState.openDrawer(false)
-	})
+	}, [mixViewVisible])
 
 	return (
 		<Sheet

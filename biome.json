@@ -8,7 +8,16 @@
 		"rules": {
 			"recommended": true
 		},
-		"ignore": ["*.min.js", "node_modules", ".cache", "build", "functions"]
+		"ignore": [
+			"*.min.js",
+			"node_modules",
+			".cache",
+			"build",
+			"functions",
+			".wrangler",
+			".vscode",
+			".swm"
+		]
 	},
 	"javascript": {
 		"formatter": {
@@ -19,6 +28,15 @@
 		}
 	},
 	"formatter": {
-		"ignore": ["*.min.js", "node_modules", ".cache", "build", "functions"]
+		"ignore": [
+			"*.min.js",
+			"node_modules",
+			".cache",
+			"build",
+			"functions",
+			".wrangler",
+			".vscode",
+			".swm"
+		]
 	}
 }

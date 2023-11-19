@@ -42,7 +42,7 @@ In the project directory, you can run:
 
 ### `"yarn dev"`,
 
-The app is built using `Remix` which uses esBuild for really fast hot reloads. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+The app is built using `Remix` which uses esBuild (now Vite) for really fast hot reloads. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 ## Built With
 

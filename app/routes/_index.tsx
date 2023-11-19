@@ -33,7 +33,7 @@ const Boundary = () => {
 		window.addEventListener('notify', notify)
 
 		return () => window.removeEventListener('notify', notify)
-	})
+	}, [enqueueSnackbar])
 
 	return <Layout />
 }

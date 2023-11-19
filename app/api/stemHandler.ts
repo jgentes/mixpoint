@@ -1,4 +1,4 @@
-import { Stems, getAudioState, setAudioState } from '~/api/db/appState'
+import { setAudioState } from '~/api/db/appState'
 import { STEMS, Stem, Track, db, storeTrackCache } from '~/api/db/dbHandlers'
 import { getStemsDirHandle } from '~/api/fileHandlers'
 import { errorHandler } from '~/utils/notifications'
