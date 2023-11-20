@@ -3,8 +3,20 @@
 import PublicSansFont from '@fontsource/public-sans/latin.css'
 import { CssVarsProvider } from '@mui/joy/styles'
 import { CssBaseline } from '@mui/material'
-import { LinksFunction, MetaFunction } from '@remix-run/cloudflare'
-import { Links, LiveReload, Meta, Outlet, Scripts } from '@remix-run/react'
+import {
+	LinksFunction,
+	LoaderFunctionArgs,
+	MetaFunction,
+	json
+} from '@remix-run/cloudflare'
+import {
+	Links,
+	LiveReload,
+	Meta,
+	Outlet,
+	Scripts,
+	useLoaderData
+} from '@remix-run/react'
 import { SnackbarProvider } from 'notistack'
 import { useEffect, useState } from 'react'
 import { createHead } from 'remix-island'
@@ -77,11 +89,30 @@ const ThemeLoader = ({ noSplash }: { noSplash?: boolean }) => {
 	)
 }
 
-const App = () => (
-	<HtmlDoc>
-		<ThemeLoader />
-		<Scripts />
-	</HtmlDoc>
-)
+// this is used to inject environment variables into the browser
+export async function loader({ context }: LoaderFunctionArgs) {
+	return json({
+		ENV: {
+			SUPABASE_URL: context.env.SUPABASE_URL,
+			SUPABASE_ANON_KEY: context.env.SUPABASE_ANON_KEY
+		}
+	})
+}
+
+const App = () => {
+	const data = useLoaderData<typeof loader>()
+	return (
+		<HtmlDoc>
+			<script
+				// biome-ignore lint/security/noDangerouslySetInnerHtml: see https://remix.run/docs/en/main/guides/envvars
+				dangerouslySetInnerHTML={{
+					__html: `window.ENV = ${JSON.stringify(data.ENV)}`
+				}}
+			/>
+			<ThemeLoader />
+			<Scripts />
+		</HtmlDoc>
+	)
+}
 
 export { ThemeLoader, App as default, links, meta }

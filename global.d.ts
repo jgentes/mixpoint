@@ -78,3 +78,15 @@ declare module '@mui/material/styles' {
 		vars: JoyTheme['vars']
 	}
 }
+
+// for Remix env vars: https://remix.run/docs/en/main/guides/envvars
+interface WindowEnv {
+	SUPABASE_URL: string
+	SUPABASE_ANON_KEY: string
+}
+
+declare global {
+	interface Window {
+		ENV: WindowEnv
+	}
+}
