@@ -1,9 +1,10 @@
 import { Box, IconButton } from '@mui/joy'
 
-import DarkMode from '~/components/layout/DarkMode'
+import DarkMode from '~/components/layout/DarkModeButton'
 import Logo from '~/components/layout/MixpointLogo'
 
 import { Icon } from '@iconify-icon/react'
+import LoginButton from '~/components/layout/LoginButton.client'
 
 const Header = () => (
 	<Box
@@ -25,6 +26,7 @@ const Header = () => (
 	>
 		<Logo />
 		<Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.5 }}>
+			<LoginButton />
 			<IconButton
 				size="sm"
 				variant="outlined"

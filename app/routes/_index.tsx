@@ -13,9 +13,10 @@ const boundaryHandler = (message: string, variant: VariantType = 'error') => {
 	return <InitialLoader message={message} />
 }
 
+// exporting this automatically uses it to capture errors
 const ErrorBoundary = () => {
 	const error = useRouteError() as Error
-
+	console.error('error boundary: ', error)
 	if (isRouteErrorResponse(error)) {
 		return boundaryHandler(error.data.message, 'warning')
 	}

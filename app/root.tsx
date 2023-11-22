@@ -1,17 +1,36 @@
 // this file establishes the root component that renders all subsequent / child routes
 // it also injects top level styling, HTML meta tags, links, and javascript for browser rendering
 import PublicSansFont from '@fontsource/public-sans/latin.css'
-import { CssVarsProvider } from '@mui/joy/styles'
+import { CssVarsProvider as JoyCssVarsProvider } from '@mui/joy/styles'
 import { CssBaseline } from '@mui/material'
-import { LinksFunction, MetaFunction } from '@remix-run/cloudflare'
-import { Links, LiveReload, Meta, Outlet, Scripts } from '@remix-run/react'
+import {
+	Experimental_CssVarsProvider as MaterialCssVarsProvider,
+	THEME_ID as MATERIAL_THEME_ID,
+	experimental_extendTheme as materialExtendTheme
+} from '@mui/material/styles'
+import {
+	LinksFunction,
+	LoaderFunctionArgs,
+	MetaFunction,
+	json
+} from '@remix-run/cloudflare'
+import {
+	Links,
+	LiveReload,
+	Meta,
+	Outlet,
+	Scripts,
+	useLoaderData
+} from '@remix-run/react'
 import { SnackbarProvider } from 'notistack'
 import { useEffect, useState } from 'react'
 import { createHead } from 'remix-island'
 import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import styles from '~/root.css'
-import { theme } from '~/theme'
+import { theme as joyTheme } from '~/theme'
+
+const materialTheme = materialExtendTheme()
 
 // this is needed to address React 18.2 hydration issues
 // TODO - remove this once React 18.3 is released
@@ -60,28 +79,52 @@ const ThemeLoader = ({ noSplash }: { noSplash?: boolean }) => {
 	}, [])
 
 	return (
-		<SnackbarProvider preventDuplicate maxSnack={3}>
-			<CssVarsProvider theme={theme} defaultMode={'dark'}>
-				{/* CSS Baseline is used to inject global styles */}
-				<CssBaseline />
-				{loading && !noSplash ? (
-					<InitialLoader />
-				) : (
-					<>
-						<Outlet />
-						<ConfirmModal />
-					</>
-				)}
-			</CssVarsProvider>
-		</SnackbarProvider>
+		<MaterialCssVarsProvider
+			theme={{ [MATERIAL_THEME_ID]: materialTheme }}
+			defaultMode={'dark'}
+		>
+			<JoyCssVarsProvider theme={joyTheme} defaultMode={'dark'}>
+				<SnackbarProvider preventDuplicate maxSnack={3}>
+					{/* CSS Baseline is used to inject global styles */}
+					<CssBaseline />
+					{loading && !noSplash ? (
+						<InitialLoader />
+					) : (
+						<>
+							<Outlet />
+							<ConfirmModal />
+						</>
+					)}
+				</SnackbarProvider>
+			</JoyCssVarsProvider>
+		</MaterialCssVarsProvider>
 	)
 }
 
-const App = () => (
-	<HtmlDoc>
-		<ThemeLoader />
-		<Scripts />
-	</HtmlDoc>
-)
+// this is used to inject environment variables into the browser
+export async function loader({ context }: LoaderFunctionArgs) {
+	return json({
+		ENV: {
+			SUPABASE_URL: context.env.SUPABASE_URL,
+			SUPABASE_ANON_KEY: context.env.SUPABASE_ANON_KEY
+		}
+	})
+}
+
+const App = () => {
+	const data = useLoaderData<typeof loader>()
+	return (
+		<HtmlDoc>
+			<script
+				// biome-ignore lint/security/noDangerouslySetInnerHtml: see https://remix.run/docs/en/main/guides/envvars
+				dangerouslySetInnerHTML={{
+					__html: `window.ENV = ${JSON.stringify(data.ENV)}`
+				}}
+			/>
+			<ThemeLoader />
+			<Scripts />
+		</HtmlDoc>
+	)
+}
 
 export { ThemeLoader, App as default, links, meta }

@@ -6,6 +6,10 @@ import {
 } from '@mui/material/styles'
 import { deepmerge } from '@mui/utils'
 
+// ;<MaterialCssVarsProvider theme={{ [MATERIAL_THEME_ID]: materialTheme }}>
+// 	<JoyCssVarsProvider></JoyCssVarsProvider>
+// </MaterialCssVarsProvider>
+
 const muiTheme = extendMuiTheme({
 	// This is required to point to `var(--joy-*)` because we are using `CssVarsProvider` from Joy UI.
 	cssVarPrefix: 'joy',
