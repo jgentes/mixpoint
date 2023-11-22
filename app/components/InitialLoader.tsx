@@ -1,3 +1,5 @@
+// InitialLoader is used to hide the flash of unstyled content
+
 import { Icon } from '@iconify-icon/react'
 import { CircularProgress, styled } from '@mui/joy'
 import Logo from '~/components/layout/MixpointLogo'

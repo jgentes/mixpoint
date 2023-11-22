@@ -1,6 +1,7 @@
 // this file establishes the root component that renders all subsequent / child routes
 // it also injects top level styling, HTML meta tags, links, and javascript for browser rendering
 import PublicSansFont from '@fontsource/public-sans/latin.css'
+import { Snackbar } from '@mui/joy'
 import { CssVarsProvider as JoyCssVarsProvider } from '@mui/joy/styles'
 import { CssBaseline } from '@mui/material'
 import {
@@ -20,15 +21,17 @@ import {
 	Meta,
 	Outlet,
 	Scripts,
-	useLoaderData
+	isRouteErrorResponse,
+	useLoaderData,
+	useRouteError
 } from '@remix-run/react'
-import { SnackbarProvider } from 'notistack'
 import { useEffect, useState } from 'react'
 import { createHead } from 'remix-island'
 import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import styles from '~/root.css'
 import { theme as joyTheme } from '~/theme'
+import { Notification, errorHandler } from '~/utils/notifications'
 
 const materialTheme = materialExtendTheme()
 
@@ -69,13 +72,27 @@ const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
 
 const ThemeLoader = ({ noSplash }: { noSplash?: boolean }) => {
 	const [loading, setLoading] = useState(true)
+	const [notification, setNotification] = useState<Notification>()
 
-	// InitialLoader is used to hide the flash of unstyled content
 	useEffect(() => {
+		// initial loading screen timeout
 		const timer = setTimeout(() => {
 			setLoading(false)
 		}, 500)
-		return () => clearTimeout(timer)
+
+		// for snackbar notifications
+		const notify = (e: CustomEventInit) =>
+			setNotification({
+				message: e.detail.message,
+				color: e.detail.color || 'danger'
+			})
+
+		window.addEventListener('notify', notify)
+
+		return () => {
+			clearTimeout(timer)
+			window.removeEventListener('notify', notify)
+		}
 	}, [])
 
 	return (
@@ -84,18 +101,26 @@ const ThemeLoader = ({ noSplash }: { noSplash?: boolean }) => {
 			defaultMode={'dark'}
 		>
 			<JoyCssVarsProvider theme={joyTheme} defaultMode={'dark'}>
-				<SnackbarProvider preventDuplicate maxSnack={3}>
-					{/* CSS Baseline is used to inject global styles */}
-					<CssBaseline />
-					{loading && !noSplash ? (
-						<InitialLoader />
-					) : (
-						<>
-							<Outlet />
-							<ConfirmModal />
-						</>
-					)}
-				</SnackbarProvider>
+				{/* CSS Baseline is used to inject global styles */}
+				<CssBaseline />
+				{loading && !noSplash ? (
+					<InitialLoader />
+				) : (
+					<>
+						<Outlet />
+						<ConfirmModal />
+					</>
+				)}
+				<Snackbar
+					open={!!notification}
+					autoHideDuration={5000}
+					variant="soft"
+					color={notification?.color}
+					size="md"
+					onClose={() => setNotification(undefined)}
+				>
+					{notification?.message}
+				</Snackbar>
 			</JoyCssVarsProvider>
 		</MaterialCssVarsProvider>
 	)
@@ -127,4 +152,18 @@ const App = () => {
 	)
 }
 
-export { ThemeLoader, App as default, links, meta }
+// exporting this automatically uses it to capture errors
+const ErrorBoundary = () => {
+	const error = useRouteError() as Error
+	console.error('error boundary: ', error)
+
+	const message = isRouteErrorResponse(error)
+		? error.data.message
+		: error.message || JSON.stringify(error)
+
+	errorHandler(message)
+
+	return <InitialLoader message={message} />
+}
+
+export { ThemeLoader, App as default, links, meta, ErrorBoundary }

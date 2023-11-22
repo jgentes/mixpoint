@@ -94,22 +94,12 @@ const { useStore: modalState, setStore: setModalState } = createStore<
 	openState: false
 })
 
-// NotificationState is an alert handler
-const { useStore: notificationState } = createStore<{
-	message: string | null
-	variant: 'success' | 'error' | 'warning' | 'info'
-}>({
-	message: '',
-	variant: 'error'
-})
-
 export {
 	AppState,
 	audioState,
 	getAppState,
 	getAudioState,
 	modalState,
-	notificationState,
 	setAppState,
 	setAudioState,
 	setModalState
