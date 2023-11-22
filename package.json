@@ -11,11 +11,11 @@
 		"lint": "biome check . --apply"
 	},
 	"dependencies": {
-		"@emotion/react": "~11.10.6",
-		"@emotion/styled": "~11.10.6",
+		"@emotion/react": "^11.11.1",
+		"@emotion/styled": "^11.11.0",
 		"@fontsource/public-sans": "~4.5.11",
-		"@mui/joy": "~5.0.0-alpha.65",
-		"@mui/material": "~5.11.7",
+		"@mui/joy": "^5.0.0-beta.15",
+		"@mui/material": "^5.14.18",
 		"@remix-run/cloudflare": "^2.3.0",
 		"@remix-run/cloudflare-pages": "^2.3.0",
 		"@remix-run/react": "^2.3.0",
