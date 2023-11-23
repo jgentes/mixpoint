@@ -75,3 +75,7 @@ async function handleBrowserRequest(
 		status: didError ? 500 : responseStatusCode
 	})
 }
+
+export function handleError(error: Error) {
+	console.error(error)
+}

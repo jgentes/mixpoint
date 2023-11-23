@@ -31,7 +31,7 @@ import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import styles from '~/root.css'
 import { theme as joyTheme } from '~/theme'
-import { Notification, errorHandler } from '~/utils/notifications'
+import { Notification } from '~/utils/notifications'
 
 const materialTheme = materialExtendTheme()
 
@@ -70,7 +70,7 @@ const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
 	)
 }
 
-const ThemeLoader = ({ noSplash }: { noSplash?: boolean }) => {
+const ThemeLoader = ({ error }: { error?: string }) => {
 	const [loading, setLoading] = useState(true)
 	const [notification, setNotification] = useState<Notification>()
 
@@ -103,8 +103,8 @@ const ThemeLoader = ({ noSplash }: { noSplash?: boolean }) => {
 			<JoyCssVarsProvider theme={joyTheme} defaultMode={'dark'}>
 				{/* CSS Baseline is used to inject global styles */}
 				<CssBaseline />
-				{loading && !noSplash ? (
-					<InitialLoader />
+				{loading || error ? (
+					<InitialLoader message={error} />
 				) : (
 					<>
 						<Outlet />
@@ -136,8 +136,8 @@ export async function loader({ context }: LoaderFunctionArgs) {
 	})
 }
 
-const App = () => {
-	const data = useLoaderData<typeof loader>()
+const App = ({ error }: { error?: string }) => {
+	const data = error ? {} : useLoaderData<typeof loader>()
 	return (
 		<HtmlDoc>
 			<script
@@ -146,24 +146,23 @@ const App = () => {
 					__html: `window.ENV = ${JSON.stringify(data.ENV)}`
 				}}
 			/>
-			<ThemeLoader />
+			<ThemeLoader error={error} />
 			<Scripts />
 		</HtmlDoc>
 	)
 }
 
 // exporting this automatically uses it to capture errors
-const ErrorBoundary = () => {
+export const ErrorBoundary = () => {
 	const error = useRouteError() as Error
-	console.error('error boundary: ', error)
 
 	const message = isRouteErrorResponse(error)
-		? error.data.message
+		? error.data.message || error.data
 		: error.message || JSON.stringify(error)
 
-	errorHandler(message)
+	//errorHandler(message)
 
-	return <InitialLoader message={message} />
+	if (message) return <App error={message} />
 }
 
-export { ThemeLoader, App as default, links, meta, ErrorBoundary }
+export { App as default, links, meta }

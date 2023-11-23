@@ -36,7 +36,6 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 		})
 
 		if (error) {
-			console.error('Error validating OTP: ', error)
 			throw new Response(error.message, { status: 500 })
 		}
 
@@ -46,3 +45,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 	// return the user to an error page with instructions
 	return redirect('/', { headers })
 }
+
+// this is necessary to render the errorboundary for some reason
+const nullPage = () => null
+
+export { nullPage as default }
