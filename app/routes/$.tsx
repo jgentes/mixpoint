@@ -1,13 +1,9 @@
 import { useParams } from '@remix-run/react'
-import InitialLoader from '~/components/InitialLoader'
+import { ErrorBoundary } from '~/errorBoundary'
 
 const notFound = () => {
 	const url = useParams()?.['*']
-	return (
-		<InitialLoader
-			message={url === 'loader' ? '' : `Page not found at "${url}"`}
-		/>
-	)
+	return ErrorBoundary(Error(`Page not found at "${url}"`))
 }
 
 export { notFound as default }

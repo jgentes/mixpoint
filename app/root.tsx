@@ -21,15 +21,13 @@ import {
 	Meta,
 	Outlet,
 	Scripts,
-	isRouteErrorResponse,
-	useLoaderData,
-	useRouteError
+	useLoaderData
 } from '@remix-run/react'
-import { captureRemixErrorBoundaryError } from '@sentry/remix'
 import { useEffect, useState } from 'react'
 import { createHead } from 'remix-island'
 import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
+import { ErrorBoundary } from '~/errorBoundary'
 import styles from '~/root.css'
 import { theme as joyTheme } from '~/theme'
 import { Notification } from '~/utils/notifications'
@@ -153,17 +151,4 @@ const App = ({ error }: { error?: string }) => {
 	)
 }
 
-// exporting this automatically uses it to capture errors
-export const ErrorBoundary = () => {
-	const error = useRouteError() as Error
-
-	captureRemixErrorBoundaryError(error)
-
-	const message = isRouteErrorResponse(error)
-		? error.data.message || error.data || error
-		: error?.message || JSON.stringify(error)
-
-	if (message) return <App error={message} />
-}
-
-export { App as default, links, meta }
+export { App as default, links, meta, ErrorBoundary }
