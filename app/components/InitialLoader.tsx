@@ -2,7 +2,6 @@
 
 import { Icon } from '@iconify-icon/react'
 import { Button, CircularProgress, styled } from '@mui/joy'
-import { useNavigate } from '@remix-run/react'
 import Logo from '~/components/layout/MixpointLogo'
 
 const LoaderWrapDiv = styled('div')`
@@ -37,7 +36,6 @@ const LoaderSubtext = styled('span')(({ theme }) => ({
 }))
 
 const InitialLoader = ({ message }: { message?: string }) => {
-	const navigate = useNavigate()
 	return (
 		<LoaderWrapDiv>
 			{!message ? null : (
@@ -46,7 +44,9 @@ const InitialLoader = ({ message }: { message?: string }) => {
 					color="primary"
 					size="sm"
 					sx={{ position: 'fixed', top: '50px' }}
-					onClick={() => navigate('/')}
+					onClick={() => {
+						window.location.href = '/'
+					}}
 				>
 					Go Back
 				</Button>
