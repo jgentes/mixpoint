@@ -31,7 +31,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 		const { error } = await supabase.auth.exchangeCodeForSession(code)
 
 		if (error) {
-			throw new Response(error.message, { status: 500 })
+			throw Error(error.message)
 		}
 
 		return redirect(next, { headers })
@@ -42,6 +42,5 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 }
 
 // for errorboundary
-const nullPage = () => null
-
-export { nullPage as default }
+const AuthCallback = () => null
+export { AuthCallback as default }

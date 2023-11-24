@@ -25,6 +25,7 @@ import {
 	useLoaderData,
 	useRouteError
 } from '@remix-run/react'
+import { captureRemixErrorBoundaryError } from '@sentry/remix'
 import { useEffect, useState } from 'react'
 import { createHead } from 'remix-island'
 import ConfirmModal from '~/components/ConfirmModal'
@@ -156,11 +157,11 @@ const App = ({ error }: { error?: string }) => {
 export const ErrorBoundary = () => {
 	const error = useRouteError() as Error
 
-	const message = isRouteErrorResponse(error)
-		? error.data.message || error.data
-		: error.message || JSON.stringify(error)
+	captureRemixErrorBoundaryError(error)
 
-	//errorHandler(message)
+	const message = isRouteErrorResponse(error)
+		? error.data.message || error.data || error
+		: error?.message || JSON.stringify(error)
 
 	if (message) return <App error={message} />
 }

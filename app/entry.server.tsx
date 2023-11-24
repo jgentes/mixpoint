@@ -1,4 +1,4 @@
-import type { EntryContext } from '@remix-run/cloudflare'
+import { type EntryContext } from '@remix-run/cloudflare'
 import { RemixServer } from '@remix-run/react'
 import { renderHeadToString } from 'remix-island'
 import { Head } from './root'
@@ -74,8 +74,4 @@ async function handleBrowserRequest(
 		headers: responseHeaders,
 		status: didError ? 500 : responseStatusCode
 	})
-}
-
-export function handleError(error: Error) {
-	console.error(error)
 }
