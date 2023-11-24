@@ -19,3 +19,6 @@ todo.md
 # cloudflare
 .wrangler/
 functions/
+
+# Sentry Config File
+.sentryclirc

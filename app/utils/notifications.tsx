@@ -1,8 +1,8 @@
-import { notificationState } from '~/api/db/appState'
+import { SnackbarProps } from '@mui/joy'
 
 type Notification = {
-	message?: string
-	variant?: 'success' | 'error' | 'warning' | 'info'
+	message: string
+	color?: SnackbarProps['color']
 }
 
 const errorHandler = (error: Error | string) => {
@@ -12,10 +12,10 @@ const errorHandler = (error: Error | string) => {
 
 	window.dispatchEvent(
 		new CustomEvent('notify', {
-			detail: { message: err?.message, variant: 'error' }
+			detail: { message: err?.message, color: 'danger' }
 		})
 	)
 }
 
-export { errorHandler, notificationState }
+export { errorHandler }
 export type { Notification }

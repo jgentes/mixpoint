@@ -1,5 +1,8 @@
+// InitialLoader is used to hide the flash of unstyled content
+
 import { Icon } from '@iconify-icon/react'
-import { CircularProgress, styled } from '@mui/joy'
+import { Button, CircularProgress, styled } from '@mui/joy'
+import { useNavigate } from '@remix-run/react'
 import Logo from '~/components/layout/MixpointLogo'
 
 const LoaderWrapDiv = styled('div')`
@@ -33,26 +36,44 @@ const LoaderSubtext = styled('span')(({ theme }) => ({
 	color: theme.palette.text.primary
 }))
 
-const InitialLoader = ({ message }: { message?: string }) => (
-	<LoaderWrapDiv>
-		<LoaderDiv>
-			<LoaderRow style={{ paddingBottom: '4px' }}>
-				<Logo />
-				{message ? (
-					<Icon
-						icon="material-symbols:warning"
-						height="20px"
-						style={{ alignSelf: 'center', color: 'action', paddingTop: '4px' }}
-					/>
-				) : (
-					<CircularProgress color="primary" size="sm" variant="soft" />
-				)}
-			</LoaderRow>
-			<LoaderRow style={{ borderTop: '1px solid #e2e2e2' }}>
-				<LoaderSubtext>{message || 'Please Wait. Loading...'}</LoaderSubtext>
-			</LoaderRow>
-		</LoaderDiv>
-	</LoaderWrapDiv>
-)
+const InitialLoader = ({ message }: { message?: string }) => {
+	const navigate = useNavigate()
+	return (
+		<LoaderWrapDiv>
+			{!message ? null : (
+				<Button
+					variant="outlined"
+					color="primary"
+					size="sm"
+					sx={{ position: 'fixed', top: '50px' }}
+					onClick={() => navigate('/')}
+				>
+					Go Back
+				</Button>
+			)}
+			<LoaderDiv>
+				<LoaderRow style={{ paddingBottom: '4px' }}>
+					<Logo />
+					{message ? (
+						<Icon
+							icon="material-symbols:warning"
+							height="20px"
+							style={{
+								alignSelf: 'center',
+								color: 'action',
+								paddingTop: '4px'
+							}}
+						/>
+					) : (
+						<CircularProgress color="primary" size="sm" variant="soft" />
+					)}
+				</LoaderRow>
+				<LoaderRow style={{ borderTop: '1px solid #e2e2e2' }}>
+					<LoaderSubtext>{message || 'Please Wait. Loading...'}</LoaderSubtext>
+				</LoaderRow>
+			</LoaderDiv>
+		</LoaderWrapDiv>
+	)
+}
 
 export default InitialLoader

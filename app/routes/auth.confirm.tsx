@@ -36,13 +36,15 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 		})
 
 		if (error) {
-			console.error('Error validating OTP: ', error)
-			throw new Response(error.message, { status: 500 })
+			throw Error(error.message)
 		}
 
 		return redirect(next, { headers })
 	}
 
-	// return the user to an error page with instructions
-	return redirect('/', { headers })
+	return new Response('Token hash or Type missing from link', { status: 500 })
 }
+
+// required for errorboundary to render properly for some reason
+const AuthConfirm = () => null
+export { AuthConfirm as default }

@@ -1,42 +1,42 @@
-// this file provides top level error and catch boundaries, plus notification handling
-import { VariantType, useSnackbar } from 'notistack'
+import { Sheet } from '@mui/joy'
 import { useEffect } from 'react'
+import { setAppState } from '~/api/db/appState'
+import { getPrefs, useLiveQuery } from '~/api/db/dbHandlers'
+import Header from '~/components/layout/Header'
+import MixView from '~/components/mixes/MixView'
+import DrawerButton from '~/components/tracks/DrawerButton'
+import TrackDrawer from '~/components/tracks/TrackDrawer'
+import TrackTable from '~/components/tracks/TrackTable'
 
-import { isRouteErrorResponse, useRouteError } from '@remix-run/react'
-
-import InitialLoader from '~/components/InitialLoader'
-import Layout from '~/components/layout/Layout'
-
-const boundaryHandler = (message: string, variant: VariantType = 'error') => {
-	const { enqueueSnackbar } = useSnackbar()
-	enqueueSnackbar(message, { variant })
-	return <InitialLoader message={message} />
-}
-
-// exporting this automatically uses it to capture errors
-const ErrorBoundary = () => {
-	const error = useRouteError() as Error
-	console.error('error boundary: ', error)
-	if (isRouteErrorResponse(error)) {
-		return boundaryHandler(error.data.message, 'warning')
-	}
-
-	boundaryHandler(error.message || JSON.stringify(error))
-}
-
-const Boundary = () => {
-	const { enqueueSnackbar } = useSnackbar()
+const Index: React.FunctionComponent = () => {
+	const { tracks } = useLiveQuery(() => getPrefs('mix', 'tracks')) || {}
+	const mixViewVisible = !!tracks?.filter(t => t).length
 
 	useEffect(() => {
-		const notify = (e: CustomEventInit) =>
-			enqueueSnackbar(e.detail.message, { variant: e.detail.variant })
+		if (!mixViewVisible) setAppState.openDrawer(false)
+	}, [mixViewVisible])
 
-		window.addEventListener('notify', notify)
+	return (
+		<Sheet
+			sx={{
+				height: '100%',
+				display: 'flex',
+				flexDirection: 'column'
+			}}
+		>
+			<Header />
+			{mixViewVisible ? (
+				<>
+					<MixView tracks={tracks} />
+					<DrawerButton />
+				</>
+			) : (
+				<TrackTable />
+			)}
 
-		return () => window.removeEventListener('notify', notify)
-	}, [enqueueSnackbar])
-
-	return <Layout />
+			<TrackDrawer />
+		</Sheet>
+	)
 }
 
-export { Boundary as default, ErrorBoundary }
+export { Index as default }

@@ -1,4 +1,4 @@
-import type { EntryContext } from '@remix-run/cloudflare'
+import { type EntryContext } from '@remix-run/cloudflare'
 import { RemixServer } from '@remix-run/react'
 import { renderHeadToString } from 'remix-island'
 import { Head } from './root'
