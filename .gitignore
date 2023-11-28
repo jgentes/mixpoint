@@ -5,6 +5,7 @@
 *.log
 todo.md
 .env
+.dev.vars
 
 # yarn
 .pnp.*
@@ -16,5 +17,6 @@ todo.md
 !.yarn/versions
 
 # cloudflare
+.wrangler/
 wrangler.toml
 functions/
