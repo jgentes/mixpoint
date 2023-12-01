@@ -3,7 +3,7 @@ import { STEMS, Stem, Track, db, storeTrackCache } from '~/api/db/dbHandlers'
 import { getStemsDirHandle } from '~/api/fileHandlers'
 import { errorHandler } from '~/utils/notifications'
 
-const STEMPROXY = 'https://stemproxy.jgentes.workers.dev'
+const STEMPROXY = 'https://stems.mixpoint.dev'
 //const STEMPROXY = 'http://localhost:8787'
 
 type StemsArray = {
