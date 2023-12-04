@@ -29,7 +29,7 @@ const joyTheme = extendJoyTheme({
 					backgroundColor:
 						theme.palette.mode === 'dark'
 							? 'rgba(0, 30, 60, 0.2)'
-							: 'rgba(243, 246, 249, 0.2)',
+							: 'rgba(255, 255, 255, 0.99)',
 					backgroundImage:
 						theme.palette.mode === 'dark'
 							? darkGraphBackground
