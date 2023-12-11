@@ -17,7 +17,7 @@ Sentry.init({
 				useMatches
 			)
 		}),
-		new Sentry.Replay()
+		new Sentry.Replay({ maskAllText: false })
 	]
 })
 
