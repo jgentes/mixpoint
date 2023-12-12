@@ -21,8 +21,10 @@ import {
 	Meta,
 	Outlet,
 	Scripts,
-	useLoaderData
+	useLoaderData,
+	useLocation
 } from '@remix-run/react'
+import posthog from 'posthog-js'
 import { useEffect, useState } from 'react'
 import { createHead } from 'remix-island'
 import ConfirmModal from '~/components/ConfirmModal'
@@ -130,13 +132,29 @@ export async function loader({ context }: LoaderFunctionArgs) {
 	return json({
 		ENV: {
 			SUPABASE_URL: context.env.SUPABASE_URL,
-			SUPABASE_ANON_KEY: context.env.SUPABASE_ANON_KEY
+			SUPABASE_ANON_KEY: context.env.SUPABASE_ANON_KEY,
+			REACT_APP_PUBLIC_POSTHOG_KEY: context.env.REACT_APP_PUBLIC_POSTHOG_KEY,
+			REACT_APP_PUBLIC_POSTHOG_HOST: context.env.REACT_APP_PUBLIC_POSTHOG_HOST
 		}
 	})
 }
 
 const App = ({ error }: { error?: string }) => {
 	const data = error ? {} : useLoaderData<typeof loader>()
+	const location = useLocation()
+
+	useEffect(() => {
+		posthog.init(data.ENV.REACT_APP_PUBLIC_POSTHOG_KEY, {
+			api_host: data.ENV.REACT_APP_PUBLIC_POSTHOG_HOST,
+			capture_pageview: false
+		})
+	}, [data])
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: location is used to trigger new pageview capture
+	useEffect(() => {
+		posthog.capture('$pageview')
+	}, [location])
+
 	return (
 		<HtmlDoc>
 			<script

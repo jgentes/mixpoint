@@ -29,6 +29,7 @@
 		"isbot": "latest",
 		"jsdom": "^21.1.1",
 		"moment": "~2.29.4",
+		"posthog-js": "^1.94.4",
 		"react": "~18",
 		"react-dom": "~18",
 		"remix-island": "^0.1.2",

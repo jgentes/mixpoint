@@ -4,6 +4,7 @@ import DarkMode from '~/components/layout/DarkModeButton'
 import Logo from '~/components/layout/MixpointLogo'
 
 import { Icon } from '@iconify-icon/react'
+import posthog from 'posthog-js'
 import LoginButton from '~/components/layout/LoginButton.client'
 
 const Header = () => (
@@ -26,7 +27,7 @@ const Header = () => (
 	>
 		<Logo />
 		<Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.5 }}>
-			<LoginButton />
+			{posthog.isFeatureEnabled('Log In') ? <LoginButton /> : null}
 			<IconButton
 				size="sm"
 				variant="outlined"
