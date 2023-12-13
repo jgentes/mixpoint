@@ -17,7 +17,7 @@ const MixpointLogo = () => (
 			marginRight: 'auto'
 		}}
 	>
-		Mixpoint
+		Mixpoint!
 	</a>
 )
 
