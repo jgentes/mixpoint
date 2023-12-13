@@ -52,7 +52,8 @@ The app is built using `Remix` which uses esBuild (now Vite) for really fast hot
 - Teaful for App State
 - Dexie (IndexedDb) for Persistent State
 - WaveSurfer
-
+  
+  
 [![Covered by Argos Visual Testing](https://argos-ci.com/badge.svg)](https://app.argos-ci.com/jgentes/mixpoint/reference)
 
 ## Roadmap
