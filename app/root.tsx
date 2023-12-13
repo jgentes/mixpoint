@@ -105,7 +105,7 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 				{/* CSS Baseline is used to inject global styles */}
 				<CssBaseline />
 				{loading || error ? (
-					<InitialLoader message={error} aria-busy={!!loading || !!error} />
+					<InitialLoader message={error} />
 				) : (
 					<>
 						<Outlet />

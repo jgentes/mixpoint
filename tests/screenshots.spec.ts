@@ -8,6 +8,7 @@ test('screenshot pages', async ({ page }, workerInfo) => {
 	for (const { name, path } of pages) {
 		const browserName = workerInfo.project.name
 		await page.goto(`${baseUrl}${path}`)
+		await page.waitForTimeout(1500) // wait for loader screen
 		await argosScreenshot(page, `${name}-${browserName}`)
 	}
 })
