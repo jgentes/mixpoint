@@ -37,7 +37,7 @@ const LoaderSubtext = styled('span')(({ theme }) => ({
 
 const InitialLoader = ({ message }: { message?: string }) => {
 	return (
-		<LoaderWrapDiv>
+		<LoaderWrapDiv aria-busy="true">
 			{!message ? null : (
 				<Button
 					variant="outlined"
