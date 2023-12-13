@@ -21,8 +21,8 @@ export default defineConfig({
 	workers: process.env.CI ? 1 : undefined,
 	// Adds Argos reporter in CI environments
 	reporter: process.env.CI
-		? [['list'], ['@argos-ci/playwright/reporter']]
-		: 'list',
+		? [['list'], ['@argos-ci/playwright/reporter'], ['html', { open: 'never' }]]
+		: [['list'], ['html']],
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 	use: {
 		/* Base URL to use in actions like `await page.goto('/')`. */
