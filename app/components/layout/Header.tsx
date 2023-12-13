@@ -27,7 +27,7 @@ const Header = () => (
 	>
 		<Logo />
 		<Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.5 }}>
-			{posthog.isFeatureEnabled('Log In') ? <LoginButton /> : null}
+			{posthog.isFeatureEnabled('Login') ? <LoginButton /> : null}
 			<IconButton
 				size="sm"
 				variant="outlined"

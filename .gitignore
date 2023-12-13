@@ -22,3 +22,6 @@ functions/
 
 # Sentry Config Fileg
 .sentryclirc
+
+# playwright / argos
+screenshots/
