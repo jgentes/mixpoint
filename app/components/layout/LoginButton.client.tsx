@@ -6,8 +6,8 @@ import { createClient } from '@supabase/supabase-js'
 import { useState } from 'react'
 
 const supabase = createClient(
-	window.ENV.SUPABASE_URL || '',
-	window.ENV.SUPABASE_ANON_KEY || ''
+	window.ENV.SUPABASE_URL,
+	window.ENV.SUPABASE_ANON_KEY
 )
 
 const LoginButton = () => {
