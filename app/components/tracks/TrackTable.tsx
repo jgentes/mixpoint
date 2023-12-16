@@ -8,7 +8,7 @@ import {
 	TableRow
 } from '@mui/material'
 import { useState } from 'react'
-import { AppState } from '~/api/db/appState'
+import { appState } from '~/api/db/appState'
 import { db, getPrefs, useLiveQuery } from '~/api/db/dbHandlers'
 import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
 import LeftNav from '~/components/tracks/LeftNav'
@@ -30,15 +30,15 @@ import {
 
 const TrackTable = () => {
 	// Re-render when page or selection changes
-	const [page] = AppState.page()
-	const [rowsPerPage] = AppState.rowsPerPage()
-	const [selected] = AppState.selected()
+	const [page] = appState.page()
+	const [rowsPerPage] = appState.rowsPerPage()
+	const [selected] = appState.selected()
 
 	// Re-render when search query changes
-	const [search] = AppState.search()
+	const [search] = appState.search()
 
 	// Show loader while processing tracks
-	const [processing] = AppState.processing()
+	const [processing] = appState.processing()
 
 	// Allow drag & drop files / folders into the table
 	const [dragOver, setDragOver] = useState(false)

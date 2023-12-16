@@ -24,9 +24,13 @@ import {
 	useLoaderData,
 	useLocation
 } from '@remix-run/react'
+import * as Sentry from '@sentry/browser'
+import { createBrowserClient } from '@supabase/ssr'
+import { SupabaseClient } from '@supabase/supabase-js'
 import posthog from 'posthog-js'
 import { useEffect, useState } from 'react'
 import { createHead } from 'remix-island'
+import { setAppState } from '~/api/db/appState'
 import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import { ErrorBoundary } from '~/errorBoundary'
@@ -35,6 +39,20 @@ import { theme as joyTheme } from '~/theme'
 import { Notification } from '~/utils/notifications'
 
 const materialTheme = materialExtendTheme()
+
+// this is used to inject environment variables into the browser
+export async function loader({ context }: LoaderFunctionArgs) {
+	return json({
+		ENV: {
+			SUPABASE_URL: context.env.SUPABASE_URL || 'http://supabase.url',
+			SUPABASE_ANON_KEY: context.env.SUPABASE_ANON_KEY || 'supabase-anon-key',
+			REACT_APP_PUBLIC_POSTHOG_KEY:
+				context.env.REACT_APP_PUBLIC_POSTHOG_KEY || 'posthog-public-key',
+			REACT_APP_PUBLIC_POSTHOG_HOST:
+				context.env.REACT_APP_PUBLIC_POSTHOG_HOST || 'http://posthog.url'
+		}
+	})
+}
 
 // this is needed to address React 18.2 hydration issues
 // TODO - remove this once React 18.3 is released
@@ -72,8 +90,10 @@ const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
 }
 
 const ThemeLoader = ({ error }: { error?: string }) => {
+	const data = error ? {} : useLoaderData<typeof loader>()
 	const [loading, setLoading] = useState(true)
 	const [notification, setNotification] = useState<Notification>()
+	const [supabase, setSupabase] = useState<SupabaseClient>()
 
 	useEffect(() => {
 		// initial loading screen timeout
@@ -90,11 +110,43 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 
 		window.addEventListener('notify', notify)
 
+		// initalize posthog
+		posthog.init(data.ENV.REACT_APP_PUBLIC_POSTHOG_KEY, {
+			api_host: data.ENV.REACT_APP_PUBLIC_POSTHOG_HOST,
+			capture_pageview: false,
+			autocapture: {
+				url_allowlist: ['https://mixpoint.dev']
+			}
+		})
+
+		// create a single instance of the supabase client
+		const supabaseClient = createBrowserClient(
+			window.ENV.SUPABASE_URL,
+			window.ENV.SUPABASE_ANON_KEY
+		)
+		setSupabase(supabaseClient)
+
+		// update login status in appState upon auth state change
+		supabaseClient.auth.onAuthStateChange((event, session) => {
+			if (event === 'SIGNED_IN') {
+				setAppState.loggedIn(true)
+				posthog.identify(session?.user?.id, { email: session?.user?.email })
+				Sentry.setUser({ id: session?.user?.id, email: session?.user?.email })
+				posthog.capture('user logged in')
+			}
+			if (event === 'SIGNED_OUT') {
+				setAppState.loggedIn(false)
+				posthog.capture('user logged out')
+				Sentry.setUser(null)
+				posthog.reset()
+			}
+		})
+
 		return () => {
 			clearTimeout(timer)
 			window.removeEventListener('notify', notify)
 		}
-	}, [])
+	}, [data])
 
 	return (
 		<MaterialCssVarsProvider
@@ -108,7 +160,7 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 					<InitialLoader message={error} />
 				) : (
 					<>
-						<Outlet />
+						<Outlet context={{ supabase }} />
 						<ConfirmModal />
 					</>
 				)}
@@ -127,30 +179,9 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 	)
 }
 
-// this is used to inject environment variables into the browser
-export async function loader({ context }: LoaderFunctionArgs) {
-	return json({
-		ENV: {
-			SUPABASE_URL: context.env.SUPABASE_URL || 'http://supabase.url',
-			SUPABASE_ANON_KEY: context.env.SUPABASE_ANON_KEY || 'supabase-anon-key',
-			REACT_APP_PUBLIC_POSTHOG_KEY:
-				context.env.REACT_APP_PUBLIC_POSTHOG_KEY || 'posthog-key',
-			REACT_APP_PUBLIC_POSTHOG_HOST:
-				context.env.REACT_APP_PUBLIC_POSTHOG_HOST || 'http://posthog-host'
-		}
-	})
-}
-
 const App = ({ error }: { error?: string }) => {
 	const data = error ? {} : useLoaderData<typeof loader>()
 	const location = useLocation()
-
-	useEffect(() => {
-		posthog.init(data.ENV.REACT_APP_PUBLIC_POSTHOG_KEY, {
-			api_host: data.ENV.REACT_APP_PUBLIC_POSTHOG_HOST,
-			capture_pageview: false
-		})
-	}, [data])
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: location is used to trigger new pageview capture
 	useEffect(() => {

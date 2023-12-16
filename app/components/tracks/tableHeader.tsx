@@ -21,7 +21,7 @@ import { visuallyHidden } from '@mui/utils'
 import { ChangeEvent, MouseEvent, useMemo } from 'react'
 import { audioEvents } from '~/api/audioEvents'
 import { analyzeTracks } from '~/api/audioHandlers'
-import { AppState, setModalState } from '~/api/db/appState'
+import { appState, setModalState } from '~/api/db/appState'
 import {
 	Track,
 	UserPrefs,
@@ -35,8 +35,8 @@ import { createColumnDefinitions } from '~/components/tracks/tableColumns'
 
 // Toolbar is on top of the table, includes search, info, and button bar
 const EnhancedTableToolbar = (props: { numSelected: number }) => {
-	const [search, setSearch] = AppState.search()
-	const [selected, setSelected] = AppState.selected()
+	const [search, setSearch] = appState.search()
+	const [selected, setSelected] = appState.selected()
 
 	const { numSelected } = props
 
@@ -110,7 +110,7 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
 						<Link
 							onClick={() => showAnalyzeDirtyModal()}
 							variant="plain"
-							level="body3"
+							level="body-md"
 							underline="none"
 							sx={{ p: '2px 6px', ml: 1 }}
 						>

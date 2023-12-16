@@ -9,11 +9,11 @@ import {
 	Typography
 } from '@mui/joy'
 
-import { AppState } from '~/api/db/appState'
+import { appState } from '~/api/db/appState'
 import Dropzone from '~/components/tracks/Dropzone'
 
 const LeftNav = () => {
-	const [openDrawer] = AppState.openDrawer()
+	const [openDrawer] = appState.openDrawer()
 
 	return (
 		<Box

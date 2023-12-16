@@ -1,5 +1,5 @@
 import { Box, Card, Typography } from '@mui/joy'
-import { AppState, audioState } from '~/api/db/appState'
+import { appState, audioState } from '~/api/db/appState'
 import { Track, db, useLiveQuery } from '~/api/db/dbHandlers'
 import { Waveform } from '~/api/renderWaveform'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
@@ -14,7 +14,7 @@ import Loader from '~/components/tracks/TrackLoader'
 import { timeFormat } from '~/utils/tableOps'
 
 const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
-	const [analyzingTracks] = AppState.analyzing()
+	const [analyzingTracks] = appState.analyzing()
 	const analyzing = analyzingTracks.includes(trackId)
 
 	const { duration = 0 } =

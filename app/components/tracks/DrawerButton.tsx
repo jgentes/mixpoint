@@ -1,9 +1,9 @@
 import { Icon } from '@iconify-icon/react'
 import { Button } from '@mui/joy'
-import { AppState } from '~/api/db/appState'
+import { appState } from '~/api/db/appState'
 
 const DrawerButton = () => {
-	const [openDrawer, setOpenDrawer] = AppState.openDrawer()
+	const [openDrawer, setOpenDrawer] = appState.openDrawer()
 
 	const direction = openDrawer ? 'down' : 'up'
 

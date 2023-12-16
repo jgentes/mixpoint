@@ -8,7 +8,7 @@ import {
 	TableRow
 } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
-import { AppState } from '~/api/db/appState'
+import { appState } from '~/api/db/appState'
 import { Track } from '~/api/db/dbHandlers'
 import { rowClick } from '~/utils/tableOps'
 import { createColumnDefinitions } from './tableColumns'
@@ -21,7 +21,7 @@ const TableRows = ({
 	isItemSelected: boolean
 }) => {
 	const [open, setOpen] = useState(false)
-	const [showButton, setShowButton] = AppState.showButton()
+	const [showButton, setShowButton] = appState.showButton()
 
 	// This is being done to refresh the 'Updated' column periodically
 	const [, updateState] = useState({})

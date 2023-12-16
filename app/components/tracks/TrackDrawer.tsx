@@ -1,10 +1,10 @@
 import { Drawer } from '@mui/material'
-import { AppState } from '~/api/db/appState'
+import { appState } from '~/api/db/appState'
 import TrackTable from '~/components//tracks/TrackTable'
 import DrawerButton from '~/components/tracks/DrawerButton'
 
 const TrackDrawer = () => {
-	const [openDrawer, setOpenDrawer] = AppState.openDrawer()
+	const [openDrawer, setOpenDrawer] = appState.openDrawer()
 
 	return (
 		<Drawer

@@ -5,7 +5,7 @@ import { SxProps } from '@mui/material/styles'
 import moment from 'moment'
 import { audioEvents } from '~/api/audioEvents'
 import { analyzeTracks } from '~/api/audioHandlers'
-import { AppState, setAppState } from '~/api/db/appState'
+import { appState, setAppState } from '~/api/db/appState'
 import { Track, addToMix, getPrefs, useLiveQuery } from '~/api/db/dbHandlers'
 import TrackLoader from '~/components/tracks/TrackLoader'
 import { formatMinutes, rowClick } from '~/utils/tableOps'
@@ -41,7 +41,7 @@ const createColumnDefinitions = (): {
 	}
 
 	const AddToMixButton = ({ track }: { track: Track }) => {
-		const [analyzingTracks] = AppState.analyzing()
+		const [analyzingTracks] = appState.analyzing()
 
 		const { tracks = [] } = useLiveQuery(() => getPrefs('mix')) || {}
 
@@ -78,7 +78,7 @@ const createColumnDefinitions = (): {
 	}
 
 	const BpmFormatter = (t: Track) => {
-		const [analyzingTracks] = AppState.analyzing()
+		const [analyzingTracks] = appState.analyzing()
 
 		return (
 			t.bpm?.toFixed(0) ||

@@ -52,7 +52,7 @@ type StemState =
 // App captures the state of various parts of the app, mostly the table, such as search value, which which rows are selected and track drawer open/closed state
 const {
 	getStore: getAppState,
-	useStore: AppState,
+	useStore: appState,
 	setStore: setAppState
 } = createStore<{
 	search: string | number
@@ -66,6 +66,7 @@ const {
 	stemsAnalyzing: Track['id'][]
 	syncTimer: ReturnType<typeof requestAnimationFrame> | undefined
 	audioContext?: AudioContext
+	loggedIn: boolean
 }>({
 	search: '',
 	selected: [],
@@ -76,7 +77,8 @@ const {
 	processing: false,
 	analyzing: [],
 	stemsAnalyzing: [],
-	syncTimer: undefined
+	syncTimer: undefined,
+	loggedIn: false
 })
 
 // ModalState is a generic handler for various modals, usually when doing something significant like deleting tracks
@@ -95,7 +97,7 @@ const { useStore: modalState, setStore: setModalState } = createStore<
 })
 
 export {
-	AppState,
+	appState,
 	audioState,
 	getAppState,
 	getAudioState,
