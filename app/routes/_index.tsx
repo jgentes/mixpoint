@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { setAppState } from '~/api/db/appState'
 import { getPrefs, useLiveQuery } from '~/api/db/dbHandlers'
 import Header from '~/components/layout/Header'
+import Heart from '~/components/layout/HeartIcon'
 import MixView from '~/components/mixes/MixView'
 import DrawerButton from '~/components/tracks/DrawerButton'
 import TrackDrawer from '~/components/tracks/TrackDrawer'
@@ -31,7 +32,10 @@ const Index: React.FunctionComponent = () => {
 					<DrawerButton />
 				</>
 			) : (
-				<TrackTable />
+				<>
+					<TrackTable />
+					<Heart />
+				</>
 			)}
 
 			<TrackDrawer />
