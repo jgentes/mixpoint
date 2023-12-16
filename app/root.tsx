@@ -121,24 +121,26 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 
 		// create a single instance of the supabase client
 		const supabaseClient = createBrowserClient(
-			window.ENV.SUPABASE_URL,
-			window.ENV.SUPABASE_ANON_KEY
+			data.ENV.SUPABASE_URL,
+			data.ENV.SUPABASE_ANON_KEY
 		)
 		setSupabase(supabaseClient)
 
 		// update login status in appState upon auth state change
 		supabaseClient.auth.onAuthStateChange((event, session) => {
+			const email = session?.user?.email
 			if (event === 'SIGNED_IN') {
-				setAppState.loggedIn(true)
-				posthog.identify(session?.user?.id, { email: session?.user?.email })
-				Sentry.setUser({ id: session?.user?.id, email: session?.user?.email })
+				setAppState.loggedIn(email)
+				posthog.identify(session?.user?.id, { email })
+				Sentry.setUser({ id: session?.user?.id, email })
 				posthog.capture('user logged in')
 			}
 			if (event === 'SIGNED_OUT') {
-				setAppState.loggedIn(false)
+				setAppState.loggedIn('')
 				posthog.capture('user logged out')
 				Sentry.setUser(null)
 				posthog.reset()
+				notify({ detail: { message: 'Logged out', color: 'success' } })
 			}
 		})
 
@@ -180,7 +182,6 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 }
 
 const App = ({ error }: { error?: string }) => {
-	const data = error ? {} : useLoaderData<typeof loader>()
 	const location = useLocation()
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: location is used to trigger new pageview capture
@@ -190,12 +191,6 @@ const App = ({ error }: { error?: string }) => {
 
 	return (
 		<HtmlDoc>
-			<script
-				// biome-ignore lint/security/noDangerouslySetInnerHtml: see https://remix.run/docs/en/main/guides/envvars
-				dangerouslySetInnerHTML={{
-					__html: `window.ENV = ${JSON.stringify(data.ENV)}`
-				}}
-			/>
 			<ThemeLoader error={error} />
 			<Scripts />
 		</HtmlDoc>

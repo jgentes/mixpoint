@@ -100,14 +100,14 @@ const getStemsDirHandle = async (): Promise<
 			'granted'
 		) {
 			return stemsDirHandle
-		} else {
-			// no permission, so ask for it
-			if (
-				(await stemsDirHandle.requestPermission({ mode: 'readwrite' })) ===
-				'granted'
-			) {
-				return stemsDirHandle
-			}
+		}
+
+		// no permission, so ask for it
+		if (
+			(await stemsDirHandle.requestPermission({ mode: 'readwrite' })) ===
+			'granted'
+		) {
+			return stemsDirHandle
 		}
 	}
 
