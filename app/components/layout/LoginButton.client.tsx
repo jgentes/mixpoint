@@ -42,7 +42,7 @@ const LoginButton = () => {
 								}
 							}
 						}}
-						providers={['google']}
+						providers={['google', 'github']}
 						theme={mode}
 					/>
 				</ModalDialog>
