@@ -1,8 +1,9 @@
 import { Icon } from '@iconify-icon/react'
-import { IconButton, useColorScheme } from '@mui/joy'
+import { IconButton } from '@mui/joy'
+import { useTheme } from 'next-themes'
 
 const DarkMode = () => {
-	const { mode, setMode } = useColorScheme()
+	const { theme, setTheme } = useTheme()
 
 	return (
 		<IconButton
@@ -13,15 +14,15 @@ const DarkMode = () => {
 			aria-label="Darkmode"
 			onClick={() => {
 				new Audio('/media/light.mp3').play()
-				setMode(mode === 'dark' ? 'light' : 'dark')
+				setTheme(theme === 'dark' ? 'light' : 'dark')
 			}}
 		>
 			<Icon
 				icon={`material-symbols:${
-					mode === 'light' ? 'dark' : 'light'
+					theme === 'dark' ? 'light' : 'dark'
 				}-mode-outline`}
 				height="20px"
-				title={mode === 'light' ? 'Dark Mode' : 'Light Mode'}
+				title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
 			/>
 		</IconButton>
 	)

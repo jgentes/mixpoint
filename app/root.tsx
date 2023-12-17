@@ -2,13 +2,7 @@
 // it also injects top level styling, HTML meta tags, links, and javascript for browser rendering
 import PublicSansFont from '@fontsource/public-sans/latin.css'
 import { Snackbar } from '@mui/joy'
-import { CssVarsProvider as JoyCssVarsProvider } from '@mui/joy/styles'
-import { CssBaseline } from '@mui/material'
-import {
-	Experimental_CssVarsProvider as MaterialCssVarsProvider,
-	THEME_ID as MATERIAL_THEME_ID,
-	experimental_extendTheme as materialExtendTheme
-} from '@mui/material/styles'
+import { NextUIProvider } from '@nextui-org/react'
 import {
 	LinksFunction,
 	LoaderFunctionArgs,
@@ -27,6 +21,7 @@ import {
 import * as Sentry from '@sentry/browser'
 import { createBrowserClient } from '@supabase/ssr'
 import { SupabaseClient } from '@supabase/supabase-js'
+import { ThemeProvider as NextThemesProvider } from 'next-themes'
 import posthog from 'posthog-js'
 import { useEffect, useState } from 'react'
 import { createHead } from 'remix-island'
@@ -35,10 +30,8 @@ import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import { ErrorBoundary } from '~/errorBoundary'
 import styles from '~/root.css'
-import { theme as joyTheme } from '~/theme'
+import tailwind from '~/tailwind.css'
 import { Notification } from '~/utils/notifications'
-
-const materialTheme = materialExtendTheme()
 
 // this is used to inject environment variables into the browser
 export async function loader({ context }: LoaderFunctionArgs) {
@@ -77,6 +70,7 @@ const links: LinksFunction = () => [
 		sizes: '32x32'
 	},
 	{ rel: 'stylesheet', href: PublicSansFont },
+	{ rel: 'stylesheet', href: tailwind },
 	{ rel: 'stylesheet', href: styles }
 ]
 
@@ -151,14 +145,9 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 	}, [data])
 
 	return (
-		<MaterialCssVarsProvider
-			theme={{ [MATERIAL_THEME_ID]: materialTheme }}
-			defaultMode={'dark'}
-		>
-			<JoyCssVarsProvider theme={joyTheme} defaultMode={'dark'}>
-				{/* CSS Baseline is used to inject global styles */}
-				<CssBaseline />
-				{loading || error ? (
+		<NextUIProvider>
+			<NextThemesProvider attribute="class" defaultTheme="dark">
+				{true ? (
 					<InitialLoader message={error} />
 				) : (
 					<>
@@ -176,8 +165,8 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 				>
 					{notification?.message}
 				</Snackbar>
-			</JoyCssVarsProvider>
-		</MaterialCssVarsProvider>
+			</NextThemesProvider>
+		</NextUIProvider>
 	)
 }
 

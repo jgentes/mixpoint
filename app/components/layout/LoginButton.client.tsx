@@ -1,16 +1,16 @@
 import { IconButton, Modal, ModalDialog } from '@mui/joy'
-import { useColorScheme } from '@mui/joy'
 import { useOutletContext } from '@remix-run/react'
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { SupabaseClient } from '@supabase/supabase-js'
+import { useTheme } from 'next-themes'
 import { useState } from 'react'
 import { appState } from '~/api/db/appState'
 
 const LoginButton = () => {
 	const [openAuth, setOpenAuth] = useState(false)
-	const { mode } = useColorScheme()
 	const { supabase } = useOutletContext<{ supabase: SupabaseClient }>()
+	const { theme } = useTheme()
 
 	const [loggedIn] = appState.loggedIn()
 	const buttonText = loggedIn ? 'Log Out' : 'Log In'
@@ -47,7 +47,7 @@ const LoginButton = () => {
 						}}
 						providers={['google', 'github']}
 						socialLayout="horizontal"
-						theme={mode}
+						theme={theme === 'dark' ? 'dark' : 'light'}
 					/>
 				</ModalDialog>
 			</Modal>

@@ -3,6 +3,12 @@ body {
   min-height: 100vh;
 }
 
+/* not handled by tailwind */
+.bg-clip-text {
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
 #root {
   height: 100vh;
 }
