@@ -140,13 +140,13 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
 		>
 			{stemStates[stemState].icon}
 			<Typography
-				level="body1"
+				level="body-sm"
 				className="drop"
 				sx={{ color: 'text.secondary' }}
 			>
 				<b>{stemStates[stemState].primaryText}</b>
 			</Typography>
-			<Typography className="drop" level="body2">
+			<Typography className="drop" level="body-md">
 				{stemStates[stemState].secondaryText}
 			</Typography>
 		</Sheet>

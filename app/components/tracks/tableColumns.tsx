@@ -102,8 +102,7 @@ const createColumnDefinitions = (): {
 					sx={{
 						display: 'flex',
 						justifyContent: 'space-between',
-						alignItems: 'center',
-						fontSize: '.85rem'
+						alignItems: 'center'
 					}}
 				>
 					<div

@@ -36,7 +36,7 @@ const Heart: React.FunctionComponent = () => {
 			onMouseLeave={() => setIsHovered(false)}
 		>
 			<div style={hideStyle}>Made with&nbsp;</div>
-			<Icon style={heartStyle} icon="mdi:cards-heart-outline" color="red" />
+			<Icon style={heartStyle} icon="mdi:cards-heart-outline" />
 			<div style={hideStyle}>&nbsp;in Oregon</div>
 		</div>
 	)

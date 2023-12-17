@@ -15,7 +15,6 @@ const LoaderWrapDiv = styled('div')`
   font-size: 12px;
   position: fixed;
   z-index: 99999;
-  background-color: 'background.appBody';
   transition: opacity 200ms cubic-bezier(0.215, 0.61, 0.355, 1);
 `
 
@@ -31,9 +30,9 @@ const LoaderRow = styled('div')`
   align-items: center;
 `
 
-const LoaderSubtext = styled('span')(({ theme }) => ({
-	color: theme.palette.text.primary
-}))
+const LoaderSubtext = styled('span')({
+	color: 'text.primary'
+})
 
 const InitialLoader = ({ message }: { message?: string }) => {
 	return (
