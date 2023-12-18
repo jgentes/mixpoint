@@ -51,7 +51,7 @@ const InitialLoader = ({ message }: { message?: string }) => {
 						indicator: 'bg-gradient-to-r from-pink-500 to-yellow-500'
 					}}
 				/>
-				<p className="pt-1">{message || 'Please wait. Loading...'}</p>
+				<p className="pt-1">{message || 'Loading...'}</p>
 			</div>
 		</div>
 	)

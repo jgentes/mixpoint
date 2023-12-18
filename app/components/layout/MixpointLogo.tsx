@@ -1,13 +1,19 @@
-import { Icon } from '@iconify-icon/react'
-
 const MixpointLogo = () => (
 	<>
-		<Icon
-			icon="material-symbols-light:join-outline"
-			height={36}
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width="36px"
+			height="36px"
+			viewBox="0 0 24 24"
 			className="text-blue-400"
-		/>
-		<div className="font-sans text-2xl text-transparent m-0 bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text mr-auto self-baseline">
+		>
+			<title>Inner joined circles</title>
+			<path
+				fill="currentColor"
+				d="M16 17q2.075 0 3.538-1.463T21 12q0-2.075-1.463-3.537T16 7q-.963 0-1.803.338q-.84.339-1.485.933q.61.766.949 1.721Q14 10.948 14 12t-.34 2.008q-.339.955-.948 1.72q.646.595 1.485.934Q15.037 17 16 17m-4-2q.475-.625.738-1.388T13 12q0-.85-.262-1.612T12 9q-.475.625-.737 1.388T11 12q0 .85.263 1.613T12 15m-4 2q.963 0 1.803-.338q.84-.339 1.485-.933q-.61-.766-.949-1.721Q10 13.052 10 12t.34-2.008q.339-.955.948-1.72q-.646-.595-1.485-.934Q8.963 7 8 7Q5.925 7 4.463 8.463T3 12q0 2.075 1.463 3.538T8 17m0 1q-2.502 0-4.251-1.749Q2 14.501 2 12q0-2.502 1.749-4.251Q5.499 6 8 6q1.163 0 2.186.412q1.022.411 1.814 1.146q.792-.735 1.814-1.146Q14.837 6 16 6q2.502 0 4.251 1.749Q22 9.499 22 12q0 2.502-1.749 4.251Q18.501 18 16 18q-1.163 0-2.186-.412q-1.022-.411-1.814-1.146q-.792.735-1.814 1.146Q9.163 18 8 18"
+			/>
+		</svg>
+		<div className="text-2xl text-transparent m-0 bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text mr-auto self-baseline">
 			Mixpoint
 		</div>
 	</>

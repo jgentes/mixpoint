@@ -77,10 +77,12 @@ const LeftNav = () => {
 						<ListItem>
 							<ListItemButton>
 								<ListItemDecorator sx={{ color: 'inherit' }}>
-									<img
-										src="/media/innerjoin32.png"
-										style={{ height: '22px', marginRight: '8px' }}
-										alt="Inner joined circles"
+									<Icon
+										icon="material-symbols-light:join-outline"
+										style={{
+											fontSize: '28px',
+											color: '#2ca3d6'
+										}}
 									/>
 								</ListItemDecorator>
 								<ListItemContent>

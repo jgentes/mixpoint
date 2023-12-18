@@ -11,7 +11,7 @@ import { useState } from 'react'
 import { appState } from '~/api/db/appState'
 import { db, getPrefs, useLiveQuery } from '~/api/db/dbHandlers'
 import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
-import LeftNav from '~/components/tracks/LeftNav'
+import LeftNav from '~/components/layout/LeftNav'
 import TrackLoader from '~/components/tracks/TrackLoader'
 import {
 	EnhancedTableHead,

@@ -1,6 +1,5 @@
 // this file establishes the root component that renders all subsequent / child routes
 // it also injects top level styling, HTML meta tags, links, and javascript for browser rendering
-import PublicSansFont from '@fontsource/public-sans/latin.css'
 import { Snackbar } from '@mui/joy'
 import { NextUIProvider } from '@nextui-org/react'
 import {
@@ -69,7 +68,6 @@ const links: LinksFunction = () => [
 		href: '/media/innerjoin32.png',
 		sizes: '32x32'
 	},
-	{ rel: 'stylesheet', href: PublicSansFont },
 	{ rel: 'stylesheet', href: tailwind },
 	{ rel: 'stylesheet', href: styles }
 ]
@@ -147,7 +145,7 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 	return (
 		<NextUIProvider>
 			<NextThemesProvider attribute="class" defaultTheme="dark">
-				{true ? (
+				{loading || error ? (
 					<InitialLoader message={error} />
 				) : (
 					<>
