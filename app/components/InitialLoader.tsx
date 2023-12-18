@@ -22,9 +22,8 @@ const InitialLoader = ({ message }: { message?: string }) => {
 			{!message ? null : (
 				<Button
 					variant="ghost"
-					color="primary"
 					size="sm"
-					className="position-fixed top-12"
+					className="fixed top-12"
 					onClick={() => {
 						window.location.href = '/'
 					}}
@@ -33,20 +32,17 @@ const InitialLoader = ({ message }: { message?: string }) => {
 				</Button>
 			)}
 			<div style={{ minWidth: '190px', maxWidth: '30%' }}>
-				<div className="flex leading-6">
+				<div className="flex pb-1">
 					<Logo />
 					{!message ? null : (
-						<Icon
-							icon="material-symbols:warning"
-							height={36}
-							className="self-center"
-						/>
+						<Icon icon="bx:error" height={23} className="self-center" />
 					)}
 				</div>
 				<Progress
 					size="sm"
 					radius="sm"
-					isIndeterminate
+					isIndeterminate={!message}
+					value={100}
 					classNames={{
 						indicator: 'bg-gradient-to-r from-pink-500 to-yellow-500'
 					}}
