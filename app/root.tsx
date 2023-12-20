@@ -64,8 +64,8 @@ const meta: MetaFunction = () => [
 const links: LinksFunction = () => [
 	{
 		rel: 'icon',
-		type: 'image/png',
-		href: '/media/innerjoin32.png',
+		type: 'image/svg+xml',
+		href: '/media/favicon.svg',
 		sizes: '32x32'
 	},
 	{ rel: 'stylesheet', href: tailwind },

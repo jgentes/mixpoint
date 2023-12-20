@@ -1,7 +1,6 @@
 import { Icon } from '@iconify-icon/react'
 import { Box, Sheet, Typography } from '@mui/joy'
-import { SxProps } from '@mui/material'
-import { useState } from 'react'
+import { CSSProperties, useState } from 'react'
 import { processTracks } from '~/api/audioHandlers'
 import { addToMix } from '~/api/db/dbHandlers'
 import { browseFile } from '~/api/fileHandlers'
@@ -34,35 +33,25 @@ const itemsDropped = async (items: DataTransferItemList, trackSlot?: 0 | 1) => {
 }
 
 const Dropzone = ({
-	sx = {},
+	className = {},
 	trackSlot
-}: { sx?: SxProps; trackSlot?: 0 | 1 }) => {
+}: { className?: CSSProperties; trackSlot?: 0 | 1 }) => {
 	const [dragOver, setDragOver] = useState(false)
 
 	return (
-		<Sheet
-			variant="soft"
+		<div
 			id="dropzone"
-			sx={{
-				border: '2px dashed #bbb',
-				padding: '10px',
-				textAlign: 'center',
-				cursor: 'pointer',
-				borderColor: dragOver ? '#30b2e9' : undefined,
-				backgroundImage: 'none',
-				backgroundColor: dragOver ? '#30b2e919' : 'background.level1',
-				borderRadius: '4px',
-				display: 'flex',
-				justifyContent: 'center',
-				alignItems: 'center',
-
-				'&:hover, &:active': {
-					borderColor: '#30b2e9',
-					backgroundColor: 'rgba(48, 178, 233, 0.1)'
-				},
-				...sx
-			}}
+			className={`border-2 border-dashed cursor-pointer border-default-500 p-2 text-center rounded-md flex justify-center items-center duration-0 ${
+				dragOver
+					? 'border-primary-500 bg-primary-500 bg-opacity-10'
+					: 'bg-default-50'
+			} hover:border-primary-500 active:border-primary-500 hover:bg-primary-500 hover:bg-opacity-10 active:bg-primary-500 active:bg-opacity-10 ${className}`}
 			onClick={() => browseFile(trackSlot)}
+			onKeyDown={e => {
+				if (e.key === 'Enter') {
+					browseFile(trackSlot)
+				}
+			}}
 			onDrop={e => {
 				e.preventDefault()
 				itemsDropped(e.dataTransfer.items, trackSlot)
@@ -76,24 +65,17 @@ const Dropzone = ({
 			onDragEnter={() => setDragOver(true)}
 			onDragLeave={() => setDragOver(false)}
 		>
-			<Box>
+			<div>
 				<Icon
-					icon="material-symbols:drive-folder-upload-outline"
-					style={{ fontSize: 38, color: '#aaa' }}
-					className="drop"
+					icon="material-symbols-light:drive-folder-upload-outline"
+					className="drop text-default-600 text-4xl"
 				/>
-				<Typography
-					level="body1"
-					className="drop"
-					sx={{ color: 'text.secondary' }}
-				>
-					<b>Add Tracks</b>
-				</Typography>
-				<Typography className="drop" level="body2">
-					Drag or click here
-				</Typography>
-			</Box>
-		</Sheet>
+				<div className="drop text-md font-semibold text-default-600">
+					Add Tracks
+				</div>
+				<div className="drop text-sm text-default-600">Drag or click here</div>
+			</div>
+		</div>
 	)
 }
 
