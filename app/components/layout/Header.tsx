@@ -1,47 +1,34 @@
-import { Box, IconButton } from '@mui/joy'
+import { IconButton } from '@mui/joy'
 
 import DarkMode from '~/components/layout/DarkModeButton'
 import Logo from '~/components/layout/MixpointLogo'
 
 import { Icon } from '@iconify-icon/react'
+import { Button } from '@nextui-org/react'
 import LoginButton from '~/components/layout/LoginButton.client'
 
 const Header = () => (
-	<Box
-		component="header"
-		sx={{
-			p: 2,
-			backgroundColor: 'background.surface',
-			display: 'flex',
-			flexDirection: 'row',
-			justifyContent: 'space-between',
-			alignItems: 'center',
-			gridColumn: '1 / -1',
-			borderBottom: '1px solid',
-			borderColor: 'divider',
-			position: 'sticky',
-			top: 0,
-			zIndex: 1100
-		}}
-	>
+	<div className="p-4 flex flex-row bg-background justify-between items-center border-b sticky z-10">
 		<Logo />
-		<Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.5 }}>
+		<div className="flex flex-row gap-x-2">
 			<LoginButton />
-			<IconButton
-				size="sm"
-				variant="outlined"
+			<Button
+				isIconOnly
+				variant="faded"
 				color="primary"
 				aria-label="Github"
 				title="Discuss on Github"
+				radius="sm"
+				className="border-1 transition-none hover:text-primary-50"
 				onClick={() =>
 					window.open('https://github.com/jgentes/mixpoint/discussions')
 				}
 			>
 				<Icon icon="mdi:github" height="20px" />
-			</IconButton>
+			</Button>
 			<DarkMode />
-		</Box>
-	</Box>
+		</div>
+	</div>
 )
 
 export default Header

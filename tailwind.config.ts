@@ -17,6 +17,9 @@ export default ({
 			backgroundImage: {
 				lightBg: lightGraphBackground,
 				darkBg: darkGraphBackground
+			},
+			fontSize: {
+				'2xs': '0.625rem'
 			}
 		}
 	},
@@ -33,7 +36,7 @@ export default ({
 				},
 				dark: {
 					colors: {
-						background: 'rgba(0, 30, 60, 0.2)'
+						background: '#0a1929'
 					}
 				}
 			}

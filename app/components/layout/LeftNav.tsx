@@ -8,6 +8,7 @@ import {
 	ListItemDecorator,
 	Typography
 } from '@mui/joy'
+import { Listbox, ListboxItem, ListboxSection, cn } from '@nextui-org/react'
 
 import { appState } from '~/api/db/appState'
 import Dropzone from '~/components/tracks/Dropzone'
@@ -16,97 +17,51 @@ const LeftNav = () => {
 	const [openDrawer] = appState.openDrawer()
 
 	return (
-		<Box
-			component="nav"
-			height="100%"
-			sx={{
-				display: 'flex',
-				flexDirection: 'column',
-				p: 2,
-				backgroundColor: 'background.surface',
-				borderRight: '1px solid',
-				borderColor: 'divider'
-			}}
-		>
-			<List size="sm" sx={{ '--List-item-radius': '8px' }}>
-				<ListItem nested sx={{ p: 0 }}>
-					<Box
-						sx={{
-							mb: 1,
-							display: 'flex',
-							alignItems: 'center',
-							justifyContent: 'space-between'
+		<div className="h-full flex flex-col p-1 border-r border-divider bg-background">
+			<div className="w-full max-w-[260px] px-1 py-2 rounded-small">
+				<Listbox variant="flat" aria-label="Navigation menu">
+					<ListboxSection
+						title="Browse"
+						classNames={{
+							heading:
+								'uppercase tracking-widest font-semibold text-2xs text-neutral-500'
 						}}
 					>
-						<Typography
-							id="nav-list-browse"
-							textColor="neutral.500"
-							fontWeight={700}
-							sx={{
-								fontSize: '10px',
-								textTransform: 'uppercase',
-								letterSpacing: '.1rem'
-							}}
+						<ListboxItem
+							key="tracks"
+							startContent={
+								<Icon
+									icon="material-symbols:lens-outline"
+									className="text-xl text-blue-400"
+								/>
+							}
 						>
-							Browse
-						</Typography>
-					</Box>
-					<List
-						aria-labelledby="nav-list-browse"
-						sx={{
-							'& .MuiListItemButton-root': { p: '8px' }
-						}}
-					>
-						<ListItem>
-							<ListItemButton
-								variant={openDrawer ? 'soft' : undefined}
-								color={openDrawer ? 'primary' : undefined}
-							>
-								<ListItemDecorator sx={{ color: 'inherit' }}>
-									<Icon
-										icon="material-symbols:lens-outline"
-										style={{
-											fontSize: '20px',
-											color: '#2ca3d6'
-										}}
-									/>
-								</ListItemDecorator>
-								<ListItemContent>Tracks</ListItemContent>
-							</ListItemButton>
-						</ListItem>
-						<ListItem>
-							<ListItemButton>
-								<ListItemDecorator sx={{ color: 'inherit' }}>
-									<Icon
-										icon="material-symbols-light:join-outline"
-										style={{
-											fontSize: '28px',
-											color: '#2ca3d6'
-										}}
-									/>
-								</ListItemDecorator>
-								<ListItemContent>
-									<ListItemContent>Mixes</ListItemContent>
-								</ListItemContent>
-							</ListItemButton>
-						</ListItem>
-						<ListItem>
-							<ListItemButton>
-								<ListItemDecorator sx={{ color: 'inherit' }}>
-									<Icon
-										icon="material-symbols:animation"
-										style={{
-											fontSize: '22px',
-											transform: 'rotate(45deg)',
-											color: '#2ca3d6'
-										}}
-									/>
-								</ListItemDecorator>
-								<ListItemContent>Sets</ListItemContent>
-							</ListItemButton>
-						</ListItem>
-					</List>
-				</ListItem>
+							Tracks
+						</ListboxItem>
+						<ListboxItem
+							key="mixes"
+							startContent={
+								<Icon
+									icon="material-symbols-light:join-outline"
+									className="text-3xl text-blue-400"
+								/>
+							}
+						>
+							Mixes
+						</ListboxItem>
+						<ListboxItem
+							key="sets"
+							startContent={
+								<Icon
+									icon="material-symbols:animation"
+									className="text-2xl text-blue-400 transform rotate-45"
+								/>
+							}
+						>
+							Sets
+						</ListboxItem>
+					</ListboxSection>
+				</Listbox>
 				<ListItem nested sx={{ p: 0 }}>
 					<Box
 						sx={{
@@ -200,10 +155,10 @@ const LeftNav = () => {
 						</ListItem>
 					</List>
 				</ListItem>
-			</List>
+			</div>
 
 			<Dropzone />
-		</Box>
+		</div>
 	)
 }
 

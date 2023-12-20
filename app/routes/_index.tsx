@@ -1,4 +1,3 @@
-import { Sheet } from '@mui/joy'
 import { useEffect } from 'react'
 import { setAppState } from '~/api/db/appState'
 import { getPrefs, useLiveQuery } from '~/api/db/dbHandlers'
@@ -18,13 +17,7 @@ const Index: React.FunctionComponent = () => {
 	}, [mixViewVisible])
 
 	return (
-		<Sheet
-			sx={{
-				height: '100%',
-				display: 'flex',
-				flexDirection: 'column'
-			}}
-		>
+		<div className="h-full flex flex-col bg-darkBg">
 			<Header />
 			{mixViewVisible ? (
 				<>
@@ -39,7 +32,7 @@ const Index: React.FunctionComponent = () => {
 			)}
 
 			<TrackDrawer />
-		</Sheet>
+		</div>
 	)
 }
 
