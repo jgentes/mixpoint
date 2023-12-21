@@ -4,7 +4,7 @@ import { Listbox, ListboxItem, ListboxSection } from '@nextui-org/react'
 import Dropzone from '~/components/tracks/Dropzone'
 
 const LeftNav = () => (
-	<div className="h-full flex flex-col p-1 border-r border-divider bg-background">
+	<div className="h-full flex flex-col p-0.5 border-r border-divider bg-background justify-between">
 		<div className="w-full max-w-[260px] px-1 py-2 rounded-small">
 			<Listbox
 				variant="flat"
@@ -63,28 +63,28 @@ const LeftNav = () => (
 						key="electro"
 						title="Electro"
 						startContent={
-							<div className="w-2.5 h-2.5 rounded-full bg-blue-300" />
+							<div className="w-2.5 h-2.5 rounded-full bg-blue-300 ml-1" />
 						}
 					/>
 					<ListboxItem
 						key="house"
 						title="House"
 						startContent={
-							<div className="w-2.5 h-2.5 rounded-full bg-red-300" />
+							<div className="w-2.5 h-2.5 rounded-full bg-red-300 ml-1" />
 						}
 					/>
 					<ListboxItem
 						key="drum & bass"
 						title="Drum & Bass"
 						startContent={
-							<div className="w-2.5 h-2.5 rounded-full bg-orange-300" />
+							<div className="w-2.5 h-2.5 rounded-full bg-orange-300 ml-1" />
 						}
 					/>
 					<ListboxItem
 						key="downtempo"
 						title="Downtempo"
 						startContent={
-							<div className="w-2.5 h-2.5 rounded-full bg-green-300" />
+							<div className="w-2.5 h-2.5 rounded-full bg-green-300 ml-1" />
 						}
 					/>
 				</ListboxSection>

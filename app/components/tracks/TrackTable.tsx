@@ -10,8 +10,8 @@ import {
 import { useState } from 'react'
 import { appState } from '~/api/db/appState'
 import { db, getPrefs, useLiveQuery } from '~/api/db/dbHandlers'
-import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
 import LeftNav from '~/components/layout/LeftNav'
+import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
 import TrackLoader from '~/components/tracks/TrackLoader'
 import {
 	EnhancedTableHead,
@@ -70,13 +70,7 @@ const TrackTable = () => {
 
 	return (
 		tracks && (
-			<Box
-				sx={{
-					display: 'grid',
-					gridTemplateColumns: 'minmax(64px, 200px) minmax(450px, 1fr)',
-					height: '100%'
-				}}
-			>
+			<div className="grid grid-cols-[minmax(64px,200px),minmax(450px,1fr)] h-full">
 				<LeftNav />
 
 				<Box component="main" sx={{ p: 2 }}>
@@ -166,7 +160,7 @@ const TrackTable = () => {
 						/>
 					</Box>
 				</Box>
-			</Box>
+			</div>
 		)
 	)
 }

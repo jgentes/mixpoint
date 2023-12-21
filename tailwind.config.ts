@@ -15,8 +15,8 @@ export default ({
 	theme: {
 		extend: {
 			backgroundImage: {
-				lightBg: lightGraphBackground,
-				darkBg: darkGraphBackground
+				lightGraph: lightGraphBackground,
+				darkGraph: darkGraphBackground
 			},
 			fontSize: {
 				'2xs': '0.625rem'
@@ -36,7 +36,10 @@ export default ({
 				},
 				dark: {
 					colors: {
-						background: '#0a1929'
+						background: '#0a1929',
+						primary: {
+							50: '#0e141a'
+						}
 					}
 				}
 			}

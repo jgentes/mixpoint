@@ -1,5 +1,4 @@
 import { Icon } from '@iconify-icon/react'
-import { Box, Sheet, Typography } from '@mui/joy'
 import { CSSProperties, useState } from 'react'
 import { processTracks } from '~/api/audioHandlers'
 import { addToMix } from '~/api/db/dbHandlers'
@@ -41,7 +40,7 @@ const Dropzone = ({
 	return (
 		<div
 			id="dropzone"
-			className={`border-2 border-dashed cursor-pointer border-default-500 p-2 text-center rounded-md flex justify-center items-center duration-0 ${
+			className={`border-2 border-dashed cursor-pointer border-default-500 m-2 p-2 text-center rounded-md flex justify-center items-center duration-0 ${
 				dragOver
 					? 'border-primary-500 bg-primary-500 bg-opacity-10'
 					: 'bg-default-50'

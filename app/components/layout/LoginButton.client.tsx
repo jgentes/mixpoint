@@ -1,4 +1,4 @@
-import { IconButton, Modal, ModalDialog } from '@mui/joy'
+import { Button, Modal, ModalContent } from '@nextui-org/react'
 import { useOutletContext } from '@remix-run/react'
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
@@ -17,11 +17,12 @@ const LoginButton = () => {
 
 	return (
 		<>
-			<IconButton
+			<Button
 				id="login-button"
 				size="sm"
-				sx={{ px: 1 }}
-				variant="outlined"
+				radius="sm"
+				className="border-1 border-primary-300 text-primary-700"
+				variant="light"
 				color="primary"
 				title={loggedIn || buttonText}
 				onClick={async () => {
@@ -29,9 +30,14 @@ const LoginButton = () => {
 				}}
 			>
 				{buttonText}
-			</IconButton>
-			<Modal open={openAuth} onClose={() => setOpenAuth(false)}>
-				<ModalDialog sx={{ backgroundColor: 'background.surface' }}>
+			</Button>
+			<Modal
+				isOpen={openAuth}
+				className="p-6"
+				size="xs"
+				onClose={() => setOpenAuth(false)}
+			>
+				<ModalContent className="bg-background">
 					<Auth
 						supabaseClient={supabase}
 						appearance={{
@@ -49,7 +55,7 @@ const LoginButton = () => {
 						socialLayout="horizontal"
 						theme={theme === 'dark' ? 'dark' : 'light'}
 					/>
-				</ModalDialog>
+				</ModalContent>
 			</Modal>
 		</>
 	)

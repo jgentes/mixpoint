@@ -17,7 +17,7 @@ const Index: React.FunctionComponent = () => {
 	}, [mixViewVisible])
 
 	return (
-		<div className="h-full flex flex-col bg-darkBg">
+		<div className="h-full flex flex-col bg-darkGraph light:bg-lightGraph bg-primary-50">
 			<Header />
 			{mixViewVisible ? (
 				<>

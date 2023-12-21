@@ -1,17 +1,20 @@
 import { Icon } from '@iconify-icon/react'
-import { IconButton } from '@mui/joy'
+import { Button } from '@nextui-org/react'
 import { useTheme } from 'next-themes'
 
 const DarkMode = () => {
 	const { theme, setTheme } = useTheme()
 
 	return (
-		<IconButton
+		<Button
+			isIconOnly
 			id="toggle-mode"
 			size="sm"
-			variant="outlined"
+			radius="sm"
+			variant="light"
 			color="primary"
 			aria-label="Darkmode"
+			className="border-1 border-primary-300 text-primary-700"
 			onClick={() => {
 				new Audio('/media/light.mp3').play()
 				setTheme(theme === 'dark' ? 'light' : 'dark')
@@ -24,7 +27,7 @@ const DarkMode = () => {
 				height="20px"
 				title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
 			/>
-		</IconButton>
+		</Button>
 	)
 }
 
