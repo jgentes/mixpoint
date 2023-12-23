@@ -1,21 +1,30 @@
 import { Icon } from '@iconify-icon/react'
 import {
+	Table,
+	TableHeader,
+	TableColumn,
+	TableBody,
+	TableRow,
+	TableCell,
+	Input,
 	Button,
+	DropdownTrigger,
+	Dropdown,
+	DropdownMenu,
+	DropdownItem,
+	Chip,
+	User,
+	Pagination
+} from '@nextui-org/react'
+import {
 	Card,
 	Checkbox,
 	FormControl,
 	IconButton,
-	Input,
 	Link,
 	Typography
 } from '@mui/joy'
-import {
-	TableCell,
-	TableHead,
-	TableRow,
-	TableSortLabel,
-	Toolbar
-} from '@mui/material'
+import { TableHead, TableSortLabel, Toolbar } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import { visuallyHidden } from '@mui/utils'
 import { ChangeEvent, MouseEvent, useMemo } from 'react'
@@ -53,8 +62,8 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
 			onConfirm: async () => {
 				setModalState.openState(false)
 				for (const id of selected) await audioEvents.ejectTrack(id)
-				await removeTracks(selected as number[])
-				setSelected([])
+				await removeTracks([...selected])
+				setSelected(new Set())
 			},
 			onCancel: async () => {
 				setModalState.openState(false)
@@ -102,7 +111,7 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
 			}}
 		>
 			{numSelected > 0 ? (
-				<Typography component="div">{numSelected} selected</Typography>
+				<div>{numSelected} selected</div>
 			) : (
 				<Typography id="tableTitle" component="div" sx={{ flexBasis: '200px' }}>
 					{trackCount} Track{trackCount === 1 ? '' : 's'}
@@ -160,25 +169,24 @@ const EnhancedTableToolbar = (props: { numSelected: number }) => {
 			{numSelected === 0 ? (
 				<Button
 					size="sm"
-					variant="outlined"
+					radius="sm"
+					variant="light"
 					onClick={() => browseFile()}
-					sx={{
-						whiteSpace: 'nowrap'
-					}}
+					className="whitespace-nowrap"
 				>
 					<Icon icon="material-symbols:add" height="20px" />
 					Add Track
 				</Button>
 			) : (
-				<IconButton
-					variant="plain"
+				<Button
+					variant="light"
 					title="Remove tracks"
 					size="sm"
-					color="neutral"
+					radius="sm"
 					onClick={() => showRemoveTracksModal()}
 				>
 					<Icon icon="ri:recycle-line" height="20px" />
-				</IconButton>
+				</Button>
 			)}
 		</Toolbar>
 	)
@@ -236,13 +244,15 @@ const EnhancedTableHead = (props: {
 					>
 						<TableSortLabel
 							active={sortColumn === column.dbKey}
-							direction={sortColumn === column.dbKey ? sortDirection : 'asc'}
+							direction={
+								sortColumn === column.dbKey ? sortDirection : 'ascending'
+							}
 							onClick={createSort(column.dbKey)}
 						>
 							{column.label}
 							{sortColumn === column.dbKey ? (
 								<Card component="span" sx={visuallyHidden}>
-									{sortDirection === 'desc'
+									{sortDirection === 'descending'
 										? 'sorted descending'
 										: 'sorted ascending'}
 								</Card>

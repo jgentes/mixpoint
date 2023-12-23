@@ -6,16 +6,16 @@ import { errorHandler } from '~/utils/notifications'
 
 const sort = async (event: MouseEvent<unknown>, property: keyof Track) => {
 	const { sortDirection } = (await getPrefs('user', 'sortDirection')) || {
-		sortDirection: 'desc'
+		sortDirection: 'descending'
 	}
 	const { sortColumn } = (await getPrefs('user', 'sortColumn')) || {
 		sortColumn: 'lastModified'
 	}
 
-	const isAsc = sortColumn === property && sortDirection === 'asc'
+	const isAsc = sortColumn === property && sortDirection === 'ascending'
 
 	setPrefs('user', {
-		sortDirection: isAsc ? 'desc' : 'asc',
+		sortDirection: isAsc ? 'descending' : 'ascending',
 		sortColumn: property
 	})
 }
@@ -81,13 +81,13 @@ const descendingComparator = <T,>(a: T, b: T, orderBy: keyof T) => {
 
 // biome-ignore lint/suspicious/noExplicitAny: this is a generic function
 const getComparator = <Key extends keyof any>(
-	order: 'asc' | 'desc',
+	order: 'ascending' | 'descending',
 	orderBy: Key
 ): ((
 	a: { [key1 in Key]: number | string },
 	b: { [key2 in Key]: number | string }
 ) => number) => {
-	return order === 'desc'
+	return order === 'descending'
 		? (a, b) => descendingComparator(a, b, orderBy)
 		: (a, b) => -descendingComparator(a, b, orderBy)
 }
@@ -117,6 +117,10 @@ const convertToSecs = (time: string): number => {
 // Round to two decimal places
 const roundTwo = (num: number): number => Math.round(num * 100) / 100
 
+const capitalize = (str: string): string => {
+	return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
 export {
 	changePage,
 	changeRows,
@@ -128,5 +132,6 @@ export {
 	rowClick,
 	selectAll,
 	sort,
-	timeFormat
+	timeFormat,
+	capitalize
 }

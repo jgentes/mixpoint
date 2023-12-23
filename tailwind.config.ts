@@ -14,6 +14,9 @@ export default ({
 	],
 	theme: {
 		extend: {
+			borderColor: {
+				default: '#c2e0ff14'
+			},
 			backgroundImage: {
 				lightGraph: lightGraphBackground,
 				darkGraph: darkGraphBackground

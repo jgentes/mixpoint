@@ -34,7 +34,10 @@ async function getTracksRecursively(
 	const trackArray: partialTrack[] = []
 
 	// Change sort order to lastModified so new tracks are visible at the top
-	await setPrefs('user', { sortColumn: 'lastModified', sortDirection: 'desc' })
+	await setPrefs('user', {
+		sortColumn: 'lastModified',
+		sortDirection: 'descending'
+	})
 
 	const filesToTracks = async (
 		fileOrDirectoryHandle: FileSystemFileHandle | FileSystemDirectoryHandle,
@@ -101,10 +104,9 @@ async function getTracksRecursively(
 
 const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
 	// Set analyzing state now to avoid tracks appearing with 'analyze' button
-	setAppState.analyzing(analyzing => [
-		...analyzing,
-		...tracks.map(track => track.id)
-	])
+	setAppState.analyzing(
+		prev => new Set([...prev, ...tracks.map(track => track.id)])
+	)
 
 	// Return array of updated tracks
 	const updatedTracks: Track[] = []
@@ -115,7 +117,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
 			// Change sort order to lastModified so new tracks are visible at the top
 			await setPrefs('user', {
 				sortColumn: 'lastModified',
-				sortDirection: 'desc'
+				sortDirection: 'descending'
 			})
 			setAppState.page(0)
 			sorted = true
@@ -142,7 +144,10 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
 		updatedTracks.push(trackWithId)
 
 		// Remove from analyzing state
-		setAppState.analyzing(analyzing => analyzing.filter(id => id !== track.id))
+		setAppState.analyzing(prev => {
+			prev.delete(track.id)
+			return prev
+		})
 	}
 	return updatedTracks
 }
@@ -160,7 +165,7 @@ const getAudioDetails = async (
 }> => {
 	const file = await getPermission(track)
 	if (!file) {
-		setAppState.analyzing([])
+		setAppState.analyzing(new Set())
 		throw errorHandler('Permission to the file or folder was denied.')
 	}
 

@@ -6,7 +6,7 @@ import { Button } from '@nextui-org/react'
 import LoginButton from '~/components/layout/LoginButton.client'
 
 const Header = () => (
-	<div className="p-4 flex flex-row bg-background justify-between items-center border-b border-divider sticky z-10">
+	<div className="p-4 flex flex-row bg-background justify-between items-center border-b border-default sticky z-10">
 		<Logo />
 		<div className="flex flex-row gap-x-2">
 			<LoginButton />

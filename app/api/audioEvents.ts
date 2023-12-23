@@ -59,7 +59,10 @@ const audioEvents = {
 			)
 
 			// Remove analyzing overlay
-			setAppState.analyzing(prev => prev.filter(id => id !== trackId))
+			setAppState.analyzing(prev => {
+				prev.delete(trackId)
+				return prev
+			})
 
 			// Style scrollbar (this is a workaround for https://github.com/katspaugh/wavesurfer.js/issues/2933)
 			const style = document.createElement('style')
@@ -93,7 +96,10 @@ const audioEvents = {
 			waveform.on('redraw', () => audioEvents.seek(trackId))
 		} else {
 			// Remove from stemsAnalyzing
-			setAppState.stemsAnalyzing(prev => prev.filter(id => id !== trackId))
+			setAppState.stemsAnalyzing(prev => {
+				prev.delete(trackId)
+				return prev
+			})
 		}
 
 		// Update BPM if adjusted
@@ -531,9 +537,7 @@ const audioEvents = {
 		stem: TrackPrefs['stemZoom'] | 'all'
 	) => {
 		// add track to analyzing state
-		setAppState.analyzing(prev =>
-			prev.includes(trackId) ? prev : [...prev, trackId]
-		)
+		setAppState.analyzing(prev => prev.add(trackId))
 
 		const [{ waveform }] = getAudioState[trackId]()
 		if (waveform) waveform.destroy()
@@ -575,7 +579,10 @@ const audioEvents = {
 		}
 
 		// Remove from stemsAnalyzing
-		setAppState.stemsAnalyzing(prev => prev.filter(id => id !== trackId))
+		setAppState.stemsAnalyzing(prev => {
+			prev.delete(trackId)
+			return prev
+		})
 	}
 }
 

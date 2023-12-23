@@ -15,7 +15,7 @@ import { timeFormat } from '~/utils/tableOps'
 
 const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 	const [analyzingTracks] = appState.analyzing()
-	const analyzing = analyzingTracks.includes(trackId)
+	const analyzing = analyzingTracks.has(trackId)
 
 	const { duration = 0 } =
 		useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}

@@ -19,7 +19,7 @@ const MixCard = ({
 	sx
 }: { trackId: Track['id']; trackSlot: 0 | 1; sx?: SxProps }) => {
 	const [analyzingTracks] = appState.analyzing()
-	const analyzing = analyzingTracks.includes(trackId)
+	const analyzing = analyzingTracks.has(trackId)
 
 	const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
 

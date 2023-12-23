@@ -4,7 +4,7 @@ import { Listbox, ListboxItem, ListboxSection } from '@nextui-org/react'
 import Dropzone from '~/components/tracks/Dropzone'
 
 const LeftNav = () => (
-	<div className="h-full flex flex-col p-0.5 border-r border-divider bg-background justify-between">
+	<div className="h-full flex flex-col p-0.5 border-r border-default bg-background justify-between">
 		<div className="w-full max-w-[260px] px-1 py-2 rounded-small">
 			<Listbox
 				variant="flat"

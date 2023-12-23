@@ -198,7 +198,10 @@ const validateTrackStemAccess = async (
 	const state = await checkAccess()
 	if (state === 'ready') {
 		// remove analyzing
-		setAppState.stemsAnalyzing(prev => prev.filter(id => id !== trackId))
+		setAppState.stemsAnalyzing(prev => {
+			prev.delete(trackId)
+			return prev
+		})
 	}
 
 	if (stemState !== state) setAudioState[trackId].stemState(state)

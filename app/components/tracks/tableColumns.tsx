@@ -1,6 +1,5 @@
 import { Icon } from '@iconify-icon/react'
 import { Box, Chip } from '@mui/joy'
-import { TableCellProps } from '@mui/material'
 import { SxProps } from '@mui/material/styles'
 import moment from 'moment'
 import { audioEvents } from '~/api/audioEvents'
@@ -9,13 +8,14 @@ import { appState, setAppState } from '~/api/db/appState'
 import { Track, addToMix, getPrefs, useLiveQuery } from '~/api/db/dbHandlers'
 import TrackLoader from '~/components/tracks/TrackLoader'
 import { formatMinutes, rowClick } from '~/utils/tableOps'
+import { TableColumnProps } from '@nextui-org/react'
 
 const createColumnDefinitions = (): {
 	dbKey: keyof Track
 	label: string
-	padding: TableCellProps['padding']
-	align: TableCellProps['align']
-	width: TableCellProps['width']
+	padding: string
+	align: TableColumnProps<string>['align']
+	width: TableColumnProps<string>['width']
 	sx?: SxProps
 	onClick?: (t: Track) => void
 	formatter: (t: Track) => string | React.ReactNode
@@ -48,7 +48,7 @@ const createColumnDefinitions = (): {
 		const isInMix = tracks.includes(track.id)
 
 		// Prevent user from adding a new track before previous added track finishes analyzing
-		const isBeingAnalyzed = tracks.some(id => analyzingTracks.includes(id))
+		const isBeingAnalyzed = tracks.some(id => analyzingTracks.has(id))
 
 		return (
 			<Chip
@@ -82,7 +82,7 @@ const createColumnDefinitions = (): {
 
 		return (
 			t.bpm?.toFixed(0) ||
-			(!analyzingTracks.some(id => id === t.id) ? (
+			(!analyzingTracks.has(t.id) ? (
 				analyzeButton(t)
 			) : (
 				<TrackLoader style={{ margin: 'auto', height: '15px' }} />
@@ -94,7 +94,7 @@ const createColumnDefinitions = (): {
 		{
 			dbKey: 'name',
 			label: 'Track name',
-			align: 'left',
+			align: 'start',
 			padding: 'none',
 			width: '60%',
 			formatter: t => (
@@ -150,7 +150,7 @@ const createColumnDefinitions = (): {
 		{
 			dbKey: 'lastModified',
 			label: 'Updated',
-			align: 'right',
+			align: 'end',
 			padding: 'normal',
 			width: '10%',
 			sx: { whiteSpace: 'nowrap' },

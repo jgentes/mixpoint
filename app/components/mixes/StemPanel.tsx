@@ -51,14 +51,12 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
 
 		// prevent duplication on re-render while loading
 		const [analyzingTracks] = getAppState.stemsAnalyzing()
-		const analyzing = analyzingTracks.includes(trackId)
+		const analyzing = analyzingTracks.has(trackId)
 
 		if (!analyzing) initStems()
 
 		// add stems to analyzing state
-		setAppState.stemsAnalyzing(prev =>
-			prev.includes(trackId) ? prev : [...prev, trackId]
-		)
+		setAppState.stemsAnalyzing(prev => prev.add(trackId))
 
 		return () => audioEvents.destroyStems(trackId)
 	}, [trackId, stemState])

@@ -181,14 +181,12 @@ const Waveform = ({
 
 		// prevent duplication on re-render while loading
 		const [analyzingTracks] = getAppState.analyzing()
-		const analyzing = analyzingTracks.includes(trackId)
+		const analyzing = analyzingTracks.has(trackId)
 
 		if (!analyzing) init()
 
 		// add track to analyzing state
-		setAppState.analyzing(prev =>
-			prev.includes(trackId) ? prev : [...prev, trackId]
-		)
+		setAppState.analyzing(prev => prev.add(trackId))
 
 		validateTrackStemAccess(trackId)
 

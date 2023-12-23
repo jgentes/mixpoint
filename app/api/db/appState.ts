@@ -56,27 +56,27 @@ const {
 	setStore: setAppState
 } = createStore<{
 	search: string | number
-	selected: Track['id'][]
+	selected: Set<Track['id']>
 	rowsPerPage: number
 	page: number
 	showButton: number | null
 	openDrawer: boolean
 	processing: boolean
-	analyzing: Track['id'][]
-	stemsAnalyzing: Track['id'][]
+	analyzing: Set<Track['id']>
+	stemsAnalyzing: Set<Track['id']>
 	syncTimer: ReturnType<typeof requestAnimationFrame> | undefined
 	audioContext?: AudioContext
 	loggedIn: string // email address
 }>({
 	search: '',
-	selected: [],
+	selected: new Set(),
 	rowsPerPage: 10,
 	page: 0,
 	showButton: null,
 	openDrawer: false,
 	processing: false,
-	analyzing: [],
-	stemsAnalyzing: [],
+	analyzing: new Set(),
+	stemsAnalyzing: new Set(),
 	syncTimer: undefined,
 	loggedIn: ''
 })

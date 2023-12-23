@@ -89,7 +89,7 @@ type MixSet = {
 // disk, which cannot be done without interacting with the page first.
 // Each file is a few megabytes, so the cache must be limited.
 const STEMS = ['drums', 'bass', 'vocals', 'other'] as const
-type Stem = typeof STEMS[number]
+type Stem = (typeof STEMS)[number]
 
 type TrackCache = {
 	id: Track['id']
@@ -127,8 +127,9 @@ type SetPrefs = Partial<{
 
 type UserPrefs = Partial<{
 	date: Date
-	sortDirection: 'asc' | 'desc'
+	sortDirection: 'ascending' | 'descending'
 	sortColumn: keyof Track // track table order property
+	visibleColumns: 'all' | string[] // track table visible columns
 	stemsDirHandle: FileSystemDirectoryHandle // local folder on file system to store stems
 }>
 
