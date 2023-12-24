@@ -41,6 +41,7 @@ const InitialLoader = ({ message }: { message?: string }) => {
 				<Progress
 					size="sm"
 					radius="sm"
+					aria-label={message || 'Loading...'}
 					isIndeterminate={!message}
 					value={100}
 					classNames={{

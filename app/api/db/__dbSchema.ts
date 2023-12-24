@@ -1,6 +1,7 @@
 // This file initializes Dexie (indexDB), defines the schema and creates tables
 
 import Dexie from 'dexie'
+import { Key } from 'react'
 
 // eventually allow the user to change these
 const STATE_ROW_LIMIT = 100
@@ -128,8 +129,8 @@ type SetPrefs = Partial<{
 type UserPrefs = Partial<{
 	date: Date
 	sortDirection: 'ascending' | 'descending'
-	sortColumn: keyof Track // track table order property
-	visibleColumns: 'all' | string[] // track table visible columns
+	sortColumn: Key
+	visibleColumns: Set<Key> // track table visible columns
 	stemsDirHandle: FileSystemDirectoryHandle // local folder on file system to store stems
 }>
 

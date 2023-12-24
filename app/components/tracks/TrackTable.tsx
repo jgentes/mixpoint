@@ -1,5 +1,4 @@
 import { Icon } from '@iconify-icon/react'
-import { TableContainer, TablePagination } from '@mui/material'
 import {
 	Button,
 	Chip,
@@ -9,6 +8,8 @@ import {
 	DropdownTrigger,
 	Input,
 	Pagination,
+	Select,
+	SelectItem,
 	Selection,
 	SortDescriptor,
 	Table,
@@ -19,7 +20,7 @@ import {
 	TableRow,
 	User
 } from '@nextui-org/react'
-import { useCallback, useMemo, useState } from 'react'
+import { Key, useCallback, useMemo, useState } from 'react'
 import { audioEvents } from '~/api/audioEvents'
 import { analyzeTracks } from '~/api/audioHandlers'
 import { appState, setAppState, setModalState } from '~/api/db/appState'
@@ -29,6 +30,7 @@ import {
 	getDirtyTracks,
 	getPrefs,
 	removeTracks,
+	setPrefs,
 	useLiveQuery
 } from '~/api/db/dbHandlers'
 import { browseFile } from '~/api/fileHandlers'
@@ -36,26 +38,14 @@ import LeftNav from '~/components/layout/LeftNav'
 import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
 import TrackLoader from '~/components/tracks/TrackLoader'
 import { createColumnDefinitions } from '~/components/tracks/tableColumns'
-import {
-	EnhancedTableHead,
-	EnhancedTableToolbar
-} from '~/components/tracks/tableHeader'
-import TableRows from '~/components/tracks/tableRows'
-import {
-	changePage,
-	changeRows,
-	formatMinutes,
-	getComparator,
-	isSelected,
-	selectAll,
-	sort
-} from '~/utils/tableOps'
+import { formatMinutes, getComparator } from '~/utils/tableOps'
 
 const TrackTable = () => {
 	// Re-render when page or selection changes
 	const [page] = appState.page()
 	const [rowsPerPage] = appState.rowsPerPage()
 	const [selected] = appState.selected()
+	const selectedCount = selected.size
 
 	// Re-render when search query changes
 	const [search] = appState.search()
@@ -73,7 +63,7 @@ const TrackTable = () => {
 	const {
 		sortDirection = 'descending',
 		sortColumn = 'lastModified',
-		visibleColumns = 'all'
+		visibleColumns = new Set<string>()
 	} = useLiveQuery(() => getPrefs('user')) || {}
 
 	// Monitor db for track updates (and filter using searchquery if present)
@@ -102,7 +92,6 @@ const TrackTable = () => {
 	const pageTracks = useMemo(() => {
 		const start = (page - 1) * rowsPerPage
 		const end = start + rowsPerPage
-
 		return sortedTracks.slice(start, end)
 	}, [page, sortedTracks, rowsPerPage])
 
@@ -115,7 +104,7 @@ const TrackTable = () => {
 	const pages = Math.ceil(tracks.length / rowsPerPage)
 
 	const headerColumns = useMemo(() => {
-		if (visibleColumns === 'all') return columns
+		if (!visibleColumns.size) return columns
 
 		return columns.filter(column =>
 			Array.from(visibleColumns).includes(column.dbKey)
@@ -128,8 +117,8 @@ const TrackTable = () => {
 			headerText: 'Are you sure?',
 			bodyText: 'Removing tracks here will not delete them from your computer.',
 			confirmColor: 'danger',
-			confirmText: `Remove ${selected.size} track${
-				selected.size > 1 ? 's' : ''
+			confirmText: `Remove ${selectedCount} track${
+				selectedCount > 1 ? 's' : ''
 			}`,
 			onConfirm: async () => {
 				setModalState.openState(false)
@@ -160,77 +149,49 @@ const TrackTable = () => {
 			}
 		})
 
-	const onRowsPerPageChange = useCallback(
-		(e: React.ChangeEvent<HTMLSelectElement>) => {
-			setAppState.rowsPerPage(Number(e.target.value))
-			setAppState.page(1)
-		},
-		[]
-	)
-
-	const onSearchChange = useCallback((value: string) => {
-		if (value) {
-			setAppState.search(value)
-			setAppState.page(1)
-		} else {
-			setAppState.search('')
-		}
-	}, [])
-
-	const HeaderButton = () => {
-		const hasSelected = selected.size
-
-		return (
-			<Button
-				size="sm"
-				radius="sm"
-				variant="light"
-				onClick={() => (hasSelected ? showRemoveTracksModal() : browseFile())}
-				className="whitespace-nowrap"
-			>
-				<Icon
-					icon={hasSelected ? 'ri:recycle-line' : 'material-symbols:add'}
-					height="20px"
-				/>
-				{hasSelected ? 'Remove tracks' : 'Add Track'}
-			</Button>
-		)
-	}
-
 	const topContent = (
 		<div className="flex flex-col gap-4">
 			<div className="flex justify-between gap-3 items-end">
 				<Input
 					isClearable
 					classNames={{
-						base: 'w-full sm:max-w-[44%]',
-						inputWrapper: 'border-1'
+						base: 'w-full sm:max-w-[34%]',
+						inputWrapper: 'border-1 bg-default-50 rounded h-3'
 					}}
-					placeholder="Search by name..."
+					placeholder="Search"
 					size="sm"
 					startContent={
 						<Icon
 							icon="material-symbols-light:search-rounded"
-							className="text-default-300"
+							className="text-default-500 text-xl"
 						/>
 					}
 					value={String(search)}
 					variant="bordered"
 					onClear={() => setAppState.search('')}
-					onValueChange={onSearchChange}
+					onValueChange={value => {
+						if (value) {
+							setAppState.search(value)
+							setAppState.page(1)
+						} else {
+							setAppState.search('')
+						}
+					}}
 				/>
 				<div className="flex gap-3">
 					<Dropdown>
 						<DropdownTrigger className="hidden sm:flex">
 							<Button
+								disableRipple
 								endContent={
 									<Icon
 										icon="material-symbols-light:chevron-right-rounded"
-										className="text-small"
+										className="text-lg rotate-90"
 									/>
 								}
 								size="sm"
 								variant="flat"
+								className="text-default-600"
 							>
 								Columns
 							</Button>
@@ -239,35 +200,69 @@ const TrackTable = () => {
 							disallowEmptySelection
 							aria-label="Table columns"
 							closeOnSelect={false}
-							selectedKeys={visibleColumns}
+							selectedKeys={visibleColumns.size ? visibleColumns : 'all'}
 							selectionMode="multiple"
-							onSelectionChange={e => {
-								console.log('column change: ', e)
-							}}
+							onSelectionChange={keys =>
+								setPrefs('user', { visibleColumns: new Set(keys) })
+							}
 						>
 							{columns.map(column => (
 								<DropdownItem key={column.dbKey}>{column.label}</DropdownItem>
 							))}
 						</DropdownMenu>
 					</Dropdown>
-					<HeaderButton />
+					<Button
+						size="sm"
+						radius="sm"
+						variant="light"
+						color="primary"
+						disableRipple
+						aria-label={selectedCount ? 'Remove tracks' : 'Add Track'}
+						onClick={() =>
+							selectedCount ? showRemoveTracksModal() : browseFile()
+						}
+						className="border-1 border-primary-300 text-primary-700 font-semibold gap-1"
+						startContent={
+							<Icon
+								icon={
+									selectedCount ? 'ri:recycle-line' : 'material-symbols:add'
+								}
+								className="text-lg"
+							/>
+						}
+					>
+						{selectedCount ? 'Remove tracks' : 'Add Track'}
+					</Button>
 				</div>
 			</div>
 			<div className="flex justify-between items-center">
-				<span className="text-default-400 text-small">
+				<span className="text-default-600 text-small">
 					Total {tracks.length} tracks
 				</span>
-				<label className="flex items-center text-default-400 text-small">
-					Rows per page:
-					<select
-						className="bg-transparent outline-none text-default-400 text-small"
-						onChange={onRowsPerPageChange}
-					>
-						<option value="5">5</option>
-						<option value="10">10</option>
-						<option value="15">15</option>
-					</select>
-				</label>
+				<Select
+					labelPlacement="outside-left"
+					label="Rows per page"
+					placeholder="10"
+					size="sm"
+					onChange={e => {
+						setAppState.rowsPerPage(Number(e.target.value))
+						setAppState.page(1)
+					}}
+					classNames={{
+						base: 'w-min',
+						mainWrapper: 'w-16',
+						listbox: 'p-0',
+						popoverContent: 'p-0',
+						label:
+							'text-sm text-default-600 whitespace-nowrap self-center w-3/4'
+					}}
+				>
+					{['10', '25', '50'].map(rows => (
+						<SelectItem key={rows} value={rows}>
+							{rows}
+						</SelectItem>
+					))}
+				</Select>
 			</div>
 		</div>
 	)
@@ -277,109 +272,125 @@ const TrackTable = () => {
 			<Pagination
 				showControls
 				classNames={{
-					cursor: 'bg-foreground text-background'
+					item: 'text-md text-default-600 w-7 h-7',
+					prev: 'w-7 h-7',
+					next: 'w-7 h-7',
+					cursor:
+						'bg-transparent border-1 border-primary-300 text-transparent rounded w-7 h-7'
 				}}
-				color="default"
+				isCompact
 				page={page}
 				total={pages}
 				variant="light"
-				onChange={setAppState.page}
+				onChange={pageNum => setAppState.page(pageNum)}
 			/>
-			<span className="text-small text-default-400">
-				{selected.size === tracks.length
+			<span className="text-small text-default-500">
+				{selectedCount === tracks.length
 					? 'All tracks selected'
-					: `${selected.size} of ${tracks.length} tracks selected`}
+					: `${selectedCount} of ${tracks.length} tracks selected`}
 			</span>
 		</div>
 	)
 
-	const classNames = {
-		wrapper: ['max-h-[382px]', 'max-w-3xl'],
-		th: ['bg-transparent', 'text-default-500', 'border-b', 'border-divider'],
-		td: [
-			// changing the rows border radius
-			// first
-			'group-data-[first=true]:first:before:rounded-none',
-			'group-data-[first=true]:last:before:rounded-none',
-			// middle
-			'group-data-[middle=true]:before:rounded-none',
-			// last
-			'group-data-[last=true]:first:before:rounded-none',
-			'group-data-[last=true]:last:before:rounded-none'
-		]
+	const currentPageTracks = (): Set<Key> => {
+		const startIndex = (page - 1) * Number(rowsPerPage)
+		const endIndex = startIndex + Number(rowsPerPage)
+		const visibleTracks = sortedTracks.slice(startIndex, endIndex)
+		return new Set(visibleTracks.map(t => String(t.id)))
 	}
 
 	return (
-		tracks && (
-			<div className="grid grid-cols-[minmax(64px,200px),minmax(450px,1fr)] h-full">
-				<LeftNav />
+		<div className="grid grid-cols-[minmax(64px,200px),minmax(450px,1fr)] h-full">
+			<LeftNav />
 
-				<div className="p-2 m-2">
-					<Table
-						isCompact
-						removeWrapper
-						aria-label="Track table"
-						bottomContent={!tracks.length ? null : bottomContent}
-						bottomContentPlacement="outside"
-						checkboxesProps={{
-							classNames: {
-								wrapper:
-									'after:bg-foreground after:text-background text-background'
-							}
-						}}
-						classNames={classNames}
-						selectedKeys={selected}
-						selectionMode="multiple"
-						sortDescriptor={{ column: sortColumn, direction: sortDirection }}
-						topContent={topContent}
-						topContentPlacement="outside"
-						onSelectionChange={(keys: Selection) => {
-							console.log('keys', keys)
-						}}
-						onSortChange={(e, val) => {
-							console.log('sort', e, val)
+			<div className="p-4 m-4 bg-background border-1 border-divider rounded h-fit">
+				<Table
+					color="default"
+					isCompact
+					removeWrapper
+					aria-label="Track table"
+					bottomContent={!tracks.length ? null : bottomContent}
+					bottomContentPlacement="outside"
+					checkboxesProps={{
+						classNames: {
+							wrapper:
+								'after:bg-foreground after:text-background text-background'
+						}
+					}}
+					classNames={{
+						wrapper: ['max-h-[382px]', 'max-w-3xl'],
+						th: ['text-default-600', 'text-sm'],
+						td: [
+							// changing the rows border radius
+							// first
+							'group-data-[first=true]:first:before:rounded-none',
+							'group-data-[first=true]:last:before:rounded-none',
+							// middle
+							'group-data-[middle=true]:before:rounded-none',
+							// last
+							'group-data-[last=true]:first:before:rounded-none',
+							'group-data-[last=true]:last:before:rounded-none'
+						]
+					}}
+					selectedKeys={selected}
+					selectionMode="multiple"
+					sortDescriptor={{ column: sortColumn, direction: sortDirection }}
+					topContent={topContent}
+					topContentPlacement="outside"
+					onSelectionChange={keys =>
+						setAppState.selected(keys === 'all' ? currentPageTracks() : keys)
+					}
+					onSortChange={({ column, direction }) =>
+						setPrefs('user', { sortDirection: direction, sortColumn: column })
+					}
+					onDrop={e => {
+						e.preventDefault()
+						itemsDropped(e.dataTransfer.items)
+						setDragOver(false)
+					}}
+					onDragOver={e => {
+						e.stopPropagation()
+						e.preventDefault()
+						setDragOver(true)
+					}}
+					onDragEnter={() => setDragOver(true)}
+					onDragLeave={() => setDragOver(false)}
+				>
+					<TableHeader columns={headerColumns}>
+						{column => (
+							<TableColumn
+								key={column.dbKey}
+								align={column.align}
+								allowsSorting
+							>
+								{column.label}
+							</TableColumn>
+						)}
+					</TableHeader>
 
-							// 	setPrefs('user', {
-							// 	sortDirection: isAsc ? 'descending' : 'ascending',
-							// 	sortColumn: property
-							// })
-						}}
+					<TableBody
+						emptyContent={
+							tracks.length ? (
+								<></>
+							) : processing ? (
+								<TrackLoader style={{ margin: '50px auto' }} />
+							) : (
+								<Dropzone />
+							)
+						}
+						items={pageTracks}
 					>
-						<TableHeader columns={headerColumns}>
-							{column => (
-								<TableColumn
-									key={column.dbKey}
-									align={column.align}
-									allowsSorting
-								>
-									{column.label}
-								</TableColumn>
-							)}
-						</TableHeader>
+						{track => (
+							<TableRow key={track.id}>
+								{columnKey => (
+									<TableCell>{JSON.stringify(track[columnKey])}</TableCell>
+								)}
+							</TableRow>
+						)}
+					</TableBody>
+				</Table>
 
-						<TableBody
-							emptyContent={
-								tracks.length ? (
-									<></>
-								) : processing ? (
-									<TrackLoader style={{ margin: '50px auto' }} />
-								) : (
-									<div style={{ margin: 'auto', padding: '20px 20px 0' }}>
-										<Dropzone />
-									</div>
-								)
-							}
-							items={pageTracks}
-						>
-							{track => (
-								<TableRow key={track.id}>
-									{columnKey => <TableCell>{columnKey}</TableCell>}
-								</TableRow>
-							)}
-						</TableBody>
-					</Table>
-
-					{/* ------------------------------ 
+				{/* ------------------------------ 
 					<div
 						id="track-table"
 						className={`border border-default-200 rounded-md overflow-auto ${
@@ -449,9 +460,8 @@ const TrackTable = () => {
 						/>
 					</div>
 					*/}
-				</div>
 			</div>
-		)
+		</div>
 	)
 }
 

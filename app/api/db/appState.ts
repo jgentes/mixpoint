@@ -1,6 +1,7 @@
 // This file handles application state that is not persisted through page refreshes, therefore not in IndexedDB. appState is different from Prefs in that it isn't persistent.
 
 import { ButtonProps } from '@mui/joy'
+import { Key } from 'react'
 import createStore from 'teaful'
 import type WaveSurfer from 'wavesurfer.js'
 import { Stem, Track } from '~/api/db/dbHandlers'
@@ -56,7 +57,7 @@ const {
 	setStore: setAppState
 } = createStore<{
 	search: string | number
-	selected: Set<Track['id']>
+	selected: Set<Key>
 	rowsPerPage: number
 	page: number
 	showButton: number | null
@@ -71,7 +72,7 @@ const {
 	search: '',
 	selected: new Set(),
 	rowsPerPage: 10,
-	page: 0,
+	page: 1,
 	showButton: null,
 	openDrawer: false,
 	processing: false,

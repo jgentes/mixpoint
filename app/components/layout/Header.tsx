@@ -14,7 +14,6 @@ const Header = () => (
 				isIconOnly
 				variant="light"
 				color="primary"
-				aria-label="Github"
 				title="Discuss on Github"
 				radius="sm"
 				size="sm"

@@ -13,7 +13,7 @@ const DarkMode = () => {
 			radius="sm"
 			variant="light"
 			color="primary"
-			aria-label="Darkmode"
+			title="Darkmode"
 			className="border-1 border-primary-300 text-primary-700"
 			onClick={() => {
 				new Audio('/media/light.mp3').play()

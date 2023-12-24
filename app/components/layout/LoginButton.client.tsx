@@ -24,7 +24,7 @@ const LoginButton = () => {
 				className="border-1 border-primary-300 text-primary-700 font-semibold"
 				variant="light"
 				color="primary"
-				title={loggedIn || buttonText}
+				aria-label={loggedIn || buttonText}
 				onClick={async () => {
 					loggedIn ? await supabase.auth.signOut() : setOpenAuth(true)
 				}}

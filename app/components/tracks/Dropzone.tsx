@@ -67,9 +67,9 @@ const Dropzone = ({
 			<div>
 				<Icon
 					icon="material-symbols-light:drive-folder-upload-outline"
-					className="drop text-default-600 text-4xl"
+					className="drop text-default-600 text-4xl h-6"
 				/>
-				<div className="drop text-md font-semibold text-default-600">
+				<div className="drop text-md font-semibold text-default-600 pt-1">
 					Add Tracks
 				</div>
 				<div className="drop text-sm text-default-600">Drag or click here</div>
