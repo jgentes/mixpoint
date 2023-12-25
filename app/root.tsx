@@ -28,7 +28,7 @@ import { setAppState } from '~/api/db/appState'
 import ConfirmModal from '~/components/ConfirmModal'
 import InitialLoader from '~/components/InitialLoader'
 import { ErrorBoundary } from '~/errorBoundary'
-import styles from '~/root.css'
+import globalStyles from '~/global.css'
 import tailwind from '~/tailwind.css'
 import { Notification } from '~/utils/notifications'
 
@@ -69,7 +69,7 @@ const links: LinksFunction = () => [
 		sizes: '32x32'
 	},
 	{ rel: 'stylesheet', href: tailwind },
-	{ rel: 'stylesheet', href: styles }
+	{ rel: 'stylesheet', href: globalStyles }
 ]
 
 const HtmlDoc = ({ children }: { children: React.ReactNode }) => {

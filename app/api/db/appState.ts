@@ -57,7 +57,7 @@ const {
 	setStore: setAppState
 } = createStore<{
 	search: string | number
-	selected: Set<Key>
+	selected: Set<Key> // NextUI table uses string keys
 	rowsPerPage: number
 	page: number
 	showButton: number | null

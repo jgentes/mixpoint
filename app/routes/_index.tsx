@@ -3,6 +3,7 @@ import { setAppState } from '~/api/db/appState'
 import { getPrefs, useLiveQuery } from '~/api/db/dbHandlers'
 import Header from '~/components/layout/Header'
 import Heart from '~/components/layout/HeartIcon'
+import LeftNav from '~/components/layout/LeftNav'
 import MixView from '~/components/mixes/MixView'
 import DrawerButton from '~/components/tracks/DrawerButton'
 import TrackDrawer from '~/components/tracks/TrackDrawer'
@@ -17,7 +18,7 @@ const Index: React.FunctionComponent = () => {
 	}, [mixViewVisible])
 
 	return (
-		<div className="h-full flex flex-col bg-darkGraph light:bg-lightGraph bg-primary-50">
+		<div className="h-full flex flex-col bg-darkGraph light:bg-lightGraph">
 			<Header />
 			{mixViewVisible ? (
 				<>
@@ -26,7 +27,10 @@ const Index: React.FunctionComponent = () => {
 				</>
 			) : (
 				<>
-					<TrackTable />
+					<div className="grid grid-cols-[minmax(64px,200px),minmax(450px,1fr)] h-screen">
+						<LeftNav />
+						<TrackTable />
+					</div>
 					<Heart />
 				</>
 			)}

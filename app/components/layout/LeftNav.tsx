@@ -4,7 +4,7 @@ import { Listbox, ListboxItem, ListboxSection } from '@nextui-org/react'
 import Dropzone from '~/components/tracks/Dropzone'
 
 const LeftNav = () => (
-	<div className="h-full flex flex-col p-0.5 border-r border-default bg-background justify-between">
+	<div className="h-full flex flex-col p-0.5 border-r border-default justify-between bg-primary-50">
 		<div className="w-full max-w-[260px] px-1 py-2 rounded-small">
 			<Listbox
 				variant="flat"
@@ -20,7 +20,6 @@ const LeftNav = () => (
 				>
 					<ListboxItem
 						key="tracks"
-						title="Tracks"
 						className="h-10"
 						startContent={
 							<Icon
@@ -28,10 +27,11 @@ const LeftNav = () => (
 								className="text-xl text-blue-400 ml-1 w-7"
 							/>
 						}
-					/>
+					>
+						Tracks
+					</ListboxItem>
 					<ListboxItem
 						key="mixes"
-						title="Mixes"
 						className="h-10"
 						startContent={
 							<Icon
@@ -39,10 +39,11 @@ const LeftNav = () => (
 								className="text-3xl text-blue-400 w-8"
 							/>
 						}
-					/>
+					>
+						Mixes
+					</ListboxItem>
 					<ListboxItem
 						key="sets"
-						title="Sets"
 						className="h-10"
 						startContent={
 							<Icon
@@ -50,7 +51,9 @@ const LeftNav = () => (
 								className="text-3xl text-blue-400 rotate-45 w-8"
 							/>
 						}
-					/>
+					>
+						Sets
+					</ListboxItem>
 				</ListboxSection>
 				<ListboxSection
 					title="Playlists"
@@ -61,32 +64,36 @@ const LeftNav = () => (
 				>
 					<ListboxItem
 						key="electro"
-						title="Electro"
 						startContent={
 							<div className="w-2.5 h-2.5 rounded-full bg-blue-300 ml-1" />
 						}
-					/>
+					>
+						Electro
+					</ListboxItem>
 					<ListboxItem
 						key="house"
-						title="House"
 						startContent={
 							<div className="w-2.5 h-2.5 rounded-full bg-red-300 ml-1" />
 						}
-					/>
+					>
+						House
+					</ListboxItem>
 					<ListboxItem
 						key="drum & bass"
-						title="Drum & Bass"
 						startContent={
 							<div className="w-2.5 h-2.5 rounded-full bg-orange-300 ml-1" />
 						}
-					/>
+					>
+						Drum & Bass
+					</ListboxItem>
 					<ListboxItem
 						key="downtempo"
-						title="Downtempo"
 						startContent={
 							<div className="w-2.5 h-2.5 rounded-full bg-green-300 ml-1" />
 						}
-					/>
+					>
+						Downtempo
+					</ListboxItem>
 				</ListboxSection>
 			</Listbox>
 		</div>

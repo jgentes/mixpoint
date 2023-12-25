@@ -1,7 +1,6 @@
 import { Icon } from '@iconify-icon/react'
 import {
 	Button,
-	Chip,
 	Dropdown,
 	DropdownItem,
 	DropdownMenu,
@@ -10,8 +9,6 @@ import {
 	Pagination,
 	Select,
 	SelectItem,
-	Selection,
-	SortDescriptor,
 	Table,
 	TableBody,
 	TableCell,
@@ -20,7 +17,8 @@ import {
 	TableRow,
 	User
 } from '@nextui-org/react'
-import { Key, useCallback, useMemo, useState } from 'react'
+import moment from 'moment'
+import { Key, ReactNode, useCallback, useMemo, useState } from 'react'
 import { audioEvents } from '~/api/audioEvents'
 import { analyzeTracks } from '~/api/audioHandlers'
 import { appState, setAppState, setModalState } from '~/api/db/appState'
@@ -34,10 +32,13 @@ import {
 	useLiveQuery
 } from '~/api/db/dbHandlers'
 import { browseFile } from '~/api/fileHandlers'
-import LeftNav from '~/components/layout/LeftNav'
 import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
 import TrackLoader from '~/components/tracks/TrackLoader'
-import { createColumnDefinitions } from '~/components/tracks/tableColumns'
+import {
+	AddToMixButton,
+	analyzeButton,
+	createColumnDefinitions
+} from '~/components/tracks/tableColumns'
 import { formatMinutes, getComparator } from '~/utils/tableOps'
 
 const TrackTable = () => {
@@ -45,6 +46,7 @@ const TrackTable = () => {
 	const [page] = appState.page()
 	const [rowsPerPage] = appState.rowsPerPage()
 	const [selected] = appState.selected()
+	const [analyzingTracks] = appState.analyzing()
 	const selectedCount = selected.size
 
 	// Re-render when search query changes
@@ -97,10 +99,6 @@ const TrackTable = () => {
 
 	const dirtyTracks = useLiveQuery(() => getDirtyTracks(), [], [])
 
-	// Avoid a layout jump when reaching the last page with empty rows
-	// const emptyRows =
-	// 	page > 0 ? Math.max(0, (1 + page) * rowsPerPage - (tracks?.length || 0)) : 0
-
 	const pages = Math.ceil(tracks.length / rowsPerPage)
 
 	const headerColumns = useMemo(() => {
@@ -122,8 +120,8 @@ const TrackTable = () => {
 			}`,
 			onConfirm: async () => {
 				setModalState.openState(false)
-				for (const id of selected) await audioEvents.ejectTrack(id)
-				await removeTracks([...selected])
+				for (const id of selected) await audioEvents.ejectTrack(Number(id))
+				await removeTracks([...selected].map(Number))
 				setAppState.selected(new Set())
 			},
 			onCancel: async () => {
@@ -149,8 +147,49 @@ const TrackTable = () => {
 			}
 		})
 
-	const topContent = (
-		<div className="flex flex-col gap-4">
+	const currentPageTracks = (): Set<Key> => {
+		const startIndex = (page - 1) * Number(rowsPerPage)
+		const endIndex = startIndex + Number(rowsPerPage)
+		const visibleTracks = sortedTracks.slice(startIndex, endIndex)
+		return new Set(visibleTracks.map(t => String(t.id)))
+	}
+
+	const renderCell = useCallback(
+		(track: Track, columnKey: keyof Track): ReactNode => {
+			switch (columnKey) {
+				case 'name':
+					return (
+						<div className="flex justify-between items-center">
+							{track.name?.replace(/\.[^/.]+$/, '') || 'Track name not found'}
+							<div className="min-w-20 ml-2">
+								<AddToMixButton track={track} />
+							</div>
+						</div>
+					)
+				case 'bpm':
+					return (
+						track.bpm?.toFixed(0) ||
+						(!analyzingTracks.has(track.id) ? (
+							analyzeButton(track)
+						) : (
+							<TrackLoader style={{ margin: 'auto', height: '15px' }} />
+						))
+					)
+				case 'duration':
+					return track.duration && formatMinutes(track.duration / 60)
+				case 'mixpoints':
+					return track.mixpoints?.length || 0
+				case 'sets':
+					return track.sets?.length || 0
+				case 'lastModified':
+					return moment(track.lastModified).fromNow()
+			}
+		},
+		[analyzingTracks]
+	)
+
+	const tableHeader = (
+		<div className="flex flex-col gap-4 mb-2">
 			<div className="flex justify-between gap-3 items-end">
 				<Input
 					isClearable
@@ -180,7 +219,7 @@ const TrackTable = () => {
 				/>
 				<div className="flex gap-3">
 					<Dropdown>
-						<DropdownTrigger className="hidden sm:flex">
+						<DropdownTrigger className="hidden sm:flex bg-default/30">
 							<Button
 								disableRipple
 								endContent={
@@ -217,7 +256,7 @@ const TrackTable = () => {
 						variant="light"
 						color="primary"
 						disableRipple
-						aria-label={selectedCount ? 'Remove tracks' : 'Add Track'}
+						aria-label={selectedCount ? 'Remove Track' : 'Add Tracks'}
 						onClick={() =>
 							selectedCount ? showRemoveTracksModal() : browseFile()
 						}
@@ -231,7 +270,7 @@ const TrackTable = () => {
 							/>
 						}
 					>
-						{selectedCount ? 'Remove tracks' : 'Add Track'}
+						{selectedCount ? 'Remove Tracks' : 'Add Tracks'}
 					</Button>
 				</div>
 			</div>
@@ -251,7 +290,8 @@ const TrackTable = () => {
 					classNames={{
 						base: 'w-min',
 						mainWrapper: 'w-16',
-						listbox: 'p-0',
+						listbox: 'p-0 bg-default/30',
+						trigger: 'bg-default/30',
 						popoverContent: 'p-0',
 						label:
 							'text-sm text-default-600 whitespace-nowrap self-center w-3/4'
@@ -267,11 +307,86 @@ const TrackTable = () => {
 		</div>
 	)
 
-	const bottomContent = (
-		<div className="py-2 px-2 flex justify-between items-center">
+	const tableBody = (
+		<Table
+			isCompact
+			removeWrapper
+			aria-label="Track table"
+			checkboxesProps={{
+				classNames: {
+					wrapper: 'rounded'
+				}
+			}}
+			classNames={{
+				wrapper: ['max-h-[382px]', 'max-w-3xl'],
+				th: ['text-default-600', 'text-sm', 'bg-default/30']
+			}}
+			selectedKeys={selected}
+			selectionMode="multiple"
+			sortDescriptor={{ column: sortColumn, direction: sortDirection }}
+			onSelectionChange={keys =>
+				setAppState.selected(keys === 'all' ? currentPageTracks() : keys)
+			}
+			onSortChange={({ column, direction }) =>
+				setPrefs('user', { sortDirection: direction, sortColumn: column })
+			}
+			onDrop={e => {
+				e.preventDefault()
+				itemsDropped(e.dataTransfer.items)
+				setDragOver(false)
+			}}
+			onDragOver={e => {
+				e.stopPropagation()
+				e.preventDefault()
+				setDragOver(true)
+			}}
+			onDragEnter={() => setDragOver(true)}
+			onDragLeave={() => setDragOver(false)}
+		>
+			<TableHeader columns={headerColumns}>
+				{column => (
+					<TableColumn
+						key={column.dbKey}
+						align={column.align}
+						width={column.width}
+						allowsSorting
+					>
+						{column.label}
+					</TableColumn>
+				)}
+			</TableHeader>
+
+			<TableBody
+				emptyContent={
+					tracks.length ? (
+						<></>
+					) : processing ? (
+						<TrackLoader style={{ margin: '50px auto' }} />
+					) : (
+						<Dropzone />
+					)
+				}
+				items={pageTracks}
+			>
+				{track => (
+					<TableRow key={track.id}>
+						{columnKey => (
+							<TableCell>
+								{renderCell(track, columnKey as keyof Track)}
+							</TableCell>
+						)}
+					</TableRow>
+				)}
+			</TableBody>
+		</Table>
+	)
+
+	const tableFooter = !tracks.length ? null : (
+		<div className="mt-3 flex justify-between items-center">
 			<Pagination
 				showControls
 				classNames={{
+					base: 'pl-0',
 					item: 'text-md text-default-600 w-7 h-7',
 					prev: 'w-7 h-7',
 					next: 'w-7 h-7',
@@ -292,175 +407,11 @@ const TrackTable = () => {
 		</div>
 	)
 
-	const currentPageTracks = (): Set<Key> => {
-		const startIndex = (page - 1) * Number(rowsPerPage)
-		const endIndex = startIndex + Number(rowsPerPage)
-		const visibleTracks = sortedTracks.slice(startIndex, endIndex)
-		return new Set(visibleTracks.map(t => String(t.id)))
-	}
-
 	return (
-		<div className="grid grid-cols-[minmax(64px,200px),minmax(450px,1fr)] h-full">
-			<LeftNav />
-
-			<div className="p-4 m-4 bg-background border-1 border-divider rounded h-fit">
-				<Table
-					color="default"
-					isCompact
-					removeWrapper
-					aria-label="Track table"
-					bottomContent={!tracks.length ? null : bottomContent}
-					bottomContentPlacement="outside"
-					checkboxesProps={{
-						classNames: {
-							wrapper:
-								'after:bg-foreground after:text-background text-background'
-						}
-					}}
-					classNames={{
-						wrapper: ['max-h-[382px]', 'max-w-3xl'],
-						th: ['text-default-600', 'text-sm'],
-						td: [
-							// changing the rows border radius
-							// first
-							'group-data-[first=true]:first:before:rounded-none',
-							'group-data-[first=true]:last:before:rounded-none',
-							// middle
-							'group-data-[middle=true]:before:rounded-none',
-							// last
-							'group-data-[last=true]:first:before:rounded-none',
-							'group-data-[last=true]:last:before:rounded-none'
-						]
-					}}
-					selectedKeys={selected}
-					selectionMode="multiple"
-					sortDescriptor={{ column: sortColumn, direction: sortDirection }}
-					topContent={topContent}
-					topContentPlacement="outside"
-					onSelectionChange={keys =>
-						setAppState.selected(keys === 'all' ? currentPageTracks() : keys)
-					}
-					onSortChange={({ column, direction }) =>
-						setPrefs('user', { sortDirection: direction, sortColumn: column })
-					}
-					onDrop={e => {
-						e.preventDefault()
-						itemsDropped(e.dataTransfer.items)
-						setDragOver(false)
-					}}
-					onDragOver={e => {
-						e.stopPropagation()
-						e.preventDefault()
-						setDragOver(true)
-					}}
-					onDragEnter={() => setDragOver(true)}
-					onDragLeave={() => setDragOver(false)}
-				>
-					<TableHeader columns={headerColumns}>
-						{column => (
-							<TableColumn
-								key={column.dbKey}
-								align={column.align}
-								allowsSorting
-							>
-								{column.label}
-							</TableColumn>
-						)}
-					</TableHeader>
-
-					<TableBody
-						emptyContent={
-							tracks.length ? (
-								<></>
-							) : processing ? (
-								<TrackLoader style={{ margin: '50px auto' }} />
-							) : (
-								<Dropzone />
-							)
-						}
-						items={pageTracks}
-					>
-						{track => (
-							<TableRow key={track.id}>
-								{columnKey => (
-									<TableCell>{JSON.stringify(track[columnKey])}</TableCell>
-								)}
-							</TableRow>
-						)}
-					</TableBody>
-				</Table>
-
-				{/* ------------------------------ 
-					<div
-						id="track-table"
-						className={`border border-default-200 rounded-md overflow-auto ${
-							dragOver ? 'border-blue-500' : 'border-action-selected'
-						} bg-background`}
-						onDrop={e => {
-							e.preventDefault()
-							itemsDropped(e.dataTransfer.items)
-							setDragOver(false)
-						}}
-						onDragOver={e => {
-							e.stopPropagation()
-							e.preventDefault()
-							setDragOver(true)
-						}}
-						onDragEnter={() => setDragOver(true)}
-						onDragLeave={() => setDragOver(false)}
-					>
-						<EnhancedTableToolbar numSelected={selected.size} />
-						<TableContainer>
-							<Table aria-labelledby="tableTitle">
-								<EnhancedTableHead
-									numSelected={selected.size}
-									sortDirection={sortDirection}
-									sortColumn={sortColumn}
-									onSelectAllClick={selectAll}
-									onRequestSort={sort}
-									rowCount={tracks?.length || 0}
-								/>
-								<TableBody>
-									{[...tracks]
-										.sort(getComparator(sortDirection, sortColumn))
-										.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-										.map((row, index) => {
-											// row.id is the track/mix/set id
-											const isItemSelected = isSelected(row.id)
-
-											return (
-												<TableRows
-													key={row.id}
-													row={row}
-													isItemSelected={isItemSelected}
-												/>
-											)
-										})}
-									{emptyRows === 0 ? null : (
-										<TableRow
-											style={{
-												height: 37 * emptyRows
-											}}
-										>
-											<TableCell colSpan={7} />
-										</TableRow>
-									)}
-								</TableBody>
-							</Table>
-						</TableContainer>
-
-						<TablePagination
-							rowsPerPageOptions={[5, 10, 25]}
-							component="div"
-							count={tracks.length || 0}
-							rowsPerPage={rowsPerPage}
-							page={page}
-							onPageChange={changePage}
-							onRowsPerPageChange={changeRows}
-						/>
-					</div>
-					*/}
-			</div>
+		<div className="p-4 m-4 bg-primary-50 border-1 border-divider rounded h-fit">
+			{tableHeader}
+			{tableBody}
+			{tableFooter}
 		</div>
 	)
 }
