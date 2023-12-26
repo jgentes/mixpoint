@@ -32,9 +32,9 @@ const itemsDropped = async (items: DataTransferItemList, trackSlot?: 0 | 1) => {
 }
 
 const Dropzone = ({
-	className = {},
+	className = '',
 	trackSlot
-}: { className?: CSSProperties; trackSlot?: 0 | 1 }) => {
+}: { className?: string; trackSlot?: 0 | 1 }) => {
 	const [dragOver, setDragOver] = useState(false)
 
 	return (

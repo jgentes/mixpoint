@@ -69,6 +69,7 @@ const TrackTable = () => {
 	} = useLiveQuery(() => getPrefs('user')) || {}
 
 	// Monitor db for track updates (and filter using searchquery if present)
+	const trackCount = useLiveQuery(() => db.tracks.count())
 	const tracks = useLiveQuery(
 		() =>
 			db.tracks
@@ -104,8 +105,8 @@ const TrackTable = () => {
 	const analyzeButton = (t: Track) => (
 		<Button
 			variant="ghost"
-			color="primary"
-			className="border-1 h-6 px-2 gap-1 border-primary-300 text-primary-700"
+			color="secondary"
+			className="border-1 h-6 px-2 gap-1 border-secondary-300 text-secondary-700"
 			startContent={<AnalyzeIcon className="text-lg" />}
 			size="sm"
 			onClick={() => analyzeTracks([t])}
@@ -164,13 +165,12 @@ const TrackTable = () => {
 
 	const BpmFormatter = useCallback(
 		(track: Track) => {
-			return (
-				<div className="pl-1">{track?.bpm?.toFixed(0)}</div> ||
-				(!analyzingTracks.has(track?.id) ? (
-					analyzeButton(track)
-				) : (
-					<TrackLoader className="mx-auto h-4" />
-				))
+			return track.bpm ? (
+				<div className="pl-1">{track.bpm.toFixed(0)}</div>
+			) : analyzingTracks.has(track?.id) ? (
+				<TrackLoader className="mx-auto h-4" />
+			) : (
+				analyzeButton(track)
 			)
 		},
 		[analyzingTracks, analyzeButton]
@@ -303,7 +303,7 @@ const TrackTable = () => {
 		const visibleTracks = sortedTracks.slice(startIndex, endIndex)
 		return new Set(visibleTracks.map(t => String(t.id)))
 	}
-	console.log(tracks?.length, processing, analyzingTracks)
+
 	const tableHeader = (
 		<div className="flex flex-col gap-4 mb-2">
 			<div className="flex justify-between gap-3 items-end">
@@ -330,13 +330,16 @@ const TrackTable = () => {
 						}}
 					/>
 					<Dropdown>
-						<DropdownTrigger className="hidden sm:flex bg-default/30">
+						<DropdownTrigger className="bg-default/30">
 							<Button
-								disableRipple
-								endContent={<ChevronIcon className="text-lg rotate-90" />}
+								endContent={
+									<ChevronIcon className="text-xl rotate-90 text-foreground min-w-unit-5" />
+								}
 								size="sm"
-								variant="flat"
-								className="text-default-600 pl-5 pr-4"
+								radius="sm"
+								disableRipple
+								aria-label="Column selector"
+								className="text-default-600 pl-6 pr-5"
 							>
 								Columns
 							</Button>
@@ -439,7 +442,12 @@ const TrackTable = () => {
 			}}
 			classNames={{
 				wrapper: ['max-h-[382px]', 'max-w-3xl'],
-				th: ['text-default-600', 'text-sm', 'bg-default/30']
+				th: [
+					'text-default-600',
+					'text-sm',
+					dragOver ? 'bg-primary-500 bg-opacity-10' : 'bg-default/30'
+				],
+				tbody: dragOver ? 'bg-primary-500 bg-opacity-10' : ''
 			}}
 			selectedKeys={selected}
 			selectionMode="multiple"
@@ -478,12 +486,13 @@ const TrackTable = () => {
 
 			<TableBody
 				emptyContent={
-					!tracks || processing ? (
+					// this accounts for clearing the search box, where we have zero tracks and need to reload table without showing dropzone
+					!tracks || processing || (!tracks.length && trackCount && !search) ? (
 						<TrackLoader style={{ margin: '50px auto' }} />
-					) : !tracks.length ? (
-						<></>
+					) : search ? (
+						'No tracks found'
 					) : (
-						<Dropzone />
+						<Dropzone className="h-full mx-0 mt-4" />
 					)
 				}
 			>

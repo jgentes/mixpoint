@@ -99,7 +99,9 @@ async function getTracksRecursively(
 			}
 		})
 		return []
-	} else return addTracksToDb()
+	}
+
+	return addTracksToDb()
 }
 
 const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
