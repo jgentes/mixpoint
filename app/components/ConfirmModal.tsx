@@ -1,7 +1,7 @@
-import { Icon } from '@iconify-icon/react'
 import { Box, Button, Modal, ModalDialog, Typography } from '@mui/joy'
 import { Divider } from '@mui/material'
 import { modalState } from '~/api/db/appState'
+import { WarningIcon } from '~/components/icons'
 
 const ConfirmModal = () => {
 	const [confirmModal] = modalState()
@@ -38,13 +38,7 @@ const ConfirmModal = () => {
 					level="inherit"
 					fontSize="1.25em"
 					sx={{ display: 'flex', alignItems: 'normal' }}
-					startDecorator={
-						<Icon
-							icon="material-symbols:warning-rounded"
-							height="20px"
-							style={{ alignSelf: 'center' }}
-						/>
-					}
+					startDecorator={<WarningIcon className="self-center text-xl" />}
 				>
 					{headerText}
 				</Typography>

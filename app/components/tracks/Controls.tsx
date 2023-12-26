@@ -1,4 +1,3 @@
-import { Icon } from '@iconify-icon/react'
 import {
 	Box,
 	Card,
@@ -31,6 +30,20 @@ import {
 import { audioState } from '~/api/db/appState'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
+import {
+	EjectIcon,
+	HeadsetIcon,
+	HeadsetOffIcon,
+	NextIcon,
+	PauseIcon,
+	PlayIcon,
+	PreviousIcon,
+	ReplayIcon,
+	RevertIcon,
+	SetMixpointIcon,
+	VolumeOffIcon,
+	VolumeUpIcon
+} from '~/components/icons'
 
 const inputText = (text: string) => {
 	return (
@@ -95,11 +108,7 @@ const NumberControl = ({
 			}}
 		>
 			{inputText(text)}
-			{valDiff ? (
-				<Icon icon="ic:round-replay" height="14px" style={{ marginLeft: 2 }} />
-			) : (
-				''
-			)}
+			{valDiff ? <ReplayIcon className="ml-1 text-md" /> : ''}
 		</Link>
 	)
 
@@ -159,7 +168,7 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
 				'--Icon-fontSize': '16px'
 			}}
 		>
-			<Icon icon="material-symbols:eject-rounded" height="20px" />
+			<EjectIcon className="text-lg" />
 		</Chip>
 	)
 }
@@ -375,33 +384,28 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
 			{[
 				{
 					val: 'Previous Beat Marker',
-					icon: <Icon icon="material-symbols:skip-previous" height="20px" />
+					icon: <PreviousIcon className="text-lg" />
 				},
 				{
 					val: 'Go to Mixpoint',
-					icon: (
-						<Icon
-							icon="material-symbols:settings-backup-restore"
-							height="20px"
-						/>
-					)
+					icon: <RevertIcon className="text-lg" />
 				},
 
 				{
 					val: 'Set Mixpoint',
-					icon: <Icon icon="material-symbols:adjust-outline" height="18px" />
+					icon: <SetMixpointIcon className="text-lg" />
 				},
 				{
 					val: isPlaying ? 'Pause' : 'Play',
 					icon: isPlaying ? (
-						<Icon icon="material-symbols:pause" height="20px" />
+						<PauseIcon className="text-lg" />
 					) : (
-						<Icon icon="material-symbols:play-arrow" height="20px" />
+						<PlayIcon className="text-lg" />
 					)
 				},
 				{
 					val: 'Next Beat Marker',
-					icon: <Icon icon="material-symbols:skip-next" height="20px" />
+					icon: <NextIcon className="text-lg" />
 				}
 			].map(item => {
 				const noNudge = item.val.includes('Nudge') && !isPlaying
@@ -462,20 +466,15 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 			{[
 				{
 					val: 'Go to Mixpoint',
-					icon: (
-						<Icon
-							icon="material-symbols:settings-backup-restore"
-							height="18px"
-						/>
-					)
+					icon: <RevertIcon className="text-lg" />
 				},
 				{
 					val: 'Pause',
-					icon: <Icon icon="material-symbols:pause" height="20px" />
+					icon: <PauseIcon className="text-lg" />
 				},
 				{
 					val: 'Play',
-					icon: <Icon icon="material-symbols:play-arrow" height="20px" />
+					icon: <PlayIcon className="text-lg" />
 				}
 			].map(item => (
 				<Box
@@ -619,6 +618,8 @@ const StemControl = ({
 		zIndex: 1
 	}
 
+	const iconStyle = 'text-lg cursor-pointer text-default-300'
+
 	return (
 		<>
 			<Box
@@ -654,30 +655,19 @@ const StemControl = ({
 					/>
 					<VolumeMeter trackId={trackId} stemType={stemType} />
 				</Box>
-				<Icon
-					icon={solo ? 'ic:baseline-headset-off' : 'ic:baseline-headset'}
-					height="16px"
-					title="Solo"
-					style={{
-						color: '#aaa',
-						cursor: 'pointer'
-					}}
-					onClick={() => toggleSolo()}
-				/>
+				{solo ? (
+					<HeadsetOffIcon className={iconStyle} onClick={() => toggleSolo()} />
+				) : (
+					<HeadsetIcon className={iconStyle} onClick={() => toggleSolo()} />
+				)}
 				{!volume || mute ? (
-					<Icon
-						icon="material-symbols:volume-off"
-						title="Unmute"
-						height="16px"
-						style={{ color: '#aaa', cursor: 'pointer' }}
+					<VolumeOffIcon
+						className={iconStyle}
 						onClick={() => audioEvents.stemMuteToggle(trackId, stemType, false)}
 					/>
 				) : (
-					<Icon
-						icon="material-symbols:volume-up"
-						title="Mute"
-						height="16px"
-						style={{ color: '#aaa', cursor: 'pointer' }}
+					<VolumeUpIcon
+						className={iconStyle}
 						onClick={() => audioEvents.stemMuteToggle(trackId, stemType, true)}
 					/>
 				)}

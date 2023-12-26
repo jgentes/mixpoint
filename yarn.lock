@@ -1281,24 +1281,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@iconify-icon/react@npm:^1.0.7":
-  version: 1.0.7
-  resolution: "@iconify-icon/react@npm:1.0.7"
-  dependencies:
-    iconify-icon: ^1.0.7
-  peerDependencies:
-    react: ">=16"
-  checksum: 9a94d7d8f4ee140836a776dc851da248a1a7a875213db3a16379c7c74976913f09582d0a0ea3a84b69eda581b6c15d98a93d9e6e7a31b9322e033039cbc45b35
-  languageName: node
-  linkType: hard
-
-"@iconify/types@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "@iconify/types@npm:2.0.0"
-  checksum: 029f58542c160e9d4a746869cf2e475b603424d3adf3994c5cc8d0406c47e6e04a3b898b2707840c1c5b9bd5563a1660a34b110d89fce43923baca5222f4e597
-  languageName: node
-  linkType: hard
-
 "@internationalized/date@npm:^3.5.0":
   version: 3.5.0
   resolution: "@internationalized/date@npm:3.5.0"
@@ -7058,15 +7040,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"iconify-icon@npm:^1.0.7":
-  version: 1.0.7
-  resolution: "iconify-icon@npm:1.0.7"
-  dependencies:
-    "@iconify/types": ^2.0.0
-  checksum: 49bdf42e435fbd914b8802fa6199389f1508e1bfaeee546387f04f8e34eda9f9e349a0c775302e054e55c11814097057b010a525c34a916c07e9c96b0ed143c8
-  languageName: node
-  linkType: hard
-
 "iconv-lite@npm:0.4.24":
   version: 0.4.24
   resolution: "iconv-lite@npm:0.4.24"
@@ -8556,7 +8529,6 @@ isbot@latest:
     "@emotion/react": ^11.11.1
     "@emotion/styled": ^11.11.0
     "@fontsource/public-sans": ~4.5.11
-    "@iconify-icon/react": ^1.0.7
     "@mui/joy": ^5.0.0-beta.15
     "@mui/material": ^5.14.18
     "@nextui-org/react": ^2.2.9

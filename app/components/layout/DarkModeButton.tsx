@@ -1,6 +1,6 @@
-import { Icon } from '@iconify-icon/react'
 import { Button, Tooltip } from '@nextui-org/react'
 import { useTheme } from 'next-themes'
+import { MoonIcon, SunIcon } from '~/components/icons'
 
 const DarkMode = () => {
 	const { theme, setTheme } = useTheme()
@@ -24,12 +24,11 @@ const DarkMode = () => {
 					setTheme(theme === 'dark' ? 'light' : 'dark')
 				}}
 			>
-				<Icon
-					icon={`material-symbols:${
-						theme === 'dark' ? 'light' : 'dark'
-					}-mode-outline`}
-					height="20px"
-				/>
+				{theme === 'dark' ? (
+					<SunIcon className="text-xl" />
+				) : (
+					<MoonIcon className="text-xl" />
+				)}
 			</Button>
 		</Tooltip>
 	)

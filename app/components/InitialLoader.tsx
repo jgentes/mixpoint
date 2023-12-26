@@ -1,6 +1,6 @@
-import { Icon } from '@iconify-icon/react'
 import { Button, Progress } from '@nextui-org/react'
 import { CSSProperties } from 'react'
+import { WarningIcon } from '~/components/icons'
 import Logo from '~/components/layout/MixpointLogo'
 
 const loaderWrapper: CSSProperties = {
@@ -34,9 +34,7 @@ const InitialLoader = ({ message }: { message?: string }) => {
 			<div style={{ minWidth: '190px', maxWidth: '30%' }}>
 				<div className="flex pb-1">
 					<Logo />
-					{!message ? null : (
-						<Icon icon="bx:error" height={23} className="self-center" />
-					)}
+					{!message ? null : <WarningIcon className="self-center text-xl" />}
 				</div>
 				<Progress
 					size="sm"

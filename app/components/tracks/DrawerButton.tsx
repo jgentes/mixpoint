@@ -1,6 +1,6 @@
-import { Icon } from '@iconify-icon/react'
 import { Button } from '@mui/joy'
 import { appState } from '~/api/db/appState'
+import { ChevronIcon } from '~/components/icons'
 
 const DrawerButton = () => {
 	const [openDrawer, setOpenDrawer] = appState.openDrawer()
@@ -22,9 +22,10 @@ const DrawerButton = () => {
 			}}
 			onClick={() => setOpenDrawer(direction === 'up' ? true : false)}
 		>
-			<Icon
-				icon={`material-symbols:keyboard-arrow-${direction}`}
-				height="24px"
+			<ChevronIcon
+				className={`text-xl ${
+					direction === 'down' ? 'rotate-90' : '-rotate-90'
+				}`}
 			/>
 		</Button>
 	)

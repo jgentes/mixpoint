@@ -1,5 +1,5 @@
-import { Icon } from '@iconify-icon/react'
 import { Listbox, ListboxItem, ListboxSection } from '@nextui-org/react'
+import { AnimationIcon, JoinIcon, LensIcon } from '~/components/icons'
 
 import Dropzone from '~/components/tracks/Dropzone'
 
@@ -21,24 +21,14 @@ const LeftNav = () => (
 					<ListboxItem
 						key="tracks"
 						className="h-10"
-						startContent={
-							<Icon
-								icon="material-symbols:lens-outline"
-								className="text-xl text-blue-400 ml-1 w-7"
-							/>
-						}
+						startContent={<LensIcon className="text-xl text-blue-400 w-8" />}
 					>
 						Tracks
 					</ListboxItem>
 					<ListboxItem
 						key="mixes"
 						className="h-10"
-						startContent={
-							<Icon
-								icon="material-symbols-light:join-outline"
-								className="text-3xl text-blue-400 w-8"
-							/>
-						}
+						startContent={<JoinIcon className="text-3xl text-blue-400 w-8" />}
 					>
 						Mixes
 					</ListboxItem>
@@ -46,10 +36,7 @@ const LeftNav = () => (
 						key="sets"
 						className="h-10"
 						startContent={
-							<Icon
-								icon="material-symbols-light:animation"
-								className="text-3xl text-blue-400 rotate-45 w-8"
-							/>
+							<AnimationIcon className="text-3xl text-blue-400 rotate-45 w-8" />
 						}
 					>
 						Sets

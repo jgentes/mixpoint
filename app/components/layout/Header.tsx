@@ -1,9 +1,8 @@
-import DarkMode from '~/components/layout/DarkModeButton'
-import Logo from '~/components/layout/MixpointLogo'
-
-import { Icon } from '@iconify-icon/react'
 import { Button, Tooltip } from '@nextui-org/react'
+import { GithubIcon } from '~/components/icons'
+import DarkMode from '~/components/layout/DarkModeButton'
 import LoginButton from '~/components/layout/LoginButton.client'
+import Logo from '~/components/layout/MixpointLogo'
 
 const Header = () => (
 	<div className="p-4 flex flex-row bg-primary-50 justify-between items-center border-b border-default sticky z-10">
@@ -23,7 +22,7 @@ const Header = () => (
 						window.open('https://github.com/jgentes/mixpoint/discussions')
 					}
 				>
-					<Icon icon="mdi:github" height="20px" />
+					<GithubIcon className="h-5" />
 				</Button>
 			</Tooltip>
 			<DarkMode />

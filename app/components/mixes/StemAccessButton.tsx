@@ -1,4 +1,3 @@
-import { Icon } from '@iconify-icon/react'
 import { CircularProgress, Sheet, Typography } from '@mui/joy'
 import { ReactElement } from 'react'
 import { useCountUp } from 'use-count-up'
@@ -6,6 +5,12 @@ import { StemState, audioState } from '~/api/db/appState'
 import { Track } from '~/api/db/dbHandlers'
 import { getStemsDirHandle, validateTrackStemAccess } from '~/api/fileHandlers'
 import { stemAudio } from '~/api/stemHandler'
+import {
+	OfflineDownloadIcon,
+	RuleFolderIcon,
+	TuneIcon,
+	WarningIcon
+} from '~/components/icons'
 import { errorHandler } from '~/utils/notifications'
 
 const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
@@ -61,32 +66,17 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
 		}
 	} = {
 		selectStemDir: {
-			icon: (
-				<Icon
-					icon="material-symbols:download-for-offline"
-					style={{ fontSize: 38, color: 'text.secondary' }}
-				/>
-			),
+			icon: <OfflineDownloadIcon className="text-lg text-default-500" />,
 			primaryText: 'Click to Select Stems Folder',
 			secondaryText: 'Downloaded stems will be stored here'
 		},
 		grantStemDirAccess: {
-			icon: (
-				<Icon
-					icon="material-symbols:rule-folder-outline"
-					style={{ fontSize: 38, color: 'text.secondary' }}
-				/>
-			),
+			icon: <RuleFolderIcon className="text-lg text-default-500" />,
 			primaryText: 'Click to Grant Folder Access',
 			secondaryText: 'Permission needed to access stems'
 		},
 		getStems: {
-			icon: (
-				<Icon
-					icon="material-symbols:tune"
-					style={{ fontSize: 38, color: 'text.secondary' }}
-				/>
-			),
+			icon: <TuneIcon className="text-lg text-default-500" />,
 			primaryText: 'Click to Retrieve Stems',
 			secondaryText: 'Separate track into drums, vocals, etc'
 		},
@@ -107,12 +97,7 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
 		},
 		ready: { icon: <></>, primaryText: '', secondaryText: '' },
 		error: {
-			icon: (
-				<Icon
-					icon="material-symbols:error-outline"
-					style={{ fontSize: 38, color: 'text.secondary' }}
-				/>
-			),
+			icon: <WarningIcon className="text-lg text-default-500" />,
 			primaryText: 'Something went wrong',
 			secondaryText: 'Please refresh the page and try again'
 		}

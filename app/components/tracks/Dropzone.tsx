@@ -1,8 +1,8 @@
-import { Icon } from '@iconify-icon/react'
-import { CSSProperties, useState } from 'react'
+import { useState } from 'react'
 import { processTracks } from '~/api/audioHandlers'
 import { addToMix } from '~/api/db/dbHandlers'
 import { browseFile } from '~/api/fileHandlers'
+import { UploadFolderIcon } from '~/components/icons'
 
 const itemsDropped = async (items: DataTransferItemList, trackSlot?: 0 | 1) => {
 	const handleArray: (FileSystemFileHandle | FileSystemDirectoryHandle)[] = []
@@ -65,11 +65,8 @@ const Dropzone = ({
 			onDragLeave={() => setDragOver(false)}
 		>
 			<div>
-				<Icon
-					icon="material-symbols-light:drive-folder-upload-outline"
-					className="drop text-default-600 text-4xl h-6"
-				/>
-				<div className="drop text-md font-semibold text-default-600 pt-1">
+				<UploadFolderIcon className="drop text-default-600 text-4xl m-auto" />
+				<div className="drop text-md font-semibold text-default-600">
 					Add Tracks
 				</div>
 				<div className="drop text-sm text-default-600">Drag or click here</div>
