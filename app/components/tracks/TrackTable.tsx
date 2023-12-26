@@ -1,4 +1,3 @@
-import { Icon } from '@iconify-icon/react'
 import {
 	Button,
 	Dropdown,
@@ -6,6 +5,7 @@ import {
 	DropdownMenu,
 	DropdownTrigger,
 	Input,
+	Link,
 	Pagination,
 	Select,
 	SelectItem,
@@ -13,9 +13,9 @@ import {
 	TableBody,
 	TableCell,
 	TableColumn,
+	TableColumnProps,
 	TableHeader,
-	TableRow,
-	User
+	TableRow
 } from '@nextui-org/react'
 import moment from 'moment'
 import { Key, ReactNode, useCallback, useMemo, useState } from 'react'
@@ -24,6 +24,7 @@ import { analyzeTracks } from '~/api/audioHandlers'
 import { appState, setAppState, setModalState } from '~/api/db/appState'
 import {
 	Track,
+	addToMix,
 	db,
 	getDirtyTracks,
 	getPrefs,
@@ -32,13 +33,15 @@ import {
 	useLiveQuery
 } from '~/api/db/dbHandlers'
 import { browseFile } from '~/api/fileHandlers'
+import {
+	AddIcon,
+	AnalyzeIcon,
+	CheckIcon,
+	ChevronIcon,
+	SearchIcon
+} from '~/components/icons'
 import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
 import TrackLoader from '~/components/tracks/TrackLoader'
-import {
-	AddToMixButton,
-	analyzeButton,
-	createColumnDefinitions
-} from '~/components/tracks/tableColumns'
 import { formatMinutes, getComparator } from '~/utils/tableOps'
 
 const TrackTable = () => {
@@ -57,9 +60,6 @@ const TrackTable = () => {
 
 	// Allow drag & drop files / folders into the table
 	const [dragOver, setDragOver] = useState(false)
-
-	// Build table columns
-	const columns = useMemo(() => createColumnDefinitions(), [])
 
 	// Retrieve sort state from database
 	const {
@@ -82,12 +82,12 @@ const TrackTable = () => {
 				)
 				.toArray(),
 		[search],
-		[]
+		null
 	)
 
 	const sortedTracks = useMemo(
 		// @ts-ignore this is a tough one
-		() => [...tracks].sort(getComparator(sortDirection, sortColumn)),
+		() => [...(tracks || [])].sort(getComparator(sortDirection, sortColumn)),
 		[tracks, sortDirection, sortColumn]
 	)
 
@@ -99,7 +99,157 @@ const TrackTable = () => {
 
 	const dirtyTracks = useLiveQuery(() => getDirtyTracks(), [], [])
 
-	const pages = Math.ceil(tracks.length / rowsPerPage)
+	const pages = Math.ceil((tracks?.length || 1) / rowsPerPage)
+
+	const analyzeButton = (t: Track) => (
+		<Button
+			variant="ghost"
+			color="primary"
+			className="border-1 h-6 px-2 gap-1 border-primary-300 text-primary-700"
+			startContent={<AnalyzeIcon className="text-lg" />}
+			size="sm"
+			onClick={() => analyzeTracks([t])}
+		>
+			Analyze
+		</Button>
+	)
+
+	const addToMixHandler = async (t: Track) => {
+		const { tracks = [] } = await getPrefs('mix')
+
+		await addToMix(t)
+
+		// if this is the first track in the mix, leave the drawer open
+		if (!tracks.length) setAppState.openDrawer(true)
+	}
+
+	const AddToMixButton = useCallback(
+		({ track }: { track: Track }) => {
+			const { tracks = [] } = useLiveQuery(() => getPrefs('mix')) || {}
+
+			const isInMix = tracks.includes(track.id)
+
+			// Prevent user from adding a new track before previous added track finishes analyzing
+			const isBeingAnalyzed = tracks.some(id => analyzingTracks.has(id))
+
+			return (
+				<Button
+					size="sm"
+					radius="sm"
+					variant="ghost"
+					color="primary"
+					isDisabled={isBeingAnalyzed}
+					className={`border-1 h-6 px-2 gap-1 ${
+						isInMix
+							? 'border-success-300 text-success-700'
+							: 'border-primary-300 text-primary-700'
+					}`}
+					startContent={
+						isInMix ? (
+							<CheckIcon className="text-lg" />
+						) : (
+							<AddIcon className="text-lg" />
+						)
+					}
+					onClick={() => {
+						!isInMix ? addToMixHandler(track) : audioEvents.ejectTrack(track.id)
+					}}
+				>
+					{`Add${isInMix ? 'ed' : ' to Mix'}`}
+				</Button>
+			)
+		},
+		[analyzingTracks, addToMixHandler]
+	)
+
+	const BpmFormatter = useCallback(
+		(track: Track) => {
+			return (
+				<div className="pl-1">{track?.bpm?.toFixed(0)}</div> ||
+				(!analyzingTracks.has(track?.id) ? (
+					analyzeButton(track)
+				) : (
+					<TrackLoader className="mx-auto h-4" />
+				))
+			)
+		},
+		[analyzingTracks, analyzeButton]
+	)
+
+	// Build table columns
+	const columns = useMemo(
+		(): {
+			dbKey: string
+			label: string
+			align: TableColumnProps<string>['align']
+			width: TableColumnProps<string>['width']
+			formatter: (t: Track) => ReactNode
+		}[] => [
+			{
+				dbKey: 'name',
+				label: 'Track name',
+				align: 'start',
+				width: '45%',
+				formatter: track =>
+					track.name?.replace(/\.[^/.]+$/, '') || 'Track name not found'
+			},
+			{
+				dbKey: 'action',
+				label: '',
+				align: 'center',
+				width: '15%',
+				formatter: track => <AddToMixButton track={track} />
+			},
+			{
+				dbKey: 'bpm',
+				label: 'BPM',
+				align: 'center',
+				width: '10%',
+				formatter: BpmFormatter
+			},
+			{
+				dbKey: 'duration',
+				label: 'Duration',
+				align: 'center',
+				width: '10%',
+				formatter: track => (
+					<div className="pl-3">
+						{track.duration && formatMinutes(track.duration / 60)}
+					</div>
+				)
+			},
+			{
+				dbKey: 'mixpoints',
+				label: 'Mixes',
+				align: 'center',
+				width: '5%',
+				formatter: track => (
+					<div className="pl-3">{track.mixpoints?.length || 0}</div>
+				)
+			},
+			{
+				dbKey: 'sets',
+				label: 'Sets',
+				align: 'center',
+				width: '5%',
+				formatter: track => (
+					<div className="pl-2">{track.sets?.length || 0}</div>
+				)
+			},
+			{
+				dbKey: 'lastModified',
+				label: 'Updated',
+				align: 'end',
+				width: '10%',
+				formatter: track => (
+					<div className="whitespace-nowrap">
+						{moment(track.lastModified).fromNow()}
+					</div>
+				)
+			}
+		],
+		[BpmFormatter, AddToMixButton]
+	)
 
 	const headerColumns = useMemo(() => {
 		if (!visibleColumns.size) return columns
@@ -153,84 +303,40 @@ const TrackTable = () => {
 		const visibleTracks = sortedTracks.slice(startIndex, endIndex)
 		return new Set(visibleTracks.map(t => String(t.id)))
 	}
-
-	const renderCell = useCallback(
-		(track: Track, columnKey: keyof Track): ReactNode => {
-			switch (columnKey) {
-				case 'name':
-					return (
-						<div className="flex justify-between items-center">
-							{track.name?.replace(/\.[^/.]+$/, '') || 'Track name not found'}
-							<div className="min-w-20 ml-2">
-								<AddToMixButton track={track} />
-							</div>
-						</div>
-					)
-				case 'bpm':
-					return (
-						track.bpm?.toFixed(0) ||
-						(!analyzingTracks.has(track.id) ? (
-							analyzeButton(track)
-						) : (
-							<TrackLoader style={{ margin: 'auto', height: '15px' }} />
-						))
-					)
-				case 'duration':
-					return track.duration && formatMinutes(track.duration / 60)
-				case 'mixpoints':
-					return track.mixpoints?.length || 0
-				case 'sets':
-					return track.sets?.length || 0
-				case 'lastModified':
-					return moment(track.lastModified).fromNow()
-			}
-		},
-		[analyzingTracks]
-	)
-
+	console.log(tracks?.length, processing, analyzingTracks)
 	const tableHeader = (
 		<div className="flex flex-col gap-4 mb-2">
 			<div className="flex justify-between gap-3 items-end">
-				<Input
-					isClearable
-					classNames={{
-						base: 'w-full sm:max-w-[34%]',
-						inputWrapper: 'border-1 bg-default-50 rounded h-3'
-					}}
-					placeholder="Search"
-					size="sm"
-					startContent={
-						<Icon
-							icon="material-symbols-light:search-rounded"
-							className="text-default-500 text-xl"
-						/>
-					}
-					value={String(search)}
-					variant="bordered"
-					onClear={() => setAppState.search('')}
-					onValueChange={value => {
-						if (value) {
-							setAppState.search(value)
-							setAppState.page(1)
-						} else {
-							setAppState.search('')
-						}
-					}}
-				/>
-				<div className="flex gap-3">
+				<div className="flex flex-start gap-3">
+					<Input
+						isClearable
+						classNames={{
+							base: 'w-full',
+							inputWrapper: 'border-1 bg-default-50 rounded h-3'
+						}}
+						placeholder="Search"
+						size="sm"
+						startContent={<SearchIcon className="text-default-500 text-xl" />}
+						value={String(search)}
+						variant="bordered"
+						onClear={() => setAppState.search('')}
+						onValueChange={value => {
+							if (value) {
+								setAppState.search(value)
+								setAppState.page(1)
+							} else {
+								setAppState.search('')
+							}
+						}}
+					/>
 					<Dropdown>
 						<DropdownTrigger className="hidden sm:flex bg-default/30">
 							<Button
 								disableRipple
-								endContent={
-									<Icon
-										icon="material-symbols-light:chevron-right-rounded"
-										className="text-lg rotate-90"
-									/>
-								}
+								endContent={<ChevronIcon className="text-lg rotate-90" />}
 								size="sm"
 								variant="flat"
-								className="text-default-600"
+								className="text-default-600 pl-5 pr-4"
 							>
 								Columns
 							</Button>
@@ -239,45 +345,59 @@ const TrackTable = () => {
 							disallowEmptySelection
 							aria-label="Table columns"
 							closeOnSelect={false}
-							selectedKeys={visibleColumns.size ? visibleColumns : 'all'}
+							selectedKeys={visibleColumns.size > 2 ? visibleColumns : 'all'}
 							selectionMode="multiple"
 							onSelectionChange={keys =>
-								setPrefs('user', { visibleColumns: new Set(keys) })
+								setPrefs('user', {
+									visibleColumns: new Set(['name', 'action', ...keys])
+								})
 							}
 						>
-							{columns.map(column => (
-								<DropdownItem key={column.dbKey}>{column.label}</DropdownItem>
-							))}
+							{columns
+								.filter(
+									column => column.dbKey !== 'name' && column.dbKey !== 'action'
+								)
+								.map(column => (
+									<DropdownItem key={column.dbKey}>{column.label}</DropdownItem>
+								))}
 						</DropdownMenu>
 					</Dropdown>
-					<Button
-						size="sm"
-						radius="sm"
-						variant="light"
-						color="primary"
-						disableRipple
-						aria-label={selectedCount ? 'Remove Track' : 'Add Tracks'}
-						onClick={() =>
-							selectedCount ? showRemoveTracksModal() : browseFile()
-						}
-						className="border-1 border-primary-300 text-primary-700 font-semibold gap-1"
-						startContent={
-							<Icon
-								icon={
-									selectedCount ? 'ri:recycle-line' : 'material-symbols:add'
-								}
-								className="text-lg"
-							/>
-						}
-					>
-						{selectedCount ? 'Remove Tracks' : 'Add Tracks'}
-					</Button>
 				</div>
+				<Button
+					size="sm"
+					radius="sm"
+					variant="light"
+					color="primary"
+					disableRipple
+					aria-label={selectedCount ? 'Remove Track' : 'Add Tracks'}
+					onClick={() =>
+						selectedCount ? showRemoveTracksModal() : browseFile()
+					}
+					className="border-1 border-primary-300 text-primary-700 font-semibold gap-1"
+					startContent={
+						<AddIcon
+							className={`text-lg ${selectedCount ? 'rotate-45' : ''}`}
+						/>
+					}
+				>
+					{selectedCount ? 'Remove Tracks' : 'Add Tracks'}
+				</Button>
 			</div>
 			<div className="flex justify-between items-center">
 				<span className="text-default-600 text-small">
-					Total {tracks.length} tracks
+					Total {tracks?.length} tracks
+					{!dirtyTracks.length ? null : (
+						<Link
+							onClick={() => showAnalyzeDirtyModal()}
+							color="warning"
+							underline="none"
+							className="ml-1 text-sm cursor-pointer"
+						>
+							({dirtyTracks.length} to analyze)
+						</Link>
+					)}
 				</span>
+
 				<Select
 					labelPlacement="outside-left"
 					label="Rows per page"
@@ -349,7 +469,7 @@ const TrackTable = () => {
 						key={column.dbKey}
 						align={column.align}
 						width={column.width}
-						allowsSorting
+						allowsSorting={column.dbKey !== 'actions'}
 					>
 						{column.label}
 					</TableColumn>
@@ -358,30 +478,29 @@ const TrackTable = () => {
 
 			<TableBody
 				emptyContent={
-					tracks.length ? (
-						<></>
-					) : processing ? (
+					!tracks || processing ? (
 						<TrackLoader style={{ margin: '50px auto' }} />
+					) : !tracks.length ? (
+						<></>
 					) : (
 						<Dropzone />
 					)
 				}
-				items={pageTracks}
 			>
-				{track => (
+				{pageTracks.map(track => (
 					<TableRow key={track.id}>
-						{columnKey => (
-							<TableCell>
-								{renderCell(track, columnKey as keyof Track)}
+						{headerColumns.map(column => (
+							<TableCell key={column?.dbKey}>
+								{column?.formatter(track)}
 							</TableCell>
-						)}
+						))}
 					</TableRow>
-				)}
+				))}
 			</TableBody>
 		</Table>
 	)
 
-	const tableFooter = !tracks.length ? null : (
+	const tableFooter = !tracks?.length ? null : (
 		<div className="mt-3 flex justify-between items-center">
 			<Pagination
 				showControls

@@ -119,7 +119,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
 				sortColumn: 'lastModified',
 				sortDirection: 'descending'
 			})
-			setAppState.page(0)
+			setAppState.page(1)
 			sorted = true
 		}
 
