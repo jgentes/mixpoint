@@ -32,7 +32,7 @@ const itemsDropped = async (items: DataTransferItemList, trackSlot?: 0 | 1) => {
 }
 
 const Dropzone = ({
-	className = '',
+	className,
 	trackSlot
 }: { className?: string; trackSlot?: 0 | 1 }) => {
 	const [dragOver, setDragOver] = useState(false)
@@ -40,7 +40,7 @@ const Dropzone = ({
 	return (
 		<div
 			id="dropzone"
-			className={`border-2 border-dashed cursor-pointer border-default-500 m-2 p-2 text-center rounded-md flex justify-center items-center duration-0 ${
+			className={`border-2 border-dashed cursor-pointer border-default-500 p-2 text-center rounded flex justify-center items-center duration-0 ${
 				dragOver
 					? 'border-primary-500 bg-primary-500 bg-opacity-10'
 					: 'bg-default-50'
@@ -65,11 +65,9 @@ const Dropzone = ({
 			onDragLeave={() => setDragOver(false)}
 		>
 			<div>
-				<UploadFolderIcon className="drop text-default-600 text-4xl m-auto" />
-				<div className="drop text-md font-semibold text-default-600">
-					Add Tracks
-				</div>
-				<div className="drop text-sm text-default-600">Drag or click here</div>
+				<UploadFolderIcon className="text-default-600 text-4xl m-auto" />
+				<div className="text-md font-semibold text-default-600">Add Tracks</div>
+				<div className="text-sm text-default-600">Drag or click here</div>
 			</div>
 		</div>
 	)

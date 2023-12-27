@@ -18,7 +18,7 @@ const DarkMode = () => {
 				variant="light"
 				color="primary"
 				aria-label={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-				className="border-1 border-primary-300 text-primary-700"
+				className="border-1 border-primary-300 rounded text-primary-700"
 				onClick={() => {
 					new Audio('/media/light.mp3').play()
 					setTheme(theme === 'dark' ? 'light' : 'dark')

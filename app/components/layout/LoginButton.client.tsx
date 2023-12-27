@@ -21,7 +21,7 @@ const LoginButton = () => {
 				id="login-button"
 				size="sm"
 				radius="sm"
-				className="border-1 border-primary-300 text-primary-700 font-semibold"
+				className="border-1 border-primary-300 rounded text-primary-700 font-semibold"
 				variant="light"
 				color="primary"
 				aria-label={loggedIn || buttonText}

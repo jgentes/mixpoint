@@ -17,7 +17,7 @@ const Header = () => (
 					aria-label="Discuss on Github"
 					radius="sm"
 					size="sm"
-					className="border-1 border-primary-300 text-primary-700"
+					className="border-1 border-primary-300 rounded text-primary-700"
 					onClick={() =>
 						window.open('https://github.com/jgentes/mixpoint/discussions')
 					}

@@ -106,7 +106,7 @@ const TrackTable = () => {
 		<Button
 			variant="ghost"
 			color="secondary"
-			className="border-1 h-6 px-2 gap-1 border-secondary-300 text-secondary-700"
+			className="border-1 rounded h-6 px-2 gap-1 border-secondary-300 text-secondary-700"
 			startContent={<AnalyzeIcon className="text-lg" />}
 			size="sm"
 			onClick={() => analyzeTracks([t])}
@@ -140,7 +140,7 @@ const TrackTable = () => {
 					variant="ghost"
 					color="primary"
 					isDisabled={isBeingAnalyzed}
-					className={`border-1 h-6 px-2 gap-1 ${
+					className={`border-1 rounded h-6 px-2 gap-1 ${
 						isInMix
 							? 'border-success-300 text-success-700'
 							: 'border-primary-300 text-primary-700'
@@ -339,7 +339,7 @@ const TrackTable = () => {
 								radius="sm"
 								disableRipple
 								aria-label="Column selector"
-								className="text-default-600 pl-6 pr-5"
+								className="text-default-600 pl-6 pr-5 rounded"
 							>
 								Columns
 							</Button>
@@ -376,7 +376,7 @@ const TrackTable = () => {
 					onClick={() =>
 						selectedCount ? showRemoveTracksModal() : browseFile()
 					}
-					className="border-1 border-primary-300 text-primary-700 font-semibold gap-1"
+					className="border-1 border-primary-300 rounded text-primary-700 font-semibold gap-1"
 					startContent={
 						<AddIcon
 							className={`text-lg ${selectedCount ? 'rotate-45' : ''}`}
@@ -414,7 +414,7 @@ const TrackTable = () => {
 						base: 'w-min',
 						mainWrapper: 'w-16',
 						listbox: 'p-0 bg-default/30',
-						trigger: 'bg-default/30',
+						trigger: 'bg-default/30 rounded',
 						popoverContent: 'p-0',
 						label:
 							'text-sm text-default-600 whitespace-nowrap self-center w-3/4'
@@ -442,11 +442,14 @@ const TrackTable = () => {
 			}}
 			classNames={{
 				wrapper: ['max-h-[382px]', 'max-w-3xl'],
+				thead: 'rounded',
 				th: [
 					'text-default-600',
 					'text-sm',
+					'rounded',
 					dragOver ? 'bg-primary-500 bg-opacity-10' : 'bg-default/30'
 				],
+				tr: ['rounded'],
 				tbody: dragOver ? 'bg-primary-500 bg-opacity-10' : ''
 			}}
 			selectedKeys={selected}
@@ -492,7 +495,7 @@ const TrackTable = () => {
 					) : search ? (
 						'No tracks found'
 					) : (
-						<Dropzone className="h-full mx-0 mt-4" />
+						<Dropzone className="h-full mx-0 my-2" />
 					)
 				}
 			>

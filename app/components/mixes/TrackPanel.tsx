@@ -23,75 +23,37 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 	const [stemState] = audioState[trackId].stemState()
 
 	const trackHeader = (
-		<Box
-			sx={{
-				display: 'flex',
-				justifyContent: 'space-between',
-				mb: 1,
-				alignItems: 'center'
-			}}
-		>
-			<div style={{ display: 'flex', minWidth: '130px' }}>
-				<Typography
-					sx={{
-						fontSize: 'xs',
-						fontWeight: 'md',
-						px: '3px',
-						color: 'text.secondary'
-					}}
-				>
-					Time:
-				</Typography>
+		<div className="flex justify-between mb-1 items-center">
+			<div className="flex min-w-fit">
+				<div className="text-xs font-medium px-3 text-secondary">Time:</div>
 				<TrackTime sx={{ px: '3px', flexBasis: '42px' }} trackId={trackId} />
-				<Typography
-					sx={{ fontSize: 'xs', color: 'text.secondary', whiteSpace: 'nowrap' }}
-				>
+				<div className="text-xs text-gray-500 whitespace-nowrap">
 					/ {timeFormat(duration)}
-				</Typography>
+				</div>
 			</div>
 
 			{stemState !== 'ready' ? null : <ZoomSelectControl trackId={trackId} />}
 
 			<BeatResolutionControl trackId={trackId} />
-		</Box>
+		</div>
 	)
 
 	const trackFooter = (
-		<Box
-			sx={{
-				display: 'flex',
-				gap: 1,
-				mt: 1,
-				alignItems: 'center'
-			}}
-		>
+		<div className="flex gap-1 mt-1 items-center">
 			<MixpointControl trackId={trackId} />
-			<OffsetControl trackId={trackId} styles={{ marginLeft: 'auto' }} />
-		</Box>
+			<OffsetControl trackId={trackId} className="ml-auto" />
+		</div>
 	)
 
-	const LOADER_SX = {
-		p: 0,
-		border: '1px solid',
-		borderColor: 'action.focus',
-		borderRadius: '4px',
-		borderBottom: 'none',
-		backgroundColor: 'background.body',
-		overflow: 'hidden',
-		zIndex: 1
-	}
+	const loaderClassNames =
+		'p-0 border border-action-focus rounded-md border-b-0 bg-background-body overflow-hidden z-1'
 
 	const loaderCover = (
-		<Card
-			sx={{
-				...LOADER_SX,
-				zIndex: 2,
-				position: 'absolute',
-				inset: '261px 16px calc(100% - 339px)'
-			}}
+		<div
+			className={`${loaderClassNames} z-2 absolute inset-261px 16px calc(100% - 339px)`}
 		>
-			<Loader style={{ margin: 'auto' }} />
-		</Card>
+			<Loader className="m-auto" />
+		</div>
 	)
 
 	return (
@@ -100,7 +62,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 
 			{analyzing ? loaderCover : null}
 
-			<Waveform trackId={trackId} sx={{ ...LOADER_SX, height: '78px' }} />
+			<Waveform trackId={trackId} className={`${loaderClassNames} h-20`} />
 
 			<VolumeMeter trackId={trackId} />
 

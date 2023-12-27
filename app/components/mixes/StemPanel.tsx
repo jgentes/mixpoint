@@ -64,22 +64,11 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
 	return stemState !== 'ready' ? (
 		<StemAccessButton trackId={trackId} />
 	) : (
-		<Box
-			sx={{
-				display: 'flex',
-				flexDirection: 'column',
-				gap: 1,
-				p: 1,
-				borderRadius: '4px',
-				border: '1px solid',
-				borderColor: 'action.selected',
-				backgroundColor: 'background.level1'
-			}}
-		>
+		<div className="flex flex-col gap-1 p-1 rounded border-1 border-divider bg-background">
 			{STEMS.map(stem => (
 				<StemControl key={stem} trackId={trackId} stemType={stem as Stem} />
 			))}
-		</Box>
+		</div>
 	)
 }
 

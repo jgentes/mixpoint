@@ -85,7 +85,7 @@ const LeftNav = () => (
 			</Listbox>
 		</div>
 
-		<Dropzone />
+		<Dropzone className="m-2" />
 	</div>
 )
 

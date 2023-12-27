@@ -1,4 +1,3 @@
-import { Box } from '@mui/joy'
 import { MixPrefs } from '~/api/db/dbHandlers'
 import MixCard from '~/components/mixes/MixCard'
 import {
@@ -11,20 +10,15 @@ const MixView = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 	if (!tracks?.length) return null
 
 	return (
-		<Box
-			sx={{
-				display: 'flex',
-				justifyContent: 'space-between'
-			}}
-		>
+		<div className="flex justify-between m-4">
 			<MixCard trackId={tracks[0]} trackSlot={0} />
-			<Box sx={{ display: 'flex', flexDirection: 'column', mt: 3 }}>
+			<div className="flex flex-col mt-4">
 				<CrossfaderControl />
 				<MixControl tracks={tracks} />
 				<StemsCrossfaders />
-			</Box>
+			</div>
 			<MixCard trackId={tracks[1]} trackSlot={1} />
-		</Box>
+		</div>
 	)
 }
 

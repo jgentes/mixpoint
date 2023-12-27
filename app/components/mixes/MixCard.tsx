@@ -1,5 +1,3 @@
-import { Box, Card, Typography } from '@mui/joy'
-import { SxProps } from '@mui/material'
 import { audioEvents } from '~/api/audioEvents'
 import { appState } from '~/api/db/appState'
 import { Track, getTrackName, useLiveQuery } from '~/api/db/dbHandlers'
@@ -15,103 +13,57 @@ import Loader from '~/components/tracks/TrackLoader'
 
 const MixCard = ({
 	trackId,
-	trackSlot,
-	sx
-}: { trackId: Track['id']; trackSlot: 0 | 1; sx?: SxProps }) => {
+	trackSlot
+}: { trackId: Track['id']; trackSlot: 0 | 1 }) => {
 	const [analyzingTracks] = appState.analyzing()
 	const analyzing = analyzingTracks.has(trackId)
 
 	const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
 
 	const mixCardHeader = (
-		<Box
-			sx={{
-				display: 'flex',
-				gap: 1,
-				mb: 1,
-				alignItems: 'center'
-			}}
-		>
-			<EjectControl trackId={trackId} />
-			<Typography
-				sx={{
-					fontSize: 'sm',
-					fontWeight: 'md',
-					whiteSpace: 'nowrap',
-					overflow: 'hidden',
-					textOverflow: 'ellipsis'
-				}}
-			>
-				{trackName}
-			</Typography>
+		<div className="flex mb-3 justify-between">
+			<div className="flex gap-2">
+				<EjectControl trackId={trackId} />
+				<div className="text-md font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
+					{trackName}
+				</div>
+			</div>
 
-			<BpmControl trackId={trackId} styles={{ marginLeft: 'auto' }} />
-		</Box>
+			<BpmControl trackId={trackId} className="w-28" />
+		</div>
 	)
 
 	const mixCardFooter = (
-		<Box
-			sx={{
-				mx: 'auto',
-				mt: 1
-			}}
-		>
+		<div className="mx-auto mt-2">
 			<TrackNavControl trackId={trackId} />
-		</Box>
+		</div>
 	)
 
-	const loaderSx = {
-		p: 0,
-		border: '1px solid',
-		borderColor: 'action.focus',
-		borderRadius: '4px',
-		borderBottom: 'none',
-		backgroundColor: 'background.body',
-		overflow: 'hidden',
-		zIndex: 1
-	}
+	const loaderClassNames =
+		'p-0 border border-solid border-divider rounded bg-background overflow-hidden z-1'
 
 	return (
-		<Card
-			sx={{
-				p: 1,
-				m: 2,
-				width: '40%',
-				borderRadius: '4px',
-				border: '1px solid',
-				borderColor: 'action.selected',
-				backgroundColor: 'background.surface',
-				...sx
-			}}
-		>
+		<div className="p-2 w-5/12 rounded border-1 border-divider bg-primary-50">
 			{!trackId ? (
-				<Dropzone sx={{ height: '100%' }} trackSlot={trackSlot} />
+				<Dropzone className="h-full" trackSlot={trackSlot} />
 			) : (
 				<>
 					{mixCardHeader}
 
 					{/* loader cover */}
 					{!analyzing ? null : (
-						<Card
-							sx={{
-								...loaderSx,
-								zIndex: 2,
-								position: 'absolute',
-								inset: '40px 8px calc(100% - 67px)'
-							}}
+						<div
+							className={`${loaderClassNames} z-10 absolute inset-y-40 inset-x-8 bottom-8`}
 						>
 							<Loader style={{ margin: 'auto' }} />
-						</Card>
+						</div>
 					)}
 
 					{/* overview */}
-					<Card
+					{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
+					<div
 						id={`overview-container_${trackId}`}
-						sx={{
-							...loaderSx,
-							pt: '1px',
-							height: '25px'
-						}}
+						className={`${loaderClassNames} py-1 mb-3 h-fit`}
 						onClick={e => {
 							const parents = e.currentTarget.firstElementChild as HTMLElement
 							const parent = parents.children[1] as HTMLElement
@@ -119,27 +71,18 @@ const MixCard = ({
 						}}
 					/>
 
-					<Box sx={{ mt: 1 }}>
+					<div className="mt-2">
 						<StemPanel trackId={trackId} />
-					</Box>
+					</div>
 
-					<Box
-						sx={{
-							p: 1,
-							mt: 1,
-							borderRadius: '4px',
-							border: '1px solid',
-							borderColor: 'action.selected',
-							backgroundColor: 'background.level1'
-						}}
-					>
+					<div className="p-2 mt-2 rounded-md border border-action-selected bg-background-level1">
 						<TrackPanel trackId={trackId} />
-					</Box>
+					</div>
 
 					{mixCardFooter}
 				</>
 			)}
-		</Card>
+		</div>
 	)
 }
 

@@ -160,10 +160,10 @@ const initAudioContext = ({
 
 const Waveform = ({
 	trackId,
-	sx
+	className
 }: {
 	trackId: Track['id']
-	sx: SxProps
+	className: string
 }): JSX.Element | null => {
 	if (!trackId) throw errorHandler('No track to initialize.')
 
@@ -196,11 +196,7 @@ const Waveform = ({
 	return (
 		<Card
 			id={`zoomview-container_${trackId}`}
-			className="zoomview-container"
-			sx={{
-				...sx,
-				zIndex: 1
-			}}
+			className={`zoomview-container z-1 ${className}`}
 			onClick={e => {
 				const parent = e.currentTarget.firstElementChild as HTMLElement
 				audioEvents.clickToSeek(trackId, e, parent)

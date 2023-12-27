@@ -1,10 +1,7 @@
 import {
 	Box,
 	Card,
-	Chip,
 	FormControl,
-	Input,
-	Link,
 	Option,
 	Radio,
 	RadioGroup,
@@ -13,7 +10,7 @@ import {
 	Typography,
 	radioClasses
 } from '@mui/joy'
-import { Button, ButtonGroup, SxProps } from '@mui/material'
+import { ButtonGroup, SxProps } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { audioEvents } from '~/api/audioEvents'
 import {
@@ -27,9 +24,8 @@ import {
 	useLiveQuery
 } from '~/api/db/dbHandlers'
 
+import { Button, Chip, Input, Link, Tooltip } from '@nextui-org/react'
 import { audioState } from '~/api/db/appState'
-import VolumeMeter from '~/components/mixes/VolumeMeter'
-import { convertToSecs, timeFormat } from '~/utils/tableOps'
 import {
 	EjectIcon,
 	HeadsetIcon,
@@ -44,6 +40,8 @@ import {
 	VolumeOffIcon,
 	VolumeUpIcon
 } from '~/components/icons'
+import VolumeMeter from '~/components/mixes/VolumeMeter'
+import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
 const inputText = (text: string) => {
 	return (
@@ -63,113 +61,92 @@ const NumberControl = ({
 	toFixedVal = 1,
 	title,
 	text,
-	width = 144,
 	emitEvent,
-	styles
+	className
 }: {
 	trackId: Track['id']
-	val: number | undefined
-	adjustedVal: number | undefined
+	val: string | undefined
+	adjustedVal: string | undefined
 	toFixedVal?: number
 	title: string
 	text: string
-	width?: number
 	emitEvent: 'bpm' | 'offset'
-	styles?: object
+	className?: string
 }) => {
-	const [inputVal, setInputVal] = useState<string | number>(0)
+	const [inputVal, setInputVal] = useState<string>('0')
 
 	useEffect(
-		() => setInputVal((adjustedVal ?? val ?? 0).toFixed(toFixedVal)),
+		() => setInputVal(Number(adjustedVal ?? val ?? 0).toFixed(toFixedVal)),
 		[adjustedVal, val, toFixedVal]
 	)
 
-	const valDiff = !Number.isNaN(Number(adjustedVal)) && adjustedVal !== val
+	const valDiff =
+		!Number.isNaN(Number(adjustedVal)) &&
+		Number(adjustedVal)?.toFixed(toFixedVal) !== val
 
-	const adjustVal = async (newVal?: number) => {
+	const adjustVal = async (newVal?: string) => {
 		const value = newVal ?? val
-		if (typeof value !== 'number') return
+		if (Number.isNaN(Number(value))) return
 
-		setInputVal(value)
+		if (value !== undefined) setInputVal(value)
 
-		audioEvents[emitEvent](trackId, value)
+		audioEvents[emitEvent](trackId, Number(value))
 	}
 
 	const ResetValLink = () => (
-		<Link
-			underline="none"
-			onClick={() => adjustVal()}
-			color="neutral"
-			title={title}
-			disabled={!valDiff}
-			sx={{
-				fontSize: 12,
-				WebkitTextFillColor: 'divider'
-			}}
-		>
-			{inputText(text)}
-			{valDiff ? <ReplayIcon className="ml-1 text-md" /> : ''}
-		</Link>
+		<Tooltip color="default" content={title}>
+			<Link
+				underline="none"
+				onClick={() => adjustVal()}
+				color="foreground"
+				isDisabled={!valDiff}
+				className="text-default-600 text-xs cursor-pointer z-20"
+			>
+				{inputText(text)}
+				{valDiff ? <ReplayIcon className="ml-1 text-md" /> : ''}
+			</Link>
+		</Tooltip>
 	)
 
 	return (
-		<FormControl
-			style={{ ...styles }}
+		<form
 			onSubmit={e => {
 				e.preventDefault()
-				adjustVal(Number(inputVal))
-			}}
-			sx={{
-				'& div': {
-					'--Input-minHeight': '24px'
-				}
+				adjustVal(inputVal)
 			}}
 		>
 			<Input
-				variant="outlined"
-				startDecorator={<ResetValLink />}
+				variant="bordered"
+				startContent={<ResetValLink />}
 				value={inputVal}
-				onChange={e => setInputVal(e.target.value)}
+				onValueChange={setInputVal}
 				onBlur={() => {
-					if (Number(inputVal) !== adjustedVal) adjustVal(Number(inputVal))
+					if (inputVal !== adjustedVal) adjustVal(inputVal)
 				}}
-				sx={{
-					width,
-					borderRadius: '5px',
-					borderColor: 'action.selected',
-					'& div': {
-						borderColor: 'action.disabled'
-					},
-					'& input': {
-						textAlign: 'right',
-						fontSize: 12,
-						color: 'text.secondary'
-					},
-					backgroundColor: 'background.surface'
+				classNames={{
+					base: className,
+					inputWrapper: 'border-1 bg-default-50 rounded px-2 h-6 min-h-0',
+					input: 'text-xs text-right text-default-600'
 				}}
 			/>
-		</FormControl>
+		</form>
 	)
 }
 
 const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
 	return (
-		<Chip
-			variant="outlined"
+		<Button
+			isIconOnly
+			variant="ghost"
 			color="primary"
 			size="sm"
+			radius="sm"
 			title="Load Track"
 			onClick={() => audioEvents.ejectTrack(trackId)}
-			sx={{
-				minHeight: '21px',
-				lineHeight: 0,
-				'--Chip-radius': '5px',
-				'--Chip-paddingInline': '0.4rem',
-				'--Icon-fontSize': '16px'
-			}}
+			className="border-1 rounded h-6 border-primary-300 text-primary-700"
 		>
-			<EjectIcon className="text-lg" />
-		</Chip>
+			<EjectIcon className="text-2xl" />
+		</Button>
 	)
 }
 
@@ -220,10 +197,10 @@ const ZoomSelectControl = ({
 
 const BpmControl = ({
 	trackId,
-	styles
+	className
 }: {
 	trackId: Track['id']
-	styles: object
+	className: string
 }) => {
 	if (!trackId) return null
 
@@ -235,24 +212,23 @@ const BpmControl = ({
 	return (
 		<NumberControl
 			trackId={trackId}
-			val={bpm}
-			adjustedVal={adjustedBpm}
+			val={String(bpm?.toFixed(1))}
+			adjustedVal={String(adjustedBpm)}
 			toFixedVal={1}
 			title="Reset BPM"
 			text="BPM:"
 			emitEvent="bpm"
-			width={115}
-			styles={styles}
+			className={className}
 		/>
 	)
 }
 
 const OffsetControl = ({
 	trackId,
-	styles
+	className
 }: {
 	trackId: TrackPrefs['id']
-	styles?: object
+	className?: string
 }) => {
 	if (!trackId) return null
 
@@ -262,14 +238,13 @@ const OffsetControl = ({
 	return (
 		<NumberControl
 			trackId={trackId}
-			val={offset}
-			adjustedVal={adjustedOffset}
+			val={String(offset?.toFixed(2))}
+			adjustedVal={String(adjustedOffset)}
 			toFixedVal={2}
 			title="Reset Beat Offset"
 			text="Beat Offset:"
 			emitEvent="offset"
-			width={155}
-			styles={styles}
+			className={className}
 		/>
 	)
 }
