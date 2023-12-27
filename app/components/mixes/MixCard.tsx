@@ -60,7 +60,6 @@ const MixCard = ({
 					)}
 
 					{/* overview */}
-					{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
 					<div
 						id={`overview-container_${trackId}`}
 						className={`${loaderClassNames} py-1 mb-3 h-fit`}

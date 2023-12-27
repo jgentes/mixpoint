@@ -194,7 +194,7 @@ const Waveform = ({
 	}, [trackId])
 
 	return (
-		<Card
+		<div
 			id={`zoomview-container_${trackId}`}
 			className={`zoomview-container z-1 ${className}`}
 			onClick={e => {

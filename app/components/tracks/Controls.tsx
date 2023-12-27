@@ -5,7 +5,6 @@ import {
 	Option,
 	Radio,
 	RadioGroup,
-	Select,
 	Slider,
 	Typography,
 	radioClasses
@@ -24,7 +23,17 @@ import {
 	useLiveQuery
 } from '~/api/db/dbHandlers'
 
-import { Button, Chip, Input, Link, Tooltip } from '@nextui-org/react'
+import {
+	Button,
+	Chip,
+	Input,
+	Link,
+	Select,
+	SelectItem,
+	Tab,
+	Tabs,
+	Tooltip
+} from '@nextui-org/react'
 import { audioState } from '~/api/db/appState'
 import {
 	EjectIcon,
@@ -44,14 +53,7 @@ import VolumeMeter from '~/components/mixes/VolumeMeter'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
 const inputText = (text: string) => {
-	return (
-		<Typography
-			textColor="#888"
-			sx={{ fontSize: 12, lineHeight: 0, cursor: 'default' }}
-		>
-			{text}
-		</Typography>
-	)
+	return <div className="text-default-700 text-xs cursor-default">{text}</div>
 }
 
 const NumberControl = ({
@@ -156,41 +158,40 @@ const ZoomSelectControl = ({
 }: { trackId: Track['id']; sx?: SxProps }) => {
 	if (!trackId) return null
 
-	const { stemZoom } =
+	const { stemZoom = 'all' } =
 		useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
 
 	return (
 		<Select
-			variant="outlined"
 			size="sm"
-			title="Load Track"
-			value={stemZoom || 'all'}
-			onChange={(e, newValue) => {
-				if (newValue)
-					audioEvents.stemZoom(trackId, newValue as TrackPrefs['stemZoom'])
+			placeholder="All Stems"
+			value={stemZoom}
+			onChange={e => {
+				if (e.target.value)
+					audioEvents.stemZoom(
+						trackId,
+						e.target.value as TrackPrefs['stemZoom']
+					)
 			}}
-			sx={{
-				minHeight: '24px',
-				fontSize: 12,
-				borderRadius: '5px',
-				borderColor: 'action.selected',
-				'+ .MuiSelect-listbox': {
-					paddingTop: 0,
-					'> .MuiOption-root': {
-						fontSize: '12px',
-						marginTop: 0,
-						'--List-item-minHeight': '1rem'
-					}
-				},
-				...sx
+			classNames={{
+				mainWrapper: 'w-24 m-auto',
+				listbox: 'p-0',
+				trigger:
+					'py-0 pl-2 border-1 bg-default-50 border-default-300 rounded h-6 min-h-0',
+				popoverContent: 'p-0 text-sm',
+				value: 'text-xs text-default-600'
 			}}
 		>
-			<Option value="all">All Stems</Option>
-			{STEMS.map(stem => (
-				<Option value={stem} key={stem}>
-					{stem[0].toUpperCase() + stem.slice(1).toLowerCase()}
-				</Option>
-			))}
+			{[
+				<SelectItem key="all" value="all">
+					All Stems
+				</SelectItem>,
+				...STEMS.map(stem => (
+					<SelectItem value={stem} key={stem}>
+						{stem[0].toUpperCase() + stem.slice(1).toLowerCase()}
+					</SelectItem>
+				))
+			]}
 		</Select>
 	)
 }
@@ -250,11 +251,9 @@ const OffsetControl = ({
 }
 
 const BeatResolutionControl = ({
-	trackId,
-	sx
+	trackId
 }: {
 	trackId: TrackPrefs['id']
-	sx?: SxProps
 }) => {
 	if (!trackId) return null
 
@@ -262,69 +261,31 @@ const BeatResolutionControl = ({
 		useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
 
 	return (
-		<RadioGroup
-			orientation={'horizontal'}
-			name="beatResolution"
-			value={beatResolution}
-			variant="outlined"
-			sx={{
-				backgroundColor: 'background.surface',
-				borderColor: 'action.selected',
-				borderRadius: '5px',
-				...sx
-			}}
-			onChange={e =>
-				audioEvents.beatResolution(
-					trackId,
-					+e.target.value as TrackPrefs['beatResolution']
-				)
-			}
-		>
-			{[0.25, 0.5, 1].map(item => (
-				<Box
-					key={item}
-					sx={theme => ({
-						position: 'relative',
-						display: 'flex',
-						justifyContent: 'center',
-						alignItems: 'center',
-						width: 48,
-						height: 24,
-						'&:not([data-first-child])': {
-							borderLeft: '1px solid',
-							borderColor: theme.palette.divider
-						},
-						[`&[data-first-child] .${radioClasses.action}`]: {
-							borderTopLeftRadius: '5px',
-							borderBottomLeftRadius: '5px'
-						},
-						[`&[data-last-child] .${radioClasses.action}`]: {
-							borderTopRightRadius: '5px',
-							borderBottomRightRadius: '5px'
-						}
-					})}
-				>
-					<Radio
-						value={item}
-						disableIcon
-						overlay
-						label={`${item * 100}%`}
-						variant={beatResolution === item ? 'outlined' : 'plain'}
-						color="primary"
-						sx={{
-							fontSize: 12,
-							color: 'text.secondary'
-						}}
-						slotProps={{
-							action: {
-								sx: { borderRadius: 0, transition: 'none' }
-							},
-							label: { sx: { lineHeight: 0 } }
-						}}
-					/>
-				</Box>
-			))}
-		</RadioGroup>
+		<Tooltip color="default" content="Beat Resolution">
+			<Tabs
+				selectedKey={beatResolution}
+				aria-label="Beat Resolution"
+				variant="solid"
+				classNames={{
+					base: 'border-1 border-default-300 rounded',
+					tabList: 'rounded h-6 bg-default-50 px-0 gap-.5',
+					tab: 'rounded p-1 text-xs h-auto',
+					tabContent: 'group-data-[selected=true]:text-default-600',
+					cursor:
+						'group-data-[selected=true]:bg-transparent group-data-[selected=true]:border-1 group-data-[selected=true]:border-primary-500 group-data-[selected=true]:rounded p-2'
+				}}
+				onSelectionChange={key =>
+					audioEvents.beatResolution(
+						trackId,
+						key as TrackPrefs['beatResolution']
+					)
+				}
+			>
+				{[0.25, 0.5, 1].map(item => (
+					<Tab key={item} title={`${item * 100}%`} />
+				))}
+			</Tabs>
+		</Tooltip>
 	)
 }
 
@@ -683,12 +644,13 @@ const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => (
 	/>
 )
 
-const TrackTime = ({ trackId, sx }: { trackId: Track['id']; sx?: SxProps }) => {
+const TrackTime = ({
+	trackId,
+	className
+}: { trackId: Track['id']; className?: string }) => {
 	const [time = 0] = audioState[trackId].time()
 
-	return (
-		<Typography sx={{ fontSize: 'xs', ...sx }}>{timeFormat(time)}</Typography>
-	)
+	return <div className={className}>{timeFormat(time)}</div>
 }
 
 export {

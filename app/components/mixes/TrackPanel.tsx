@@ -1,4 +1,3 @@
-import { Box, Card, Typography } from '@mui/joy'
 import { appState, audioState } from '~/api/db/appState'
 import { Track, db, useLiveQuery } from '~/api/db/dbHandlers'
 import { Waveform } from '~/api/renderWaveform'
@@ -24,10 +23,13 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 
 	const trackHeader = (
 		<div className="flex justify-between mb-1 items-center">
-			<div className="flex min-w-fit">
-				<div className="text-xs font-medium px-3 text-secondary">Time:</div>
-				<TrackTime sx={{ px: '3px', flexBasis: '42px' }} trackId={trackId} />
-				<div className="text-xs text-gray-500 whitespace-nowrap">
+			<div className="flex w-36">
+				<div className="text-xs font-medium text-default-600">Time:</div>
+				<TrackTime
+					className="px-1 text-xs text-default-600"
+					trackId={trackId}
+				/>
+				<div className="text-xs text-default-600 whitespace-nowrap">
 					/ {timeFormat(duration)}
 				</div>
 			</div>

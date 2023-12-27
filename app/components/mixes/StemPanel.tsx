@@ -1,4 +1,3 @@
-import { Box } from '@mui/joy'
 import { useEffect } from 'react'
 import { type WaveSurferOptions } from 'wavesurfer.js'
 import { audioEvents } from '~/api/audioEvents'
