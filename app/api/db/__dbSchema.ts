@@ -104,7 +104,7 @@ type TrackCache = {
 type TrackPrefs = Partial<{
 	id: Track['id']
 	adjustedBpm: Track['bpm']
-	beatResolution: 0.25 | 0.5 | 1
+	beatResolution: '1:1' | '1:2' | '1:4'
 	stemZoom: Stem
 	mixpointTime: number // seconds
 }>

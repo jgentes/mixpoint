@@ -230,10 +230,10 @@ const calcMarkers = async (trackId: Track['id']): Promise<void> => {
 
 	if (!duration) return errorHandler(`Please try adding ${name} again.`)
 
-	const { beatResolution = 1 } = await getTrackPrefs(trackId)
+	const { beatResolution = '1:4' } = await getTrackPrefs(trackId)
 
 	const beatInterval = 60 / (bpm || 1)
-	const skipLength = beatInterval * (1 / beatResolution)
+	const skipLength = beatInterval * Number(beatResolution.split(':')[1])
 
 	let startPoint = adjustedOffset || offset || 0
 

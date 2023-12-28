@@ -22,7 +22,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 	const [stemState] = audioState[trackId].stemState()
 
 	const trackHeader = (
-		<div className="flex justify-between mb-1 items-center">
+		<div className="flex justify-between mb-2 items-center">
 			<div className="flex w-36">
 				<div className="text-xs font-medium text-default-600">Time:</div>
 				<TrackTime
@@ -41,9 +41,9 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 	)
 
 	const trackFooter = (
-		<div className="flex gap-1 mt-1 items-center">
+		<div className="flex gap-1 mt-1 items-center justify-between">
 			<MixpointControl trackId={trackId} />
-			<OffsetControl trackId={trackId} className="ml-auto" />
+			<OffsetControl trackId={trackId} className="ml-auto w-36" />
 		</div>
 	)
 

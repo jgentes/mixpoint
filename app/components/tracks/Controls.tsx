@@ -1,8 +1,6 @@
 import {
 	Box,
 	Card,
-	FormControl,
-	Option,
 	Radio,
 	RadioGroup,
 	Slider,
@@ -10,7 +8,7 @@ import {
 	radioClasses
 } from '@mui/joy'
 import { ButtonGroup, SxProps } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { audioEvents } from '~/api/audioEvents'
 import {
 	MixPrefs,
@@ -25,7 +23,6 @@ import {
 
 import {
 	Button,
-	Chip,
 	Input,
 	Link,
 	Select,
@@ -52,9 +49,14 @@ import {
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
-const inputText = (text: string) => {
-	return <div className="text-default-700 text-xs cursor-default">{text}</div>
-}
+const InputText = ({
+	text,
+	className
+}: { text: string; className?: string }) => (
+	<div className={`text-default-500 text-xs whitespace-nowrap ${className}`}>
+		{text}
+	</div>
+)
 
 const NumberControl = ({
 	trackId,
@@ -67,8 +69,8 @@ const NumberControl = ({
 	className
 }: {
 	trackId: Track['id']
-	val: string | undefined
-	adjustedVal: string | undefined
+	val: number | undefined
+	adjustedVal: number | undefined
 	toFixedVal?: number
 	title: string
 	text: string
@@ -77,53 +79,71 @@ const NumberControl = ({
 }) => {
 	const [inputVal, setInputVal] = useState<string>('0')
 
+	const fixedVal = useCallback(
+		(num: number) => Number(num).toFixed(toFixedVal),
+		[toFixedVal]
+	)
+
 	useEffect(
-		() => setInputVal(Number(adjustedVal ?? val ?? 0).toFixed(toFixedVal)),
-		[adjustedVal, val, toFixedVal]
+		() => setInputVal(String(fixedVal(adjustedVal ?? val ?? 0))),
+		[adjustedVal, val, fixedVal]
 	)
 
 	const valDiff =
-		!Number.isNaN(Number(adjustedVal)) &&
-		Number(adjustedVal)?.toFixed(toFixedVal) !== val
+		adjustedVal !== undefined &&
+		val !== undefined &&
+		fixedVal(adjustedVal) !== fixedVal(val)
 
 	const adjustVal = async (newVal?: string) => {
+		// this updates db state
 		const value = newVal ?? val
-		if (Number.isNaN(Number(value))) return
+		if (value === undefined || Number.isNaN(Number(value))) return
 
-		if (value !== undefined) setInputVal(value)
-
+		setInputVal(fixedVal(Number(value)))
 		audioEvents[emitEvent](trackId, Number(value))
 	}
 
 	const ResetValLink = () => (
-		<Tooltip color="default" content={title}>
+		<Tooltip color="default" content={title} isDisabled={!valDiff}>
 			<Link
 				underline="none"
 				onClick={() => adjustVal()}
-				color="foreground"
-				isDisabled={!valDiff}
-				className="text-default-600 text-xs cursor-pointer z-20"
+				className={valDiff ? 'cursor-pointer' : 'cursor-default'}
 			>
-				{inputText(text)}
-				{valDiff ? <ReplayIcon className="ml-1 text-md" /> : ''}
+				<InputText text={text} />
+				{valDiff ? (
+					<ReplayIcon className="pl-1 text-lg text-default-600" />
+				) : (
+					''
+				)}
 			</Link>
 		</Tooltip>
 	)
+
+	const inputRef = useRef<HTMLInputElement>(null)
 
 	return (
 		<form
 			onSubmit={e => {
 				e.preventDefault()
 				adjustVal(inputVal)
+				if (inputRef.current) {
+					inputRef.current.blur()
+				}
 			}}
 		>
 			<Input
+				ref={inputRef}
 				variant="bordered"
 				startContent={<ResetValLink />}
 				value={inputVal}
-				onValueChange={setInputVal}
+				onValueChange={val => {
+					// this simply updates the visible component state
+					if (!Number.isNaN(val)) setInputVal(val)
+				}}
 				onBlur={() => {
-					if (inputVal !== adjustedVal) adjustVal(inputVal)
+					if (fixedVal(Number(inputVal)) !== fixedVal(Number(adjustedVal)))
+						adjustVal(inputVal)
 				}}
 				classNames={{
 					base: className,
@@ -152,10 +172,7 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
 	)
 }
 
-const ZoomSelectControl = ({
-	trackId,
-	sx
-}: { trackId: Track['id']; sx?: SxProps }) => {
+const ZoomSelectControl = ({ trackId }: { trackId: Track['id'] }) => {
 	if (!trackId) return null
 
 	const { stemZoom = 'all' } =
@@ -213,8 +230,8 @@ const BpmControl = ({
 	return (
 		<NumberControl
 			trackId={trackId}
-			val={String(bpm?.toFixed(1))}
-			adjustedVal={String(adjustedBpm)}
+			val={bpm}
+			adjustedVal={adjustedBpm}
 			toFixedVal={1}
 			title="Reset BPM"
 			text="BPM:"
@@ -239,8 +256,8 @@ const OffsetControl = ({
 	return (
 		<NumberControl
 			trackId={trackId}
-			val={String(offset?.toFixed(2))}
-			adjustedVal={String(adjustedOffset)}
+			val={offset}
+			adjustedVal={adjustedOffset}
 			toFixedVal={2}
 			title="Reset Beat Offset"
 			text="Beat Offset:"
@@ -257,7 +274,7 @@ const BeatResolutionControl = ({
 }) => {
 	if (!trackId) return null
 
-	const { beatResolution = 1 } =
+	const { beatResolution = '1:4' } =
 		useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
 
 	return (
@@ -281,8 +298,8 @@ const BeatResolutionControl = ({
 					)
 				}
 			>
-				{[0.25, 0.5, 1].map(item => (
-					<Tab key={item} title={`${item * 100}%`} />
+				{['1:1', '1:2', '1:4'].map(item => (
+					<Tab key={item} title={item} />
 				))}
 			</Tabs>
 		</Tooltip>
@@ -487,40 +504,40 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
 	}
 
 	return (
-		<FormControl
+		<form
 			onSubmit={e => {
 				e.preventDefault()
 				adjustMixpoint(mixpointVal)
 			}}
-			sx={{
-				'& div': {
-					'--Input-minHeight': '24px'
-				}
-			}}
 		>
 			<Input
-				variant="outlined"
-				startDecorator={inputText('Mixpoint:')}
+				variant="bordered"
+				startContent={<InputText text="Mixpoint:" className="cursor-default" />}
 				value={mixpointVal}
-				onChange={e => setMixpointVal(e.target.value)}
+				onValueChange={setMixpointVal}
 				onBlur={() => adjustMixpoint(mixpointVal)}
-				sx={{
-					width: 135,
-					borderRadius: '5px',
-					borderColor: 'action.selected',
-					'& div': {
-						borderColor: 'action.disabled',
-						'--Input-gap': '4px'
-					},
-					'& input': {
-						textAlign: 'right',
-						fontSize: 12,
-						color: 'text.secondary'
-					},
-					backgroundColor: 'background.surface'
+				classNames={{
+					base: 'w-32',
+					inputWrapper: 'border-1 bg-default-50 rounded px-2 h-6 min-h-0',
+					input: 'text-xs text-right text-default-600'
 				}}
+				// sx={{
+				// 	width: 135,
+				// 	borderRadius: '5px',
+				// 	borderColor: 'action.selected',
+				// 	'& div': {
+				// 		borderColor: 'action.disabled',
+				// 		'--Input-gap': '4px'
+				// 	},
+				// 	'& input': {
+				// 		textAlign: 'right',
+				// 		fontSize: 12,
+				// 		color: 'text.secondary'
+				// 	},
+				// 	backgroundColor: 'background.surface'
+				// }}
 			/>
-		</FormControl>
+		</form>
 	)
 }
 
