@@ -34,7 +34,7 @@ const MixCard = ({
 	)
 
 	const mixCardFooter = (
-		<div className="mx-auto mt-2">
+		<div className="text-center mt-2">
 			<TrackNavControl trackId={trackId} />
 		</div>
 	)

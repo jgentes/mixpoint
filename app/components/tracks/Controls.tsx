@@ -7,7 +7,6 @@ import {
 	Typography,
 	radioClasses
 } from '@mui/joy'
-import { ButtonGroup, SxProps } from '@mui/material'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { audioEvents } from '~/api/audioEvents'
 import {
@@ -333,56 +332,55 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
 	const [isPlaying] = audioState[trackId].playing()
 
 	return (
-		<ButtonGroup variant="text" color="inherit" disableRipple id="navControl">
+		<>
 			{[
 				{
 					val: 'Previous Beat Marker',
-					icon: <PreviousIcon className="text-lg" />
+					icon: <PreviousIcon className="text-3xl" />
 				},
 				{
 					val: 'Go to Mixpoint',
-					icon: <RevertIcon className="text-lg" />
+					icon: <RevertIcon className="text-2xl" />
 				},
 
 				{
 					val: 'Set Mixpoint',
-					icon: <SetMixpointIcon className="text-lg" />
+					icon: <SetMixpointIcon className="text-2xl" />
 				},
 				{
 					val: isPlaying ? 'Pause' : 'Play',
 					icon: isPlaying ? (
-						<PauseIcon className="text-lg" />
+						<PauseIcon className="text-3xl" />
 					) : (
-						<PlayIcon className="text-lg" />
+						<PlayIcon className="text-3xl" />
 					)
 				},
 				{
 					val: 'Next Beat Marker',
-					icon: <NextIcon className="text-lg" />
+					icon: <NextIcon className="text-3xl" />
 				}
 			].map(item => {
 				const noNudge = item.val.includes('Nudge') && !isPlaying
 
 				return (
-					<Button
-						component="button"
-						onClick={e => navEvent(e.currentTarget.value)}
-						key={item.val}
-						value={item.val}
-						title={item.val}
-						disabled={noNudge}
-						sx={theme => ({
-							'--Icon-color': noNudge
-								? theme.palette.action.selected
-								: theme.palette.text.secondary,
-							borderColor: 'transparent !important'
-						})}
-					>
-						{item.icon}
-					</Button>
+					<Tooltip key={item.val} color="default" content={item.val}>
+						<Button
+							isIconOnly
+							variant="light"
+							color="default"
+							onClick={e => navEvent(e.currentTarget.value)}
+							key={item.val}
+							value={item.val}
+							title={item.val}
+							disabled={noNudge}
+							className="align-middle rounded"
+						>
+							{item.icon}
+						</Button>
+					</Tooltip>
 				)
 			})}
-		</ButtonGroup>
+		</>
 	)
 }
 
