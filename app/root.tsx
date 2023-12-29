@@ -1,6 +1,5 @@
 // this file establishes the root component that renders all subsequent / child routes
 // it also injects top level styling, HTML meta tags, links, and javascript for browser rendering
-import { Snackbar } from '@mui/joy'
 import { NextUIProvider } from '@nextui-org/react'
 import {
 	LinksFunction,
@@ -23,6 +22,7 @@ import { SupabaseClient } from '@supabase/supabase-js'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
 import posthog from 'posthog-js'
 import { useEffect, useState } from 'react'
+import { Toaster } from 'react-hot-toast'
 import { createHead } from 'remix-island'
 import { setAppState } from '~/api/db/appState'
 import ConfirmModal from '~/components/ConfirmModal'
@@ -30,7 +30,6 @@ import { InitialLoader } from '~/components/Loader'
 import { ErrorBoundary } from '~/errorBoundary'
 import globalStyles from '~/global.css'
 import tailwind from '~/tailwind.css'
-import { Notification } from '~/utils/notifications'
 
 // this is used to inject environment variables into the browser
 export async function loader({ context }: LoaderFunctionArgs) {
@@ -84,7 +83,6 @@ const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
 const ThemeLoader = ({ error }: { error?: string }) => {
 	const data = error ? {} : useLoaderData<typeof loader>()
 	const [loading, setLoading] = useState(true)
-	const [notification, setNotification] = useState<Notification>()
 	const [supabase, setSupabase] = useState<SupabaseClient>()
 
 	useEffect(() => {
@@ -92,15 +90,6 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 		const timer = setTimeout(() => {
 			setLoading(false)
 		}, 500)
-
-		// for snackbar notifications
-		const notify = (e: CustomEventInit) =>
-			setNotification({
-				message: e.detail.message,
-				color: e.detail.color || 'danger'
-			})
-
-		window.addEventListener('notify', notify)
 
 		// initalize posthog
 		posthog.init(data.ENV.REACT_APP_PUBLIC_POSTHOG_KEY, {
@@ -132,13 +121,11 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 				posthog.capture('user logged out')
 				Sentry.setUser(null)
 				posthog.reset()
-				notify({ detail: { message: 'Logged out', color: 'success' } })
 			}
 		})
 
 		return () => {
 			clearTimeout(timer)
-			window.removeEventListener('notify', notify)
 		}
 	}, [data])
 
@@ -153,16 +140,7 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 						<ConfirmModal />
 					</>
 				)}
-				<Snackbar
-					open={!!notification}
-					autoHideDuration={5000}
-					variant="soft"
-					color={notification?.color}
-					size="md"
-					onClose={() => setNotification(undefined)}
-				>
-					{notification?.message}
-				</Snackbar>
+				<Toaster toastOptions={{ duration: 5000 }} />
 			</NextThemesProvider>
 		</NextUIProvider>
 	)

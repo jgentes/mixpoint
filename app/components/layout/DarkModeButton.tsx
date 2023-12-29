@@ -1,6 +1,7 @@
 import { Button, Tooltip } from '@nextui-org/react'
 import { useTheme } from 'next-themes'
 import { MoonIcon, SunIcon } from '~/components/icons'
+import { errorHandler } from '~/utils/notifications'
 
 const DarkMode = () => {
 	const { theme, setTheme } = useTheme()
