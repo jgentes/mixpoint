@@ -25,10 +25,10 @@ const TrackDrawer = () => {
 					/>
 				}
 				classNames={{
-					base: 'border-t-1 border-primary-300',
+					base: 'border-t-1 border-primary-300 bg-default-50',
 					trigger: 'p-0',
 					titleWrapper: 'flex-row justify-center',
-					content: 'mx-4'
+					content: 'px-4 pb-4 pt-1'
 				}}
 			>
 				<TrackTable />

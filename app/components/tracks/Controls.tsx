@@ -150,7 +150,7 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
 	return (
 		<Button
 			isIconOnly
-			variant="ghost"
+			variant="light"
 			color="primary"
 			size="sm"
 			radius="sm"
@@ -396,7 +396,7 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 	return (
 		<Tabs
 			aria-label="Mix Controls"
-			variant="bordered"
+			variant="light"
 			classNames={{
 				base: 'border-1 border-primary-300 rounded',
 				tabList: 'rounded h-7 bg-primary-50 px-0 gap-.5',
