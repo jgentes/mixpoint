@@ -1,5 +1,4 @@
-import { Box, Card, Typography } from '@mui/joy'
-import { appState, audioState } from '~/api/db/appState'
+import { audioState } from '~/api/db/appState'
 import { Track, db, useLiveQuery } from '~/api/db/dbHandlers'
 import { Waveform } from '~/api/renderWaveform'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
@@ -10,97 +9,45 @@ import {
 	TrackTime,
 	ZoomSelectControl
 } from '~/components/tracks/Controls'
-import Loader from '~/components/tracks/TrackLoader'
 import { timeFormat } from '~/utils/tableOps'
 
 const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
-	const [analyzingTracks] = appState.analyzing()
-	const analyzing = analyzingTracks.includes(trackId)
-
 	const { duration = 0 } =
 		useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
 
 	const [stemState] = audioState[trackId].stemState()
 
 	const trackHeader = (
-		<Box
-			sx={{
-				display: 'flex',
-				justifyContent: 'space-between',
-				mb: 1,
-				alignItems: 'center'
-			}}
-		>
-			<div style={{ display: 'flex', minWidth: '130px' }}>
-				<Typography
-					sx={{
-						fontSize: 'xs',
-						fontWeight: 'md',
-						px: '3px',
-						color: 'text.secondary'
-					}}
-				>
-					Time:
-				</Typography>
-				<TrackTime sx={{ px: '3px', flexBasis: '42px' }} trackId={trackId} />
-				<Typography
-					sx={{ fontSize: 'xs', color: 'text.secondary', whiteSpace: 'nowrap' }}
-				>
+		<div className="flex justify-between mb-2 items-center">
+			<div className="flex w-36">
+				<div className="text-xs font-medium text-default-600">Time:</div>
+				<TrackTime
+					className="px-1 text-xs text-default-600"
+					trackId={trackId}
+				/>
+				<div className="text-xs text-default-600 whitespace-nowrap">
 					/ {timeFormat(duration)}
-				</Typography>
+				</div>
 			</div>
 
 			{stemState !== 'ready' ? null : <ZoomSelectControl trackId={trackId} />}
 
 			<BeatResolutionControl trackId={trackId} />
-		</Box>
+		</div>
 	)
 
 	const trackFooter = (
-		<Box
-			sx={{
-				display: 'flex',
-				gap: 1,
-				mt: 1,
-				alignItems: 'center'
-			}}
-		>
+		<div className="flex gap-1 mt-1 items-center justify-between">
 			<MixpointControl trackId={trackId} />
-			<OffsetControl trackId={trackId} styles={{ marginLeft: 'auto' }} />
-		</Box>
-	)
-
-	const LOADER_SX = {
-		p: 0,
-		border: '1px solid',
-		borderColor: 'action.focus',
-		borderRadius: '4px',
-		borderBottom: 'none',
-		backgroundColor: 'background.body',
-		overflow: 'hidden',
-		zIndex: 1
-	}
-
-	const loaderCover = (
-		<Card
-			sx={{
-				...LOADER_SX,
-				zIndex: 2,
-				position: 'absolute',
-				inset: '261px 16px calc(100% - 339px)'
-			}}
-		>
-			<Loader style={{ margin: 'auto' }} />
-		</Card>
+			<OffsetControl trackId={trackId} className="ml-auto w-36" />
+		</div>
 	)
 
 	return (
 		<>
 			{trackHeader}
 
-			{analyzing ? loaderCover : null}
-
-			<Waveform trackId={trackId} sx={{ ...LOADER_SX, height: '78px' }} />
+			<Waveform trackId={trackId} />
 
 			<VolumeMeter trackId={trackId} />
 

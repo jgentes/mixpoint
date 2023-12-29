@@ -1,14 +1,6 @@
 // this file establishes the root component that renders all subsequent / child routes
 // it also injects top level styling, HTML meta tags, links, and javascript for browser rendering
-import PublicSansFont from '@fontsource/public-sans/latin.css'
-import { Snackbar } from '@mui/joy'
-import { CssVarsProvider as JoyCssVarsProvider } from '@mui/joy/styles'
-import { CssBaseline } from '@mui/material'
-import {
-	Experimental_CssVarsProvider as MaterialCssVarsProvider,
-	THEME_ID as MATERIAL_THEME_ID,
-	experimental_extendTheme as materialExtendTheme
-} from '@mui/material/styles'
+import { NextUIProvider } from '@nextui-org/react'
 import {
 	LinksFunction,
 	LoaderFunctionArgs,
@@ -27,18 +19,17 @@ import {
 import * as Sentry from '@sentry/browser'
 import { createBrowserClient } from '@supabase/ssr'
 import { SupabaseClient } from '@supabase/supabase-js'
+import { ThemeProvider as NextThemesProvider } from 'next-themes'
 import posthog from 'posthog-js'
 import { useEffect, useState } from 'react'
+import { Toaster } from 'react-hot-toast'
 import { createHead } from 'remix-island'
 import { setAppState } from '~/api/db/appState'
 import ConfirmModal from '~/components/ConfirmModal'
-import InitialLoader from '~/components/InitialLoader'
+import { InitialLoader } from '~/components/Loader'
 import { ErrorBoundary } from '~/errorBoundary'
-import styles from '~/root.css'
-import { theme as joyTheme } from '~/theme'
-import { Notification } from '~/utils/notifications'
-
-const materialTheme = materialExtendTheme()
+import globalStyles from '~/global.css'
+import tailwind from '~/tailwind.css'
 
 // this is used to inject environment variables into the browser
 export async function loader({ context }: LoaderFunctionArgs) {
@@ -72,12 +63,12 @@ const meta: MetaFunction = () => [
 const links: LinksFunction = () => [
 	{
 		rel: 'icon',
-		type: 'image/png',
-		href: '/media/innerjoin32.png',
+		type: 'image/svg+xml',
+		href: '/media/favicon.svg',
 		sizes: '32x32'
 	},
-	{ rel: 'stylesheet', href: PublicSansFont },
-	{ rel: 'stylesheet', href: styles }
+	{ rel: 'stylesheet', href: tailwind },
+	{ rel: 'stylesheet', href: globalStyles }
 ]
 
 const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
@@ -92,7 +83,6 @@ const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
 const ThemeLoader = ({ error }: { error?: string }) => {
 	const data = error ? {} : useLoaderData<typeof loader>()
 	const [loading, setLoading] = useState(true)
-	const [notification, setNotification] = useState<Notification>()
 	const [supabase, setSupabase] = useState<SupabaseClient>()
 
 	useEffect(() => {
@@ -100,15 +90,6 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 		const timer = setTimeout(() => {
 			setLoading(false)
 		}, 500)
-
-		// for snackbar notifications
-		const notify = (e: CustomEventInit) =>
-			setNotification({
-				message: e.detail.message,
-				color: e.detail.color || 'danger'
-			})
-
-		window.addEventListener('notify', notify)
 
 		// initalize posthog
 		posthog.init(data.ENV.REACT_APP_PUBLIC_POSTHOG_KEY, {
@@ -140,24 +121,17 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 				posthog.capture('user logged out')
 				Sentry.setUser(null)
 				posthog.reset()
-				notify({ detail: { message: 'Logged out', color: 'success' } })
 			}
 		})
 
 		return () => {
 			clearTimeout(timer)
-			window.removeEventListener('notify', notify)
 		}
 	}, [data])
 
 	return (
-		<MaterialCssVarsProvider
-			theme={{ [MATERIAL_THEME_ID]: materialTheme }}
-			defaultMode={'dark'}
-		>
-			<JoyCssVarsProvider theme={joyTheme} defaultMode={'dark'}>
-				{/* CSS Baseline is used to inject global styles */}
-				<CssBaseline />
+		<NextUIProvider>
+			<NextThemesProvider attribute="class" defaultTheme="dark">
 				{loading || error ? (
 					<InitialLoader message={error} />
 				) : (
@@ -166,18 +140,9 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 						<ConfirmModal />
 					</>
 				)}
-				<Snackbar
-					open={!!notification}
-					autoHideDuration={5000}
-					variant="soft"
-					color={notification?.color}
-					size="md"
-					onClose={() => setNotification(undefined)}
-				>
-					{notification?.message}
-				</Snackbar>
-			</JoyCssVarsProvider>
-		</MaterialCssVarsProvider>
+				<Toaster toastOptions={{ duration: 5000 }} />
+			</NextThemesProvider>
+		</NextUIProvider>
 	)
 }
 

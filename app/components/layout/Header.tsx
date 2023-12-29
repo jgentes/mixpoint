@@ -1,47 +1,33 @@
-import { Box, IconButton } from '@mui/joy'
-
+import { Button, Tooltip } from '@nextui-org/react'
+import { GithubIcon } from '~/components/icons'
 import DarkMode from '~/components/layout/DarkModeButton'
+import LoginButton from '~/components/layout/LoginButton.client'
 import Logo from '~/components/layout/MixpointLogo'
 
-import { Icon } from '@iconify-icon/react'
-import LoginButton from '~/components/layout/LoginButton.client'
-
 const Header = () => (
-	<Box
-		component="header"
-		sx={{
-			p: 2,
-			backgroundColor: 'background.surface',
-			display: 'flex',
-			flexDirection: 'row',
-			justifyContent: 'space-between',
-			alignItems: 'center',
-			gridColumn: '1 / -1',
-			borderBottom: '1px solid',
-			borderColor: 'divider',
-			position: 'sticky',
-			top: 0,
-			zIndex: 1100
-		}}
-	>
+	<div className="p-4 flex flex-row bg-primary-50 justify-between items-center border-b border-default sticky z-10">
 		<Logo />
-		<Box sx={{ display: 'flex', flexDirection: 'row', gap: 1.5 }}>
+		<div className="flex flex-row gap-x-2">
 			<LoginButton />
-			<IconButton
-				size="sm"
-				variant="outlined"
-				color="primary"
-				aria-label="Github"
-				title="Discuss on Github"
-				onClick={() =>
-					window.open('https://github.com/jgentes/mixpoint/discussions')
-				}
-			>
-				<Icon icon="mdi:github" height="20px" />
-			</IconButton>
+			<Tooltip color="default" size="sm" content="Discuss on GitHub">
+				<Button
+					isIconOnly
+					variant="light"
+					color="primary"
+					aria-label="Discuss on Github"
+					radius="sm"
+					size="sm"
+					className="border-1 border-primary-300 rounded text-primary-700"
+					onClick={() =>
+						window.open('https://github.com/jgentes/mixpoint/discussions')
+					}
+				>
+					<GithubIcon className="h-5" />
+				</Button>
+			</Tooltip>
 			<DarkMode />
-		</Box>
-	</Box>
+		</div>
+	</div>
 )
 
 export default Header

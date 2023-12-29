@@ -89,7 +89,7 @@ const putTracks = async (tracks: TrackIdOptional[]): Promise<Track[]> => {
 	return (await db.tracks.bulkGet(updatedTracks)) as Track[]
 }
 
-const removeTracks = async (ids: number[]): Promise<void> => {
+const removeTracks = async (ids: Track['id'][]): Promise<void> => {
 	await db.tracks.bulkDelete(ids)
 
 	// Ensure we delete the file cache when a track is deleted

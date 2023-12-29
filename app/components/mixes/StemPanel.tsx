@@ -1,4 +1,3 @@
-import { Box } from '@mui/joy'
 import { useEffect } from 'react'
 import { type WaveSurferOptions } from 'wavesurfer.js'
 import { audioEvents } from '~/api/audioEvents'
@@ -51,14 +50,12 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
 
 		// prevent duplication on re-render while loading
 		const [analyzingTracks] = getAppState.stemsAnalyzing()
-		const analyzing = analyzingTracks.includes(trackId)
+		const analyzing = analyzingTracks.has(trackId)
 
 		if (!analyzing) initStems()
 
 		// add stems to analyzing state
-		setAppState.stemsAnalyzing(prev =>
-			prev.includes(trackId) ? prev : [...prev, trackId]
-		)
+		setAppState.stemsAnalyzing(prev => prev.add(trackId))
 
 		return () => audioEvents.destroyStems(trackId)
 	}, [trackId, stemState])
@@ -66,22 +63,11 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
 	return stemState !== 'ready' ? (
 		<StemAccessButton trackId={trackId} />
 	) : (
-		<Box
-			sx={{
-				display: 'flex',
-				flexDirection: 'column',
-				gap: 1,
-				p: 1,
-				borderRadius: '4px',
-				border: '1px solid',
-				borderColor: 'action.selected',
-				backgroundColor: 'background.level1'
-			}}
-		>
+		<div className="flex flex-col gap-1 p-2 mb-3 rounded border-1 border-divider bg-background">
 			{STEMS.map(stem => (
 				<StemControl key={stem} trackId={trackId} stemType={stem as Stem} />
 			))}
-		</Box>
+		</div>
 	)
 }
 

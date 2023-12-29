@@ -30,9 +30,9 @@ Mixpoint solves a common problem that many "desktop" DJ's face - there are only 
 
 The goal of this app is to provide a focused user experience that delivers on the need to lay out a series of tracks, easily tweak the transition from one track to the next (a mix), and save the output as a finished set. Using ai, the software will recommend mixes based on mixes other people have created, and eventually mix tracks together for you.
 
-Huge thanks to the MUI team for creating such a [kickass UI](https://mui.com/joy-ui/getting-started/overview/) freely available.
+Huge thanks to the NextUI team for creating such a [kickass UI](https://nextui.org) freely available.
 
-The project uses [Wavesurfer](https://wavesurfer-js.org/) for waveform analysis and navigation. Also thanks to John Heiner for the fun progress indicator.
+The project uses [Wavesurfer](https://wavesurfer-js.org/) for waveform analysis and navigation.
 
 Open source is more than a licensing strategy. It's a [movement](https://opensource.stackexchange.com/questions/9805/can-i-license-my-project-with-an-open-source-license-but-disallow-commercial-use). This work is made possible only by the labor of many open source contributers and their freely sourced efforts.
 
@@ -48,7 +48,7 @@ The app is built using `Remix` which uses esBuild (now Vite) for really fast hot
 
 - Typescript
 - Remix
-- MUI (Joy)
+- NextUI
 - Teaful for App State
 - Dexie (IndexedDb) for Persistent State
 - WaveSurfer

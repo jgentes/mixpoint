@@ -55,22 +55,23 @@ const audioEvents = {
 
 			// Adjust zoom based on previous mixPrefs
 			waveform.zoom(
-				beatResolution === 1 ? 80 : beatResolution === 0.5 ? 40 : 20
+				beatResolution === '1:1' ? 80 : beatResolution === '1:2' ? 40 : 20
 			)
 
 			// Remove analyzing overlay
-			setAppState.analyzing(prev => prev.filter(id => id !== trackId))
+			setAppState.analyzing(prev => {
+				prev.delete(trackId)
+				return prev
+			})
 
 			// Style scrollbar (this is a workaround for https://github.com/katspaugh/wavesurfer.js/issues/2933)
 			const style = document.createElement('style')
 			style.textContent = `::-webkit-scrollbar {
-				background: rgba(4, 146, 247, 0.5);
 				height: 18px;
 			}
 
 			::-webkit-scrollbar-corner, ::-webkit-scrollbar-track {
-				border-top: 1px solid var(--joy-palette-divider);
-				background-color: var(--joy-palette-background-surface);
+				border-top: 1px solid rgba(128,128,128,.3);
 			}
 
 			::-webkit-scrollbar-thumb {
@@ -81,6 +82,9 @@ const audioEvents = {
 				background-clip: content-box;
 			}`
 			waveform.getWrapper().appendChild(style)
+
+			// add classname value to waveform.getWrapper()
+			waveform.getWrapper().classList.add('wrapper')
 
 			// Update time
 			let [time] = getAudioState[trackId].time()
@@ -93,7 +97,10 @@ const audioEvents = {
 			waveform.on('redraw', () => audioEvents.seek(trackId))
 		} else {
 			// Remove from stemsAnalyzing
-			setAppState.stemsAnalyzing(prev => prev.filter(id => id !== trackId))
+			setAppState.stemsAnalyzing(prev => {
+				prev.delete(trackId)
+				return prev
+			})
 		}
 
 		// Update BPM if adjusted
@@ -418,13 +425,13 @@ const audioEvents = {
 
 		// Adjust zoom
 		switch (beatResolution) {
-			case 0.25:
+			case '1:4':
 				waveform.zoom(20)
 				break
-			case 0.5:
+			case '1:2':
 				waveform.zoom(40)
 				break
-			case 1:
+			case '1:1':
 				waveform.zoom(80)
 				break
 		}
@@ -531,9 +538,7 @@ const audioEvents = {
 		stem: TrackPrefs['stemZoom'] | 'all'
 	) => {
 		// add track to analyzing state
-		setAppState.analyzing(prev =>
-			prev.includes(trackId) ? prev : [...prev, trackId]
-		)
+		setAppState.analyzing(prev => prev.add(trackId))
 
 		const [{ waveform }] = getAudioState[trackId]()
 		if (waveform) waveform.destroy()
@@ -575,7 +580,10 @@ const audioEvents = {
 		}
 
 		// Remove from stemsAnalyzing
-		setAppState.stemsAnalyzing(prev => prev.filter(id => id !== trackId))
+		setAppState.stemsAnalyzing(prev => {
+			prev.delete(trackId)
+			return prev
+		})
 	}
 }
 

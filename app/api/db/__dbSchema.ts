@@ -1,6 +1,7 @@
 // This file initializes Dexie (indexDB), defines the schema and creates tables
 
 import Dexie from 'dexie'
+import { Key } from 'react'
 
 // eventually allow the user to change these
 const STATE_ROW_LIMIT = 100
@@ -89,7 +90,7 @@ type MixSet = {
 // disk, which cannot be done without interacting with the page first.
 // Each file is a few megabytes, so the cache must be limited.
 const STEMS = ['drums', 'bass', 'vocals', 'other'] as const
-type Stem = typeof STEMS[number]
+type Stem = (typeof STEMS)[number]
 
 type TrackCache = {
 	id: Track['id']
@@ -103,7 +104,7 @@ type TrackCache = {
 type TrackPrefs = Partial<{
 	id: Track['id']
 	adjustedBpm: Track['bpm']
-	beatResolution: 0.25 | 0.5 | 1
+	beatResolution: '1:1' | '1:2' | '1:4'
 	stemZoom: Stem
 	mixpointTime: number // seconds
 }>
@@ -127,8 +128,9 @@ type SetPrefs = Partial<{
 
 type UserPrefs = Partial<{
 	date: Date
-	sortDirection: 'asc' | 'desc'
-	sortColumn: keyof Track // track table order property
+	sortDirection: 'ascending' | 'descending'
+	sortColumn: Key
+	visibleColumns: Set<Key> // track table visible columns
 	stemsDirHandle: FileSystemDirectoryHandle // local folder on file system to store stems
 }>
 

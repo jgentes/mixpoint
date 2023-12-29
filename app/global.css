@@ -3,20 +3,14 @@ body {
   min-height: 100vh;
 }
 
-#root {
+/* not handled by tailwind */
+.bg-clip-text {
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+#root, #root > div{
   height: 100vh;
-}
-
-tr:hover .visibleOnHover {
-  visibility: 'visible';
-}
-
-.visibleOnHover {
-  visibility: 'hidden';
-}
-
-.visible {
-  visibility: 'visible'
 }
 
 /* wavesurfer ui tweaks */

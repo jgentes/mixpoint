@@ -1,37 +1,43 @@
-import { IconButton, Modal, ModalDialog } from '@mui/joy'
-import { useColorScheme } from '@mui/joy'
+import { Button, Modal, ModalContent } from '@nextui-org/react'
 import { useOutletContext } from '@remix-run/react'
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { SupabaseClient } from '@supabase/supabase-js'
+import { useTheme } from 'next-themes'
 import { useState } from 'react'
 import { appState } from '~/api/db/appState'
 
 const LoginButton = () => {
 	const [openAuth, setOpenAuth] = useState(false)
-	const { mode } = useColorScheme()
 	const { supabase } = useOutletContext<{ supabase: SupabaseClient }>()
+	const { theme } = useTheme()
 
 	const [loggedIn] = appState.loggedIn()
 	const buttonText = loggedIn ? 'Log Out' : 'Log In'
 
 	return (
 		<>
-			<IconButton
+			<Button
 				id="login-button"
 				size="sm"
-				sx={{ px: 1 }}
-				variant="outlined"
+				radius="sm"
+				className="border-1 border-primary-300 rounded text-primary-700 font-semibold"
+				variant="light"
 				color="primary"
-				title={loggedIn || buttonText}
+				aria-label={loggedIn || buttonText}
 				onClick={async () => {
 					loggedIn ? await supabase.auth.signOut() : setOpenAuth(true)
 				}}
 			>
 				{buttonText}
-			</IconButton>
-			<Modal open={openAuth} onClose={() => setOpenAuth(false)}>
-				<ModalDialog sx={{ backgroundColor: 'background.surface' }}>
+			</Button>
+			<Modal
+				isOpen={openAuth}
+				className="p-6"
+				size="xs"
+				onClose={() => setOpenAuth(false)}
+			>
+				<ModalContent className="bg-primary-50">
 					<Auth
 						supabaseClient={supabase}
 						appearance={{
@@ -47,9 +53,9 @@ const LoginButton = () => {
 						}}
 						providers={['google', 'github']}
 						socialLayout="horizontal"
-						theme={mode}
+						theme={theme === 'dark' ? 'dark' : 'light'}
 					/>
-				</ModalDialog>
+				</ModalContent>
 			</Modal>
 		</>
 	)

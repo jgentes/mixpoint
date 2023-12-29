@@ -1,11 +1,16 @@
-import { Icon } from '@iconify-icon/react'
-import { CircularProgress, Sheet, Typography } from '@mui/joy'
+import { CircularProgress } from '@nextui-org/react'
 import { ReactElement } from 'react'
 import { useCountUp } from 'use-count-up'
 import { StemState, audioState } from '~/api/db/appState'
 import { Track } from '~/api/db/dbHandlers'
 import { getStemsDirHandle, validateTrackStemAccess } from '~/api/fileHandlers'
 import { stemAudio } from '~/api/stemHandler'
+import {
+	OfflineDownloadIcon,
+	RuleFolderIcon,
+	TuneIcon,
+	WarningIcon
+} from '~/components/icons'
 import { errorHandler } from '~/utils/notifications'
 
 const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
@@ -47,7 +52,7 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
 			<CircularProgress
 				size="md"
 				color={color}
-				determinate
+				className="mx-auto"
 				value={(((value as number) || 1) / stemTimer) * 100}
 			/>
 		)
@@ -62,31 +67,18 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
 	} = {
 		selectStemDir: {
 			icon: (
-				<Icon
-					icon="material-symbols:download-for-offline"
-					style={{ fontSize: 38, color: 'text.secondary' }}
-				/>
+				<OfflineDownloadIcon className="text-4xl text-default-600 m-auto" />
 			),
 			primaryText: 'Click to Select Stems Folder',
-			secondaryText: 'Downloaded stems will be stored here'
+			secondaryText: 'Downloaded stems will be stored in the folder'
 		},
 		grantStemDirAccess: {
-			icon: (
-				<Icon
-					icon="material-symbols:rule-folder-outline"
-					style={{ fontSize: 38, color: 'text.secondary' }}
-				/>
-			),
+			icon: <RuleFolderIcon className="text-4xl text-default-600 m-auto" />,
 			primaryText: 'Click to Grant Folder Access',
 			secondaryText: 'Permission needed to access stems'
 		},
 		getStems: {
-			icon: (
-				<Icon
-					icon="material-symbols:tune"
-					style={{ fontSize: 38, color: 'text.secondary' }}
-				/>
-			),
+			icon: <TuneIcon className="text-4xl text-default-600 m-auto" />,
 			primaryText: 'Click to Retrieve Stems',
 			secondaryText: 'Separate track into drums, vocals, etc'
 		},
@@ -101,55 +93,32 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
 			secondaryText: 'Stem separation in progress'
 		},
 		downloadingStems: {
-			icon: <CircularProgress size="md" color="success" />,
+			icon: <CircularProgress size="md" color="success" className="mx-auto" />,
 			primaryText: 'Please stand by...',
 			secondaryText: 'Downloading stems'
 		},
 		ready: { icon: <></>, primaryText: '', secondaryText: '' },
 		error: {
-			icon: (
-				<Icon
-					icon="material-symbols:error-outline"
-					style={{ fontSize: 38, color: 'text.secondary' }}
-				/>
-			),
+			icon: <WarningIcon className="text-3xl text-warning-600 mx-auto" />,
 			primaryText: 'Something went wrong',
 			secondaryText: 'Please refresh the page and try again'
 		}
 	}
 
 	return (
-		<Sheet
-			variant="soft"
-			sx={{
-				border: '2px dashed #bbb',
-				height: '138px', // height of stems once loaded
-				padding: '20px 10px',
-				textAlign: 'center',
-				cursor: 'pointer',
-				borderRadius: '4px',
-				borderColor: '#e9b830cc',
-				backgroundColor: 'rgba(233, 215, 48, 0.1)',
-
-				'&:hover, &:active': {
-					borderColor: '#e9b830c0',
-					backgroundColor: 'rgba(233, 215, 48, 0.3)'
-				}
-			}}
+		<div
+			className="
+				border-2 border-dashed p-5 text-center cursor-pointer rounded border-default-500 bg-default-50 hover:bg-warning-500 hover:bg-opacity-10 hover:border-warning-500 active:border-warning-500 active:bg-warning-500m mb-3"
 			onClick={stemHandler}
 		>
 			{stemStates[stemState].icon}
-			<Typography
-				level="body1"
-				className="drop"
-				sx={{ color: 'text.secondary' }}
-			>
-				<b>{stemStates[stemState].primaryText}</b>
-			</Typography>
-			<Typography className="drop" level="body2">
+			<div className="text-default-600 text-md font-semibold">
+				{stemStates[stemState].primaryText}
+			</div>
+			<div className="text-default-600 text-sm">
 				{stemStates[stemState].secondaryText}
-			</Typography>
-		</Sheet>
+			</div>
+		</div>
 	)
 }
 

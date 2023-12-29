@@ -1,7 +1,13 @@
-import { Icon } from '@iconify-icon/react'
-import { Box, Button, Modal, ModalDialog, Typography } from '@mui/joy'
-import { Divider } from '@mui/material'
+import {
+	Button,
+	Divider,
+	Modal,
+	ModalBody,
+	ModalContent,
+	ModalHeader
+} from '@nextui-org/react'
 import { modalState } from '~/api/db/appState'
+import { WarningIcon } from '~/components/icons'
 
 const ConfirmModal = () => {
 	const [confirmModal] = modalState()
@@ -22,53 +28,45 @@ const ConfirmModal = () => {
 		<Modal
 			aria-labelledby="alert-dialog-modal-title"
 			aria-describedby="alert-dialog-modal-description"
-			open={openState || false}
-			sx={{ alignItems: 'normal' }}
+			isOpen={openState || false}
+			className="flex items-normal border-1 border-divider"
 			onClose={() => closeModal()}
-			disableEnforceFocus={true}
+			backdrop="opaque"
 		>
-			<ModalDialog
-				variant="outlined"
+			<ModalContent
 				role="alertdialog"
-				sx={{ borderColor: 'action.focus' }}
+				//sx={{ borderColor: 'action.focus' }}
 			>
-				<Typography
+				<ModalHeader
 					id="alert-dialog-modal-title"
-					component="h2"
-					level="inherit"
-					fontSize="1.25em"
-					sx={{ display: 'flex', alignItems: 'normal' }}
-					startDecorator={
-						<Icon
-							icon="material-symbols:warning-rounded"
-							height="20px"
-							style={{ alignSelf: 'center' }}
-						/>
-					}
+					//sx={{ display: 'flex', alignItems: 'normal' }}
 				>
+					<WarningIcon className="self-center text-xl mr-2" />
 					{headerText}
-				</Typography>
-				<Divider sx={{ my: 1 }} />
-				<Typography
-					id="alert-dialog-modal-description"
-					textColor="text.tertiary"
-					mb={3}
-				>
-					{bodyText}
-				</Typography>
-				<Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-					<Button variant="plain" color="neutral" onClick={() => onCancel()}>
+				</ModalHeader>
+				<Divider className="my-1" />
+				<ModalBody id="alert-dialog-modal-description">{bodyText}</ModalBody>
+				<div className="flex gap-2 justify-end m-3">
+					<Button
+						variant="faded"
+						color="default"
+						size="sm"
+						radius="sm"
+						onClick={() => onCancel()}
+					>
 						Cancel
 					</Button>
 					<Button
-						variant="solid"
+						size="sm"
+						radius="sm"
+						variant="flat"
 						color={confirmColor}
 						onClick={() => onConfirm()}
 					>
 						{confirmText}
 					</Button>
-				</Box>
-			</ModalDialog>
+				</div>
+			</ModalContent>
 		</Modal>
 	)
 }

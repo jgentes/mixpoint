@@ -1,29 +1,38 @@
-import { Icon } from '@iconify-icon/react'
-import { IconButton, useColorScheme } from '@mui/joy'
+import { Button, Tooltip } from '@nextui-org/react'
+import { useTheme } from 'next-themes'
+import { MoonIcon, SunIcon } from '~/components/icons'
+import { errorHandler } from '~/utils/notifications'
 
 const DarkMode = () => {
-	const { mode, setMode } = useColorScheme()
+	const { theme, setTheme } = useTheme()
 
 	return (
-		<IconButton
-			id="toggle-mode"
+		<Tooltip
+			color="default"
 			size="sm"
-			variant="outlined"
-			color="primary"
-			aria-label="Darkmode"
-			onClick={() => {
-				new Audio('/media/light.mp3').play()
-				setMode(mode === 'dark' ? 'light' : 'dark')
-			}}
+			content={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
 		>
-			<Icon
-				icon={`material-symbols:${
-					mode === 'light' ? 'dark' : 'light'
-				}-mode-outline`}
-				height="20px"
-				title={mode === 'light' ? 'Dark Mode' : 'Light Mode'}
-			/>
-		</IconButton>
+			<Button
+				isIconOnly
+				id="toggle-mode"
+				size="sm"
+				radius="sm"
+				variant="light"
+				color="primary"
+				aria-label={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+				className="border-1 border-primary-300 rounded text-primary-700"
+				onClick={() => {
+					new Audio('/media/light.mp3').play()
+					setTheme(theme === 'dark' ? 'light' : 'dark')
+				}}
+			>
+				{theme === 'dark' ? (
+					<SunIcon className="text-xl" />
+				) : (
+					<MoonIcon className="text-xl" />
+				)}
+			</Button>
+		</Tooltip>
 	)
 }
 
