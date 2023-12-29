@@ -33,6 +33,7 @@ import {
 	useLiveQuery
 } from '~/api/db/dbHandlers'
 import { browseFile } from '~/api/fileHandlers'
+import { ProgressBar } from '~/components/Loader'
 import {
 	AddIcon,
 	AnalyzeIcon,
@@ -41,7 +42,6 @@ import {
 	SearchIcon
 } from '~/components/icons'
 import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
-import TrackLoader from '~/components/tracks/TrackLoader'
 import { formatMinutes, getComparator } from '~/utils/tableOps'
 
 const TrackTable = () => {
@@ -168,7 +168,9 @@ const TrackTable = () => {
 			return track.bpm ? (
 				<div className="pl-1">{track.bpm.toFixed(0)}</div>
 			) : analyzingTracks.has(track?.id) ? (
-				<TrackLoader className="mx-auto h-4" />
+				<div className="relative w-1/2 top-1/2 -mt-0.5 m-auto">
+					<ProgressBar />
+				</div>
 			) : (
 				analyzeButton(track)
 			)
@@ -491,7 +493,9 @@ const TrackTable = () => {
 				emptyContent={
 					// this accounts for clearing the search box, where we have zero tracks and need to reload table without showing dropzone
 					!tracks || processing || (!tracks.length && trackCount && !search) ? (
-						<TrackLoader style={{ margin: '50px auto' }} />
+						<div className="relative w-1/2 top-1/2 -mt-0.5 m-auto">
+							<ProgressBar />
+						</div>
 					) : search ? (
 						'No tracks found'
 					) : (
@@ -539,7 +543,7 @@ const TrackTable = () => {
 	)
 
 	return (
-		<div className="p-4 m-4 bg-primary-50 border-1 border-divider rounded h-fit">
+		<div className="p-4 m-4 bg-primary border-1 border-divider rounded h-fit">
 			{tableHeader}
 			{tableBody}
 			{tableFooter}

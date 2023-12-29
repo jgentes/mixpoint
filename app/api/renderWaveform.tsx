@@ -1,11 +1,10 @@
-import { Card } from '@mui/joy'
-import { SxProps } from '@mui/joy/styles/types'
 import { useEffect } from 'react'
 import WaveSurfer, { type WaveSurferOptions } from 'wavesurfer.js'
 import Minimap from 'wavesurfer.js/dist/plugins/minimap.js'
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 import { audioEvents } from '~/api/audioEvents'
 import {
+	appState,
 	getAppState,
 	getAudioState,
 	setAppState,
@@ -14,6 +13,7 @@ import {
 import { Stem, Track, db } from '~/api/db/dbHandlers'
 import { getPermission } from '~/api/fileHandlers'
 import { validateTrackStemAccess } from '~/api/fileHandlers'
+import { ProgressBar } from '~/components/Loader'
 import { errorHandler } from '~/utils/notifications'
 
 const PRIMARY_WAVEFORM_CONFIG = (trackId: Track['id']): WaveSurferOptions => ({
@@ -78,7 +78,7 @@ const initWaveform = async ({
 
 	const config: WaveSurferOptions = {
 		media,
-		cursorColor: 'secondary.mainChannel',
+		cursorColor: '#555',
 		interact: false,
 		waveColor: [
 			'rgb(200, 165, 49)',
@@ -158,12 +158,40 @@ const initAudioContext = ({
 	}
 }
 
+const TrackView = ({ trackId }: { trackId: Track['id'] }) => {
+	const [analyzingTracks] = appState.analyzing()
+	const analyzing = analyzingTracks.has(trackId)
+
+	const containerClass =
+		'p-0 border-1 border-divider rounded bg-primary-50 overflow-hidden'
+
+	return (
+		<div
+			id={`zoomview-container_${trackId}`}
+			className={`relative h-20 z-1 ${containerClass}`}
+			onClick={e => {
+				const parent = e.currentTarget.firstElementChild as HTMLElement
+				audioEvents.clickToSeek(trackId, e, parent)
+			}}
+			onWheel={e =>
+				audioEvents.seek(trackId, 0, e.deltaY > 0 ? 'next' : 'previous')
+			}
+		>
+			{!analyzing ? null : (
+				<div className={`${containerClass} absolute z-10 w-full h-20 top-0`}>
+					<div className="relative w-1/2 top-1/2 -mt-0.5 m-auto">
+						<ProgressBar />
+					</div>
+				</div>
+			)}
+		</div>
+	)
+}
+
 const Waveform = ({
-	trackId,
-	className
+	trackId
 }: {
 	trackId: Track['id']
-	className: string
 }): JSX.Element | null => {
 	if (!trackId) throw errorHandler('No track to initialize.')
 
@@ -193,19 +221,7 @@ const Waveform = ({
 		return () => audioEvents.destroy(trackId)
 	}, [trackId])
 
-	return (
-		<div
-			id={`zoomview-container_${trackId}`}
-			className={`zoomview-container z-1 ${className}`}
-			onClick={e => {
-				const parent = e.currentTarget.firstElementChild as HTMLElement
-				audioEvents.clickToSeek(trackId, e, parent)
-			}}
-			onWheel={e =>
-				audioEvents.seek(trackId, 0, e.deltaY > 0 ? 'next' : 'previous')
-			}
-		/>
-	)
+	return <TrackView trackId={trackId} />
 }
 
 export { PRIMARY_WAVEFORM_CONFIG, Waveform, initAudioContext, initWaveform }

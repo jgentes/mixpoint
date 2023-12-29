@@ -1,24 +1,26 @@
 import { Button, Progress } from '@nextui-org/react'
-import { CSSProperties } from 'react'
 import { WarningIcon } from '~/components/icons'
 import Logo from '~/components/layout/MixpointLogo'
 
-const loaderWrapper: CSSProperties = {
-	top: 0,
-	left: 0,
-	width: '100vw',
-	height: '100vh',
-	display: 'flex',
-	justifyContent: 'center',
-	alignItems: 'center',
-	fontSize: '12px',
-	position: 'fixed',
-	zIndex: 99999
-}
+const ProgressBar = ({ message }: { message?: string }) => (
+	<Progress
+		size="sm"
+		radius="sm"
+		aria-label={message || 'Loading...'}
+		isIndeterminate={!message}
+		value={100}
+		classNames={{
+			indicator: 'bg-gradient-to-r from-pink-500 to-yellow-500'
+		}}
+	/>
+)
 
 const InitialLoader = ({ message }: { message?: string }) => {
 	return (
-		<div aria-busy={!message} style={loaderWrapper}>
+		<div
+			aria-busy={!message}
+			className="fixed top-0 left-0 w-screen h-screen flex justify-center items-center text-xs z-50"
+		>
 			{!message ? null : (
 				<Button
 					variant="ghost"
@@ -36,20 +38,11 @@ const InitialLoader = ({ message }: { message?: string }) => {
 					<Logo />
 					{!message ? null : <WarningIcon className="self-center text-xl" />}
 				</div>
-				<Progress
-					size="sm"
-					radius="sm"
-					aria-label={message || 'Loading...'}
-					isIndeterminate={!message}
-					value={100}
-					classNames={{
-						indicator: 'bg-gradient-to-r from-pink-500 to-yellow-500'
-					}}
-				/>
+				<ProgressBar message={message} />
 				<p className="pt-1">{message || 'Loading...'}</p>
 			</div>
 		</div>
 	)
 }
 
-export default InitialLoader
+export { InitialLoader, ProgressBar }

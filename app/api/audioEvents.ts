@@ -55,7 +55,7 @@ const audioEvents = {
 
 			// Adjust zoom based on previous mixPrefs
 			waveform.zoom(
-				beatResolution === 1 ? 80 : beatResolution === 0.5 ? 40 : 20
+				beatResolution === '1:1' ? 80 : beatResolution === '1:2' ? 40 : 20
 			)
 
 			// Remove analyzing overlay
@@ -72,8 +72,8 @@ const audioEvents = {
 			}
 
 			::-webkit-scrollbar-corner, ::-webkit-scrollbar-track {
-				border-top: 1px solid var(--joy-palette-divider);
-				background-color: var(--joy-palette-background-surface);
+				border-top: 1px solid rgba(255, 255, 255, 0.15);
+				background-color: #0a1929;
 			}
 
 			::-webkit-scrollbar-thumb {

@@ -1,6 +1,7 @@
 import { audioEvents } from '~/api/audioEvents'
 import { appState } from '~/api/db/appState'
 import { Track, getTrackName, useLiveQuery } from '~/api/db/dbHandlers'
+import { ProgressBar } from '~/components/Loader'
 import StemPanel from '~/components/mixes/StemPanel'
 import TrackPanel from '~/components/mixes/TrackPanel'
 import {
@@ -9,7 +10,6 @@ import {
 	TrackNavControl
 } from '~/components/tracks/Controls'
 import Dropzone from '~/components/tracks/Dropzone'
-import Loader from '~/components/tracks/TrackLoader'
 
 const MixCard = ({
 	trackId,
@@ -40,41 +40,42 @@ const MixCard = ({
 	)
 
 	const loaderClassNames =
-		'p-0 border border-solid border-divider rounded bg-background overflow-hidden z-1'
+		'p-0 border-1 border-divider rounded bg-background overflow-hidden'
 
 	return (
-		<div className="p-2 w-5/12 rounded border-1 border-divider bg-primary-50">
+		<div className="p-2 w-5/12 rounded border-1 border-divider bg-primary">
 			{!trackId ? (
 				<Dropzone className="h-full" trackSlot={trackSlot} />
 			) : (
 				<>
 					{mixCardHeader}
 
-					{/* loader cover */}
-					{!analyzing ? null : (
-						<div
-							className={`${loaderClassNames} z-10 absolute inset-y-40 inset-x-8 bottom-8`}
-						>
-							<Loader style={{ margin: 'auto' }} />
-						</div>
-					)}
-
 					{/* overview */}
 					<div
 						id={`overview-container_${trackId}`}
-						className={`${loaderClassNames} py-1 mb-3 h-fit`}
+						className={`${loaderClassNames} relative z-1 py-1 mb-3 h-fit`}
 						onClick={e => {
 							const parents = e.currentTarget.firstElementChild as HTMLElement
 							const parent = parents.children[1] as HTMLElement
 							audioEvents.clickToSeek(trackId, e, parent)
 						}}
-					/>
+					>
+						{!analyzing ? null : (
+							<div
+								className={`${loaderClassNames} absolute z-10 w-full h-8 top-0`}
+							>
+								<div className="relative w-1/2 top-1/2 -mt-0.5 m-auto">
+									<ProgressBar />
+								</div>
+							</div>
+						)}
+					</div>
 
 					<div className="mt-2">
 						<StemPanel trackId={trackId} />
 					</div>
 
-					<div className="p-2 mt-2 rounded-md border border-action-selected bg-background-level1">
+					<div className="p-2 mt-2 rounded border-1 border-divider bg-background">
 						<TrackPanel trackId={trackId} />
 					</div>
 

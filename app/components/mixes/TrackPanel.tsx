@@ -1,4 +1,4 @@
-import { appState, audioState } from '~/api/db/appState'
+import { audioState } from '~/api/db/appState'
 import { Track, db, useLiveQuery } from '~/api/db/dbHandlers'
 import { Waveform } from '~/api/renderWaveform'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
@@ -9,13 +9,9 @@ import {
 	TrackTime,
 	ZoomSelectControl
 } from '~/components/tracks/Controls'
-import Loader from '~/components/tracks/TrackLoader'
 import { timeFormat } from '~/utils/tableOps'
 
 const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
-	const [analyzingTracks] = appState.analyzing()
-	const analyzing = analyzingTracks.has(trackId)
-
 	const { duration = 0 } =
 		useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
 
@@ -47,24 +43,11 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 		</div>
 	)
 
-	const loaderClassNames =
-		'p-0 border border-action-focus rounded-md border-b-0 bg-background-body overflow-hidden z-1'
-
-	const loaderCover = (
-		<div
-			className={`${loaderClassNames} z-2 absolute inset-261px 16px calc(100% - 339px)`}
-		>
-			<Loader className="m-auto" />
-		</div>
-	)
-
 	return (
 		<>
 			{trackHeader}
 
-			{analyzing ? loaderCover : null}
-
-			<Waveform trackId={trackId} className={`${loaderClassNames} h-20`} />
+			<Waveform trackId={trackId} />
 
 			<VolumeMeter trackId={trackId} />
 

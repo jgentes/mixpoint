@@ -41,7 +41,7 @@ export default ({
 					colors: {
 						background: '#0e141a',
 						primary: {
-							50: '#0a1929'
+							DEFAULT: '#0a1929'
 						}
 					}
 				}

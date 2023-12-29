@@ -4,7 +4,7 @@ import { AnimationIcon, JoinIcon, LensIcon } from '~/components/icons'
 import Dropzone from '~/components/tracks/Dropzone'
 
 const LeftNav = () => (
-	<div className="h-full flex flex-col p-0.5 border-r border-default justify-between bg-primary-50">
+	<div className="h-full flex flex-col p-0.5 border-r border-default justify-between bg-primary">
 		<div className="w-full max-w-[260px] px-1 py-2 rounded-small">
 			<Listbox
 				variant="flat"

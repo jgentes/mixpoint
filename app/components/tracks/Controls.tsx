@@ -286,7 +286,7 @@ const BeatResolutionControl = ({
 				classNames={{
 					base: 'border-1 border-default-300 rounded',
 					tabList: 'rounded h-6 bg-default-50 px-0 gap-.5',
-					tab: 'rounded p-1 text-xs h-auto',
+					tab: 'rounded px-2 text-xs h-auto',
 					tabContent: 'group-data-[selected=true]:text-default-600',
 					cursor:
 						'group-data-[selected=true]:bg-transparent group-data-[selected=true]:border-1 group-data-[selected=true]:border-primary-500 group-data-[selected=true]:rounded p-2'

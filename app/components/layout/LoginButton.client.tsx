@@ -37,7 +37,7 @@ const LoginButton = () => {
 				size="xs"
 				onClose={() => setOpenAuth(false)}
 			>
-				<ModalContent className="bg-primary-50">
+				<ModalContent className="bg-primary">
 					<Auth
 						supabaseClient={supabase}
 						appearance={{

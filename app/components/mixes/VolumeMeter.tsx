@@ -1,4 +1,3 @@
-import { Box } from '@mui/joy'
 import { audioState } from '~/api/db/appState'
 import { Stem, Track } from '~/api/db/dbHandlers'
 
@@ -18,30 +17,14 @@ const VolumeMeter = ({
 	return (
 		<div
 			id={`volume-container_${trackId}${stemType || ''}`}
-			style={{ position: 'relative', height: '2px', margin: '1px' }}
+			className="relative h-0.5 m-0.25"
 		>
+			<div className="absolute top-0 left-0 w-full h-full z-1 bg-gradient-to-r from-green-500 via-yellow-400 to-red-500" />
 			<div
 				style={{
-					position: 'absolute',
-					top: 0,
-					left: 0,
-					width: '100%',
-					height: '100%',
-					zIndex: 1,
-					background:
-						'linear-gradient(to right, rgba(30, 150, 0, .75) 30%, rgba(255, 242, 0, .75) 80%, rgba(255, 0, 0, .75) 99%)'
+					width: `${100 - volumeMeter * 100}%`
 				}}
-			/>
-			<Box
-				sx={{
-					position: 'absolute',
-					top: 0,
-					right: 0,
-					width: `${100 - volumeMeter * 100}%`,
-					height: '100%',
-					zIndex: 2,
-					backgroundColor: 'background.level1'
-				}}
+				className="bg-primary h-full z-10 absolute top-0 right-0"
 			/>
 		</div>
 	)
