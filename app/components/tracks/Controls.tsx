@@ -558,72 +558,41 @@ const StemControl = ({
 		setSolo(!solo)
 	}
 
-	const loaderSx = {
-		p: 0,
-		border: '1px solid',
-		borderColor: 'action.focus',
-		borderRadius: '4px',
-		borderBottom: 'none',
-		backgroundColor: 'background.body',
-		overflow: 'hidden',
-		zIndex: 1
-	}
-
-	const iconStyle = 'text-lg cursor-pointer text-default-300'
+	const iconStyle = 'text-xl cursor-pointer text-default-500'
 
 	return (
-		<>
-			<Box
-				sx={{
-					display: 'flex',
-					gap: 1,
-					alignItems: 'center',
-					justifyContent: 'space-between'
-				}}
-			>
-				<Typography
-					sx={{
-						fontSize: 'xs',
-						fontWeight: 'md',
-						pl: '3px',
-						width: '60px'
+		<div className="flex gap-2 justify-between">
+			<div className="text-xs w-14 text-default-600">
+				{stemType[0].toUpperCase() + stemType.slice(1).toLowerCase()}
+			</div>
+			<div className="w-full">
+				<div
+					id={`zoomview-container_${trackId}_${stemType}`}
+					className="p-0 border-1 border-divider rounded bg-primary-50 overflow-hidden relative z-1 h-5"
+					onClick={e => {
+						const parent = e.currentTarget.firstElementChild as HTMLElement
+						audioEvents.clickToSeek(trackId, e, parent)
 					}}
-				>
-					{stemType[0].toUpperCase() + stemType.slice(1).toLowerCase()}
-				</Typography>
-				<Box sx={{ width: '100%' }}>
-					<Card
-						id={`zoomview-container_${trackId}_${stemType}`}
-						sx={{
-							...loaderSx,
-							height: '20px',
-							pt: '3px'
-						}}
-						onClick={e => {
-							const parent = e.currentTarget.firstElementChild as HTMLElement
-							audioEvents.clickToSeek(trackId, e, parent)
-						}}
-					/>
-					<VolumeMeter trackId={trackId} stemType={stemType} />
-				</Box>
-				{solo ? (
-					<HeadsetOffIcon className={iconStyle} onClick={() => toggleSolo()} />
-				) : (
-					<HeadsetIcon className={iconStyle} onClick={() => toggleSolo()} />
-				)}
-				{!volume || mute ? (
-					<VolumeOffIcon
-						className={iconStyle}
-						onClick={() => audioEvents.stemMuteToggle(trackId, stemType, false)}
-					/>
-				) : (
-					<VolumeUpIcon
-						className={iconStyle}
-						onClick={() => audioEvents.stemMuteToggle(trackId, stemType, true)}
-					/>
-				)}
-			</Box>
-		</>
+				/>
+				<VolumeMeter trackId={trackId} stemType={stemType} />
+			</div>
+			{solo ? (
+				<HeadsetOffIcon className={iconStyle} onClick={() => toggleSolo()} />
+			) : (
+				<HeadsetIcon className={iconStyle} onClick={() => toggleSolo()} />
+			)}
+			{!volume || mute ? (
+				<VolumeOffIcon
+					className={iconStyle}
+					onClick={() => audioEvents.stemMuteToggle(trackId, stemType, false)}
+				/>
+			) : (
+				<VolumeUpIcon
+					className={iconStyle}
+					onClick={() => audioEvents.stemMuteToggle(trackId, stemType, true)}
+				/>
+			)}
+		</div>
 	)
 }
 

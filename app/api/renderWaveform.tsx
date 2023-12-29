@@ -168,7 +168,7 @@ const TrackView = ({ trackId }: { trackId: Track['id'] }) => {
 	return (
 		<div
 			id={`zoomview-container_${trackId}`}
-			className={`relative h-20 z-1 ${containerClass}`}
+			className={`${containerClass} relative h-20 z-1`}
 			onClick={e => {
 				const parent = e.currentTarget.firstElementChild as HTMLElement
 				audioEvents.clickToSeek(trackId, e, parent)

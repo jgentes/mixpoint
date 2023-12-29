@@ -40,7 +40,7 @@ const MixCard = ({
 	)
 
 	const loaderClassNames =
-		'p-0 border-1 border-divider rounded bg-background overflow-hidden'
+		'p-0 border-1 border-divider rounded bg-primary-50 overflow-hidden'
 
 	return (
 		<div className="p-2 w-5/12 rounded border-1 border-divider bg-primary">
@@ -53,7 +53,7 @@ const MixCard = ({
 					{/* overview */}
 					<div
 						id={`overview-container_${trackId}`}
-						className={`${loaderClassNames} relative z-1 py-1 mb-3 h-fit`}
+						className={`${loaderClassNames} relative z-1 py-1 mb-3 h-8`}
 						onClick={e => {
 							const parents = e.currentTarget.firstElementChild as HTMLElement
 							const parent = parents.children[1] as HTMLElement
