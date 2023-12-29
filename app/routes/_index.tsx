@@ -5,7 +5,6 @@ import Header from '~/components/layout/Header'
 import Heart from '~/components/layout/HeartIcon'
 import LeftNav from '~/components/layout/LeftNav'
 import MixView from '~/components/mixes/MixView'
-import DrawerButton from '~/components/tracks/DrawerButton'
 import TrackDrawer from '~/components/tracks/TrackDrawer'
 import TrackTable from '~/components/tracks/TrackTable'
 
@@ -23,7 +22,7 @@ const Index: React.FunctionComponent = () => {
 			{mixViewVisible ? (
 				<>
 					<MixView tracks={tracks} />
-					<DrawerButton />
+					<TrackDrawer />
 				</>
 			) : (
 				<>
@@ -34,8 +33,6 @@ const Index: React.FunctionComponent = () => {
 					<Heart />
 				</>
 			)}
-
-			<TrackDrawer />
 		</div>
 	)
 }

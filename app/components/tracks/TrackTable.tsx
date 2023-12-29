@@ -167,8 +167,8 @@ const TrackTable = () => {
 		(track: Track) => {
 			return track.bpm ? (
 				<div className="pl-1">{track.bpm.toFixed(0)}</div>
-			) : analyzingTracks.has(track?.id) ? (
-				<div className="relative w-1/2 top-1/2 -mt-0.5 m-auto">
+			) : analyzingTracks.size > 1 || analyzingTracks.has(track.id) ? (
+				<div className="relative w-1/2 top-1/2 -mt-0.5 ml-1">
 					<ProgressBar />
 				</div>
 			) : (
@@ -266,7 +266,7 @@ const TrackTable = () => {
 			openState: true,
 			headerText: 'Are you sure?',
 			bodyText: 'Removing tracks here will not delete them from your computer.',
-			confirmColor: 'danger',
+			confirmColor: 'warning',
 			confirmText: `Remove ${selectedCount} track${
 				selectedCount > 1 ? 's' : ''
 			}`,
@@ -394,11 +394,16 @@ const TrackTable = () => {
 					{!dirtyTracks.length ? null : (
 						<Link
 							onClick={() => showAnalyzeDirtyModal()}
-							color="warning"
-							underline="none"
+							color="secondary"
 							className="ml-1 text-sm cursor-pointer"
 						>
-							({dirtyTracks.length} to analyze)
+							(
+							{analyzingTracks.size
+								? `${dirtyTracks.length} to analyze`
+								: `click to analyze ${dirtyTracks.length} track${
+										dirtyTracks.length > 1 ? 's' : ''
+								  }`}
+							)
 						</Link>
 					)}
 				</span>
@@ -451,7 +456,7 @@ const TrackTable = () => {
 					'rounded',
 					dragOver ? 'bg-primary-500 bg-opacity-10' : 'bg-default/30'
 				],
-				tr: ['rounded'],
+				tr: ['rounded border-b-1 border-divider'],
 				tbody: dragOver ? 'bg-primary-500 bg-opacity-10' : ''
 			}}
 			selectedKeys={selected}
@@ -499,7 +504,7 @@ const TrackTable = () => {
 					) : search ? (
 						'No tracks found'
 					) : (
-						<Dropzone className="h-full mx-0 my-2" />
+						<Dropzone className="h-full mt-3" />
 					)
 				}
 			>

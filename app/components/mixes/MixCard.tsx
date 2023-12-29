@@ -43,7 +43,7 @@ const MixCard = ({
 		'p-0 border-1 border-divider rounded bg-primary-50 overflow-hidden'
 
 	return (
-		<div className="p-2 w-5/12 rounded border-1 border-divider bg-primary">
+		<div className="p-3 w-5/12 rounded border-1 border-divider bg-primary">
 			{!trackId ? (
 				<Dropzone className="h-full" trackSlot={trackSlot} />
 			) : (

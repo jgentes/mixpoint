@@ -1,4 +1,4 @@
-import { CircularProgress, Sheet, Typography } from '@mui/joy'
+import { CircularProgress } from '@nextui-org/react'
 import { ReactElement } from 'react'
 import { useCountUp } from 'use-count-up'
 import { StemState, audioState } from '~/api/db/appState'
@@ -52,7 +52,7 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
 			<CircularProgress
 				size="md"
 				color={color}
-				determinate
+				className="mx-auto"
 				value={(((value as number) || 1) / stemTimer) * 100}
 			/>
 		)
@@ -73,7 +73,7 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
 			secondaryText: 'Downloaded stems will be stored in the folder'
 		},
 		grantStemDirAccess: {
-			icon: <RuleFolderIcon className="text-4lg text-default-600 m-auto" />,
+			icon: <RuleFolderIcon className="text-4xl text-default-600 m-auto" />,
 			primaryText: 'Click to Grant Folder Access',
 			secondaryText: 'Permission needed to access stems'
 		},
@@ -93,13 +93,13 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
 			secondaryText: 'Stem separation in progress'
 		},
 		downloadingStems: {
-			icon: <CircularProgress size="md" color="success" />,
+			icon: <CircularProgress size="md" color="success" className="mx-auto" />,
 			primaryText: 'Please stand by...',
 			secondaryText: 'Downloading stems'
 		},
 		ready: { icon: <></>, primaryText: '', secondaryText: '' },
 		error: {
-			icon: <WarningIcon className="text-lg text-default-500" />,
+			icon: <WarningIcon className="text-3xl text-warning-600 mx-auto" />,
 			primaryText: 'Something went wrong',
 			secondaryText: 'Please refresh the page and try again'
 		}

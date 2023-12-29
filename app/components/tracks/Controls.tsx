@@ -406,6 +406,7 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 				cursor:
 					'group-data-[selected=true]:bg-transparent group-data-[selected=true]:rounded p-2'
 			}}
+			defaultSelectedKey={'Pause'}
 			onSelectionChange={navEvent}
 		>
 			{[

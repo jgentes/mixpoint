@@ -1,6 +1,6 @@
 // This file handles application state that is not persisted through page refreshes, therefore not in IndexedDB. appState is different from Prefs in that it isn't persistent.
 
-import { ButtonProps } from '@mui/joy'
+import type { ButtonProps } from '@nextui-org/react'
 import { Key } from 'react'
 import createStore from 'teaful'
 import type WaveSurfer from 'wavesurfer.js'
