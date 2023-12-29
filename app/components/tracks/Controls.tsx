@@ -1,13 +1,4 @@
-import {
-	Box,
-	Card,
-	Radio,
-	RadioGroup,
-	Slider,
-	Typography,
-	radioClasses
-} from '@mui/joy'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Key, useCallback, useEffect, useRef, useState } from 'react'
 import { audioEvents } from '~/api/audioEvents'
 import {
 	MixPrefs,
@@ -26,6 +17,7 @@ import {
 	Link,
 	Select,
 	SelectItem,
+	Slider,
 	Tab,
 	Tabs,
 	Tooltip
@@ -103,7 +95,7 @@ const NumberControl = ({
 	}
 
 	const ResetValLink = () => (
-		<Tooltip color="default" content={title} isDisabled={!valDiff}>
+		<Tooltip color="default" content={title} size="sm" isDisabled={!valDiff}>
 			<Link
 				underline="none"
 				onClick={() => adjustVal()}
@@ -277,7 +269,7 @@ const BeatResolutionControl = ({
 		useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
 
 	return (
-		<Tooltip color="default" content="Beat Resolution">
+		<Tooltip color="default" size="sm" content="Beat Resolution">
 			<Tabs
 				selectedKey={beatResolution}
 				aria-label="Beat Resolution"
@@ -340,12 +332,12 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
 				},
 				{
 					val: 'Go to Mixpoint',
-					icon: <RevertIcon className="text-2xl" />
+					icon: <RevertIcon className="text-xl" />
 				},
 
 				{
 					val: 'Set Mixpoint',
-					icon: <SetMixpointIcon className="text-2xl" />
+					icon: <SetMixpointIcon className="text-xl" />
 				},
 				{
 					val: isPlaying ? 'Pause' : 'Play',
@@ -363,7 +355,7 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
 				const noNudge = item.val.includes('Nudge') && !isPlaying
 
 				return (
-					<Tooltip key={item.val} color="default" content={item.val}>
+					<Tooltip key={item.val} color="default" size="sm" content={item.val}>
 						<Button
 							isIconOnly
 							variant="light"
@@ -387,7 +379,7 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
 const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 	if (!tracks?.length) return null
 
-	const navEvent = (nav: string) => {
+	const navEvent = (nav: Key) => {
 		switch (nav) {
 			case 'Play':
 				audioEvents.play()
@@ -401,18 +393,20 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 		}
 	}
 
-	const radioSize = 28
-
 	return (
-		<RadioGroup
-			orientation={'horizontal'}
-			name="mixControl"
-			variant="outlined"
-			sx={{ height: radioSize, my: 1, backgroundColor: 'background.surface' }}
-			onClick={e => {
-				const el = e.target as HTMLInputElement
-				navEvent(el.value)
+		<Tabs
+			aria-label="Mix Controls"
+			variant="solid"
+			classNames={{
+				base: 'border-1 border-primary-300 rounded',
+				tabList: 'rounded h-7 bg-primary px-0 gap-.5',
+				tab: 'rounded px-3 h-auto',
+				tabContent:
+					'group-data-[selected=true]:text-primary-700 text-primary-700',
+				cursor:
+					'group-data-[selected=true]:bg-transparent group-data-[selected=true]:rounded p-2'
 			}}
+			onSelectionChange={navEvent}
 		>
 			{[
 				{
@@ -421,67 +415,16 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 				},
 				{
 					val: 'Pause',
-					icon: <PauseIcon className="text-lg" />
+					icon: <PauseIcon className="text-2xl" />
 				},
 				{
 					val: 'Play',
-					icon: <PlayIcon className="text-lg" />
+					icon: <PlayIcon className="text-2xl" />
 				}
 			].map(item => (
-				<Box
-					key={item.val}
-					sx={theme => {
-						return {
-							position: 'relative',
-							display: 'flex',
-							justifyContent: 'center',
-							alignItems: 'center',
-							width: radioSize * 2,
-							height: radioSize,
-							'&:not([data-first-child])': {
-								borderLeft: '1px solid',
-								borderColor: `${theme.palette.divider} !important`,
-								height: '99%'
-							},
-							[`&[data-first-child] .${radioClasses.action}`]: {
-								borderTopLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-								borderBottomLeftRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-								bottom: '2px',
-								left: '-1px'
-							},
-							[`&[data-last-child] .${radioClasses.action}`]: {
-								borderTopRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-								borderBottomRightRadius: `calc(${theme.vars.radius.sm} - 1px)`,
-								height: '101%'
-							}
-						}
-					}}
-				>
-					<Radio
-						value={item.val}
-						disableIcon
-						overlay
-						label={item.icon}
-						variant="plain"
-						color="primary"
-						slotProps={{
-							root: {
-								sx: {
-									'--Icon-fontSize': `${radioSize - 8}px`
-								}
-							},
-							action: {
-								sx: {
-									borderRadius: 0,
-									transition: 'none'
-								}
-							},
-							label: { sx: { lineHeight: 0 } }
-						}}
-					/>
-				</Box>
+				<Tab key={item.val} aria-label={item.val} title={item.icon} />
 			))}
-		</RadioGroup>
+		</Tabs>
 	)
 }
 
@@ -597,33 +540,31 @@ const StemControl = ({
 }
 
 const StemsCrossfaders = () => (
-	<Box sx={{ my: 1, lineHeight: 1.2 }}>
+	<div className="mt-4">
 		{STEMS.map(stem => (
 			<CrossfaderControl key={stem} stemType={stem as Stem} />
 		))}
-	</Box>
+	</div>
 )
 
 const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => (
 	<Slider
 		aria-label="crossfader"
+		color="foreground"
 		defaultValue={50}
-		min={0}
-		max={100}
+		radius="sm"
+		minValue={0}
+		maxValue={100}
+		fillOffset={50}
 		step={2}
-		track={false}
-		marks={[0, 50, 100].map(v => ({ value: v }))}
-		valueLabelDisplay="off"
-		variant="soft"
-		size="md"
-		onChange={(_, val) => audioEvents.crossfade(val as number, stemType)}
-		sx={{
-			padding: '15px 0',
-			'& .MuiSlider-thumb': {
-				width: '10px',
-				height: '20px',
-				borderRadius: '3px'
-			}
+		marks={[0, 50, 100].map(value => ({ value, label: '' }))}
+		hideValue
+		size="sm"
+		onChange={val => audioEvents.crossfade(val as number, stemType)}
+		classNames={{
+			base: 'mb-3',
+			filler: 'bg-transparent',
+			thumb: 'h-4 w-5 bg-primary-600 border-1 border-primary-700'
 		}}
 	/>
 )

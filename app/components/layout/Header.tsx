@@ -9,7 +9,7 @@ const Header = () => (
 		<Logo />
 		<div className="flex flex-row gap-x-2">
 			<LoginButton />
-			<Tooltip color="primary" content="Discuss on GitHub">
+			<Tooltip color="primary" size="sm" content="Discuss on GitHub">
 				<Button
 					isIconOnly
 					variant="light"

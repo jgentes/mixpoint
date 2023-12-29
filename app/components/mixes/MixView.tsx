@@ -12,7 +12,7 @@ const MixView = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 	return (
 		<div className="flex justify-between m-4">
 			<MixCard trackId={tracks[0]} trackSlot={0} />
-			<div className="flex flex-col mt-4">
+			<div className="flex flex-col mt-2">
 				<CrossfaderControl />
 				<MixControl tracks={tracks} />
 				<StemsCrossfaders />
