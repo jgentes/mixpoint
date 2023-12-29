@@ -24,7 +24,7 @@ const VolumeMeter = ({
 				style={{
 					width: `${100 - volumeMeter * 100}%`
 				}}
-				className="bg-primary h-full z-10 absolute top-0 right-0"
+				className="bg-default-50 h-full z-10 absolute top-0 right-0"
 			/>
 		</div>
 	)

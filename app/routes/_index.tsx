@@ -28,7 +28,9 @@ const Index: React.FunctionComponent = () => {
 				<>
 					<div className="grid grid-cols-[minmax(64px,200px),minmax(450px,1fr)] h-screen">
 						<LeftNav />
-						<TrackTable />
+						<div className="p-4">
+							<TrackTable />
+						</div>
 					</div>
 					<Heart />
 				</>

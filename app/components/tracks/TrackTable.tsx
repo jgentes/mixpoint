@@ -442,6 +442,7 @@ const TrackTable = () => {
 			isCompact
 			removeWrapper
 			aria-label="Track table"
+			color="default"
 			checkboxesProps={{
 				classNames: {
 					wrapper: 'rounded'
@@ -548,7 +549,7 @@ const TrackTable = () => {
 	)
 
 	return (
-		<div className="p-4 m-4 bg-primary border-1 border-divider rounded h-fit">
+		<div className="p-4 bg-primary-50 border-1 border-divider rounded h-fit">
 			{tableHeader}
 			{tableBody}
 			{tableFooter}

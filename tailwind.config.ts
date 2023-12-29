@@ -14,9 +14,6 @@ export default ({
 	],
 	theme: {
 		extend: {
-			borderColor: {
-				default: '#c2e0ff14'
-			},
 			backgroundImage: {
 				lightGraph: lightGraphBackground,
 				darkGraph: darkGraphBackground
@@ -34,14 +31,17 @@ export default ({
 			themes: {
 				light: {
 					colors: {
-						background: 'rgba(255, 255, 255, 0.9)'
+						background: 'rgba(255, 255, 255, 0.9)',
+						primary: {
+							50: '#f0f7ff'
+						}
 					}
 				},
 				dark: {
 					colors: {
 						background: '#0e141a',
 						primary: {
-							DEFAULT: '#0a1929'
+							50: '#0a1929'
 						}
 					}
 				}

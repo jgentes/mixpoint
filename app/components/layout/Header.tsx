@@ -5,11 +5,11 @@ import LoginButton from '~/components/layout/LoginButton.client'
 import Logo from '~/components/layout/MixpointLogo'
 
 const Header = () => (
-	<div className="p-4 flex flex-row bg-primary justify-between items-center border-b border-default sticky z-10">
+	<div className="p-4 flex flex-row bg-primary-50 justify-between items-center border-b border-default sticky z-10">
 		<Logo />
 		<div className="flex flex-row gap-x-2">
 			<LoginButton />
-			<Tooltip color="primary" size="sm" content="Discuss on GitHub">
+			<Tooltip color="default" size="sm" content="Discuss on GitHub">
 				<Button
 					isIconOnly
 					variant="light"

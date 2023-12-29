@@ -163,7 +163,7 @@ const TrackView = ({ trackId }: { trackId: Track['id'] }) => {
 	const analyzing = analyzingTracks.has(trackId)
 
 	const containerClass =
-		'p-0 border-1 border-divider rounded bg-primary-50 overflow-hidden'
+		'p-0 border-1 border-divider rounded bg-default-50 overflow-hidden'
 
 	return (
 		<div

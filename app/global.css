@@ -13,18 +13,6 @@ body {
   height: 100vh;
 }
 
-tr:hover .visibleOnHover {
-  visibility: 'visible';
-}
-
-.visibleOnHover {
-  visibility: 'hidden';
-}
-
-.visible {
-  visibility: 'visible'
-}
-
 /* wavesurfer ui tweaks */
 .wavesurfer-playhead {
   width: 0;

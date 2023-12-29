@@ -67,13 +67,11 @@ const audioEvents = {
 			// Style scrollbar (this is a workaround for https://github.com/katspaugh/wavesurfer.js/issues/2933)
 			const style = document.createElement('style')
 			style.textContent = `::-webkit-scrollbar {
-				background: rgba(4, 146, 247, 0.5);
 				height: 18px;
 			}
 
 			::-webkit-scrollbar-corner, ::-webkit-scrollbar-track {
-				border-top: 1px solid rgba(255, 255, 255, 0.15);
-				background-color: #0a1929;
+				border-top: 1px solid rgba(128,128,128,.3);
 			}
 
 			::-webkit-scrollbar-thumb {
@@ -84,6 +82,9 @@ const audioEvents = {
 				background-clip: content-box;
 			}`
 			waveform.getWrapper().appendChild(style)
+
+			// add classname value to waveform.getWrapper()
+			waveform.getWrapper().classList.add('wrapper')
 
 			// Update time
 			let [time] = getAudioState[trackId].time()

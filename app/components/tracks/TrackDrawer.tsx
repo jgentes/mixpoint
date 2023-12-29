@@ -27,7 +27,8 @@ const TrackDrawer = () => {
 				classNames={{
 					base: 'border-t-1 border-primary-300',
 					trigger: 'p-0',
-					titleWrapper: 'flex-row justify-center'
+					titleWrapper: 'flex-row justify-center',
+					content: 'mx-4'
 				}}
 			>
 				<TrackTable />

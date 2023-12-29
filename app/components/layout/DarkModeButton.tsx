@@ -7,7 +7,7 @@ const DarkMode = () => {
 
 	return (
 		<Tooltip
-			color="primary"
+			color="default"
 			size="sm"
 			content={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
 		>

@@ -396,10 +396,10 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 	return (
 		<Tabs
 			aria-label="Mix Controls"
-			variant="solid"
+			variant="bordered"
 			classNames={{
 				base: 'border-1 border-primary-300 rounded',
-				tabList: 'rounded h-7 bg-primary px-0 gap-.5',
+				tabList: 'rounded h-7 bg-primary-50 px-0 gap-.5',
 				tab: 'rounded px-3 h-auto',
 				tabContent:
 					'group-data-[selected=true]:text-primary-700 text-primary-700',
@@ -463,21 +463,6 @@ const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
 					inputWrapper: 'border-1 bg-default-50 rounded px-2 h-6 min-h-0',
 					input: 'text-xs text-right text-default-600'
 				}}
-				// sx={{
-				// 	width: 135,
-				// 	borderRadius: '5px',
-				// 	borderColor: 'action.selected',
-				// 	'& div': {
-				// 		borderColor: 'action.disabled',
-				// 		'--Input-gap': '4px'
-				// 	},
-				// 	'& input': {
-				// 		textAlign: 'right',
-				// 		fontSize: 12,
-				// 		color: 'text.secondary'
-				// 	},
-				// 	backgroundColor: 'background.surface'
-				// }}
 			/>
 		</form>
 	)
@@ -512,7 +497,7 @@ const StemControl = ({
 			<div className="w-full">
 				<div
 					id={`zoomview-container_${trackId}_${stemType}`}
-					className="p-0 border-1 border-divider rounded bg-primary-50 overflow-hidden relative z-1 h-5"
+					className="p-0 border-1 border-divider rounded bg-default-50 overflow-hidden relative z-1 h-5"
 					onClick={e => {
 						const parent = e.currentTarget.firstElementChild as HTMLElement
 						audioEvents.clickToSeek(trackId, e, parent)
@@ -565,7 +550,7 @@ const CrossfaderControl = ({ stemType }: { stemType?: Stem }) => (
 		classNames={{
 			base: 'mb-3',
 			filler: 'bg-transparent',
-			thumb: 'h-4 w-5 bg-primary-600 border-1 border-primary-700'
+			thumb: 'h-5 w-3 bg-primary-400 border-1 border-primary-400'
 		}}
 	/>
 )
