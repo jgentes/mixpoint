@@ -1,5 +1,5 @@
 // This file initializes Dexie (indexDB), defines the schema and creates tables
-
+// Be sure to create MIGRATIONS for any changes to SCHEMA!
 import Dexie from 'dexie'
 import { Key } from 'react'
 
@@ -27,6 +27,12 @@ class MixpointDb extends Dexie {
 			setPrefs: 'date',
 			userPrefs: 'date',
 			trackCache: 'id'
+		})
+		this.version(2).upgrade((tx) => {
+			tx.table('userPrefs').toCollection().modify((userPref) => {
+				if (userPref.sortDirection === 'asc') userPref.sortDirection = 'ascending'
+				if (userPref.sortDirection === 'desc') userPref.sortDirection = 'descending'
+			})
 		})
 
 		this.tracks = this.table('tracks')
