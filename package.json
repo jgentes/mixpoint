@@ -17,7 +17,7 @@
 		"@remix-run/cloudflare": "^2.4.0",
 		"@remix-run/cloudflare-pages": "^2.4.0",
 		"@remix-run/react": "^2.4.0",
-		"@sentry/remix": "^7.81.1",
+		"@sentry/remix": "^7.91.0",
 		"@supabase/auth-ui-react": "^0.4.6",
 		"@supabase/ssr": "^0.0.10",
 		"@supabase/supabase-js": "^2.38.4",

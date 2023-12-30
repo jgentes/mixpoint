@@ -17,6 +17,7 @@ import {
 	useLocation
 } from '@remix-run/react'
 import * as Sentry from '@sentry/browser'
+import { withSentry } from '@sentry/remix'
 import { createBrowserClient } from '@supabase/ssr'
 import { SupabaseClient } from '@supabase/supabase-js'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
@@ -162,4 +163,6 @@ const App = ({ error }: { error?: string }) => {
 	)
 }
 
-export { App as default, links, meta, ErrorBoundary }
+const AppWithSentry = withSentry(App)
+
+export { AppWithSentry as default, links, meta, ErrorBoundary }
