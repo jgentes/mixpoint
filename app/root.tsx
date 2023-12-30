@@ -163,6 +163,6 @@ const App = ({ error }: { error?: string }) => {
 	)
 }
 
-const AppWithSentry = withSentry(App)
+const AppWithSentry = withSentry(App, {wrapWithErrorBoundary: false})
 
 export { AppWithSentry as default, links, meta, ErrorBoundary }
