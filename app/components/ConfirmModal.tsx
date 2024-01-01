@@ -33,14 +33,8 @@ const ConfirmModal = () => {
 			onClose={() => closeModal()}
 			backdrop="opaque"
 		>
-			<ModalContent
-				role="alertdialog"
-				//sx={{ borderColor: 'action.focus' }}
-			>
-				<ModalHeader
-					id="alert-dialog-modal-title"
-					//sx={{ display: 'flex', alignItems: 'normal' }}
-				>
+			<ModalContent role="alertdialog">
+				<ModalHeader id="alert-dialog-modal-title">
 					<WarningIcon className="self-center text-xl mr-2" />
 					{headerText}
 				</ModalHeader>

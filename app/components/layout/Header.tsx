@@ -8,7 +8,7 @@ const Header = () => (
 	<div className="p-4 flex flex-row bg-primary-50 justify-between items-center border-b border-default sticky z-10">
 		<Logo />
 		<div className="flex flex-row gap-x-2">
-			{/* <LoginButton /> */}
+			<LoginButton />
 			<Tooltip color="default" size="sm" content="Discuss on GitHub">
 				<Button
 					isIconOnly

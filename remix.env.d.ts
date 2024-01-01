@@ -4,9 +4,6 @@
 
 declare module '@remix-run/server-runtime' {
 	export interface AppLoadContext {
-		env: {
-			SUPABASE_URL: string
-			SUPABASE_ANON_KEY: string
-		}
+		env: object
 	}
 }

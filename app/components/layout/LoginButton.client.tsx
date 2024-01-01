@@ -1,19 +1,72 @@
-import { Button, Modal, ModalContent } from '@nextui-org/react'
-import { useOutletContext } from '@remix-run/react'
-import { Auth } from '@supabase/auth-ui-react'
-import { ThemeSupa } from '@supabase/auth-ui-shared'
-import { SupabaseClient } from '@supabase/supabase-js'
+import { Button, Input, Modal, ModalContent } from '@nextui-org/react'
 import { useTheme } from 'next-themes'
 import { useState } from 'react'
-import { appState } from '~/api/db/appState'
+import { AppwriteService } from '~/AppwriteService'
+import { appState, setAppState } from '~/api/db/appState'
 
 const LoginButton = () => {
 	const [openAuth, setOpenAuth] = useState(false)
-	const { supabase } = useOutletContext<{ supabase: SupabaseClient }>()
 	const { theme } = useTheme()
+
+	const [email, setEmail] = useState('')
+	const [password, setPassword] = useState('')
+	const [loading, setLoading] = useState(false)
+	const [modalType, setModalType] = useState('success')
+	const [modalMessage, setModalMessage] = useState('')
+	const [modalState, setModalState] = useState(false)
 
 	const [loggedIn] = appState.loggedIn()
 	const buttonText = loggedIn ? 'Log Out' : 'Log In'
+
+	async function onCreateSession(event: any) {
+		event.preventDefault()
+		const dialog: any = document.getElementById('dialog')
+
+		setLoading(true)
+		try {
+			await fetch('/login', {
+				method: 'POST',
+				body: ''
+			})
+
+			setAppState.loggedIn(email || 'test@test.com')
+
+			setModalType('success')
+			setModalMessage(
+				'Session created! Refresh page to run SSR check, or re-fetch to run CSR cehck.'
+			)
+			dialog.showModal()
+		} catch (err: any) {
+			setModalType('error')
+			setModalMessage(err.message)
+			dialog.showModal()
+		} finally {
+			setLoading(false)
+		}
+	}
+
+	async function onDeleteSession(event: any) {
+		event.preventDefault()
+
+		const dialog: any = document.getElementById('dialog')
+
+		setLoading(true)
+		try {
+			await AppwriteService.signOut()
+
+			setModalType('success')
+			setModalMessage(
+				'Session deleted! Refresh page to run SSR check, or re-fetch to run CSR cehck.'
+			)
+			dialog.showModal()
+		} catch (err: any) {
+			setModalType('error')
+			setModalMessage(err.message)
+			dialog.showModal()
+		} finally {
+			setLoading(false)
+		}
+	}
 
 	return (
 		<>
@@ -26,7 +79,7 @@ const LoginButton = () => {
 				color="primary"
 				aria-label={loggedIn || buttonText}
 				onClick={async () => {
-					loggedIn ? await supabase.auth.signOut() : setOpenAuth(true)
+					loggedIn ? onDeleteSession : setModalState(true)
 				}}
 			>
 				{buttonText}
@@ -35,10 +88,21 @@ const LoginButton = () => {
 				isOpen={openAuth}
 				className="p-6"
 				size="xs"
-				onClose={() => setOpenAuth(false)}
+				onClose={() => setModalState(false)}
 			>
 				<ModalContent className="bg-primary-50">
-					<Auth
+					<Input id="email" color="default" placeholder="Email" />
+					<Input id="password" color="default" placeholder="Password" />
+					<Button
+						size="sm"
+						radius="sm"
+						variant="flat"
+						color="success"
+						onSubmit={onCreateSession}
+					>
+						Log In
+					</Button>
+					{/* <Auth
 						supabaseClient={supabase}
 						appearance={{
 							theme: ThemeSupa,
@@ -54,7 +118,7 @@ const LoginButton = () => {
 						providers={['google', 'github']}
 						socialLayout="horizontal"
 						theme={theme === 'dark' ? 'dark' : 'light'}
-					/>
+					/> */}
 				</ModalContent>
 			</Modal>
 		</>

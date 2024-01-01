@@ -38,10 +38,10 @@ export async function loader({ context }: LoaderFunctionArgs) {
 		ENV: {
 			SUPABASE_URL: context.env.SUPABASE_URL || 'http://supabase.url',
 			SUPABASE_ANON_KEY: context.env.SUPABASE_ANON_KEY || 'supabase-anon-key',
-			REACT_APP_PUBLIC_POSTHOG_KEY:
-				context.env.REACT_APP_PUBLIC_POSTHOG_KEY || 'posthog-public-key',
-			REACT_APP_PUBLIC_POSTHOG_HOST:
-				context.env.REACT_APP_PUBLIC_POSTHOG_HOST || 'http://posthog.url'
+			PUBLIC_POSTHOG_KEY:
+				context.env.PUBLIC_POSTHOG_KEY || 'posthog-public-key',
+			PUBLIC_POSTHOG_HOST:
+				context.env.PUBLIC_POSTHOG_HOST || 'http://posthog.url'
 		}
 	})
 }
@@ -163,6 +163,6 @@ const App = ({ error }: { error?: string }) => {
 	)
 }
 
-const AppWithSentry = withSentry(App, {wrapWithErrorBoundary: false})
+const AppWithSentry = withSentry(App, { wrapWithErrorBoundary: false })
 
 export { AppWithSentry as default, links, meta, ErrorBoundary }

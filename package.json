@@ -21,6 +21,7 @@
 		"@supabase/auth-ui-react": "^0.4.6",
 		"@supabase/ssr": "^0.0.10",
 		"@supabase/supabase-js": "^2.38.4",
+		"appwrite": "^13.0.1",
 		"dexie": "~3.2.2",
 		"dexie-react-hooks": "~1.1.1",
 		"framer-motion": "^10.16.16",

@@ -27,7 +27,6 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "remix.env.d.ts",
-    "./global.d.ts"
+    "remix.env.d.ts"
   ]
 }
