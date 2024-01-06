@@ -13,6 +13,12 @@ const Index: React.FunctionComponent = () => {
 	const mixViewVisible = !!tracks?.filter(t => t).length
 
 	useEffect(() => {
+		// detect mobile device
+		const userAgent = navigator.userAgent;
+		if ((/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) || /android/i.test(userAgent)) {
+				window.location.href='/mobile'
+		}
+
 		if (!mixViewVisible) setAppState.openDrawer(false)
 	}, [mixViewVisible])
 

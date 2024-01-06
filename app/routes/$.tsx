@@ -1,5 +1,5 @@
 import { useParams } from '@remix-run/react'
-import { ErrorBoundary } from '~/errorBoundary'
+import { ErrorBoundary } from '~/root'
 
 const notFound = () => {
 	const url = useParams()?.['*']

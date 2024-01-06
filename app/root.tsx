@@ -13,11 +13,17 @@ import {
 	Meta,
 	Outlet,
 	Scripts,
+	isRouteErrorResponse,
 	useLoaderData,
-	useLocation
+	useLocation,
+	useRouteError
 } from '@remix-run/react'
 import * as Sentry from '@sentry/browser'
-import { withSentry } from '@sentry/remix'
+import {
+	captureRemixErrorBoundaryError,
+	setContext,
+	withSentry
+} from '@sentry/remix'
 import { createBrowserClient } from '@supabase/ssr'
 import { SupabaseClient } from '@supabase/supabase-js'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
@@ -25,10 +31,9 @@ import posthog from 'posthog-js'
 import { useEffect, useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { createHead } from 'remix-island'
-import { setAppState } from '~/api/db/appState'
+import { getAppState, getAudioState, setAppState } from '~/api/db/appState'
 import ConfirmModal from '~/components/ConfirmModal'
 import { InitialLoader } from '~/components/Loader'
-import { ErrorBoundary } from '~/errorBoundary'
 import globalStyles from '~/global.css'
 import tailwind from '~/tailwind.css'
 
@@ -81,8 +86,8 @@ const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
 	)
 }
 
-const ThemeLoader = ({ error }: { error?: string }) => {
-	const data = error ? {} : useLoaderData<typeof loader>()
+const ThemeLoader = () => {
+	const data = useLoaderData<typeof loader>()
 	const [loading, setLoading] = useState(true)
 	const [supabase, setSupabase] = useState<SupabaseClient>()
 
@@ -133,8 +138,8 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 	return (
 		<NextUIProvider>
 			<NextThemesProvider attribute="class" defaultTheme="dark">
-				{loading || error ? (
-					<InitialLoader message={error} />
+				{loading ? (
+					<InitialLoader />
 				) : (
 					<>
 						<Outlet context={{ supabase }} />
@@ -147,7 +152,7 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 	)
 }
 
-const App = ({ error }: { error?: string }) => {
+const App = () => {
 	const location = useLocation()
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: location is used to trigger new pageview capture
@@ -157,12 +162,36 @@ const App = ({ error }: { error?: string }) => {
 
 	return (
 		<HtmlDoc>
-			<ThemeLoader error={error} />
+			<ThemeLoader />
 			<Scripts />
 		</HtmlDoc>
 	)
 }
 
-const AppWithSentry = withSentry(App, {wrapWithErrorBoundary: false})
+const ErrorBoundary = async (error: Error) => {
+	const routeError = (useRouteError() as Error) || error
+
+	const message = isRouteErrorResponse(routeError)
+		? routeError.data.message || routeError.data || routeError
+		: routeError?.message || JSON.stringify(routeError)
+
+	if (message) {
+		const [audioState] = getAudioState()
+		setContext('audioState', audioState || {})
+
+		const [appState] = getAppState()
+		setContext('appState', appState || {})
+
+		captureRemixErrorBoundaryError(message)
+		return (
+			<HtmlDoc>
+				<InitialLoader message={message} />
+				<Scripts />
+			</HtmlDoc>
+		)
+	}
+}
+
+const AppWithSentry = withSentry(App, { wrapWithErrorBoundary: false })
 
 export { AppWithSentry as default, links, meta, ErrorBoundary }
