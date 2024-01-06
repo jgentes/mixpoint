@@ -525,15 +525,14 @@ const TrackTable = () => {
 	const tableFooter = !tracks?.length ? null : (
 		<div className="mt-3 flex justify-between items-center">
 			<Pagination
-				showControls
 				classNames={{
-					base: 'pl-0',
 					item: 'text-md text-default-600 w-7 h-7',
 					prev: 'w-7 h-7',
 					next: 'w-7 h-7',
 					cursor:
 						'bg-transparent border-1 border-primary-300 text-transparent rounded w-7 h-7'
 				}}
+				radius="sm"
 				isCompact
 				page={page}
 				total={pages}
