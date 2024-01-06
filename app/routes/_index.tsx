@@ -7,18 +7,23 @@ import LeftNav from '~/components/layout/LeftNav'
 import MixView from '~/components/mixes/MixView'
 import TrackDrawer from '~/components/tracks/TrackDrawer'
 import TrackTable from '~/components/tracks/TrackTable'
+import { ErrorBoundary } from '~/root'
 
 const Index: React.FunctionComponent = () => {
 	const { tracks } = useLiveQuery(() => getPrefs('mix', 'tracks')) || {}
 	const mixViewVisible = !!tracks?.filter(t => t).length
 
-	useEffect(() => {
-		// detect mobile device
-		const userAgent = navigator.userAgent;
-		if ((/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) || /android/i.test(userAgent)) {
-				window.location.href='/mobile'
-		}
+	// detect mobile device
+	const userAgent = navigator.userAgent
+	if (
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		(/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) ||
+		/android/i.test(userAgent)
+	) {
+		return ErrorBoundary(Error('Mixpoint is for desktops only (for now)'))
+	}
 
+	useEffect(() => {
 		if (!mixViewVisible) setAppState.openDrawer(false)
 	}, [mixViewVisible])
 

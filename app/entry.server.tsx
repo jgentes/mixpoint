@@ -11,7 +11,7 @@ Sentry.init({
 	tracesSampleRate: 0.1
 })
 
-export const handleError = Sentry.wrapRemixHandleError;
+export const handleError = Sentry.wrapRemixHandleError
 
 export default function handleRequest(
 	request: Request,

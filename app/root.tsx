@@ -168,7 +168,7 @@ const App = () => {
 	)
 }
 
-const ErrorBoundary = async (error: Error) => {
+const ErrorBoundary = (error: Error) => {
 	const routeError = (useRouteError() as Error) || error
 
 	const message = isRouteErrorResponse(routeError)
@@ -183,15 +183,16 @@ const ErrorBoundary = async (error: Error) => {
 		setContext('appState', appState || {})
 
 		captureRemixErrorBoundaryError(message)
-		return (
-			<HtmlDoc>
-				<InitialLoader message={message} />
-				<Scripts />
-			</HtmlDoc>
-		)
 	}
+
+	return (
+		<HtmlDoc>
+			<InitialLoader message={message || 'Something went wrong'} />
+			<Scripts />
+		</HtmlDoc>
+	)
 }
 
-const AppWithSentry = withSentry(App, { wrapWithErrorBoundary: false })
+const AppWithSentry = withSentry(App)
 
 export { AppWithSentry as default, links, meta, ErrorBoundary }
