@@ -5,13 +5,17 @@ import { renderHeadToString } from 'remix-island'
 import { Head } from './root'
 
 import { renderToReadableStream } from 'react-dom/server'
+import { HandleError } from '@highlight-run/remix/server'
 
 Sentry.init({
 	dsn: 'https://6ea05bb5dd89aae9f5695090ecbee8bc@o4506276018192384.ingest.sentry.io/4506276020092928',
 	tracesSampleRate: 0.1
 })
 
-export const handleError = Sentry.wrapRemixHandleError
+const nodeOptions = { projectID: process.env.HIGHLIGHT_PROJECT_ID || '' }
+
+export const handleError = HandleError(nodeOptions)
+//export const handleError = Sentry.wrapRemixHandleError()
 
 export default function handleRequest(
 	request: Request,

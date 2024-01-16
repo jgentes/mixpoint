@@ -24,6 +24,8 @@ import {
 	setContext,
 	withSentry
 } from '@sentry/remix'
+import { H, HighlightInit } from '@highlight-run/remix/client'
+import { ReportDialog } from '@highlight-run/remix/report-dialog'
 import { createBrowserClient } from '@supabase/ssr'
 import { SupabaseClient } from '@supabase/supabase-js'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
@@ -46,7 +48,8 @@ export async function loader({ context }: LoaderFunctionArgs) {
 			REACT_APP_PUBLIC_POSTHOG_KEY:
 				context.env.REACT_APP_PUBLIC_POSTHOG_KEY || 'posthog-public-key',
 			REACT_APP_PUBLIC_POSTHOG_HOST:
-				context.env.REACT_APP_PUBLIC_POSTHOG_HOST || 'http://posthog.url'
+				context.env.REACT_APP_PUBLIC_POSTHOG_HOST || 'http://posthog.url',
+			HIGHLIGHT_PROJECT_ID: context.env.HIGHLIGHT_PROJECT_ID || ''
 		}
 	})
 }
@@ -78,8 +81,16 @@ const links: LinksFunction = () => [
 ]
 
 const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
+	const { ENV } = useLoaderData()
+
 	return (
 		<>
+			<HighlightInit
+				projectId={ENV.HIGHLIGHT_PROJECT_ID}
+				serviceName="my-remix-frontend"
+				tracingOrigins
+				networkRecording={{ enabled: true, recordHeadersAndBody: true }}
+			/>
 			{children}
 			<LiveReload />
 		</>
@@ -115,16 +126,24 @@ const ThemeLoader = () => {
 
 		// update login status in appState upon auth state change
 		supabaseClient.auth.onAuthStateChange((event, session) => {
-			const email = session?.user?.email
+			const email = session?.user?.email || 'undefined@user.com'
+			const id = session?.user?.id || 'undefined-user-id'
 			if (event === 'SIGNED_IN') {
 				setAppState.loggedIn(email)
-				posthog.identify(session?.user?.id, { email })
-				Sentry.setUser({ id: session?.user?.id, email })
+				posthog.identify(id, { email })
+				Sentry.setUser({ id, email })
 				posthog.capture('user logged in')
+
+				H.identify(email, {
+					id
+				})
+
+				H.track('user logged in')
 			}
 			if (event === 'SIGNED_OUT') {
 				setAppState.loggedIn('')
 				posthog.capture('user logged out')
+				H.track('user logged our')
 				Sentry.setUser(null)
 				posthog.reset()
 			}
@@ -158,6 +177,7 @@ const App = () => {
 	// biome-ignore lint/correctness/useExhaustiveDependencies: location is used to trigger new pageview capture
 	useEffect(() => {
 		posthog.capture('$pageview')
+		H.track('pageview')
 	}, [location])
 
 	return (
@@ -189,6 +209,7 @@ const ErrorBoundary = (error: Error) => {
 		<HtmlDoc>
 			<InitialLoader message={message || 'Something went wrong'} />
 			<Scripts />
+			<ReportDialog />
 		</HtmlDoc>
 	)
 }
