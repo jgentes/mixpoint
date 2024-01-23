@@ -631,22 +631,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cloudflare/kv-asset-handler@npm:^0.1.3":
-  version: 0.1.3
-  resolution: "@cloudflare/kv-asset-handler@npm:0.1.3"
-  dependencies:
-    mime: ^2.5.2
-  checksum: fbc23494baed3765f8517ae232be4612bf4bc13b412854a320000b98715020a78b32e4828f74fc80b6d400d2b7e7a833ffa0dd63a7354b94b7b738323c085356
-  languageName: node
-  linkType: hard
-
-"@cloudflare/workers-types@npm:^4.20230821.0":
-  version: 4.20230821.0
-  resolution: "@cloudflare/workers-types@npm:4.20230821.0"
-  checksum: d2fa03fe17c591dbb5a8711c77eef7c79e9a130221f603c51cc41089187294eb4d6cbb8a5584e21e30c4364dd6b13f16ddac176a819c37b85396a9a756347742
-  languageName: node
-  linkType: hard
-
 "@emotion/hash@npm:^0.9.0":
   version: 0.9.0
   resolution: "@emotion/hash@npm:0.9.0"
@@ -3506,37 +3490,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@remix-run/cloudflare-pages@npm:^2.4.0":
-  version: 2.4.0
-  resolution: "@remix-run/cloudflare-pages@npm:2.4.0"
-  dependencies:
-    "@remix-run/cloudflare": 2.4.0
-  peerDependencies:
-    "@cloudflare/workers-types": ^4.0.0
-    typescript: ^5.1.0
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-  checksum: 08dc39630d91db244144f737793e0a60a417c1c00ba3651c7e756c6cdeffc1eb0e6cee62460a3ade1b38306636fdc6c93b574f0424807f427df42c5cad7476f4
-  languageName: node
-  linkType: hard
-
-"@remix-run/cloudflare@npm:2.4.0, @remix-run/cloudflare@npm:^2.4.0":
-  version: 2.4.0
-  resolution: "@remix-run/cloudflare@npm:2.4.0"
-  dependencies:
-    "@cloudflare/kv-asset-handler": ^0.1.3
-    "@remix-run/server-runtime": 2.4.0
-  peerDependencies:
-    "@cloudflare/workers-types": ^4.0.0
-    typescript: ^5.1.0
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-  checksum: ee365be2caff7d5316afda08717090938e93a3de8e207f0d75e6a90d73a65c8c91e0e4111fabd3e32f7371f6d3edf4fcd6b4a662044bf8fddf9be8830d4076f7
-  languageName: node
-  linkType: hard
-
 "@remix-run/dev@npm:^2.4.0":
   version: 2.4.0
   resolution: "@remix-run/dev@npm:2.4.0"
@@ -3633,6 +3586,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@remix-run/node@npm:2.5.1":
+  version: 2.5.1
+  resolution: "@remix-run/node@npm:2.5.1"
+  dependencies:
+    "@remix-run/server-runtime": 2.5.1
+    "@remix-run/web-fetch": ^4.4.2
+    "@remix-run/web-file": ^3.1.0
+    "@remix-run/web-stream": ^1.1.0
+    "@web3-storage/multipart-parser": ^1.0.0
+    cookie-signature: ^1.1.0
+    source-map-support: ^0.5.21
+    stream-slice: ^0.1.2
+  peerDependencies:
+    typescript: ^5.1.0
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 926f5cbdf055172052a8ebd4be80e1a28a3a4764e9ea16d93da375ba9e51086c6e2e99744307f3b8152e9d5f3337e501bd4479d7d78db395fad5121df3beae75
+  languageName: node
+  linkType: hard
+
 "@remix-run/react@npm:^2.4.0":
   version: 2.4.0
   resolution: "@remix-run/react@npm:2.4.0"
@@ -3659,6 +3633,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@remix-run/router@npm:1.14.2":
+  version: 1.14.2
+  resolution: "@remix-run/router@npm:1.14.2"
+  checksum: 8be55596f64563de95dea04c147ab67c4e6c9b72277c92d4de257dbb326e2aa16ad2adbdec32eb2c985808c642933ac895220654b8c899e4f4bd38f9fd97ff6e
+  languageName: node
+  linkType: hard
+
 "@remix-run/server-runtime@npm:2.4.0":
   version: 2.4.0
   resolution: "@remix-run/server-runtime@npm:2.4.0"
@@ -3675,6 +3656,25 @@ __metadata:
     typescript:
       optional: true
   checksum: 0959c3b854effd1b47e65e3d9e994ec95621823a92b694e90f0568507ca0a05f5c1d6551ffcb3c8603b8a60d73e92a90629c583e4ea379974c4e397d72d97baa
+  languageName: node
+  linkType: hard
+
+"@remix-run/server-runtime@npm:2.5.1":
+  version: 2.5.1
+  resolution: "@remix-run/server-runtime@npm:2.5.1"
+  dependencies:
+    "@remix-run/router": 1.14.2
+    "@types/cookie": ^0.6.0
+    "@web3-storage/multipart-parser": ^1.0.0
+    cookie: ^0.6.0
+    set-cookie-parser: ^2.4.8
+    source-map: ^0.7.3
+  peerDependencies:
+    typescript: ^5.1.0
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 7cbdaa5fad018e85221ba711bbca4a6dc686c9b748dc72c35a7fa2a5d7f84c3989ff31696063743931997101520132365a488bde8bc5a97e2b9e84b3279f6f13
   languageName: node
   linkType: hard
 
@@ -4096,6 +4096,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/cookie@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "@types/cookie@npm:0.6.0"
+  checksum: 5edce7995775b0b196b142883e4d4f71fd93c294eaec973670f1fa2540b70ea7390408ed513ddefef5fcb12a578100c76596e8f2a714b0c2ae9f70ee773f4510
+  languageName: node
+  linkType: hard
+
 "@types/debug@npm:^4.0.0":
   version: 4.1.8
   resolution: "@types/debug@npm:4.1.8"
@@ -4286,6 +4293,20 @@ __metadata:
   version: 1.0.3
   resolution: "@vanilla-extract/private@npm:1.0.3"
   checksum: 866a71ba6804edeb0735684e7723ba78f5cf0bb40d4fb538fe6bf7d73928099e341312337b2a510ac0ce96ff8a4b39eb7f7a5fad0c842532353dd20e7278f29b
+  languageName: node
+  linkType: hard
+
+"@vercel/remix@npm:^2.5.1":
+  version: 2.5.1
+  resolution: "@vercel/remix@npm:2.5.1"
+  dependencies:
+    "@remix-run/node": 2.5.1
+    "@remix-run/server-runtime": 2.5.1
+    isbot: ^3.6.8
+  peerDependencies:
+    react: "*"
+    react-dom: "*"
+  checksum: 5634592e28e17586b946f1ef4422e1d8bed73b5525e9f5d50bada572e344e2f6f8cbbde2bd47f843153c575205bedbe0f37e83a9992ffe42dbdb79c27ee8c30e
   languageName: node
   linkType: hard
 
@@ -5097,6 +5118,13 @@ __metadata:
   version: 0.5.0
   resolution: "cookie@npm:0.5.0"
   checksum: 1f4bd2ca5765f8c9689a7e8954183f5332139eb72b6ff783d8947032ec1fdf43109852c178e21a953a30c0dd42257828185be01b49d1eb1a67fd054ca588a180
+  languageName: node
+  linkType: hard
+
+"cookie@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "cookie@npm:0.6.0"
+  checksum: f56a7d32a07db5458e79c726b77e3c2eff655c36792f2b6c58d351fb5f61531e5b1ab7f46987150136e366c65213cbe31729e02a3eaed630c3bf7334635fb410
   languageName: node
   linkType: hard
 
@@ -6941,6 +6969,13 @@ isbot@latest:
   languageName: node
   linkType: hard
 
+"isbot@npm:^3.6.8":
+  version: 3.8.0
+  resolution: "isbot@npm:3.8.0"
+  checksum: 50e75df265b6e1d590174061f37c435fee2e5d4ac7e82a978d1aa41c07c347a128fa340ef31b224ddeec1ee85a614f340ed5fcd8126639af1cbb0e98cac024bc
+  languageName: node
+  linkType: hard
+
 "isexe@npm:^2.0.0":
   version: 2.0.0
   resolution: "isexe@npm:2.0.0"
@@ -7904,15 +7939,6 @@ isbot@latest:
   languageName: node
   linkType: hard
 
-"mime@npm:^2.5.2":
-  version: 2.6.0
-  resolution: "mime@npm:2.6.0"
-  bin:
-    mime: cli.js
-  checksum: 1497ba7b9f6960694268a557eae24b743fd2923da46ec392b042469f4b901721ba0adcf8b0d3c2677839d0e243b209d76e5edcbd09cfdeffa2dfb6bb4df4b862
-  languageName: node
-  linkType: hard
-
 "mimic-fn@npm:^2.1.0":
   version: 2.1.0
   resolution: "mimic-fn@npm:2.1.0"
@@ -8049,12 +8075,9 @@ isbot@latest:
   dependencies:
     "@argos-ci/playwright": ^1.3.2
     "@biomejs/biome": 1.4.1
-    "@cloudflare/workers-types": ^4.20230821.0
     "@fontsource/public-sans": ~4.5.11
     "@nextui-org/react": ^2.2.9
     "@playwright/test": ^1.40.1
-    "@remix-run/cloudflare": ^2.4.0
-    "@remix-run/cloudflare-pages": ^2.4.0
     "@remix-run/dev": ^2.4.0
     "@remix-run/react": ^2.4.0
     "@sentry/remix": ^7.91.0
@@ -8065,6 +8088,7 @@ isbot@latest:
     "@types/react": ~18.0.17
     "@types/react-dom": ~18.0.6
     "@types/wicg-file-system-access": ~2020.9.5
+    "@vercel/remix": ^2.5.1
     dexie: ~3.2.2
     dexie-react-hooks: ~1.1.1
     framer-motion: ^10.16.16

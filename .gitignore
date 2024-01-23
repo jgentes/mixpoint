@@ -26,3 +26,4 @@ functions/
 # playwright / argos
 screenshots/
 playwright-report/
+.vercel

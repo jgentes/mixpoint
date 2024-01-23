@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, redirect } from '@remix-run/cloudflare'
+import { type LoaderFunctionArgs, redirect } from '@vercel/remix'
 import { createServerClient, parse, serialize } from '@supabase/ssr'
 
 export async function loader({ request, context }: LoaderFunctionArgs) {

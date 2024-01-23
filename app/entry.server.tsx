@@ -1,4 +1,4 @@
-import { type EntryContext } from '@remix-run/cloudflare'
+import { type EntryContext } from '@vercel/remix'
 import { RemixServer } from '@remix-run/react'
 import * as Sentry from '@sentry/remix'
 import { renderHeadToString } from 'remix-island'

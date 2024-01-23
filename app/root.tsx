@@ -6,7 +6,7 @@ import {
 	LoaderFunctionArgs,
 	MetaFunction,
 	json
-} from '@remix-run/cloudflare'
+} from '@vercel/remix'
 import {
 	Links,
 	LiveReload,
