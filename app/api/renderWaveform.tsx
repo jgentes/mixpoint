@@ -9,7 +9,7 @@ import {
 	getAudioState,
 	setAppState,
 	setAudioState
-} from '~/api/db/appState'
+} from '~/api/db/appState.client'
 import { Stem, Track, db } from '~/api/db/dbHandlers'
 import { getPermission } from '~/api/fileHandlers'
 import { validateTrackStemAccess } from '~/api/fileHandlers'

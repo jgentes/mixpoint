@@ -1,10 +1,10 @@
 import { useEffect } from 'react'
 import { type WaveSurferOptions } from 'wavesurfer.js'
 import { audioEvents } from '~/api/audioEvents'
-import { audioState, getAppState, setAppState } from '~/api/db/appState'
+import { audioState, getAppState, setAppState } from '~/api/db/appState.client'
 import { STEMS, Stem, Track, db, getTrackPrefs } from '~/api/db/dbHandlers'
 import { initWaveform } from '~/api/renderWaveform'
-import StemAccessButton from '~/components/mixes/StemAccessButton'
+import StemAccessButton from '~/components/mixes/StemAccessButton.client'
 import { StemControl } from '~/components/tracks/Controls'
 import { errorHandler } from '~/utils/notifications'
 

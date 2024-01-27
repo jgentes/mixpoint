@@ -21,7 +21,7 @@ import moment from 'moment'
 import { Key, ReactNode, useCallback, useMemo, useState } from 'react'
 import { audioEvents } from '~/api/audioEvents'
 import { analyzeTracks } from '~/api/audioHandlers'
-import { appState, setAppState, setModalState } from '~/api/db/appState'
+import { appState, setAppState, setModalState } from '~/api/db/appState.client'
 import {
 	Track,
 	addToMix,

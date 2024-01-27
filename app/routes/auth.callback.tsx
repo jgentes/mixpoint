@@ -1,7 +1,7 @@
 import { type LoaderFunctionArgs, redirect } from '@vercel/remix'
 import { createServerClient, parse, serialize } from '@supabase/ssr'
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const requestUrl = new URL(request.url)
 	const code = requestUrl.searchParams.get('code')
 	const next = requestUrl.searchParams.get('next') || '/'
@@ -11,8 +11,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 		const cookies = parse(request.headers.get('Cookie') ?? '')
 
 		const supabase = createServerClient(
-			context.env.SUPABASE_URL || '',
-			context.env.SUPABASE_ANON_KEY || '',
+			process.env.SUPABASE_URL || '',
+			process.env.SUPABASE_ANON_KEY || '',
 			{
 				cookies: {
 					get(key) {

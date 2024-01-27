@@ -1,8 +1,8 @@
-import { setAudioState } from '~/api/db/appState'
+import { H } from '@highlight-run/remix/client'
+import { setAudioState } from '~/api/db/appState.client'
 import { STEMS, Stem, Track, db, storeTrackCache } from '~/api/db/dbHandlers'
 import { getStemsDirHandle } from '~/api/fileHandlers'
 import { errorHandler } from '~/utils/notifications'
-import posthog from 'posthog-js'
 
 const STEMPROXY = 'https://stems.mixpoint.dev'
 //const STEMPROXY = 'http://localhost:8787'
@@ -29,7 +29,7 @@ const stemAudio = async (trackId: Track['id']) => {
 		throw errorHandler('Permission to the file or folder was denied.')
 	}
 
-	posthog.capture('track stemmed')
+	H.track('Track Stemmed')
 
 	setAudioState[trackId].stemState('uploadingFile')
 	setAudioState[trackId].stemTimer(100)

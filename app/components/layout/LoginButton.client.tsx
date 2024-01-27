@@ -5,7 +5,7 @@ import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { SupabaseClient } from '@supabase/supabase-js'
 import { useTheme } from 'next-themes'
 import { useState } from 'react'
-import { appState } from '~/api/db/appState'
+import { appState } from '~/api/db/appState.client'
 
 const LoginButton = () => {
 	const [openAuth, setOpenAuth] = useState(false)

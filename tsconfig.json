@@ -28,6 +28,6 @@
     "**/*.ts",
     "**/*.tsx",
     "remix.env.d.ts",
-    "./global.d.ts"
+    "app/components/mixes/StemAccessButton.tsx",
   ]
 }

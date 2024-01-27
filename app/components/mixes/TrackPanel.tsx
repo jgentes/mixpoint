@@ -1,4 +1,4 @@
-import { audioState } from '~/api/db/appState'
+import { audioState } from '~/api/db/appState.client'
 import { Track, db, useLiveQuery } from '~/api/db/dbHandlers'
 import { Waveform } from '~/api/renderWaveform'
 import VolumeMeter from '~/components/mixes/VolumeMeter'

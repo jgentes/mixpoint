@@ -9,7 +9,7 @@ import {
 	getAudioState,
 	setAppState,
 	setAudioState
-} from '~/api/db/appState'
+} from '~/api/db/appState.client'
 import {
 	Stem,
 	Track,

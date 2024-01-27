@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { setAppState } from '~/api/db/appState'
+import { setAppState } from '~/api/db/appState.client'
 import { getPrefs, useLiveQuery } from '~/api/db/dbHandlers'
 import Header from '~/components/layout/Header'
 import Heart from '~/components/layout/HeartIcon'

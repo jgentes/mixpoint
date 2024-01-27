@@ -4,7 +4,7 @@ import {
 	getAudioState,
 	setAppState,
 	setAudioState
-} from '~/api/db/appState'
+} from '~/api/db/appState.client'
 import {
 	STEMS,
 	Stem,
@@ -20,30 +20,30 @@ import { errorHandler } from '~/utils/notifications'
 import { processTracks } from './audioHandlers'
 
 function showOpenFilePickerPolyfill(options: OpenFilePickerOptions) {
-	return new Promise((resolve) => {
-			const input = document.createElement("input");
-			input.type = "file";
-			input.multiple = options.multiple || false;
-			input.accept = (options.types || [])
-					.map(type => type.accept)
-					.flatMap(inst => Object.keys(inst).flatMap((key) => inst[key]))
-					.join(",");
+	return new Promise(resolve => {
+		const input = document.createElement('input')
+		input.type = 'file'
+		input.multiple = options.multiple || false
+		input.accept = (options.types || [])
+			.map(type => type.accept)
+			.flatMap(inst => Object.keys(inst).flatMap(key => inst[key]))
+			.join(',')
 
-			input.addEventListener("change", () => {
-					resolve(
-							[...input.files || []].map((file) => {
-									return {
-											getFile: async () =>
-													new Promise((resolve) => {
-															resolve(file);
-													}),
-									};
+		input.addEventListener('change', () => {
+			resolve(
+				[...(input.files || [])].map(file => {
+					return {
+						getFile: async () =>
+							new Promise(resolve => {
+								resolve(file)
 							})
-					);
-			});
+					}
+				})
+			)
+		})
 
-			input.click();
-	});
+		input.click()
+	})
 }
 
 const _getFile = async (track: Track): Promise<File | null> => {
@@ -96,7 +96,6 @@ const getPermission = async (track: Track): Promise<File | null> => {
 }
 
 const browseFile = async (trackSlot?: 0 | 1): Promise<void> => {
-
 	// if the track drawer isn't open and we're in mix view, open it, otherwise show file picker
 	const { tracks } = (await getPrefs('mix', 'tracks')) || {}
 	const mixViewVisible = !!tracks?.filter(t => t).length
@@ -105,7 +104,9 @@ const browseFile = async (trackSlot?: 0 | 1): Promise<void> => {
 	if (!openDrawer && mixViewVisible) return setAppState.openDrawer(true)
 
 	if (typeof window.showOpenFilePicker !== 'function') {
-		window.showOpenFilePicker = showOpenFilePickerPolyfill as (options?: OpenFilePickerOptions | undefined) => Promise<[FileSystemFileHandle]>;
+		window.showOpenFilePicker = showOpenFilePickerPolyfill as (
+			options?: OpenFilePickerOptions | undefined
+		) => Promise<[FileSystemFileHandle]>
 	}
 
 	const files: FileSystemFileHandle[] | undefined = await window

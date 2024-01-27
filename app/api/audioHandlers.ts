@@ -1,7 +1,11 @@
-import posthog from 'posthog-js'
+import { H } from '@highlight-run/remix/client'
 import type RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 import { guess as detectBPM } from 'web-audio-beat-detector'
-import { getAudioState, setAppState, setModalState } from '~/api/db/appState'
+import {
+	getAudioState,
+	setAppState,
+	setModalState
+} from '~/api/db/appState.client'
 import {
 	Track,
 	db,
@@ -72,7 +76,7 @@ async function getTracksRecursively(
 		// Ensure we have id's for our tracks, add them to the DB with updated lastModified dates
 		const updatedTracks = await putTracks(trackArray)
 		setAppState.processing(false)
-		posthog.capture('track added', { quantity: updatedTracks.length })
+		H.track('Track Added', { trackQuantity: updatedTracks.length })
 		return updatedTracks
 	}
 

@@ -1,7 +1,7 @@
 import { CircularProgress } from '@nextui-org/react'
 import { ReactElement } from 'react'
 import { useCountUp } from 'use-count-up'
-import { StemState, audioState } from '~/api/db/appState'
+import { StemState, audioState } from '~/api/db/appState.client'
 import { Track } from '~/api/db/dbHandlers'
 import { getStemsDirHandle, validateTrackStemAccess } from '~/api/fileHandlers'
 import { stemAudio } from '~/api/stemHandler'
