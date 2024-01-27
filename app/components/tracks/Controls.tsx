@@ -1,5 +1,5 @@
 import { Key, useCallback, useEffect, useRef, useState } from 'react'
-import { audioEvents } from '~/api/audioEvents'
+import { audioEvents } from '~/api/audioEvents.client'
 import {
 	MixPrefs,
 	STEMS,
@@ -9,7 +9,7 @@ import {
 	db,
 	getTrackPrefs,
 	useLiveQuery
-} from '~/api/db/dbHandlers'
+} from '~/api/db/dbHandlers.client'
 
 import {
 	Button,

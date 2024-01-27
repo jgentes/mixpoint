@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { processTracks } from '~/api/audioHandlers'
-import { addToMix } from '~/api/db/dbHandlers'
-import { browseFile } from '~/api/fileHandlers'
+import { processTracks } from '~/api/audioHandlers.client'
+import { addToMix } from '~/api/db/dbHandlers.client'
+import { browseFile } from '~/api/fileHandlers.client'
 import { UploadFolderIcon } from '~/components/icons'
 
 const itemsDropped = async (items: DataTransferItemList, trackSlot?: 0 | 1) => {

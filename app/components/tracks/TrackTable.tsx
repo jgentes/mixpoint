@@ -19,8 +19,8 @@ import {
 } from '@nextui-org/react'
 import moment from 'moment'
 import { Key, ReactNode, useCallback, useMemo, useState } from 'react'
-import { audioEvents } from '~/api/audioEvents'
-import { analyzeTracks } from '~/api/audioHandlers'
+import { audioEvents } from '~/api/audioEvents.client'
+import { analyzeTracks } from '~/api/audioHandlers.client'
 import { appState, setAppState, setModalState } from '~/api/db/appState.client'
 import {
 	Track,
@@ -31,8 +31,8 @@ import {
 	removeTracks,
 	setPrefs,
 	useLiveQuery
-} from '~/api/db/dbHandlers'
-import { browseFile } from '~/api/fileHandlers'
+} from '~/api/db/dbHandlers.client'
+import { browseFile } from '~/api/fileHandlers.client'
 import { ProgressBar } from '~/components/Loader'
 import {
 	AddIcon,
