@@ -9,7 +9,7 @@ import {
 	db,
 	getTrackPrefs,
 	useLiveQuery
-} from '~/api/db/dbHandlers.client'
+} from '~/api/db/dbHandlers'
 
 import {
 	Button,

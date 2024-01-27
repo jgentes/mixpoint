@@ -31,8 +31,8 @@ import {
 	removeTracks,
 	setPrefs,
 	useLiveQuery
-} from '~/api/db/dbHandlers.client'
-import { browseFile } from '~/api/fileHandlers.client'
+} from '~/api/db/dbHandlers'
+import { browseFile } from '~/api/fileHandlers'
 import { ProgressBar } from '~/components/Loader'
 import {
 	AddIcon,

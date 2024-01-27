@@ -1,4 +1,4 @@
-import { MixPrefs } from '~/api/db/dbHandlers.client'
+import { MixPrefs } from '~/api/db/dbHandlers'
 import MixCard from '~/components/mixes/MixCard'
 import {
 	CrossfaderControl,

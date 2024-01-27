@@ -2,13 +2,7 @@ import { useEffect } from 'react'
 import { type WaveSurferOptions } from 'wavesurfer.js'
 import { audioEvents } from '~/api/audioEvents.client'
 import { audioState, getAppState, setAppState } from '~/api/db/appState.client'
-import {
-	STEMS,
-	Stem,
-	Track,
-	db,
-	getTrackPrefs
-} from '~/api/db/dbHandlers.client'
+import { STEMS, Stem, Track, db, getTrackPrefs } from '~/api/db/dbHandlers'
 import { initWaveform } from '~/api/renderWaveform.client'
 import StemAccessButton from '~/components/mixes/StemAccessButton.client'
 import { StemControl } from '~/components/tracks/Controls'

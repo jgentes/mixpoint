@@ -4,7 +4,7 @@ import type { ButtonProps } from '@nextui-org/react'
 import { Key } from 'react'
 import createStore from 'teaful'
 import type WaveSurfer from 'wavesurfer.js'
-import { Stem, Track } from '~/api/db/dbHandlers.client'
+import { Stem, Track } from '~/api/db/dbHandlers'
 
 // AudioState captures whether audio is being analyzed, processed, or played
 // It's worth mentioning that mixPrefs also has the keys of tracks current being mixed. The difference is that the database is intended to retain state after refresh, and appState will retain data for a large number of tracks for efficiency (ie. don't re-analyze a waveform you've already analyzed), so references should generally be made to appstate for what tracks are currently being mixed
