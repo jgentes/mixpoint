@@ -34,7 +34,8 @@ export async function loader() {
 			SUPABASE_URL: process.env.SUPABASE_URL || 'http://supabase.url',
 			SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || 'supabase-anon-key',
 			HIGHLIGHT_PROJECT_ID:
-				process.env.HIGHLIGHT_PROJECT_ID || 'highlight-project-id'
+				process.env.HIGHLIGHT_PROJECT_ID || 'highlight-project-id',
+			ENVIRONMENT: process.env.NODE_ENV || 'development'
 		}
 	})
 }
@@ -119,7 +120,8 @@ const ThemeLoader = () => {
 		<>
 			<HighlightInit
 				projectId={data.ENV.HIGHLIGHT_PROJECT_ID}
-				serviceName="my-remix-frontend"
+				environment={data.ENV.ENVIRONMENT}
+				serviceName="Mixpoint"
 				tracingOrigins
 				networkRecording={{ enabled: true, recordHeadersAndBody: true }}
 			/>
