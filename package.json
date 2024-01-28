@@ -15,7 +15,6 @@
 		"@highlight-run/remix": "^2.0.16",
 		"@nextui-org/react": "^2.2.9",
 		"@remix-run/react": "^2.5.1",
-		"@remix-run/serve": "^2.5.1",
 		"@supabase/auth-ui-react": "^0.4.6",
 		"@supabase/ssr": "^0.0.10",
 		"@supabase/supabase-js": "^2.38.4",
@@ -43,6 +42,7 @@
 		"@highlight-run/sourcemap-uploader": "^0.6.0",
 		"@playwright/test": "^1.40.1",
 		"@remix-run/dev": "^2.5.1",
+		"@remix-run/serve": "^2.5.1",
 		"@types/node": "^20.11.8",
 		"@types/react": "^18.2.48",
 		"@types/react-dom": "^18.2.18",
@@ -52,6 +52,6 @@
 		"zod": "^3.22.3"
 	},
 	"engines": {
-		"node": ">=18.17.1"
+		"node": "20"
 	}
 }
