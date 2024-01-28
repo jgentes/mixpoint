@@ -4,7 +4,7 @@ export const SSR_HOSTNAME: string = 'mixpoint.dev'
 export const APPWRITE_HOSTNAME: string = `appwrite.${SSR_HOSTNAME}`
 
 export const APPWRITE_ENDPOINT = `https://${APPWRITE_HOSTNAME}/v1`
-export const APPWRITE_PROJECT = '65822c847babc6cc751a'
+export const APPWRITE_PROJECT = window.ENV.APPWRITE_PROJECT
 
 const client = new Client()
 client.setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT)

@@ -2,14 +2,14 @@ import { useEffect } from 'react'
 import WaveSurfer, { type WaveSurferOptions } from 'wavesurfer.js'
 import Minimap from 'wavesurfer.js/dist/plugins/minimap.js'
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
-import { audioEvents } from '~/api/audioEvents'
+import { audioEvents } from '~/api/audioEvents.client'
 import {
 	appState,
 	getAppState,
 	getAudioState,
 	setAppState,
 	setAudioState
-} from '~/api/db/appState'
+} from '~/api/db/appState.client'
 import { Stem, Track, db } from '~/api/db/dbHandlers'
 import { getPermission } from '~/api/fileHandlers'
 import { validateTrackStemAccess } from '~/api/fileHandlers'

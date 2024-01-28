@@ -6,7 +6,7 @@ import {
 	ModalContent,
 	ModalHeader
 } from '@nextui-org/react'
-import { modalState } from '~/api/db/appState'
+import { modalState } from '~/api/db/appState.client'
 import { WarningIcon } from '~/components/icons'
 
 const ConfirmModal = () => {

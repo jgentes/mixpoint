@@ -1,5 +1,5 @@
 import { Key, useCallback, useEffect, useRef, useState } from 'react'
-import { audioEvents } from '~/api/audioEvents'
+import { audioEvents } from '~/api/audioEvents.client'
 import {
 	MixPrefs,
 	STEMS,
@@ -22,7 +22,7 @@ import {
 	Tabs,
 	Tooltip
 } from '@nextui-org/react'
-import { audioState } from '~/api/db/appState'
+import { audioState } from '~/api/db/appState.client'
 import {
 	EjectIcon,
 	HeadsetIcon,

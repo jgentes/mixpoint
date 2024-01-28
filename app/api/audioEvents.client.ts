@@ -3,13 +3,13 @@ import type WaveSurfer from 'wavesurfer.js'
 import RegionsPlugin, {
 	type Region
 } from 'wavesurfer.js/dist/plugins/regions.js'
-import { calcMarkers } from '~/api/audioHandlers'
+import { calcMarkers } from '~/api/audioHandlers.client'
 import {
 	getAppState,
 	getAudioState,
 	setAppState,
 	setAudioState
-} from '~/api/db/appState'
+} from '~/api/db/appState.client'
 import {
 	Stem,
 	Track,
@@ -21,7 +21,7 @@ import {
 	setTrackPrefs,
 	updateTrack
 } from '~/api/db/dbHandlers'
-import { initAudioContext, initWaveform } from '~/api/renderWaveform'
+import { initAudioContext, initWaveform } from '~/api/renderWaveform.client'
 import { convertToSecs } from '~/utils/tableOps'
 
 // audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered

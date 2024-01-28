@@ -1,6 +1,6 @@
 // This file provides a few helper functions for interacting with the database
 import { useLiveQuery } from 'dexie-react-hooks'
-import { audioEvents } from '~/api/audioEvents'
+import { audioEvents } from '~/api/audioEvents.client'
 import {
 	__Mix as Mix,
 	__MixPrefs as MixPrefs,

@@ -2,7 +2,7 @@ import { Button, Input, Modal, ModalContent } from '@nextui-org/react'
 import { useTheme } from 'next-themes'
 import { useState } from 'react'
 import { AppwriteService } from '~/AppwriteService'
-import { appState, setAppState } from '~/api/db/appState'
+import { appState, setAppState } from '~/api/db/appState.client'
 
 const LoginButton = () => {
 	const [openAuth, setOpenAuth] = useState(false)

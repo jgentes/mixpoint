@@ -19,9 +19,9 @@ import {
 } from '@nextui-org/react'
 import moment from 'moment'
 import { Key, ReactNode, useCallback, useMemo, useState } from 'react'
-import { audioEvents } from '~/api/audioEvents'
-import { analyzeTracks } from '~/api/audioHandlers'
-import { appState, setAppState, setModalState } from '~/api/db/appState'
+import { audioEvents } from '~/api/audioEvents.client'
+import { analyzeTracks } from '~/api/audioHandlers.client'
+import { appState, setAppState, setModalState } from '~/api/db/appState.client'
 import {
 	Track,
 	addToMix,
@@ -525,15 +525,14 @@ const TrackTable = () => {
 	const tableFooter = !tracks?.length ? null : (
 		<div className="mt-3 flex justify-between items-center">
 			<Pagination
-				showControls
 				classNames={{
-					base: 'pl-0',
 					item: 'text-md text-default-600 w-7 h-7',
 					prev: 'w-7 h-7',
 					next: 'w-7 h-7',
 					cursor:
 						'bg-transparent border-1 border-primary-300 text-transparent rounded w-7 h-7'
 				}}
+				radius="sm"
 				isCompact
 				page={page}
 				total={pages}

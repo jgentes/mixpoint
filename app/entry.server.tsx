@@ -1,17 +1,22 @@
-import { type EntryContext } from '@remix-run/cloudflare'
-import { RemixServer } from '@remix-run/react'
-import * as Sentry from '@sentry/remix'
+import { HandleError } from '@highlight-run/remix/server'
+import { type EntryContext } from '@vercel/remix'
 import { renderHeadToString } from 'remix-island'
 import { Head } from './root'
 
-import { renderToReadableStream } from 'react-dom/server'
+import { PassThrough } from 'node:stream'
 
-Sentry.init({
-	dsn: 'https://6ea05bb5dd89aae9f5695090ecbee8bc@o4506276018192384.ingest.sentry.io/4506276020092928',
-	tracesSampleRate: 0.1
-})
+import { createReadableStreamFromReadable } from '@remix-run/node'
+import { RemixServer } from '@remix-run/react'
+import { isbot } from 'isbot'
+import { renderToPipeableStream } from 'react-dom/server'
 
-export const handleError = Sentry.wrapRemixHandleError;
+const nodeOptions = {
+	projectID: process.env.HIGHLIGHT_PROJECT_ID || 'hightlight-project-id'
+}
+
+export const handleError = HandleError(nodeOptions)
+
+const ABORT_DELAY = 5_000
 
 export default function handleRequest(
 	request: Request,
@@ -19,67 +24,129 @@ export default function handleRequest(
 	responseHeaders: Headers,
 	remixContext: EntryContext
 ) {
-	return handleBrowserRequest(
-		request,
-		responseStatusCode,
-		responseHeaders,
-		remixContext
-	)
+	return isbot(request.headers.get('user-agent') || '')
+		? handleBotRequest(
+				request,
+				responseStatusCode,
+				responseHeaders,
+				remixContext
+		  )
+		: handleBrowserRequest(
+				request,
+				responseStatusCode,
+				responseHeaders,
+				remixContext
+		  )
 }
 
-async function handleBrowserRequest(
+function handleBotRequest(
 	request: Request,
 	responseStatusCode: number,
 	responseHeaders: Headers,
 	remixContext: EntryContext
 ) {
-	const didError = false
-	const readable = await renderToReadableStream(
-		<RemixServer context={remixContext} url={request.url} />
-	)
+	return new Promise((resolve, reject) => {
+		let shellRendered = false
+		const { pipe, abort } = renderToPipeableStream(
+			<RemixServer
+				context={remixContext}
+				url={request.url}
+				abortDelay={ABORT_DELAY}
+			/>,
+			{
+				onAllReady() {
+					shellRendered = true
+					const head = renderHeadToString({ request, remixContext, Head })
+					const body = new PassThrough()
+					const stream = createReadableStreamFromReadable(body)
 
-	responseHeaders.set('Content-Type', 'text/html')
-	const stream = new ReadableStream({
-		start(controller) {
-			// Add the HTML head to the response
-			const head = renderHeadToString({ request, remixContext, Head })
-			controller.enqueue(
-				new Uint8Array(
-					new TextEncoder().encode(
+					responseHeaders.set('Content-Type', 'text/html')
+
+					resolve(
+						new Response(stream, {
+							headers: responseHeaders,
+							status: responseStatusCode
+						})
+					)
+
+					body.write(
 						`<!DOCTYPE html><html><head>${head}</head><body><div id="root">`
 					)
-				)
-			)
-
-			const reader = readable.getReader()
-			function read() {
-				reader
-					.read()
-					.then(({ done, value }) => {
-						if (done) {
-							controller.enqueue(
-								new Uint8Array(new TextEncoder().encode('</div></body></html>'))
-							)
-							controller.close()
-							return
-						}
-						controller.enqueue(value)
-						read()
-					})
-					.catch(error => {
-						controller.error(error)
-						readable.cancel()
-					})
+					pipe(body)
+					body.write('</div></body></html>')
+				},
+				onShellError(error: unknown) {
+					reject(error)
+				},
+				onError(error: unknown) {
+					//biome-ignore lint/style/noParameterAssign: Remix template
+					responseStatusCode = 500
+					// Log streaming rendering errors from inside the shell.  Don't log
+					// errors encountered during initial shell rendering since they'll
+					// reject and get logged in handleDocumentRequest.
+					if (shellRendered) {
+						console.error(error)
+					}
+				}
 			}
-			read()
-		},
-		cancel() {
-			readable.cancel()
-		}
-	})
+		)
 
-	return new Response(stream, {
-		headers: responseHeaders,
-		status: didError ? 500 : responseStatusCode
+		setTimeout(abort, ABORT_DELAY)
+	})
+}
+
+function handleBrowserRequest(
+	request: Request,
+	responseStatusCode: number,
+	responseHeaders: Headers,
+	remixContext: EntryContext
+) {
+	return new Promise((resolve, reject) => {
+		let shellRendered = false
+		const { pipe, abort } = renderToPipeableStream(
+			<RemixServer
+				context={remixContext}
+				url={request.url}
+				abortDelay={ABORT_DELAY}
+			/>,
+			{
+				onShellReady() {
+					shellRendered = true
+					const head = renderHeadToString({ request, remixContext, Head })
+					const body = new PassThrough()
+					const stream = createReadableStreamFromReadable(body)
+
+					responseHeaders.set('Content-Type', 'text/html')
+
+					resolve(
+						new Response(stream, {
+							headers: responseHeaders,
+							status: responseStatusCode
+						})
+					)
+
+					body.write(
+						`<!DOCTYPE html><html><head>${head}</head><body><div id="root">`
+					)
+					pipe(body)
+					body.write('</div></body></html>')
+				},
+				onShellError(error: unknown) {
+					reject(error)
+				},
+				onError(error: unknown) {
+					//biome-ignore lint/style/noParameterAssign: Remix template
+					responseStatusCode = 500
+					// Log streaming rendering errors from inside the shell.  Don't log
+					// errors encountered during initial shell rendering since they'll
+					// reject and get logged in handleDocumentRequest.
+					if (shellRendered) {
+						console.error(error)
+					}
+				}
+			}
+		)
+
+		setTimeout(abort, ABORT_DELAY)
 	})
 }

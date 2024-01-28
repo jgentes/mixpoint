@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { processTracks } from '~/api/audioHandlers'
+import { processTracks } from '~/api/audioHandlers.client'
 import { addToMix } from '~/api/db/dbHandlers'
 import { browseFile } from '~/api/fileHandlers'
 import { UploadFolderIcon } from '~/components/icons'

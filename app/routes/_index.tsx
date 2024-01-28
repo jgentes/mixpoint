@@ -1,8 +1,8 @@
-import { LoaderFunctionArgs } from '@remix-run/cloudflare'
+import { LoaderFunctionArgs } from '@vercel/remix'
 import { useLoaderData } from '@remix-run/react'
 import { useEffect } from 'react'
 import { APPWRITE_PROJECT, AppwriteService } from '~/AppwriteService'
-import { setAppState } from '~/api/db/appState'
+import { setAppState } from '~/api/db/appState.client'
 import { getPrefs, useLiveQuery } from '~/api/db/dbHandlers'
 import Header from '~/components/layout/Header'
 import Heart from '~/components/layout/HeartIcon'
@@ -43,11 +43,22 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 	console.log('account', account)
 	return { account }
 }
+import { ErrorBoundary } from '~/root'
 
 const Index: React.FunctionComponent = () => {
 	const { account } = useLoaderData<typeof loader>()
 	const { tracks } = useLiveQuery(() => getPrefs('mix', 'tracks')) || {}
 	const mixViewVisible = !!tracks?.filter(t => t).length
+
+	// detect mobile device
+	const userAgent = navigator.userAgent
+	if (
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		(/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) ||
+		/android/i.test(userAgent)
+	) {
+		return ErrorBoundary(Error('Mixpoint is for desktops only (for now)'))
+	}
 
 	useEffect(() => {
 		if (!mixViewVisible) setAppState.openDrawer(false)

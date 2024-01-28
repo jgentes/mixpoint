@@ -1,8 +1,8 @@
-import { type LoaderFunctionArgs, redirect } from '@remix-run/cloudflare'
 import { createServerClient, parse, serialize } from '@supabase/ssr'
 import { type EmailOtpType } from '@supabase/supabase-js'
+import { type LoaderFunctionArgs, redirect } from '@vercel/remix'
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const requestUrl = new URL(request.url)
 	const token_hash = requestUrl.searchParams.get('token_hash')
 	const type = requestUrl.searchParams.get('type') as EmailOtpType | null
@@ -13,8 +13,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 		const cookies = parse(request.headers.get('Cookie') ?? '')
 
 		const supabase = createServerClient(
-			context.env.SUPABASE_URL || '',
-			context.env.SUPABASE_ANON_KEY || '',
+			process.env.SUPABASE_URL || '',
+			process.env.SUPABASE_ANON_KEY || '',
 			{
 				cookies: {
 					get(key) {

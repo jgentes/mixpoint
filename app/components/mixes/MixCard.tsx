@@ -1,5 +1,5 @@
-import { audioEvents } from '~/api/audioEvents'
-import { appState } from '~/api/db/appState'
+import { audioEvents } from '~/api/audioEvents.client'
+import { appState } from '~/api/db/appState.client'
 import { Track, getTrackName, useLiveQuery } from '~/api/db/dbHandlers'
 import { ProgressBar } from '~/components/Loader'
 import StemPanel from '~/components/mixes/StemPanel'

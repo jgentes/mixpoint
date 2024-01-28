@@ -16,13 +16,10 @@ todo.md
 !.yarn/sdks
 !.yarn/versions
 
-# cloudflare
-.wrangler/
-functions/
-
-# Sentry Config Fileg
-.sentryclirc
+# vercel
+.vercel
 
 # playwright / argos
 screenshots/
 playwright-report/
+.vercel

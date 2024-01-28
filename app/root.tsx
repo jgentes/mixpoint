@@ -1,47 +1,52 @@
 // this file establishes the root component that renders all subsequent / child routes
 // it also injects top level styling, HTML meta tags, links, and javascript for browser rendering
+
+import { H, HighlightInit } from '@highlight-run/remix/client'
 import { NextUIProvider } from '@nextui-org/react'
-import {
-	LinksFunction,
-	LoaderFunctionArgs,
-	MetaFunction,
-	json
-} from '@remix-run/cloudflare'
 import {
 	Links,
 	LiveReload,
 	Meta,
 	Outlet,
 	Scripts,
+	isRouteErrorResponse,
 	useLoaderData,
-	useLocation
+	useRouteError
 } from '@remix-run/react'
-import * as Sentry from '@sentry/browser'
-import { withSentry } from '@sentry/remix'
 import { createBrowserClient } from '@supabase/ssr'
 import { SupabaseClient } from '@supabase/supabase-js'
+import { Analytics } from '@vercel/analytics/react'
+import { LinksFunction, MetaFunction, json } from '@vercel/remix'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
-import posthog from 'posthog-js'
 import { useEffect, useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { createHead } from 'remix-island'
-import { setAppState } from '~/api/db/appState'
+import { setAppState } from '~/api/db/appState.client'
 import ConfirmModal from '~/components/ConfirmModal'
 import { InitialLoader } from '~/components/Loader'
-import { ErrorBoundary } from '~/errorBoundary'
 import globalStyles from '~/global.css'
 import tailwind from '~/tailwind.css'
 
+interface Window {
+	ENV: {
+		SUPABASE_URL: string
+		SUPABASE_ANON_KEY: string
+		HIGHLIGHT_PROJECT_ID: string
+		APPWRITE_PROJECT: string
+		ENVIRONMENT: string
+	}
+}
+
 // this is used to inject environment variables into the browser
-export async function loader({ context }: LoaderFunctionArgs) {
+export async function loader() {
 	return json({
 		ENV: {
-			SUPABASE_URL: context.env.SUPABASE_URL || 'http://supabase.url',
-			SUPABASE_ANON_KEY: context.env.SUPABASE_ANON_KEY || 'supabase-anon-key',
-			PUBLIC_POSTHOG_KEY:
-				context.env.PUBLIC_POSTHOG_KEY || 'posthog-public-key',
-			PUBLIC_POSTHOG_HOST:
-				context.env.PUBLIC_POSTHOG_HOST || 'http://posthog.url'
+			SUPABASE_URL: process.env.SUPABASE_URL || 'http://supabase.url',
+			SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || 'supabase-anon-key',
+			HIGHLIGHT_PROJECT_ID:
+				process.env.HIGHLIGHT_PROJECT_ID || 'highlight-project-id',
+			APPWRITE_PROJECT: process.env.APPWRITE_PROJECT || 'appwrite-project',
+			ENVIRONMENT: process.env.NODE_ENV || 'development'
 		}
 	})
 }
@@ -81,8 +86,8 @@ const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
 	)
 }
 
-const ThemeLoader = ({ error }: { error?: string }) => {
-	const data = error ? {} : useLoaderData<typeof loader>()
+const ThemeLoader = () => {
+	const data = useLoaderData<typeof loader>()
 	const [loading, setLoading] = useState(true)
 	const [supabase, setSupabase] = useState<SupabaseClient>()
 
@@ -91,15 +96,6 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 		const timer = setTimeout(() => {
 			setLoading(false)
 		}, 500)
-
-		// initalize posthog
-		posthog.init(data.ENV.REACT_APP_PUBLIC_POSTHOG_KEY, {
-			api_host: data.ENV.REACT_APP_PUBLIC_POSTHOG_HOST,
-			capture_pageview: false,
-			autocapture: {
-				url_allowlist: ['https://mixpoint.dev']
-			}
-		})
 
 		// create a single instance of the supabase client
 		const supabaseClient = createBrowserClient(
@@ -110,18 +106,19 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 
 		// update login status in appState upon auth state change
 		supabaseClient.auth.onAuthStateChange((event, session) => {
-			const email = session?.user?.email
+			const email = session?.user?.email || 'no@email.found'
+			const id = session?.user?.id || 'no-id-found'
+
 			if (event === 'SIGNED_IN') {
 				setAppState.loggedIn(email)
-				posthog.identify(session?.user?.id, { email })
-				Sentry.setUser({ id: session?.user?.id, email })
-				posthog.capture('user logged in')
+
+				H.identify(email, { id })
+				H.track('Logged Out')
 			}
 			if (event === 'SIGNED_OUT') {
 				setAppState.loggedIn('')
-				posthog.capture('user logged out')
-				Sentry.setUser(null)
-				posthog.reset()
+
+				H.track('Logged Out')
 			}
 		})
 
@@ -131,38 +128,70 @@ const ThemeLoader = ({ error }: { error?: string }) => {
 	}, [data])
 
 	return (
-		<NextUIProvider>
-			<NextThemesProvider attribute="class" defaultTheme="dark">
-				{loading || error ? (
-					<InitialLoader message={error} />
-				) : (
-					<>
-						<Outlet context={{ supabase }} />
-						<ConfirmModal />
-					</>
-				)}
-				<Toaster toastOptions={{ duration: 5000 }} />
-			</NextThemesProvider>
-		</NextUIProvider>
+		<>
+			<HighlightInit
+				projectId={data.ENV.HIGHLIGHT_PROJECT_ID}
+				environment={data.ENV.ENVIRONMENT}
+				serviceName="Mixpoint"
+				tracingOrigins
+				networkRecording={{ enabled: true, recordHeadersAndBody: true }}
+			/>
+			<script
+				// biome-ignore lint/security/noDangerouslySetInnerHtml: https://remix.run/docs/en/main/guides/envvars#server-environment-variables
+				dangerouslySetInnerHTML={{
+					__html: `window.ENV = ${JSON.stringify(data.ENV)}`
+				}}
+			/>
+			<Analytics />
+			<NextUIProvider>
+				<NextThemesProvider attribute="class" defaultTheme="dark">
+					{loading ? (
+						<InitialLoader />
+					) : (
+						<>
+							<Outlet context={{ supabase }} />
+							<ConfirmModal />
+						</>
+					)}
+					<Toaster toastOptions={{ duration: 5000 }} />
+				</NextThemesProvider>
+			</NextUIProvider>
+		</>
 	)
 }
 
-const App = ({ error }: { error?: string }) => {
-	const location = useLocation()
+const App = () => (
+	<HtmlDoc>
+		<ThemeLoader />
+		<Scripts />
+	</HtmlDoc>
+)
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: location is used to trigger new pageview capture
-	useEffect(() => {
-		posthog.capture('$pageview')
-	}, [location])
+const ErrorBoundary = (error: Error) => {
+	const routeError = (useRouteError() as Error) || error
+
+	const message = isRouteErrorResponse(routeError)
+		? routeError.data.message || routeError.data || routeError
+		: routeError?.message || JSON.stringify(routeError)
 
 	return (
 		<HtmlDoc>
-			<ThemeLoader error={error} />
+			{!isRouteErrorResponse(error) ? null : (
+				<>
+					<script src="https://unpkg.com/highlight.run" />
+					<script
+						// biome-ignore lint/security/noDangerouslySetInnerHtml: remix reccomends this for injecting variables
+						dangerouslySetInnerHTML={{
+							__html: `
+							H.init('${process.env.HIGHLIGHT_PROJECT_ID}');
+						`
+						}}
+					/>
+				</>
+			)}
+			<InitialLoader message={message || 'Something went wrong'} />
 			<Scripts />
 		</HtmlDoc>
 	)
 }
-
-const AppWithSentry = withSentry(App, { wrapWithErrorBoundary: false })
-
-export { AppWithSentry as default, links, meta, ErrorBoundary }
+export { App as default, links, meta, ErrorBoundary }
