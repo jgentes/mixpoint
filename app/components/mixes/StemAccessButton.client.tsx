@@ -4,7 +4,7 @@ import { useCountUp } from 'use-count-up'
 import { StemState, audioState } from '~/api/db/appState.client'
 import { Track } from '~/api/db/dbHandlers'
 import { getStemsDirHandle, validateTrackStemAccess } from '~/api/fileHandlers'
-import { stemAudio } from '~/api/stemHandler.client'
+import { stemAudio } from '~/api/stemHandler'
 import {
 	OfflineDownloadIcon,
 	RuleFolderIcon,
