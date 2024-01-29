@@ -13,45 +13,82 @@ import {
 	useLoaderData,
 	useRouteError
 } from '@remix-run/react'
-import { createBrowserClient } from '@supabase/ssr'
-import { SupabaseClient } from '@supabase/supabase-js'
 import { Analytics } from '@vercel/analytics/react'
-import { LinksFunction, MetaFunction, json } from '@vercel/remix'
+import {
+	LinksFunction,
+	LoaderFunctionArgs,
+	MetaFunction,
+	json
+} from '@vercel/remix'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
 import { useEffect, useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { createHead } from 'remix-island'
+import { AppwriteService } from '~/AppwriteService'
 import { setAppState } from '~/api/db/appState.client'
 import ConfirmModal from '~/components/ConfirmModal'
 import { InitialLoader } from '~/components/Loader'
 import globalStyles from '~/global.css'
 import tailwind from '~/tailwind.css'
 
-interface Window {
-	ENV: {
-		SUPABASE_URL: string
-		SUPABASE_ANON_KEY: string
-		HIGHLIGHT_PROJECT_ID: string
-		APPWRITE_PROJECT: string
-		ENVIRONMENT: string
+declare global {
+	interface Window {
+		account: any
+		ENV: {
+			HIGHLIGHT_PROJECT_ID: string
+			APPWRITE_PROJECT_ID: string
+			ENVIRONMENT: string
+		}
 	}
 }
 
+const getCookie = (cookieString: string, cookieName: string) => {
+	const cookies = cookieString ? cookieString.split('; ') : []
+	for (let i = 0; i < cookies.length; i++) {
+		const [name, value] = cookies[i].split('=')
+		if (name === cookieName) {
+			return decodeURIComponent(value)
+		}
+	}
+	return null
+}
+
 // this is used to inject environment variables into the browser
-export async function loader() {
+export async function loader({ request }: LoaderFunctionArgs) {
+	const HIGHLIGHT_PROJECT_ID =
+		process.env.HIGHLIGHT_PROJECT_ID || 'highlight-project-id'
+	const APPWRITE_PROJECT_ID =
+		process.env.APPWRITE_PROJECT_ID || 'appwrite-project-id'
+	const ENVIRONMENT = process.env.NODE_ENV || 'development'
+
+	// set Appwrite session
+	const sessionName = `a_session_${APPWRITE_PROJECT_ID.toLowerCase()}`
+
+	const hash =
+		getCookie(request.headers.get('Cookie') ?? '', sessionName) ??
+		getCookie(request.headers.get('Cookie') ?? '', `${sessionName}_legacy`) ??
+		''
+
+	AppwriteService.setSession(hash)
+
+	let account
+	try {
+		account = await AppwriteService.getAccount()
+	} catch (err) {
+		account = null
+	}
+
 	return json({
+		account,
 		ENV: {
-			SUPABASE_URL: process.env.SUPABASE_URL || 'http://supabase.url',
-			SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || 'supabase-anon-key',
-			HIGHLIGHT_PROJECT_ID:
-				process.env.HIGHLIGHT_PROJECT_ID || 'highlight-project-id',
-			APPWRITE_PROJECT: process.env.APPWRITE_PROJECT || 'appwrite-project',
-			ENVIRONMENT: process.env.NODE_ENV || 'development'
+			HIGHLIGHT_PROJECT_ID,
+			APPWRITE_PROJECT_ID,
+			ENVIRONMENT
 		}
 	})
 }
 
-// this is needed to address React 18.2 hydration issues
+// remix-island is needed to address React 18.2 hydration issues
 // TODO - remove this once React 18.3 is released
 export const Head = createHead(() => (
 	<>
@@ -87,9 +124,8 @@ const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
 }
 
 const ThemeLoader = () => {
-	const data = useLoaderData<typeof loader>()
+	const { ENV, account } = useLoaderData<typeof loader>()
 	const [loading, setLoading] = useState(true)
-	const [supabase, setSupabase] = useState<SupabaseClient>()
 
 	useEffect(() => {
 		// initial loading screen timeout
@@ -97,41 +133,34 @@ const ThemeLoader = () => {
 			setLoading(false)
 		}, 500)
 
-		// create a single instance of the supabase client
-		const supabaseClient = createBrowserClient(
-			data.ENV.SUPABASE_URL,
-			data.ENV.SUPABASE_ANON_KEY
-		)
-		setSupabase(supabaseClient)
-
 		// update login status in appState upon auth state change
-		supabaseClient.auth.onAuthStateChange((event, session) => {
-			const email = session?.user?.email || 'no@email.found'
-			const id = session?.user?.id || 'no-id-found'
+		// supabaseClient.auth.onAuthStateChange((event, session) => {
+		// 	const email = session?.user?.email || 'no@email.found'
+		// 	const id = session?.user?.id || 'no-id-found'
 
-			if (event === 'SIGNED_IN') {
-				setAppState.loggedIn(email)
+		// 	if (event === 'SIGNED_IN') {
+		// 		setAppState.loggedIn(email)
 
-				H.identify(email, { id })
-				H.track('Logged Out')
-			}
-			if (event === 'SIGNED_OUT') {
-				setAppState.loggedIn('')
+		// 		H.identify(email, { id })
+		// 		H.track('Logged Out')
+		// 	}
+		// 	if (event === 'SIGNED_OUT') {
+		// 		setAppState.loggedIn('')
 
-				H.track('Logged Out')
-			}
-		})
+		// 		H.track('Logged Out')
+		// 	}
+		// })
 
 		return () => {
 			clearTimeout(timer)
 		}
-	}, [data])
+	}, [])
 
 	return (
 		<>
 			<HighlightInit
-				projectId={data.ENV.HIGHLIGHT_PROJECT_ID}
-				environment={data.ENV.ENVIRONMENT}
+				projectId={ENV.HIGHLIGHT_PROJECT_ID}
+				environment={ENV.ENVIRONMENT}
 				serviceName="Mixpoint"
 				tracingOrigins
 				networkRecording={{ enabled: true, recordHeadersAndBody: true }}
@@ -139,7 +168,10 @@ const ThemeLoader = () => {
 			<script
 				// biome-ignore lint/security/noDangerouslySetInnerHtml: https://remix.run/docs/en/main/guides/envvars#server-environment-variables
 				dangerouslySetInnerHTML={{
-					__html: `window.ENV = ${JSON.stringify(data.ENV)}`
+					__html: `
+						window.ENV = ${JSON.stringify(ENV)};
+						window.account = ${JSON.stringify(account)};
+					`
 				}}
 			/>
 			<Analytics />
@@ -149,7 +181,7 @@ const ThemeLoader = () => {
 						<InitialLoader />
 					) : (
 						<>
-							<Outlet context={{ supabase }} />
+							<Outlet context={account} />
 							<ConfirmModal />
 						</>
 					)}
@@ -194,4 +226,5 @@ const ErrorBoundary = (error: Error) => {
 		</HtmlDoc>
 	)
 }
+
 export { App as default, links, meta, ErrorBoundary }

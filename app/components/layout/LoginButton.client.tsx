@@ -1,8 +1,20 @@
-import { Button, Input, Modal, ModalContent } from '@nextui-org/react'
+import {
+	Button,
+	Checkbox,
+	Divider,
+	Input,
+	Link,
+	Modal,
+	ModalBody,
+	ModalContent,
+	ModalFooter,
+	ModalHeader
+} from '@nextui-org/react'
 import { useTheme } from 'next-themes'
 import { useState } from 'react'
-import { AppwriteService } from '~/AppwriteService'
+import { AppwriteService, account } from '~/AppwriteService'
 import { appState, setAppState } from '~/api/db/appState.client'
+import { GithubIcon, GoogleIcon } from '~/components/icons'
 
 const LoginButton = () => {
 	const [openAuth, setOpenAuth] = useState(false)
@@ -18,32 +30,36 @@ const LoginButton = () => {
 	const [loggedIn] = appState.loggedIn()
 	const buttonText = loggedIn ? 'Log Out' : 'Log In'
 
-	async function onCreateSession(event: any) {
-		event.preventDefault()
-		const dialog: any = document.getElementById('dialog')
-
-		setLoading(true)
-		try {
-			await fetch('/login', {
-				method: 'POST',
-				body: ''
-			})
-
-			setAppState.loggedIn(email || 'test@test.com')
-
-			setModalType('success')
-			setModalMessage(
-				'Session created! Refresh page to run SSR check, or re-fetch to run CSR cehck.'
-			)
-			dialog.showModal()
-		} catch (err: any) {
-			setModalType('error')
-			setModalMessage(err.message)
-			dialog.showModal()
-		} finally {
-			setLoading(false)
-		}
+	const useOAuth = async (provider: 'google' | 'github') => {
+		account.createOAuth2Session(provider)
 	}
+
+	// async function onCreateSession(event: any) {
+	// 	event.preventDefault()
+	// 	const dialog: any = document.getElementById('dialog')
+
+	// 	setLoading(true)
+	// 	try {
+	// 		await fetch('/login', {
+	// 			method: 'POST',
+	// 			body: ''
+	// 		})
+
+	// 		setAppState.loggedIn(email || 'test@test.com')
+
+	// 		setModalType('success')
+	// 		setModalMessage(
+	// 			'Session created! Refresh page to run SSR check, or re-fetch to run CSR cehck.'
+	// 		)
+	// 		dialog.showModal()
+	// 	} catch (err: any) {
+	// 		setModalType('error')
+	// 		setModalMessage(err.message)
+	// 		dialog.showModal()
+	// 	} finally {
+	// 		setLoading(false)
+	// 	}
+	// }
 
 	async function onDeleteSession(event: any) {
 		event.preventDefault()
@@ -84,41 +100,87 @@ const LoginButton = () => {
 			>
 				{buttonText}
 			</Button>
-			<Modal
-				isOpen={openAuth}
-				className="p-6"
-				size="xs"
-				onClose={() => setModalState(false)}
-			>
-				<ModalContent className="bg-primary-50">
-					<Input id="email" color="default" placeholder="Email" />
-					<Input id="password" color="default" placeholder="Password" />
-					<Button
-						size="sm"
-						radius="sm"
-						variant="flat"
-						color="success"
-						onSubmit={onCreateSession}
-					>
-						Log In
-					</Button>
-					{/* <Auth
-						supabaseClient={supabase}
-						appearance={{
-							theme: ThemeSupa,
-							variables: {
-								default: {
-									colors: {
-										brand: '#0059b2',
-										brandAccent: '#003fb2'
-									}
-								}
-							}
-						}}
-						providers={['google', 'github']}
-						socialLayout="horizontal"
-						theme={theme === 'dark' ? 'dark' : 'light'}
-					/> */}
+			<Modal isOpen={modalState} size="lg" onClose={() => setModalState(false)}>
+				<ModalContent>
+					<ModalHeader className="flex flex-col gap-1">Log in</ModalHeader>
+					<ModalBody>
+						<div className="flex justify-between items-center">
+							<Button
+								className="flex-1 mr-6 border-1 border-primary-300"
+								radius="sm"
+								variant="flat"
+								color="default"
+								size="md"
+								startContent={<GoogleIcon />}
+								onPress={() => useOAuth('google')}
+							>
+								Log in with Google
+							</Button>
+							<Button
+								className="flex-1 ml-6 border-1 border-primary-300"
+								radius="sm"
+								variant="flat"
+								color="default"
+								size="md"
+								startContent={<GithubIcon />}
+								onPress={() => useOAuth('github')}
+							>
+								Log in with GitHub
+							</Button>
+						</div>
+						<div className="flex justify-between items-center">
+							<Divider className="flex-1" />
+							<div className="px-4">OR</div>
+							<Divider className="flex-1" />
+						</div>
+						<Input
+							autoFocus
+							label="Email"
+							placeholder="Enter your email"
+							variant="bordered"
+							radius="sm"
+						/>
+						<Input
+							label="Password"
+							placeholder="Enter your password"
+							type="password"
+							variant="bordered"
+							radius="sm"
+						/>
+						<div className="flex py-2 px-1 justify-between">
+							<Checkbox
+								radius="sm"
+								classNames={{
+									label: 'text-small'
+								}}
+							>
+								Remember me
+							</Checkbox>
+							<Link color="primary" href="#" size="sm">
+								Forgot password?
+							</Link>
+						</div>
+					</ModalBody>
+					<ModalFooter>
+						<Button
+							variant="faded"
+							color="default"
+							size="sm"
+							radius="sm"
+							onPress={() => setModalState(false)}
+						>
+							Close
+						</Button>
+						<Button
+							size="sm"
+							radius="sm"
+							variant="flat"
+							color="success"
+							onPress={() => {}}
+						>
+							Sign in
+						</Button>
+					</ModalFooter>
 				</ModalContent>
 			</Modal>
 		</>
