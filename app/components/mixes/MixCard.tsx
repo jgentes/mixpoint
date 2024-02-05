@@ -21,14 +21,11 @@ const MixCard = ({
 	const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
 
 	const mixCardHeader = (
-		<div className="flex mb-3 justify-between">
-			<div className="flex gap-2">
-				<EjectControl trackId={trackId} />
-				<div className="text-md font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
-					{trackName}
-				</div>
+		<div className="flex mb-3 gap-2">
+			<EjectControl trackId={trackId} />
+			<div className="text-md font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
+				{trackName}
 			</div>
-
 			<BpmControl trackId={trackId} className="w-28" />
 		</div>
 	)
