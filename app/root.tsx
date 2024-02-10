@@ -93,6 +93,9 @@ const ThemeLoader = () => {
 		)
 		setSupabase(supabaseClient)
 
+		// load Highlight.io
+		if (data.ENV.ENVIRONMENT !== 'development') H.start()
+
 		// update login status in appState upon auth state change
 		supabaseClient.auth.onAuthStateChange((event, session) => {
 			const email = session?.user?.email || 'no@email.found'
@@ -120,7 +123,7 @@ const ThemeLoader = () => {
 		<>
 			<HighlightInit
 				projectId={data.ENV.HIGHLIGHT_PROJECT_ID}
-				environment={data.ENV.ENVIRONMENT}
+				manualStart={true}
 				serviceName="Mixpoint"
 				tracingOrigins
 				networkRecording={{ enabled: true, recordHeadersAndBody: true }}
@@ -165,7 +168,8 @@ const ErrorBoundary = (error: Error) => {
 
 	return (
 		<HtmlDoc>
-			{!isRouteErrorResponse(error) ? null : (
+			{!isRouteErrorResponse(error) ||
+			process.env.ENVIRONMENT === 'development' ? null : (
 				<>
 					<script src="https://unpkg.com/highlight.run" />
 					<script

@@ -3450,9 +3450,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@remix-run/dev@npm:^2.5.1":
-  version: 2.5.1
-  resolution: "@remix-run/dev@npm:2.5.1"
+"@remix-run/dev@npm:^2.6.0":
+  version: 2.6.0
+  resolution: "@remix-run/dev@npm:2.6.0"
   dependencies:
     "@babel/core": ^7.21.8
     "@babel/generator": ^7.21.5
@@ -3464,9 +3464,9 @@ __metadata:
     "@babel/types": ^7.22.5
     "@mdx-js/mdx": ^2.3.0
     "@npmcli/package-json": ^4.0.1
-    "@remix-run/node": 2.5.1
-    "@remix-run/router": 1.14.2
-    "@remix-run/server-runtime": 2.5.1
+    "@remix-run/node": 2.6.0
+    "@remix-run/router": 1.15.0
+    "@remix-run/server-runtime": 2.6.0
     "@types/mdx": ^2.0.5
     "@vanilla-extract/integration": ^6.2.0
     arg: ^5.0.1
@@ -3508,9 +3508,10 @@ __metadata:
     tsconfig-paths: ^4.0.0
     ws: ^7.4.5
   peerDependencies:
-    "@remix-run/serve": ^2.5.1
+    "@remix-run/serve": ^2.6.0
     typescript: ^5.1.0
     vite: ^5.0.0
+    wrangler: ^3.24.0
   peerDependenciesMeta:
     "@remix-run/serve":
       optional: true
@@ -3518,24 +3519,26 @@ __metadata:
       optional: true
     vite:
       optional: true
+    wrangler:
+      optional: true
   bin:
     remix: dist/cli.js
-  checksum: e361aae3680c61c9004a096ccf6d0755d26adb183edfe1a2246cfc26dbf7e0d4aef36445eb4614eee7c3260f873ae00178af23444ea00c8618dbcf59061babdc
+  checksum: ac35d04b6c11d87db6c65154cbac7b96c83176cca761efc2e7b53c93f78ba379ad9b9c2e1e2e2a1d35d8766ccbe4f5bb2b2bc54f7065f36572d9de97555dce63
   languageName: node
   linkType: hard
 
-"@remix-run/express@npm:2.5.1":
-  version: 2.5.1
-  resolution: "@remix-run/express@npm:2.5.1"
+"@remix-run/express@npm:2.6.0":
+  version: 2.6.0
+  resolution: "@remix-run/express@npm:2.6.0"
   dependencies:
-    "@remix-run/node": 2.5.1
+    "@remix-run/node": 2.6.0
   peerDependencies:
     express: ^4.17.1
     typescript: ^5.1.0
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 57ff4204776153b52abf57b5282e220fdd6bd38aa9915f4c01213e4496663010504a8ca1eec57a2f56157c2608a262c0e1aad6f4c5a0b5906a9be3b1b3deaf8b
+  checksum: 16eb63725cadf86d854bba8fe67dd73a6ba779a899f50cd1385b667e30eb968e5c3c7bd3ddb50625e46c9f27b4c159558c55b12288cc99ef926efe40ef7337c4
   languageName: node
   linkType: hard
 
@@ -3560,14 +3563,35 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@remix-run/react@npm:^2.5.1":
-  version: 2.5.1
-  resolution: "@remix-run/react@npm:2.5.1"
+"@remix-run/node@npm:2.6.0":
+  version: 2.6.0
+  resolution: "@remix-run/node@npm:2.6.0"
   dependencies:
-    "@remix-run/router": 1.14.2
-    "@remix-run/server-runtime": 2.5.1
-    react-router: 6.21.3
-    react-router-dom: 6.21.3
+    "@remix-run/server-runtime": 2.6.0
+    "@remix-run/web-fetch": ^4.4.2
+    "@remix-run/web-file": ^3.1.0
+    "@remix-run/web-stream": ^1.1.0
+    "@web3-storage/multipart-parser": ^1.0.0
+    cookie-signature: ^1.1.0
+    source-map-support: ^0.5.21
+    stream-slice: ^0.1.2
+  peerDependencies:
+    typescript: ^5.1.0
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 40141338ee9c92fce3f980cf71f4273a8a81909b3f41a0260194e6397a37a97241c798b40d9af97da0a48c6f0f2fe260362ef7079471dc62b0daa50a8bc3c281
+  languageName: node
+  linkType: hard
+
+"@remix-run/react@npm:^2.6.0":
+  version: 2.6.0
+  resolution: "@remix-run/react@npm:2.6.0"
+  dependencies:
+    "@remix-run/router": 1.15.0
+    "@remix-run/server-runtime": 2.6.0
+    react-router: 6.22.0
+    react-router-dom: 6.22.0
   peerDependencies:
     react: ^18.0.0
     react-dom: ^18.0.0
@@ -3575,7 +3599,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: e3021a455c68274951863d0f1ec0a3875d6bcc3c9f94e3c894792451886a0a081951d12fa176efc44e4508dc9954bfc4b4a868b6e4a1e06c117c31107b222bcd
+  checksum: b9d84423d7e89e25dba99309c805df4ec77fa50a4dc57a3593dba82bee2fc341bb9e270c09765953e0d1c24c4fc882ca2360f748b68ddc450fff4e67033c1f5b
   languageName: node
   linkType: hard
 
@@ -3586,12 +3610,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@remix-run/serve@npm:^2.5.1":
-  version: 2.5.1
-  resolution: "@remix-run/serve@npm:2.5.1"
+"@remix-run/router@npm:1.15.0":
+  version: 1.15.0
+  resolution: "@remix-run/router@npm:1.15.0"
+  checksum: 0b5ea6b2e7bb7f3266005e033337a6fed29c458aa5ddc9a97a90ff19813ae6dfb4392871722d66d7e8db93a29760a8257830a9af58824b3a3363ed58e1e471d8
+  languageName: node
+  linkType: hard
+
+"@remix-run/serve@npm:^2.6.0":
+  version: 2.6.0
+  resolution: "@remix-run/serve@npm:2.6.0"
   dependencies:
-    "@remix-run/express": 2.5.1
-    "@remix-run/node": 2.5.1
+    "@remix-run/express": 2.6.0
+    "@remix-run/node": 2.6.0
     chokidar: ^3.5.3
     compression: ^1.7.4
     express: ^4.17.1
@@ -3600,7 +3631,7 @@ __metadata:
     source-map-support: ^0.5.21
   bin:
     remix-serve: dist/cli.js
-  checksum: dcaff725950875a69c92db6b355b1ab4f8c052bcd42c542e14552862dadaaf036705f79021f60ba1a8eb8b5e2463bc3b9028fe580ab0b64e9b34df3bef3b6484
+  checksum: ad43eed30f2b16e5c4f76b307acf36c7bf05952741a4c35f31e29a543e073be9b4613231a1d2eb427394013f20e944597d77ca6e2800d6a468fbcc92bdb10ba1
   languageName: node
   linkType: hard
 
@@ -3620,6 +3651,25 @@ __metadata:
     typescript:
       optional: true
   checksum: 7cbdaa5fad018e85221ba711bbca4a6dc686c9b748dc72c35a7fa2a5d7f84c3989ff31696063743931997101520132365a488bde8bc5a97e2b9e84b3279f6f13
+  languageName: node
+  linkType: hard
+
+"@remix-run/server-runtime@npm:2.6.0":
+  version: 2.6.0
+  resolution: "@remix-run/server-runtime@npm:2.6.0"
+  dependencies:
+    "@remix-run/router": 1.15.0
+    "@types/cookie": ^0.6.0
+    "@web3-storage/multipart-parser": ^1.0.0
+    cookie: ^0.6.0
+    set-cookie-parser: ^2.4.8
+    source-map: ^0.7.3
+  peerDependencies:
+    typescript: ^5.1.0
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 290cfbf0d5d41d999f0aa15138f1f5f0ba2739611f64d1eee7644380f226f2b7611ef55591e983e6533bac3d5f6860d5e90754c0610b84283d595c5271b4aaee
   languageName: node
   linkType: hard
 
@@ -7792,9 +7842,9 @@ __metadata:
     "@highlight-run/sourcemap-uploader": ^0.6.0
     "@nextui-org/react": ^2.2.9
     "@playwright/test": ^1.40.1
-    "@remix-run/dev": ^2.5.1
-    "@remix-run/react": ^2.5.1
-    "@remix-run/serve": ^2.5.1
+    "@remix-run/dev": ^2.6.0
+    "@remix-run/react": ^2.6.0
+    "@remix-run/serve": ^2.6.0
     "@supabase/auth-ui-react": ^0.4.6
     "@supabase/ssr": ^0.0.10
     "@supabase/supabase-js": ^2.38.4
@@ -8865,27 +8915,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-dom@npm:6.21.3":
-  version: 6.21.3
-  resolution: "react-router-dom@npm:6.21.3"
+"react-router-dom@npm:6.22.0":
+  version: 6.22.0
+  resolution: "react-router-dom@npm:6.22.0"
   dependencies:
-    "@remix-run/router": 1.14.2
-    react-router: 6.21.3
+    "@remix-run/router": 1.15.0
+    react-router: 6.22.0
   peerDependencies:
     react: ">=16.8"
     react-dom: ">=16.8"
-  checksum: bcf668aa1428ca3048d7675f1ae3fe983c8792357a0ed59a1414cb1d682227727aad7c44c4222c6774b8d01bf352478845f7f3f668ebfcaa177208ef64e10bdc
+  checksum: 21cbdda0070dffb50845a97e2688648a9925c7ebabd1f9335523a1f8ae66048c1d9d06442f1b0ec35a266d1c63ed3b56b437db70807f73440a185f3e2d3c632f
   languageName: node
   linkType: hard
 
-"react-router@npm:6.21.3":
-  version: 6.21.3
-  resolution: "react-router@npm:6.21.3"
+"react-router@npm:6.22.0":
+  version: 6.22.0
+  resolution: "react-router@npm:6.22.0"
   dependencies:
-    "@remix-run/router": 1.14.2
+    "@remix-run/router": 1.15.0
   peerDependencies:
     react: ">=16.8"
-  checksum: 7e6297d5b67ae07d2e8564e036dbb15ebd706b41c22238940f47eee9b21ffb76d41336803c3b33435f1ebe210226577e32df3838bcbf2cd7c813fa357c0a4fac
+  checksum: 94f382f3fa6fcb8525c143d83d4c3a3b010979f417cac0bbe7a63f906b3809e2bb56e8c329b9b3fd3212a498670ab278aea72893e921b827dcf00024c3d115dd
   languageName: node
   linkType: hard
 
