@@ -33,7 +33,7 @@ const LoginButton = () => {
 	const useOAuth = async (provider: 'google' | 'github') => {
 		account.createOAuth2Session(provider)
 	}
-
+	console.log('logged in:', loggedIn)
 	// async function onCreateSession(event: any) {
 	// 	event.preventDefault()
 	// 	const dialog: any = document.getElementById('dialog')

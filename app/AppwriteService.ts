@@ -1,6 +1,13 @@
 import { Account, Client } from 'appwrite'
 
-const APPWRITE_ENDPOINT = 'https://appwrite.mixpoint.dev/v1'
+const isProd =
+	typeof document === 'undefined'
+		? process.env.NODE_ENV !== 'development'
+		: window?.ENV?.ENVIRONMENT !== 'development'
+
+const APPWRITE_ENDPOINT = `https://${
+	isProd ? 'appwrite.mixpoint.dev' : 'cloud.appwrite.io'
+}/v1`
 const APPWRITE_PROJECT_ID =
 	(typeof document === 'undefined'
 		? process.env.APPWRITE_PROJECT_ID

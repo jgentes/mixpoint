@@ -174,6 +174,7 @@ const ZoomSelectControl = ({ trackId }: { trackId: Track['id'] }) => {
 			size="sm"
 			placeholder="All Stems"
 			value={stemZoom}
+			aria-label="Stem Zoom"
 			onChange={e => {
 				if (e.target.value)
 					audioEvents.stemZoom(
