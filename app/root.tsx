@@ -133,15 +133,8 @@ const ThemeLoader = () => {
 			setLoading(false)
 		}, 500)
 
-		// create a single instance of the supabase client
-		const supabaseClient = createBrowserClient(
-			data.ENV.SUPABASE_URL,
-			data.ENV.SUPABASE_ANON_KEY
-		)
-		setSupabase(supabaseClient)
-
 		// load Highlight.io
-		if (data.ENV.ENVIRONMENT !== 'development') H.start()
+		if (ENV.ENVIRONMENT !== 'development') H.start()
 
 		// update login status in appState upon auth state change
 		// supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -164,12 +157,12 @@ const ThemeLoader = () => {
 		return () => {
 			clearTimeout(timer)
 		}
-	}, [])
+	}, [ENV.ENVIRONMENT])
 
 	return (
 		<>
 			<HighlightInit
-				projectId={data.ENV.HIGHLIGHT_PROJECT_ID}
+				projectId={ENV.HIGHLIGHT_PROJECT_ID}
 				manualStart={true}
 				serviceName="Mixpoint"
 				tracingOrigins

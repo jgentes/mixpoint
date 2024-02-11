@@ -9,7 +9,7 @@ const APPWRITE_PROJECT_ID =
 // create a single instance of the appwrite client
 const client = new Client()
 client.setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID)
-console.log('client:', APPWRITE_PROJECT_ID)
+
 const account = new Account(client)
 
 const AppwriteService = {
