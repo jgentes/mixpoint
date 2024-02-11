@@ -133,6 +133,16 @@ const ThemeLoader = () => {
 			setLoading(false)
 		}, 500)
 
+		// create a single instance of the supabase client
+		const supabaseClient = createBrowserClient(
+			data.ENV.SUPABASE_URL,
+			data.ENV.SUPABASE_ANON_KEY
+		)
+		setSupabase(supabaseClient)
+
+		// load Highlight.io
+		if (data.ENV.ENVIRONMENT !== 'development') H.start()
+
 		// update login status in appState upon auth state change
 		// supabaseClient.auth.onAuthStateChange((event, session) => {
 		// 	const email = session?.user?.email || 'no@email.found'
@@ -159,8 +169,8 @@ const ThemeLoader = () => {
 	return (
 		<>
 			<HighlightInit
-				projectId={ENV.HIGHLIGHT_PROJECT_ID}
-				environment={ENV.ENVIRONMENT}
+				projectId={data.ENV.HIGHLIGHT_PROJECT_ID}
+				manualStart={true}
 				serviceName="Mixpoint"
 				tracingOrigins
 				networkRecording={{ enabled: true, recordHeadersAndBody: true }}
@@ -208,7 +218,8 @@ const ErrorBoundary = (error: Error) => {
 
 	return (
 		<HtmlDoc>
-			{!isRouteErrorResponse(error) ? null : (
+			{!isRouteErrorResponse(error) ||
+			process.env.ENVIRONMENT === 'development' ? null : (
 				<>
 					<script src="https://unpkg.com/highlight.run" />
 					<script
