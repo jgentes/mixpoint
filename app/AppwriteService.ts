@@ -18,6 +18,7 @@ const client = new Client()
 client.setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID)
 
 const account = new Account(client)
+console.log('isprod:', isProd, typeof document)
 console.log(
 	'account:',
 	account,
