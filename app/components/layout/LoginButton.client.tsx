@@ -31,7 +31,11 @@ const LoginButton = () => {
 	const buttonText = loggedIn ? 'Log Out' : 'Log In'
 
 	const useOAuth = async (provider: 'google' | 'github') => {
-		account.createOAuth2Session(provider)
+		account.createOAuth2Session(
+			provider,
+			'https://mixpoint.dev',
+			'https://mixpoint.dev'
+		)
 	}
 	console.log('logged in:', loggedIn)
 	// async function onCreateSession(event: any) {
