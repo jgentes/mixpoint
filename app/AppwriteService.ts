@@ -18,7 +18,14 @@ const client = new Client()
 client.setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID)
 
 const account = new Account(client)
-
+console.log(
+	'account:',
+	account,
+	'endpoint:',
+	APPWRITE_ENDPOINT,
+	'project:',
+	APPWRITE_PROJECT_ID
+)
 const AppwriteService = {
 	signOut: async () => {
 		await account.deleteSession('current')
