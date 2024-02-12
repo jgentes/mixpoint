@@ -2,8 +2,8 @@ import { Account, Client } from 'appwrite'
 
 const isProd =
 	typeof document === 'undefined'
-		? process.env.NODE_ENV !== 'development'
-		: window?.ENV?.ENVIRONMENT !== 'development'
+		? process.env.VERCEL_ENV === 'production'
+		: window?.ENV?.ENVIRONMENT === 'production'
 
 const APPWRITE_ENDPOINT = `https://${
 	isProd ? 'appwrite.mixpoint.dev' : 'cloud.appwrite.io'

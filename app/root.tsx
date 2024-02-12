@@ -59,7 +59,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		process.env.HIGHLIGHT_PROJECT_ID || 'highlight-project-id'
 	const APPWRITE_PROJECT_ID =
 		process.env.APPWRITE_PROJECT_ID || 'appwrite-project-id'
-	const ENVIRONMENT = process.env.NODE_ENV || 'development'
+	const ENVIRONMENT = process.env.VERCEL_ENV || 'development'
 
 	// set Appwrite session
 	const sessionName = `a_session_${APPWRITE_PROJECT_ID.toLowerCase()}`
