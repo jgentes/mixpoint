@@ -11,7 +11,7 @@ import {
 	ModalHeader
 } from '@nextui-org/react'
 import { useTheme } from 'next-themes'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AppwriteService, account } from '~/AppwriteService'
 import { appState, setAppState } from '~/api/db/appState.client'
 import { GithubIcon, GoogleIcon } from '~/components/icons'
@@ -31,13 +31,28 @@ const LoginButton = () => {
 	const buttonText = loggedIn ? 'Log Out' : 'Log In'
 
 	const useOAuth = async (provider: 'google' | 'github') => {
-		account.createOAuth2Session(
-			provider,
-			'https://mixpoint.dev',
-			'https://mixpoint.dev'
-		)
+		try {
+			account.createOAuth2Session(
+				provider,
+				window.location.origin,
+				window.location.origin
+			)
+		} catch (err) {
+			console.error('oath error:', err)
+			// i should probably catch an error here and display it
+		}
+		// this code below never runs on successful auth because it redirects back to the app
+		// the loggged in logic should be in root useeffect
+		try {
+			const session = await account.getSession('current')
+			console.log('session:', session)
+			//setAppState.loggedIn(session.email)
+		} catch (err) {
+			console.error('not authorized:', err)
+		}
 	}
 	console.log('logged in:', loggedIn)
+
 	// async function onCreateSession(event: any) {
 	// 	event.preventDefault()
 	// 	const dialog: any = document.getElementById('dialog')
@@ -65,31 +80,32 @@ const LoginButton = () => {
 	// 	}
 	// }
 
-	async function onDeleteSession(event: any) {
-		event.preventDefault()
-
-		const dialog: any = document.getElementById('dialog')
-
-		setLoading(true)
+	async function deleteSession() {
 		try {
 			await AppwriteService.signOut()
 
-			setModalType('success')
-			setModalMessage(
+			console.log(
 				'Session deleted! Refresh page to run SSR check, or re-fetch to run CSR cehck.'
 			)
-			dialog.showModal()
-		} catch (err: any) {
-			setModalType('error')
-			setModalMessage(err.message)
-			dialog.showModal()
-		} finally {
-			setLoading(false)
+		} catch (err) {
+			console.log(err)
 		}
 	}
 
 	return (
 		<>
+			<Button
+				id="logout-button"
+				size="sm"
+				radius="sm"
+				className="border-1 border-primary-300 rounded text-primary-700 font-semibold"
+				variant="light"
+				color="primary"
+				aria-label={loggedIn || buttonText}
+				onClick={deleteSession}
+			>
+				Log Out
+			</Button>
 			<Button
 				id="login-button"
 				size="sm"
@@ -99,7 +115,7 @@ const LoginButton = () => {
 				color="primary"
 				aria-label={loggedIn || buttonText}
 				onClick={async () => {
-					loggedIn ? onDeleteSession : setModalState(true)
+					loggedIn ? deleteSession : setModalState(true)
 				}}
 			>
 				{buttonText}
