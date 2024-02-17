@@ -24,7 +24,7 @@ import { ThemeProvider as NextThemesProvider } from 'next-themes'
 import { useEffect, useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { createHead } from 'remix-island'
-import { AppwriteService } from '~/AppwriteService'
+import { AppwriteService, account } from '~/AppwriteService'
 import { setAppState } from '~/api/db/appState.client'
 import ConfirmModal from '~/components/ConfirmModal'
 import { InitialLoader } from '~/components/Loader'
@@ -124,7 +124,7 @@ const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
 }
 
 const ThemeLoader = () => {
-	const { ENV, account } = useLoaderData<typeof loader>()
+	const { ENV } = useLoaderData<typeof loader>()
 	const [loading, setLoading] = useState(true)
 
 	useEffect(() => {
@@ -136,23 +136,22 @@ const ThemeLoader = () => {
 		// load Highlight.io
 		if (ENV.ENVIRONMENT !== 'development') H.start()
 
-		// update login status in appState upon auth state change
-		// supabaseClient.auth.onAuthStateChange((event, session) => {
-		// 	const email = session?.user?.email || 'no@email.found'
-		// 	const id = session?.user?.id || 'no-id-found'
+		const checkSession = async () => {
+			if (!account) return
+			console.log('account:', account)
 
-		// 	if (event === 'SIGNED_IN') {
-		// 		setAppState.loggedIn(email)
+			try {
+				await AppwriteService.refreshSession()
+				setAppState.loggedIn(true)
 
-		// 		H.identify(email, { id })
-		// 		H.track('Logged Out')
-		// 	}
-		// 	if (event === 'SIGNED_OUT') {
-		// 		setAppState.loggedIn('')
+				const user = await AppwriteService.getUser()
+				H.identify(user.email, { id: user.$id })
+			} catch (err) {
+				setAppState.loggedIn(false)
+			}
+		}
 
-		// 		H.track('Logged Out')
-		// 	}
-		// })
+		checkSession()
 
 		return () => {
 			clearTimeout(timer)
@@ -173,7 +172,6 @@ const ThemeLoader = () => {
 				dangerouslySetInnerHTML={{
 					__html: `
 						window.ENV = ${JSON.stringify(ENV)};
-						window.account = ${JSON.stringify(account)};
 					`
 				}}
 			/>
