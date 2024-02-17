@@ -455,9 +455,9 @@ const TrackTable = () => {
 					'text-default-600',
 					'text-sm',
 					'rounded',
-					dragOver ? 'bg-primary-500 bg-opacity-10' : 'bg-default/30'
+					dragOver ? 'bg-default/10' : 'bg-default/20'
 				],
-				tr: ['rounded border-b-1 border-divider'],
+				tr: ['rounded border-b-1 border-divider '],
 				tbody: dragOver ? 'bg-primary-500 bg-opacity-10' : ''
 			}}
 			selectedKeys={selected}

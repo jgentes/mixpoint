@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react'
 import { AppwriteService, account } from '~/AppwriteService'
 import { appState, setAppState } from '~/api/db/appState.client'
 import { GithubIcon, GoogleIcon } from '~/components/icons'
+import { errorHandler } from '~/utils/notifications'
 
 const LoginButton = () => {
 	const [openAuth, setOpenAuth] = useState(false)
@@ -38,8 +39,7 @@ const LoginButton = () => {
 				window.location.origin
 			)
 		} catch (err) {
-			console.error('oath error:', err)
-			// i should probably catch an error here and display it
+			errorHandler(err as Error)
 		}
 		// this code below never runs on successful auth because it redirects back to the app
 		// the loggged in logic should be in root useeffect
