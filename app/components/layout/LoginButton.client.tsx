@@ -39,16 +39,7 @@ const LoginButton = () => {
 				window.location.origin
 			)
 		} catch (err) {
-			errorHandler(err as Error)
-		}
-		// this code below never runs on successful auth because it redirects back to the app
-		// the loggged in logic should be in root useeffect
-		try {
-			const session = await account.getSession('current')
-			console.log('session:', session)
-			//setAppState.loggedIn(session.email)
-		} catch (err) {
-			console.error('not authorized:', err)
+			errorHandler('Login failed')
 		}
 	}
 	console.log('logged in:', loggedIn)

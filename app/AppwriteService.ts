@@ -20,17 +20,15 @@ client.setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID)
 const account = new Account(client)
 
 const AppwriteService = {
-	signOut: async () => {
-		await account.deleteSession('current')
-	},
-	getAccount: async () => {
-		return await account.get()
-	},
+	signOut: async () => await account.deleteSession('current'),
+	getUser: async () => await account.get(),
+	getSession: async () => await account.getSession('current'),
 	setSession: (hash: string) => {
 		const authCookies: { [key: string]: string } = {}
 		authCookies[`a_session_${APPWRITE_PROJECT_ID}`] = hash
 		client.headers['X-Fallback-Cookies'] = JSON.stringify(authCookies)
-	}
+	},
+	refreshSession: async () => await account.updateSession('current'),
 }
 
 export { AppwriteService, account }
