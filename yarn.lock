@@ -3817,120 +3817,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@stitches/core@npm:^1.2.8":
-  version: 1.2.8
-  resolution: "@stitches/core@npm:1.2.8"
-  checksum: 3a76a697b1d71ffb212e8b166f923c8f66ef99de93689dd417571f90fbba5692abb9a92220acd102baf5298896f0fdfeaa721da2d61adee1247531a26f67a15f
-  languageName: node
-  linkType: hard
-
-"@supabase/auth-ui-react@npm:^0.4.6":
-  version: 0.4.7
-  resolution: "@supabase/auth-ui-react@npm:0.4.7"
-  dependencies:
-    "@stitches/core": ^1.2.8
-    "@supabase/auth-ui-shared": 0.1.8
-    prop-types: ^15.7.2
-    react: ^18.2.0
-    react-dom: ^18.2.0
-  peerDependencies:
-    "@supabase/supabase-js": ^2.21.0
-  checksum: 14618567613425352f026d7bd8ceff2124a60151ca312276b5b863f8bf6e994be2f9f45773f0c42b790dd66d80396d2510d753a90d0caa5f9c7c37b7d2ca4c93
-  languageName: node
-  linkType: hard
-
-"@supabase/auth-ui-shared@npm:0.1.8":
-  version: 0.1.8
-  resolution: "@supabase/auth-ui-shared@npm:0.1.8"
-  peerDependencies:
-    "@supabase/supabase-js": ^2.21.0
-  checksum: ed64b8da8e860f680d0d6e11ec31b3e77e063904c566d5853ae6b07517b266e318f01251c7c5cd7930b47fd67d1e6b0435c443b417b45ae19dae53beb91ab97a
-  languageName: node
-  linkType: hard
-
-"@supabase/functions-js@npm:^2.1.5":
-  version: 2.2.0
-  resolution: "@supabase/functions-js@npm:2.2.0"
-  dependencies:
-    "@supabase/node-fetch": ^2.6.14
-  checksum: b6e17c9cb4367e25f3df3d9f3b111ec908b92221640889d5f87f2999645696bf9168a69544b4812e0044256df8792e83da2937d3f818d3380abbef4504d11c6c
-  languageName: node
-  linkType: hard
-
-"@supabase/gotrue-js@npm:^2.60.0":
-  version: 2.62.2
-  resolution: "@supabase/gotrue-js@npm:2.62.2"
-  dependencies:
-    "@supabase/node-fetch": ^2.6.14
-  checksum: d77f5075c56dc8529b137f8aba3e4f5ee7da30c21f519202fd63d2b71aef459b6b61daee0a7e199eaa31ab14206336efa0141baafebfe3f1fb94c0e1f15dfbf5
-  languageName: node
-  linkType: hard
-
-"@supabase/node-fetch@npm:^2.6.14":
-  version: 2.6.15
-  resolution: "@supabase/node-fetch@npm:2.6.15"
-  dependencies:
-    whatwg-url: ^5.0.0
-  checksum: 9673b49236a56df49eb7ea5cb789cf4e8b1393069b84b4964ac052995e318a34872f428726d128f232139e17c3375a531e45e99edd3e96a25cce60d914b53879
-  languageName: node
-  linkType: hard
-
-"@supabase/postgrest-js@npm:^1.9.0":
-  version: 1.11.0
-  resolution: "@supabase/postgrest-js@npm:1.11.0"
-  dependencies:
-    "@supabase/node-fetch": ^2.6.14
-  checksum: ffbc10af140b71c2f4d1d0a6484f2fddb1887b4b74d3d141b6df8fb9870af8b35bced922b932b5e1539261a38e656844e20938f5cd9de8031122c342a07954ad
-  languageName: node
-  linkType: hard
-
-"@supabase/realtime-js@npm:^2.9.3":
-  version: 2.9.3
-  resolution: "@supabase/realtime-js@npm:2.9.3"
-  dependencies:
-    "@supabase/node-fetch": ^2.6.14
-    "@types/phoenix": ^1.5.4
-    "@types/ws": ^8.5.10
-    ws: ^8.14.2
-  checksum: 180a5084b94a4e324fc04041182bf8819c3c2545a731c276a56f9647f78078180b0460b68a0d6c568d29b2fa4aace0545bb71dcb89b547ec85781032dff74e71
-  languageName: node
-  linkType: hard
-
-"@supabase/ssr@npm:^0.0.10":
-  version: 0.0.10
-  resolution: "@supabase/ssr@npm:0.0.10"
-  dependencies:
-    cookie: ^0.5.0
-    ramda: ^0.29.0
-  peerDependencies:
-    "@supabase/supabase-js": ^2.33.1
-  checksum: ab26a51ec2e6571f0f3896f941e535f522e38e2614cc380b656d67ca66395d23e9213a175d17b1012b8a06278ccf752a787e387d8c37d0bac84f3c7bcd34f2c6
-  languageName: node
-  linkType: hard
-
-"@supabase/storage-js@npm:^2.5.4":
-  version: 2.5.5
-  resolution: "@supabase/storage-js@npm:2.5.5"
-  dependencies:
-    "@supabase/node-fetch": ^2.6.14
-  checksum: 4470499113c15e1124d99048eef0097c7ba431d728e351519ee26948775171d6c6bb41156f8ffb3860009b82b93809af01c9d075ece6000f783f59ce9fd00ee8
-  languageName: node
-  linkType: hard
-
-"@supabase/supabase-js@npm:^2.38.4":
-  version: 2.39.3
-  resolution: "@supabase/supabase-js@npm:2.39.3"
-  dependencies:
-    "@supabase/functions-js": ^2.1.5
-    "@supabase/gotrue-js": ^2.60.0
-    "@supabase/node-fetch": ^2.6.14
-    "@supabase/postgrest-js": ^1.9.0
-    "@supabase/realtime-js": ^2.9.3
-    "@supabase/storage-js": ^2.5.4
-  checksum: df8a5fe7a06cd26069a0add024af46021b04bf3f5101259932103f7d76b45eee3b4d7f3164335844ceebb9cef83601ded9ba95dfc7da7ce9bbf2708702f90deb
-  languageName: node
-  linkType: hard
-
 "@swc/helpers@npm:^0.4.14":
   version: 0.4.36
   resolution: "@swc/helpers@npm:0.4.36"
@@ -4039,13 +3925,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/phoenix@npm:^1.5.4":
-  version: 1.6.4
-  resolution: "@types/phoenix@npm:1.6.4"
-  checksum: 0f13849602db6d9a2a4b9d96386c45471acedf2bc3d6bf6b3289876fa73f0fe0e84c8466bd55c4f2763d33e142e5311c220820fed9ac2a21d9126f1f70a7338f
-  languageName: node
-  linkType: hard
-
 "@types/prop-types@npm:*":
   version: 15.7.11
   resolution: "@types/prop-types@npm:15.7.11"
@@ -4098,15 +3977,6 @@ __metadata:
   version: 2020.9.8
   resolution: "@types/wicg-file-system-access@npm:2020.9.8"
   checksum: 08ef73d68e9a5596d0d17f0f9651745cb9edf98afdee3f9fe852c44123e7b5254ede38c151ebea5127e4a4a59fcd850ce762e56b1278079afff3aadf53dc0776
-  languageName: node
-  linkType: hard
-
-"@types/ws@npm:^8.5.10":
-  version: 8.5.10
-  resolution: "@types/ws@npm:8.5.10"
-  dependencies:
-    "@types/node": "*"
-  checksum: 3ec416ea2be24042ebd677932a462cf16d2080393d8d7d0b1b3f5d6eaa4a7387aaf0eefb99193c0bfd29444857cf2e0c3ac89899e130550dc6c14ada8a46d25e
   languageName: node
   linkType: hard
 
@@ -5034,7 +4904,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cookie@npm:0.5.0, cookie@npm:^0.5.0":
+"cookie@npm:0.5.0":
   version: 0.5.0
   resolution: "cookie@npm:0.5.0"
   checksum: 1f4bd2ca5765f8c9689a7e8954183f5332139eb72b6ff783d8947032ec1fdf43109852c178e21a953a30c0dd42257828185be01b49d1eb1a67fd054ca588a180
@@ -7125,7 +6995,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loose-envify@npm:^1.0.0, loose-envify@npm:^1.1.0, loose-envify@npm:^1.4.0":
+"loose-envify@npm:^1.0.0, loose-envify@npm:^1.1.0":
   version: 1.4.0
   resolution: "loose-envify@npm:1.4.0"
   dependencies:
@@ -7943,9 +7813,6 @@ __metadata:
     "@remix-run/dev": ^2.6.0
     "@remix-run/react": ^2.6.0
     "@remix-run/serve": ^2.6.0
-    "@supabase/auth-ui-react": ^0.4.6
-    "@supabase/ssr": ^0.0.10
-    "@supabase/supabase-js": ^2.38.4
     "@types/node": ^20.11.17
     "@types/react": ^18.2.55
     "@types/react-dom": ^18.2.19
@@ -8275,7 +8142,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"object-assign@npm:^4.0.1, object-assign@npm:^4.1.1":
+"object-assign@npm:^4.0.1":
   version: 4.1.1
   resolution: "object-assign@npm:4.1.1"
   checksum: fcc6e4ea8c7fe48abfbb552578b1c53e0d194086e2e6bbbf59e0a536381a292f39943c6e9628af05b5528aa5e3318bb30d6b2e53cadaf5b8fe9e12c4b69af23f
@@ -8805,17 +8672,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:^15.7.2":
-  version: 15.8.1
-  resolution: "prop-types@npm:15.8.1"
-  dependencies:
-    loose-envify: ^1.4.0
-    object-assign: ^4.1.1
-    react-is: ^16.13.1
-  checksum: c056d3f1c057cb7ff8344c645450e14f088a915d078dcda795041765047fa080d38e5d626560ccaac94a4e16e3aa15f3557c1a9a8d1174530955e992c675e459
-  languageName: node
-  linkType: hard
-
 "property-information@npm:^6.0.0":
   version: 6.4.1
   resolution: "property-information@npm:6.4.1"
@@ -8915,13 +8771,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ramda@npm:^0.29.0":
-  version: 0.29.1
-  resolution: "ramda@npm:0.29.1"
-  checksum: df7c627597a66d5f317f6ba77ad17d7ba818efc9c2c4a638440bc23f2c651e823970ea05b05a28895738c0e4b738fadbdc17b2c97b3ad922826febc09c859c44
-  languageName: node
-  linkType: hard
-
 "range-parser@npm:~1.2.1":
   version: 1.2.1
   resolution: "range-parser@npm:1.2.1"
@@ -8955,7 +8804,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:^18.2.0, react-dom@npm:~18":
+"react-dom@npm:~18":
   version: 18.2.0
   resolution: "react-dom@npm:18.2.0"
   dependencies:
@@ -8976,13 +8825,6 @@ __metadata:
     react: ">=16"
     react-dom: ">=16"
   checksum: 3e337816db574782454bf09c63a8aca546bf9c5be3f83d0494d24bdcfd97ca2db64d4c151c4ab0184d2342d7a7226403e6812e70caf03c8b55a07787bb4ad0f2
-  languageName: node
-  linkType: hard
-
-"react-is@npm:^16.13.1":
-  version: 16.13.1
-  resolution: "react-is@npm:16.13.1"
-  checksum: f7a19ac3496de32ca9ae12aa030f00f14a3d45374f1ceca0af707c831b2a6098ef0d6bdae51bd437b0a306d7f01d4677fcc8de7c0d331eb47ad0f46130e53c5f
   languageName: node
   linkType: hard
 
@@ -9082,7 +8924,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:^18.2.0, react@npm:~18":
+"react@npm:~18":
   version: 18.2.0
   resolution: "react@npm:18.2.0"
   dependencies:
@@ -10842,7 +10684,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.13.0, ws@npm:^8.14.2":
+"ws@npm:^8.13.0":
   version: 8.16.0
   resolution: "ws@npm:8.16.0"
   peerDependencies:
