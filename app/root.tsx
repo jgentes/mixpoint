@@ -135,9 +135,9 @@ const ThemeLoader = () => {
 			try {
 				const user = await AppwriteService.getUser()
 				H.identify(user.email, { id: user.$id })
-				setAppState.loggedIn(true)
+				setAppState.loggedIn(user.email)
 			} catch (err) {
-				setAppState.loggedIn(false)
+				setAppState.loggedIn('false')
 			}
 		}
 

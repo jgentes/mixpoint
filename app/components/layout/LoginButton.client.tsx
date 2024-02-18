@@ -8,7 +8,8 @@ import {
 	ModalBody,
 	ModalContent,
 	ModalFooter,
-	ModalHeader
+	ModalHeader,
+	Tooltip
 } from '@nextui-org/react'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
@@ -73,7 +74,7 @@ const LoginButton = () => {
 	async function deleteSession() {
 		try {
 			await AppwriteService.signOut()
-			setAppState.loggedIn(false)
+			setAppState.loggedIn('')
 		} catch (err) {
 			errorHandler('Logout failed')
 		}
@@ -81,20 +82,22 @@ const LoginButton = () => {
 
 	return (
 		<>
-			<Button
-				id="auth-button"
-				size="sm"
-				radius="sm"
-				className="border-1 border-primary-300 rounded text-primary-700 font-semibold"
-				variant="light"
-				color="primary"
-				aria-label={buttonText}
-				onClick={async () => {
-					loggedIn ? deleteSession() : setModalState(true)
-				}}
-			>
-				{buttonText}
-			</Button>
+			<Tooltip color="default" size="sm" content={loggedIn || ''}>
+				<Button
+					id="auth-button"
+					size="sm"
+					radius="sm"
+					className="border-1 border-primary-300 rounded text-primary-700 font-semibold"
+					variant="light"
+					color="primary"
+					aria-label={buttonText}
+					onClick={async () => {
+						loggedIn ? deleteSession() : setModalState(true)
+					}}
+				>
+					{buttonText}
+				</Button>
+			</Tooltip>
 			<Modal isOpen={modalState} size="lg" onClose={() => setModalState(false)}>
 				<ModalContent>
 					<ModalHeader className="flex flex-col gap-1">Log in</ModalHeader>

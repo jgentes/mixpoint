@@ -135,10 +135,10 @@ const TrackTable = () => {
 
 			return (
 				<Button
+					variant="light"
+					color="primary"
 					size="sm"
 					radius="sm"
-					variant="ghost"
-					color="primary"
 					isDisabled={isBeingAnalyzed}
 					className={`border-1 rounded h-6 px-2 gap-1 ${
 						isInMix
@@ -152,7 +152,7 @@ const TrackTable = () => {
 							<AddIcon className="text-lg" />
 						)
 					}
-					onClick={() => {
+					onPress={() => {
 						!isInMix ? addToMixHandler(track) : audioEvents.ejectTrack(track.id)
 					}}
 				>
