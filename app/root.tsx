@@ -61,7 +61,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		process.env.APPWRITE_PROJECT_ID || 'appwrite-project-id'
 	const ENVIRONMENT = process.env.VERCEL_ENV || 'development'
 
-	// set Appwrite session
+	// set Appwrite session on the server
 	const sessionName = `a_session_${APPWRITE_PROJECT_ID.toLowerCase()}`
 
 	const hash =
@@ -70,16 +70,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		''
 
 	AppwriteService.setSession(hash)
-
-	let account
-	try {
-		account = await AppwriteService.getAccount()
-	} catch (err) {
-		account = null
-	}
+	// end Appwrite session
 
 	return json({
-		account,
 		ENV: {
 			HIGHLIGHT_PROJECT_ID,
 			APPWRITE_PROJECT_ID,
@@ -134,18 +127,15 @@ const ThemeLoader = () => {
 		}, 500)
 
 		// load Highlight.io
-		if (ENV.ENVIRONMENT !== 'development') H.start()
+		if (ENV.ENVIRONMENT === 'production') H.start()
 
 		const checkSession = async () => {
 			if (!account) return
-			console.log('account:', account)
 
 			try {
-				await AppwriteService.refreshSession()
-				setAppState.loggedIn(true)
-
 				const user = await AppwriteService.getUser()
 				H.identify(user.email, { id: user.$id })
+				setAppState.loggedIn(true)
 			} catch (err) {
 				setAppState.loggedIn(false)
 			}

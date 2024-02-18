@@ -42,7 +42,6 @@ const LoginButton = () => {
 			errorHandler('Login failed')
 		}
 	}
-	console.log('logged in:', loggedIn)
 
 	// async function onCreateSession(event: any) {
 	// 	event.preventDefault()
@@ -74,39 +73,24 @@ const LoginButton = () => {
 	async function deleteSession() {
 		try {
 			await AppwriteService.signOut()
-
-			console.log(
-				'Session deleted! Refresh page to run SSR check, or re-fetch to run CSR cehck.'
-			)
+			setAppState.loggedIn(false)
 		} catch (err) {
-			console.log(err)
+			errorHandler('Logout failed')
 		}
 	}
 
 	return (
 		<>
 			<Button
-				id="logout-button"
+				id="auth-button"
 				size="sm"
 				radius="sm"
 				className="border-1 border-primary-300 rounded text-primary-700 font-semibold"
 				variant="light"
 				color="primary"
-				aria-label={loggedIn || buttonText}
-				onClick={deleteSession}
-			>
-				Log Out
-			</Button>
-			<Button
-				id="login-button"
-				size="sm"
-				radius="sm"
-				className="border-1 border-primary-300 rounded text-primary-700 font-semibold"
-				variant="light"
-				color="primary"
-				aria-label={loggedIn || buttonText}
+				aria-label={buttonText}
 				onClick={async () => {
-					loggedIn ? deleteSession : setModalState(true)
+					loggedIn ? deleteSession() : setModalState(true)
 				}}
 			>
 				{buttonText}

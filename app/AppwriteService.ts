@@ -28,7 +28,7 @@ const AppwriteService = {
 		authCookies[`a_session_${APPWRITE_PROJECT_ID}`] = hash
 		client.headers['X-Fallback-Cookies'] = JSON.stringify(authCookies)
 	},
-	refreshSession: async () => await account.updateSession('current'),
+	refreshSession: async () => await account.updateSession('current')
 }
 
 export { AppwriteService, account }
