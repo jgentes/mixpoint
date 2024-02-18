@@ -11,7 +11,8 @@ import {
 	Scripts,
 	isRouteErrorResponse,
 	useLoaderData,
-	useRouteError
+	useRouteError,
+	useSearchParams
 } from '@remix-run/react'
 import { Analytics } from '@vercel/analytics/react'
 import {
@@ -33,7 +34,6 @@ import tailwind from '~/tailwind.css'
 
 declare global {
 	interface Window {
-		account: any
 		ENV: {
 			HIGHLIGHT_PROJECT_ID: string
 			APPWRITE_PROJECT_ID: string
@@ -118,6 +118,7 @@ const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
 
 const ThemeLoader = () => {
 	const { ENV } = useLoaderData<typeof loader>()
+	const [searchParams] = useSearchParams()
 	const [loading, setLoading] = useState(true)
 
 	useEffect(() => {
@@ -130,14 +131,20 @@ const ThemeLoader = () => {
 		if (ENV.ENVIRONMENT === 'production') H.start()
 
 		const checkSession = async () => {
-			if (!account) return
-
 			try {
+				// for magic links
+				const userId = searchParams.get('userId')
+				if (userId) {
+					const secret = searchParams.get('secret')
+					if (secret) await account.updateMagicURLSession(userId, secret)
+				}
+
 				const user = await AppwriteService.getUser()
+
 				H.identify(user.email, { id: user.$id })
 				setAppState.loggedIn(user.email)
 			} catch (err) {
-				setAppState.loggedIn('false')
+				setAppState.loggedIn('')
 			}
 		}
 
@@ -146,7 +153,7 @@ const ThemeLoader = () => {
 		return () => {
 			clearTimeout(timer)
 		}
-	}, [ENV.ENVIRONMENT])
+	}, [ENV.ENVIRONMENT, searchParams])
 
 	return (
 		<>

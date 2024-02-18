@@ -11,67 +11,39 @@ import {
 	ModalHeader,
 	Tooltip
 } from '@nextui-org/react'
-import { useTheme } from 'next-themes'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import toast from 'react-hot-toast'
 import { AppwriteService, account } from '~/AppwriteService'
 import { appState, setAppState } from '~/api/db/appState.client'
 import { GithubIcon, GoogleIcon } from '~/components/icons'
 import { errorHandler } from '~/utils/notifications'
 
 const LoginButton = () => {
-	const [openAuth, setOpenAuth] = useState(false)
-	const { theme } = useTheme()
-
 	const [email, setEmail] = useState('')
-	const [password, setPassword] = useState('')
-	const [loading, setLoading] = useState(false)
-	const [modalType, setModalType] = useState('success')
-	const [modalMessage, setModalMessage] = useState('')
 	const [modalState, setModalState] = useState(false)
 
 	const [loggedIn] = appState.loggedIn()
 	const buttonText = loggedIn ? 'Log Out' : 'Log In'
 
-	const useOAuth = async (provider: 'google' | 'github') => {
+	const useOAuth = (provider: 'google' | 'github') => {
 		try {
-			account.createOAuth2Session(
-				provider,
-				window.location.origin,
-				window.location.origin
-			)
+			AppwriteService.createOAuth2Session(provider)
 		} catch (err) {
 			errorHandler('Login failed')
 		}
 	}
 
-	// async function onCreateSession(event: any) {
-	// 	event.preventDefault()
-	// 	const dialog: any = document.getElementById('dialog')
+	const sendMagicLink = async () => {
+		try {
+			await AppwriteService.createMagicLink(email)
+			setModalState(false)
+			toast.success('Please check your email for the link to log in')
+		} catch (err) {
+			errorHandler('Magic Link failed')
+		}
+	}
 
-	// 	setLoading(true)
-	// 	try {
-	// 		await fetch('/login', {
-	// 			method: 'POST',
-	// 			body: ''
-	// 		})
-
-	// 		setAppState.loggedIn(email || 'test@test.com')
-
-	// 		setModalType('success')
-	// 		setModalMessage(
-	// 			'Session created! Refresh page to run SSR check, or re-fetch to run CSR cehck.'
-	// 		)
-	// 		dialog.showModal()
-	// 	} catch (err: any) {
-	// 		setModalType('error')
-	// 		setModalMessage(err.message)
-	// 		dialog.showModal()
-	// 	} finally {
-	// 		setLoading(false)
-	// 	}
-	// }
-
-	async function deleteSession() {
+	const deleteSession = async () => {
 		try {
 			await AppwriteService.signOut()
 			setAppState.loggedIn('')
@@ -106,7 +78,7 @@ const LoginButton = () => {
 							<Button
 								className="flex-1 mr-6 border-1 border-primary-300"
 								radius="sm"
-								variant="flat"
+								variant="ghost"
 								color="default"
 								size="md"
 								startContent={<GoogleIcon />}
@@ -117,7 +89,7 @@ const LoginButton = () => {
 							<Button
 								className="flex-1 ml-6 border-1 border-primary-300"
 								radius="sm"
-								variant="flat"
+								variant="ghost"
 								color="default"
 								size="md"
 								startContent={<GithubIcon />}
@@ -134,18 +106,20 @@ const LoginButton = () => {
 						<Input
 							autoFocus
 							label="Email"
-							placeholder="Enter your email"
+							placeholder="Enter your email to receive a link to log in"
 							variant="bordered"
 							radius="sm"
+							value={email}
+							onChange={e => setEmail(e.target.value)}
 						/>
-						<Input
+						{/* <Input
 							label="Password"
 							placeholder="Enter your password"
 							type="password"
 							variant="bordered"
 							radius="sm"
-						/>
-						<div className="flex py-2 px-1 justify-between">
+						/> */}
+						{/* <div className="flex py-2 px-1 justify-between">
 							<Checkbox
 								radius="sm"
 								classNames={{
@@ -157,7 +131,7 @@ const LoginButton = () => {
 							<Link color="primary" href="#" size="sm">
 								Forgot password?
 							</Link>
-						</div>
+						</div> */}
 					</ModalBody>
 					<ModalFooter>
 						<Button
@@ -174,9 +148,11 @@ const LoginButton = () => {
 							radius="sm"
 							variant="flat"
 							color="success"
-							onPress={() => {}}
+							className="border-1 border-success-500"
+							isDisabled={!email}
+							onPress={sendMagicLink}
 						>
-							Sign in
+							Log in
 						</Button>
 					</ModalFooter>
 				</ModalContent>

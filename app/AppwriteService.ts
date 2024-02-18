@@ -1,4 +1,4 @@
-import { Account, Client } from 'appwrite'
+import { Account, Client, ID } from 'appwrite'
 
 const isProd =
 	typeof document === 'undefined'
@@ -20,7 +20,18 @@ client.setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID)
 const account = new Account(client)
 
 const AppwriteService = {
-	signOut: async () => await account.deleteSession('current'),
+	createOAuth2Session: (provider: 'google' | 'github') =>
+		account.createOAuth2Session(
+			provider,
+			window.location.origin,
+			window.location.origin
+		),
+	createMagicLink: async (email: string) =>
+		await account.createMagicURLSession(
+			ID.unique(),
+			email,
+			window.location.origin
+		),
 	getUser: async () => await account.get(),
 	getSession: async () => await account.getSession('current'),
 	setSession: (hash: string) => {
@@ -28,7 +39,8 @@ const AppwriteService = {
 		authCookies[`a_session_${APPWRITE_PROJECT_ID}`] = hash
 		client.headers['X-Fallback-Cookies'] = JSON.stringify(authCookies)
 	},
-	refreshSession: async () => await account.updateSession('current')
+	refreshSession: async () => await account.updateSession('current'),
+	signOut: async () => await account.deleteSession('current')
 }
 
 export { AppwriteService, account }
