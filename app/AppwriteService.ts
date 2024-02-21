@@ -1,4 +1,5 @@
 import { Account, Client, ID } from 'appwrite'
+// question: how to define object in js?
 
 const isProd =
 	typeof document === 'undefined'
@@ -27,11 +28,7 @@ const AppwriteService = {
 			window.location.origin
 		),
 	createMagicLink: async (email: string) =>
-		await account.createMagicURLSession(
-			ID.unique(),
-			email,
-			window.location.origin
-		),
+		await account.createMagicURLSession(ID.unique(), email, 'mixpoint.dev'),
 	getUser: async () => await account.get(),
 	getSession: async () => await account.getSession('current'),
 	setSession: (hash: string) => {
