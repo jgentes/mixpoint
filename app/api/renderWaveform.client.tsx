@@ -88,7 +88,7 @@ const initWaveform = async ({
 			'rgb(189, 60, 0)',
 			'rgb(189, 60, 0)'
 		],
-		progressColor: 'rgba(0, 0, 0, 0.45)',
+		progressColor: 'rgba(200, 165, 49, 0.5)',
 		...waveformConfig
 	}
 
