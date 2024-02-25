@@ -4,7 +4,12 @@ import { Account, Client, ID } from 'appwrite'
 const isProd =
 	typeof document === 'undefined'
 		? process.env.VERCEL_ENV === 'production'
-		: window?.ENV?.ENVIRONMENT === 'production'
+		: window?.ENV?.ENVIRONMENT === 'production' ||
+		  window?.ENV?.ENVIRONMENT === 'preview'
+
+if (typeof document !== 'undefined') {
+	console.log('env:', window?.ENV?.ENVIRONMENT)
+}
 
 const APPWRITE_ENDPOINT = `https://${
 	isProd ? 'appwrite.mixpoint.dev' : 'cloud.appwrite.io'

@@ -150,7 +150,7 @@ const ThemeLoader = () => {
 		return () => {
 			clearTimeout(timer)
 		}
-	}, [ENV.ENVIRONMENT, searchParams])
+	}, [searchParams])
 
 	return (
 		<>
