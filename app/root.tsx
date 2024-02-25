@@ -31,16 +31,7 @@ import ConfirmModal from '~/components/ConfirmModal'
 import { InitialLoader } from '~/components/Loader'
 import globalStyles from '~/global.css'
 import tailwind from '~/tailwind.css'
-
-declare global {
-	interface Window {
-		ENV: {
-			HIGHLIGHT_PROJECT_ID: string
-			APPWRITE_PROJECT_ID: string
-			ENVIRONMENT: string
-		}
-	}
-}
+import { Env } from './utils/env'
 
 const getCookie = (cookieString: string, cookieName: string) => {
 	const cookies = cookieString ? cookieString.split('; ') : []
@@ -75,8 +66,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return json({
 		ENV: {
 			HIGHLIGHT_PROJECT_ID,
-			APPWRITE_PROJECT_ID,
-			ENVIRONMENT
+			APPWRITE_PROJECT_ID
 		}
 	})
 }
@@ -156,7 +146,7 @@ const ThemeLoader = () => {
 		<>
 			<HighlightInit
 				projectId={ENV.HIGHLIGHT_PROJECT_ID}
-				enableCanvasRecording={ENV.ENVIRONMENT === 'production'}
+				enableCanvasRecording={Env === 'production'}
 				serviceName="Mixpoint"
 				tracingOrigins
 				networkRecording={{ enabled: true, recordHeadersAndBody: true }}
@@ -203,8 +193,7 @@ const ErrorBoundary = (error: Error) => {
 
 	return (
 		<HtmlDoc>
-			{!isRouteErrorResponse(error) ||
-			process.env.ENVIRONMENT === 'development' ? null : (
+			{!isRouteErrorResponse(error) || Env === 'development' ? null : (
 				<>
 					<script src="https://unpkg.com/highlight.run" />
 					<script

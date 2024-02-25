@@ -1,19 +1,12 @@
 import { Account, Client, ID } from 'appwrite'
-// question: how to define object in js?
-
-const isProd =
-	typeof document === 'undefined'
-		? process.env.VERCEL_ENV === 'production'
-		: window?.ENV?.ENVIRONMENT === 'production' ||
-		  window?.ENV?.ENVIRONMENT === 'preview'
-
-if (typeof document !== 'undefined') {
-	console.log('env:', window?.ENV?.ENVIRONMENT)
-}
+import { Env } from '~/utils/env'
 
 const APPWRITE_ENDPOINT = `https://${
-	isProd ? 'appwrite.mixpoint.dev' : 'cloud.appwrite.io'
+	Env === 'preview' || Env === 'production'
+		? 'appwrite.mixpoint.dev'
+		: 'cloud.appwrite.io'
 }/v1`
+console.log('env:', Env)
 const APPWRITE_PROJECT_ID =
 	(typeof document === 'undefined'
 		? process.env.APPWRITE_PROJECT_ID
