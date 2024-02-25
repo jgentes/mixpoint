@@ -20,7 +20,6 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 	const trackHeader = (
 		<div className="flex justify-between mb-2 items-center">
 			<div className="flex w-36">
-				<div className="text-xs font-medium text-default-600">Time:</div>
 				<TrackTime
 					className="px-1 text-xs text-default-600"
 					trackId={trackId}
