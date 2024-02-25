@@ -127,9 +127,6 @@ const ThemeLoader = () => {
 			setLoading(false)
 		}, 500)
 
-		// load Highlight.io
-		if (ENV.ENVIRONMENT === 'production') H.start()
-
 		const checkSession = async () => {
 			try {
 				// for magic links
@@ -159,7 +156,7 @@ const ThemeLoader = () => {
 		<>
 			<HighlightInit
 				projectId={ENV.HIGHLIGHT_PROJECT_ID}
-				manualStart={true}
+				enableCanvasRecording={ENV.ENVIRONMENT === 'production'}
 				serviceName="Mixpoint"
 				tracingOrigins
 				networkRecording={{ enabled: true, recordHeadersAndBody: true }}
