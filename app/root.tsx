@@ -66,7 +66,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return json({
 		ENV: {
 			HIGHLIGHT_PROJECT_ID,
-			APPWRITE_PROJECT_ID
+			APPWRITE_PROJECT_ID,
+			ENVIRONMENT
 		}
 	})
 }
