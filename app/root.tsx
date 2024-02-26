@@ -133,13 +133,16 @@ const ThemeLoader = () => {
 				let user
 				try {
 					user = await Appwrite.getUser()
-					H.identify(user.email, { id: user.$id })
-					setAppState.userEmail(user.email)
 				} catch (err) {
 					try {
 						user = await Appwrite.createGuestSession()
 					} catch (err) {
 						errorHandler(err as Error)
+					}
+				} finally {
+					if (user) {
+						H.identify(user.email, { id: user.$id })
+						setAppState.userEmail(user.email)
 					}
 				}
 			} catch (err) {
