@@ -140,7 +140,7 @@ const ThemeLoader = () => {
 						errorHandler(err as Error)
 					}
 				} finally {
-					if (user) {
+					if (user?.email) {
 						H.identify(user.email, { id: user.$id })
 						setAppState.userEmail(user.email)
 					}
