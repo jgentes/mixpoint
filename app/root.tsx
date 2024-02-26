@@ -25,13 +25,15 @@ import { ThemeProvider as NextThemesProvider } from 'next-themes'
 import { useEffect, useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { createHead } from 'remix-island'
-import { AppwriteService, account } from '~/AppwriteService'
+import { Appwrite, account } from '~/AppwriteService'
 import { setAppState } from '~/api/db/appState.client'
 import ConfirmModal from '~/components/ConfirmModal'
 import { InitialLoader } from '~/components/Loader'
 import globalStyles from '~/global.css'
 import tailwind from '~/tailwind.css'
 import { Env } from './utils/env'
+import { handleError } from './entry.server'
+import { errorHandler } from './utils/notifications'
 
 const getCookie = (cookieString: string, cookieName: string) => {
 	const cookies = cookieString ? cookieString.split('; ') : []
@@ -60,7 +62,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		getCookie(request.headers.get('Cookie') ?? '', `${sessionName}_legacy`) ??
 		''
 
-	AppwriteService.setSession(hash)
+	Appwrite.setSession(hash)
 	// end Appwrite session
 
 	return json({
@@ -124,15 +126,27 @@ const ThemeLoader = () => {
 				const userId = searchParams.get('userId')
 				if (userId) {
 					const secret = searchParams.get('secret')
-					if (secret) await account.updateMagicURLSession(userId, secret)
+					if (secret) await Appwrite.updateMagicLink(userId, secret)
 				}
 
-				const user = await AppwriteService.getUser()
-
-				H.identify(user.email, { id: user.$id })
-				setAppState.loggedIn(user.email)
+				// identify user or use guest session
+				let user
+				try {
+					user = await Appwrite.getUser()
+				} catch (err) {
+					try {
+						user = await Appwrite.createGuestSession()
+					} catch (err) {
+						errorHandler(err as Error)
+					}
+				} finally {
+					if (user) {
+						H.identify(user.email, { id: user.$id })
+						setAppState.userEmail(user.email)
+					}
+				}
 			} catch (err) {
-				setAppState.loggedIn('')
+				setAppState.userEmail('')
 			}
 		}
 
@@ -142,15 +156,19 @@ const ThemeLoader = () => {
 			clearTimeout(timer)
 		}
 	}, [searchParams])
-
+	console.log('env', Env)
 	return (
 		<>
 			<HighlightInit
 				projectId={ENV.HIGHLIGHT_PROJECT_ID}
+				manualStart={Env === 'development'}
 				enableCanvasRecording={Env === 'production'}
 				serviceName="Mixpoint"
 				tracingOrigins
-				networkRecording={{ enabled: true, recordHeadersAndBody: true }}
+				networkRecording={{
+					enabled: true,
+					recordHeadersAndBody: true
+				}}
 			/>
 			<script
 				// biome-ignore lint/security/noDangerouslySetInnerHtml: https://remix.run/docs/en/main/guides/envvars#server-environment-variables

@@ -6,7 +6,7 @@ const APPWRITE_ENDPOINT = `https://${
 		? 'appwrite.mixpoint.dev'
 		: 'cloud.appwrite.io'
 }/v1`
-console.log('env:', Env)
+
 const APPWRITE_PROJECT_ID =
 	(typeof document === 'undefined'
 		? process.env.APPWRITE_PROJECT_ID
@@ -18,7 +18,11 @@ client.setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID)
 
 const account = new Account(client)
 
-const AppwriteService = {
+const Appwrite = {
+	createGuestSession: async () => {
+		console.log(APPWRITE_PROJECT_ID)
+		await account.createAnonymousSession()
+	},
 	createOAuth2Session: (provider: 'google' | 'github') =>
 		account.createOAuth2Session(
 			provider,
@@ -26,7 +30,13 @@ const AppwriteService = {
 			window.location.origin
 		),
 	createMagicLink: async (email: string) =>
-		await account.createMagicURLSession(ID.unique(), email, 'mixpoint.dev'),
+		await account.createMagicURLSession(
+			ID.unique(),
+			email,
+			window.location.origin
+		),
+	updateMagicLink: async (userId: string, secret: string) =>
+		await account.updateMagicURLSession(userId, secret),
 	getUser: async () => await account.get(),
 	getSession: async () => await account.getSession('current'),
 	setSession: (hash: string) => {
@@ -38,4 +48,4 @@ const AppwriteService = {
 	signOut: async () => await account.deleteSession('current')
 }
 
-export { AppwriteService, account }
+export { Appwrite, account }

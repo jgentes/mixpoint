@@ -67,7 +67,7 @@ const {
 	stemsAnalyzing: Set<Track['id']>
 	syncTimer: ReturnType<typeof requestAnimationFrame> | undefined
 	audioContext?: AudioContext
-	loggedIn: string // email address
+	userEmail: string // email address
 }>({
 	search: '',
 	selected: new Set(),
@@ -79,7 +79,7 @@ const {
 	analyzing: new Set(),
 	stemsAnalyzing: new Set(),
 	syncTimer: undefined,
-	loggedIn: ''
+	userEmail: ''
 })
 
 // ModalState is a generic handler for various modals, usually when doing something significant like deleting tracks
