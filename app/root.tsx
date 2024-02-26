@@ -146,7 +146,7 @@ const ThemeLoader = () => {
 		<>
 			<HighlightInit
 				projectId={ENV.HIGHLIGHT_PROJECT_ID}
-				enableCanvasRecording={Env === 'production'}
+				enableCanvasRecording={Env() === 'production'}
 				serviceName="Mixpoint"
 				tracingOrigins
 				networkRecording={{ enabled: true, recordHeadersAndBody: true }}
@@ -193,7 +193,7 @@ const ErrorBoundary = (error: Error) => {
 
 	return (
 		<HtmlDoc>
-			{!isRouteErrorResponse(error) || Env === 'development' ? null : (
+			{!isRouteErrorResponse(error) || Env() === 'development' ? null : (
 				<>
 					<script src="https://unpkg.com/highlight.run" />
 					<script

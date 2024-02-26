@@ -10,7 +10,7 @@ declare global {
 	}
 }
 
-const Env =
+const Env = () =>
 	typeof document === 'undefined'
 		? (process.env.VERCEL_ENV as Environments) || 'development'
 		: window?.ENV?.ENVIRONMENT || 'development'

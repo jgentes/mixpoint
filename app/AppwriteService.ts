@@ -2,11 +2,11 @@ import { Account, Client, ID } from 'appwrite'
 import { Env } from '~/utils/env'
 
 const APPWRITE_ENDPOINT = `https://${
-	Env === 'preview' || Env === 'production'
+	Env() === 'preview' || Env() === 'production'
 		? 'appwrite.mixpoint.dev'
 		: 'cloud.appwrite.io'
 }/v1`
-console.log('env:', Env)
+console.log('env:', Env())
 const APPWRITE_PROJECT_ID =
 	(typeof document === 'undefined'
 		? process.env.APPWRITE_PROJECT_ID
