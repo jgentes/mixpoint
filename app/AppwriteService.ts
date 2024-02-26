@@ -1,5 +1,6 @@
 import { Account, Client, ID } from 'appwrite'
 import { Env } from '~/utils/env'
+import { errorHandler } from './utils/notifications'
 
 const APPWRITE_ENDPOINT = `https://${
 	Env === 'preview' || Env === 'production'
@@ -19,16 +20,13 @@ client.setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID)
 const account = new Account(client)
 
 const Appwrite = {
-	createGuestSession: async () => {
-		console.log(APPWRITE_PROJECT_ID)
-		await account.createAnonymousSession()
-	},
-	createOAuth2Session: (provider: 'google' | 'github') =>
+	createOAuth2Session: (provider: 'google' | 'github') => {
 		account.createOAuth2Session(
 			provider,
 			window.location.origin,
 			window.location.origin
-		),
+		)
+	},
 	createMagicLink: async (email: string) =>
 		await account.createMagicURLSession(
 			ID.unique(),

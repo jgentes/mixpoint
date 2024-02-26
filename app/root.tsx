@@ -129,21 +129,11 @@ const ThemeLoader = () => {
 					if (secret) await Appwrite.updateMagicLink(userId, secret)
 				}
 
-				// identify user or use guest session
-				let user
-				try {
-					user = await Appwrite.getUser()
-				} catch (err) {
-					try {
-						user = await Appwrite.createGuestSession()
-					} catch (err) {
-						errorHandler(err as Error)
-					}
-				} finally {
-					if (user?.email) {
-						H.identify(user.email, { id: user.$id })
-						setAppState.userEmail(user.email)
-					}
+				const user = await Appwrite.getUser()
+
+				if (user?.email) {
+					H.identify(user.email, { id: user.$id })
+					setAppState.userEmail(user.email)
 				}
 			} catch (err) {
 				setAppState.userEmail('')
