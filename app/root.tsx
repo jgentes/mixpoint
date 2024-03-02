@@ -156,7 +156,7 @@ const ThemeLoader = () => {
         serviceName="Mixpoint"
         tracingOrigins={[
           Env === 'production'
-            ? 'https://app.mixpoint.dev'
+            ? 'https://mixpoint.dev'
             : Env === 'preview'
               ? 'https://preview.mixpoint.dev'
               : 'http://localhost:3000',
