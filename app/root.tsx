@@ -31,9 +31,7 @@ import ConfirmModal from '~/components/ConfirmModal'
 import { InitialLoader } from '~/components/Loader'
 import globalStyles from '~/global.css'
 import tailwind from '~/tailwind.css'
-import { handleError } from './entry.server'
 import { Env } from './utils/env'
-import { errorHandler } from './utils/notifications'
 
 const getCookie = (cookieString: string, cookieName: string) => {
   const cookies = cookieString ? cookieString.split('; ') : []
@@ -155,12 +153,7 @@ const ThemeLoader = () => {
         enableCanvasRecording={Env === 'production'}
         serviceName="Mixpoint"
         tracingOrigins={[
-          Env === 'production'
-            ? 'mixpoint.dev'
-            : Env === 'preview'
-              ? 'preview.mixpoint.dev'
-              : 'localhost',
-          'stems.mixpoint.dev'
+          new RegExp('^(?!appwrite.)[a-zA-Z0-9-]+.mixpoint.dev$')
         ]}
         networkRecording={{
           enabled: true,
