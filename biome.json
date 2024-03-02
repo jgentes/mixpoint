@@ -1,45 +1,48 @@
 {
-	"$schema": "https://biomejs.dev/schemas/1.0.0/schema.json",
-	"organizeImports": {
-		"enabled": true
-	},
-	"linter": {
-		"enabled": true,
-		"rules": {
-			"recommended": true,
-			"a11y": {
-				"useKeyWithClickEvents": "off"
-			}
-		},
-		"ignore": [
-			"*.min.js",
-			"node_modules",
-			".cache",
-			"build",
-			"functions",
-			".wrangler",
-			".vscode",
-			".swm"
-		]
-	},
-	"javascript": {
-		"formatter": {
-			"quoteStyle": "single",
-			"trailingComma": "none",
-			"semicolons": "asNeeded",
-			"arrowParentheses": "asNeeded"
-		}
-	},
-	"formatter": {
-		"ignore": [
-			"*.min.js",
-			"node_modules",
-			".cache",
-			"build",
-			"functions",
-			".wrangler",
-			".vscode",
-			".swm"
-		]
-	}
+  "$schema": "https://biomejs.dev/schemas/1.0.0/schema.json",
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "a11y": {
+        "useKeyWithClickEvents": "off"
+      }
+    },
+    "ignore": [
+      "*.min.js",
+      "node_modules",
+      ".cache",
+      "build",
+      "functions",
+      ".wrangler",
+      ".vscode",
+      ".swm"
+    ]
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "trailingComma": "none",
+      "semicolons": "asNeeded",
+      "arrowParentheses": "asNeeded"
+    }
+  },
+  "formatter": {
+    "formatWithErrors": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "ignore": [
+      "*.min.js",
+      "node_modules",
+      ".cache",
+      "build",
+      "functions",
+      ".wrangler",
+      ".vscode",
+      ".swm"
+    ]
+  }
 }

@@ -4,226 +4,221 @@
 import { H, HighlightInit } from '@highlight-run/remix/client'
 import { NextUIProvider } from '@nextui-org/react'
 import {
-	Links,
-	LiveReload,
-	Meta,
-	Outlet,
-	Scripts,
-	isRouteErrorResponse,
-	useLoaderData,
-	useRouteError,
-	useSearchParams
+  Links,
+  LiveReload,
+  Meta,
+  Outlet,
+  Scripts,
+  isRouteErrorResponse,
+  useLoaderData,
+  useRouteError,
+  useSearchParams
 } from '@remix-run/react'
 import { Analytics } from '@vercel/analytics/react'
 import {
-	LinksFunction,
-	LoaderFunctionArgs,
-	MetaFunction,
-	json
+  LinksFunction,
+  LoaderFunctionArgs,
+  MetaFunction,
+  json
 } from '@vercel/remix'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
 import { useEffect, useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { createHead } from 'remix-island'
-import { AppwriteService, account } from '~/AppwriteService'
+import { Appwrite, account } from '~/AppwriteService'
 import { setAppState } from '~/api/db/appState.client'
 import ConfirmModal from '~/components/ConfirmModal'
 import { InitialLoader } from '~/components/Loader'
 import globalStyles from '~/global.css'
 import tailwind from '~/tailwind.css'
-
-declare global {
-	interface Window {
-		ENV: {
-			HIGHLIGHT_PROJECT_ID: string
-			APPWRITE_PROJECT_ID: string
-			ENVIRONMENT: string
-		}
-	}
-}
+import { handleError } from './entry.server'
+import { Env } from './utils/env'
+import { errorHandler } from './utils/notifications'
 
 const getCookie = (cookieString: string, cookieName: string) => {
-	const cookies = cookieString ? cookieString.split('; ') : []
-	for (let i = 0; i < cookies.length; i++) {
-		const [name, value] = cookies[i].split('=')
-		if (name === cookieName) {
-			return decodeURIComponent(value)
-		}
-	}
-	return null
+  const cookies = cookieString ? cookieString.split('; ') : []
+  for (let i = 0; i < cookies.length; i++) {
+    const [name, value] = cookies[i].split('=')
+    if (name === cookieName) {
+      return decodeURIComponent(value)
+    }
+  }
+  return null
 }
 
 // this is used to inject environment variables into the browser
 export async function loader({ request }: LoaderFunctionArgs) {
-	const HIGHLIGHT_PROJECT_ID =
-		process.env.HIGHLIGHT_PROJECT_ID || 'highlight-project-id'
-	const APPWRITE_PROJECT_ID =
-		process.env.APPWRITE_PROJECT_ID || 'appwrite-project-id'
-	const ENVIRONMENT = process.env.VERCEL_ENV || 'development'
+  const HIGHLIGHT_PROJECT_ID =
+    process.env.HIGHLIGHT_PROJECT_ID || 'highlight-project-id'
+  const APPWRITE_PROJECT_ID =
+    process.env.APPWRITE_PROJECT_ID || 'appwrite-project-id'
+  const ENVIRONMENT = process.env.VERCEL_ENV || 'development'
 
-	// set Appwrite session on the server
-	const sessionName = `a_session_${APPWRITE_PROJECT_ID.toLowerCase()}`
+  // set Appwrite session on the server
+  const sessionName = `a_session_${APPWRITE_PROJECT_ID.toLowerCase()}`
 
-	const hash =
-		getCookie(request.headers.get('Cookie') ?? '', sessionName) ??
-		getCookie(request.headers.get('Cookie') ?? '', `${sessionName}_legacy`) ??
-		''
+  const hash =
+    getCookie(request.headers.get('Cookie') ?? '', sessionName) ??
+    getCookie(request.headers.get('Cookie') ?? '', `${sessionName}_legacy`) ??
+    ''
 
-	AppwriteService.setSession(hash)
-	// end Appwrite session
+  Appwrite.setSession(hash)
+  // end Appwrite session
 
-	return json({
-		ENV: {
-			HIGHLIGHT_PROJECT_ID,
-			APPWRITE_PROJECT_ID,
-			ENVIRONMENT
-		}
-	})
+  return json({
+    ENV: {
+      HIGHLIGHT_PROJECT_ID,
+      APPWRITE_PROJECT_ID,
+      ENVIRONMENT
+    }
+  })
 }
 
 // remix-island is needed to address React 18.2 hydration issues
 // TODO - remove this once React 18.3 is released
 export const Head = createHead(() => (
-	<>
-		<Meta />
-		<Links />
-	</>
+  <>
+    <Meta />
+    <Links />
+  </>
 ))
 
 const meta: MetaFunction = () => [
-	{ title: 'Mixpoint' },
-	{ description: 'Mixpoint is multi-track audio mixing app for the browser' },
-	{ viewport: 'width=device-width, initial-scale=1' }
+  { title: 'Mixpoint' },
+  { description: 'Mixpoint is multi-track audio mixing app for the browser' },
+  { viewport: 'width=device-width, initial-scale=1' }
 ]
 
 const links: LinksFunction = () => [
-	{
-		rel: 'icon',
-		type: 'image/svg+xml',
-		href: '/media/favicon.svg',
-		sizes: '32x32'
-	},
-	{ rel: 'stylesheet', href: tailwind },
-	{ rel: 'stylesheet', href: globalStyles }
+  {
+    rel: 'icon',
+    type: 'image/svg+xml',
+    href: '/media/favicon.svg',
+    sizes: '32x32'
+  },
+  { rel: 'stylesheet', href: tailwind },
+  { rel: 'stylesheet', href: globalStyles }
 ]
 
 const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
-	return (
-		<>
-			{children}
-			<LiveReload />
-		</>
-	)
+  return (
+    <>
+      {children}
+      <LiveReload />
+    </>
+  )
 }
 
 const ThemeLoader = () => {
-	const { ENV } = useLoaderData<typeof loader>()
-	const [searchParams] = useSearchParams()
-	const [loading, setLoading] = useState(true)
+  const { ENV } = useLoaderData<typeof loader>()
+  const [searchParams] = useSearchParams()
+  const [loading, setLoading] = useState(true)
 
-	useEffect(() => {
-		// initial loading screen timeout
-		const timer = setTimeout(() => {
-			setLoading(false)
-		}, 500)
+  useEffect(() => {
+    // initial loading screen timeout
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, 500)
 
-		// load Highlight.io
-		if (ENV.ENVIRONMENT === 'production') H.start()
+    const checkSession = async () => {
+      try {
+        // for magic links
+        const userId = searchParams.get('userId')
+        if (userId) {
+          const secret = searchParams.get('secret')
+          if (secret) await Appwrite.updateMagicLink(userId, secret)
+        }
 
-		const checkSession = async () => {
-			try {
-				// for magic links
-				const userId = searchParams.get('userId')
-				if (userId) {
-					const secret = searchParams.get('secret')
-					if (secret) await account.updateMagicURLSession(userId, secret)
-				}
+        const user = await Appwrite.getUser()
 
-				const user = await AppwriteService.getUser()
+        if (user?.email) {
+          H.identify(user.email, { id: user.$id })
+          setAppState.userEmail(user.email)
+        }
+      } catch (err) {
+        setAppState.userEmail('')
+      }
+    }
 
-				H.identify(user.email, { id: user.$id })
-				setAppState.loggedIn(user.email)
-			} catch (err) {
-				setAppState.loggedIn('')
-			}
-		}
+    checkSession()
 
-		checkSession()
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [searchParams])
 
-		return () => {
-			clearTimeout(timer)
-		}
-	}, [ENV.ENVIRONMENT, searchParams])
-
-	return (
-		<>
-			<HighlightInit
-				projectId={ENV.HIGHLIGHT_PROJECT_ID}
-				manualStart={true}
-				serviceName="Mixpoint"
-				tracingOrigins
-				networkRecording={{ enabled: true, recordHeadersAndBody: true }}
-			/>
-			<script
-				// biome-ignore lint/security/noDangerouslySetInnerHtml: https://remix.run/docs/en/main/guides/envvars#server-environment-variables
-				dangerouslySetInnerHTML={{
-					__html: `
+  return (
+    <>
+      <HighlightInit
+        projectId={ENV.HIGHLIGHT_PROJECT_ID}
+        manualStart={Env === 'development'}
+        enableCanvasRecording={Env === 'production'}
+        serviceName="Mixpoint"
+        tracingOrigins={false}
+        networkRecording={{
+          enabled: true,
+          recordHeadersAndBody: true
+        }}
+      />
+      <script
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: https://remix.run/docs/en/main/guides/envvars#server-environment-variables
+        dangerouslySetInnerHTML={{
+          __html: `
 						window.ENV = ${JSON.stringify(ENV)};
 					`
-				}}
-			/>
-			<Analytics />
-			<NextUIProvider>
-				<NextThemesProvider attribute="class" defaultTheme="dark">
-					{loading ? (
-						<InitialLoader />
-					) : (
-						<>
-							<Outlet context={account} />
-							<ConfirmModal />
-						</>
-					)}
-					<Toaster toastOptions={{ duration: 5000 }} />
-				</NextThemesProvider>
-			</NextUIProvider>
-		</>
-	)
+        }}
+      />
+      <Analytics />
+      <NextUIProvider>
+        <NextThemesProvider attribute="class" defaultTheme="dark">
+          {loading ? (
+            <InitialLoader />
+          ) : (
+            <>
+              <Outlet context={account} />
+              <ConfirmModal />
+            </>
+          )}
+          <Toaster toastOptions={{ duration: 5000 }} />
+        </NextThemesProvider>
+      </NextUIProvider>
+    </>
+  )
 }
 
 const App = () => (
-	<HtmlDoc>
-		<ThemeLoader />
-		<Scripts />
-	</HtmlDoc>
+  <HtmlDoc>
+    <ThemeLoader />
+    <Scripts />
+  </HtmlDoc>
 )
 
 const ErrorBoundary = (error: Error) => {
-	const routeError = (useRouteError() as Error) || error
+  const routeError = (useRouteError() as Error) || error
 
-	const message = isRouteErrorResponse(routeError)
-		? routeError.data.message || routeError.data || routeError
-		: routeError?.message || JSON.stringify(routeError)
+  const message = isRouteErrorResponse(routeError)
+    ? routeError.data.message || routeError.data || routeError
+    : routeError?.message || JSON.stringify(routeError)
 
-	return (
-		<HtmlDoc>
-			{!isRouteErrorResponse(error) ||
-			process.env.ENVIRONMENT === 'development' ? null : (
-				<>
-					<script src="https://unpkg.com/highlight.run" />
-					<script
-						// biome-ignore lint/security/noDangerouslySetInnerHtml: remix reccomends this for injecting variables
-						dangerouslySetInnerHTML={{
-							__html: `
+  return (
+    <HtmlDoc>
+      {!isRouteErrorResponse(error) || Env === 'development' ? null : (
+        <>
+          <script src="https://unpkg.com/highlight.run" />
+          <script
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: remix reccomends this for injecting variables
+            dangerouslySetInnerHTML={{
+              __html: `
 							H.init('${process.env.HIGHLIGHT_PROJECT_ID}');
 						`
-						}}
-					/>
-				</>
-			)}
-			<InitialLoader message={message || 'Something went wrong'} />
-			<Scripts />
-		</HtmlDoc>
-	)
+            }}
+          />
+        </>
+      )}
+      <InitialLoader message={message || 'Something went wrong'} />
+      <Scripts />
+    </HtmlDoc>
+  )
 }
 
 export { App as default, links, meta, ErrorBoundary }

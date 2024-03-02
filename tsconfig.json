@@ -5,6 +5,8 @@
       "DOM.Iterable",
       "ES2020"
     ],
+    "sourceMap": true,
+    "inlineSources": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
     "resolveJsonModule": true,
