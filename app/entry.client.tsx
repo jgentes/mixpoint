@@ -3,21 +3,21 @@ import { StrictMode, startTransition } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 
 function hydrate() {
-	startTransition(() => {
-		hydrateRoot(
-			// biome-ignore lint/style/noNonNullAssertion: from remix-island
-			document.getElementById('root')!,
-			<StrictMode>
-				<RemixBrowser />
-			</StrictMode>
-		)
-	})
+  startTransition(() => {
+    hydrateRoot(
+      // biome-ignore lint/style/noNonNullAssertion: from remix-island
+      document.getElementById('root')!,
+      <StrictMode>
+        <RemixBrowser />
+      </StrictMode>
+    )
+  })
 }
 
 if (typeof requestIdleCallback === 'function') {
-	requestIdleCallback(hydrate)
+  requestIdleCallback(hydrate)
 } else {
-	// Safari doesn't support requestIdleCallback
-	// https://caniuse.com/requestidlecallback
-	setTimeout(hydrate, 1)
+  // Safari doesn't support requestIdleCallback
+  // https://caniuse.com/requestidlecallback
+  setTimeout(hydrate, 1)
 }

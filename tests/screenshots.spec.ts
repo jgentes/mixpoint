@@ -5,9 +5,9 @@ const baseUrl = 'http://localhost:8788'
 const pages = [{ name: 'homepage', path: '/' }] // add more pages here as needed
 
 test('screenshot pages', async ({ page }, workerInfo) => {
-	for (const { name, path } of pages) {
-		const browserName = workerInfo.project.name
-		await page.goto(`${baseUrl}${path}`)
-		await argosScreenshot(page, `${name}-${browserName}`)
-	}
+  for (const { name, path } of pages) {
+    const browserName = workerInfo.project.name
+    await page.goto(`${baseUrl}${path}`)
+    await argosScreenshot(page, `${name}-${browserName}`)
+  }
 })

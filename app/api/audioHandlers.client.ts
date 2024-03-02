@@ -2,257 +2,257 @@ import { H } from '@highlight-run/remix/client'
 import type RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 import { guess as detectBPM } from 'web-audio-beat-detector'
 import {
-	getAudioState,
-	setAppState,
-	setModalState
+  getAudioState,
+  setAppState,
+  setModalState
 } from '~/api/db/appState.client'
 import {
-	Track,
-	db,
-	getTrackPrefs,
-	putTracks,
-	setPrefs
+  Track,
+  db,
+  getTrackPrefs,
+  putTracks,
+  setPrefs
 } from '~/api/db/dbHandlers'
 import { getPermission } from '~/api/fileHandlers'
 import { errorHandler } from '~/utils/notifications'
 
 // This is the main track processing workflow when files are added to the app
 const processTracks = async (
-	handles: (FileSystemFileHandle | FileSystemDirectoryHandle)[]
+  handles: (FileSystemFileHandle | FileSystemDirectoryHandle)[]
 ) => {
-	const trackArray = await getTracksRecursively(handles)
-	return await analyzeTracks(trackArray)
+  const trackArray = await getTracksRecursively(handles)
+  return await analyzeTracks(trackArray)
 }
 
 type partialTrack = Pick<
-	Track,
-	'name' | 'size' | 'type' | 'fileHandle' | 'dirHandle'
+  Track,
+  'name' | 'size' | 'type' | 'fileHandle' | 'dirHandle'
 >
 
 // The function iterates through file handles and collects the
 // information needed to add them to the database, then hands off
 // the array of track id's returned from the db for analysis.
 async function getTracksRecursively(
-	handles: (FileSystemFileHandle | FileSystemDirectoryHandle)[]
+  handles: (FileSystemFileHandle | FileSystemDirectoryHandle)[]
 ): Promise<Track[]> {
-	const trackArray: partialTrack[] = []
+  const trackArray: partialTrack[] = []
 
-	// Change sort order to lastModified so new tracks are visible at the top
-	await setPrefs('user', {
-		sortColumn: 'lastModified',
-		sortDirection: 'descending'
-	})
+  // Change sort order to lastModified so new tracks are visible at the top
+  await setPrefs('user', {
+    sortColumn: 'lastModified',
+    sortDirection: 'descending'
+  })
 
-	const filesToTracks = async (
-		fileOrDirectoryHandle: FileSystemFileHandle | FileSystemDirectoryHandle,
-		dirHandle?: FileSystemDirectoryHandle
-	) => {
-		if (fileOrDirectoryHandle.kind === 'file') {
-			const { name, size, type } = await fileOrDirectoryHandle.getFile()
+  const filesToTracks = async (
+    fileOrDirectoryHandle: FileSystemFileHandle | FileSystemDirectoryHandle,
+    dirHandle?: FileSystemDirectoryHandle
+  ) => {
+    if (fileOrDirectoryHandle.kind === 'file') {
+      const { name, size, type } = await fileOrDirectoryHandle.getFile()
 
-			if (!type || !type.startsWith('audio'))
-				return errorHandler(`${name} is not an audio file.`)
+      if (!type || !type.startsWith('audio'))
+        return errorHandler(`${name} is not an audio file.`)
 
-			if (name)
-				trackArray.push({
-					name,
-					size,
-					type,
-					fileHandle: fileOrDirectoryHandle,
-					dirHandle
-				})
-		} else if (fileOrDirectoryHandle.kind === 'directory') {
-			for await (const handle of fileOrDirectoryHandle.values()) {
-				await filesToTracks(handle, fileOrDirectoryHandle)
-			}
-		}
-	}
+      if (name)
+        trackArray.push({
+          name,
+          size,
+          type,
+          fileHandle: fileOrDirectoryHandle,
+          dirHandle
+        })
+    } else if (fileOrDirectoryHandle.kind === 'directory') {
+      for await (const handle of fileOrDirectoryHandle.values()) {
+        await filesToTracks(handle, fileOrDirectoryHandle)
+      }
+    }
+  }
 
-	for (const fileOrDirectoryHandle of handles) {
-		await filesToTracks(fileOrDirectoryHandle)
-	}
+  for (const fileOrDirectoryHandle of handles) {
+    await filesToTracks(fileOrDirectoryHandle)
+  }
 
-	const addTracksToDb = async () => {
-		// Ensure we have id's for our tracks, add them to the DB with updated lastModified dates
-		const updatedTracks = await putTracks(trackArray)
-		setAppState.processing(false)
-		H.track('Track Added', { trackQuantity: updatedTracks.length })
-		return updatedTracks
-	}
+  const addTracksToDb = async () => {
+    // Ensure we have id's for our tracks, add them to the DB with updated lastModified dates
+    const updatedTracks = await putTracks(trackArray)
+    setAppState.processing(false)
+    H.track('Track Added', { trackQuantity: updatedTracks.length })
+    return updatedTracks
+  }
 
-	// Warn user if large number of tracks are added, this is due to memory leak in web audio api
-	if (trackArray.length > 100) {
-		// Show indicator inside empty table
-		setAppState.processing(true)
+  // Warn user if large number of tracks are added, this is due to memory leak in web audio api
+  if (trackArray.length > 100) {
+    // Show indicator inside empty table
+    setAppState.processing(true)
 
-		setModalState({
-			openState: true,
-			headerText: 'More than 100 tracks added',
-			bodyText:
-				'Analyzing audio is memory intensive. If your browser runs out of memory, just refresh the page to release memory and continue analyzing tracks.',
-			confirmText: 'Continue',
-			confirmColor: 'success',
-			onConfirm: async () => {
-				setModalState.openState(false)
-				const updatedTracks = await addTracksToDb()
-				await analyzeTracks(updatedTracks)
-			},
-			onCancel: () => {
-				setModalState.openState(false)
-				setAppState.processing(false)
-			}
-		})
-		return []
-	}
+    setModalState({
+      openState: true,
+      headerText: 'More than 100 tracks added',
+      bodyText:
+        'Analyzing audio is memory intensive. If your browser runs out of memory, just refresh the page to release memory and continue analyzing tracks.',
+      confirmText: 'Continue',
+      confirmColor: 'success',
+      onConfirm: async () => {
+        setModalState.openState(false)
+        const updatedTracks = await addTracksToDb()
+        await analyzeTracks(updatedTracks)
+      },
+      onCancel: () => {
+        setModalState.openState(false)
+        setAppState.processing(false)
+      }
+    })
+    return []
+  }
 
-	return addTracksToDb()
+  return addTracksToDb()
 }
 
 const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
-	// Set analyzing state now to avoid tracks appearing with 'analyze' button
-	setAppState.analyzing(
-		prev => new Set([...prev, ...tracks.map(track => track.id)])
-	)
+  // Set analyzing state now to avoid tracks appearing with 'analyze' button
+  setAppState.analyzing(
+    prev => new Set([...prev, ...tracks.map(track => track.id)])
+  )
 
-	// Return array of updated tracks
-	const updatedTracks: Track[] = []
+  // Return array of updated tracks
+  const updatedTracks: Track[] = []
 
-	let sorted
-	for (const track of tracks) {
-		if (!sorted) {
-			// Change sort order to lastModified so new tracks are visible at the top
-			await setPrefs('user', {
-				sortColumn: 'lastModified',
-				sortDirection: 'descending'
-			})
-			setAppState.page(1)
-			sorted = true
-		}
+  let sorted
+  for (const track of tracks) {
+    if (!sorted) {
+      // Change sort order to lastModified so new tracks are visible at the top
+      await setPrefs('user', {
+        sortColumn: 'lastModified',
+        sortDirection: 'descending'
+      })
+      setAppState.page(1)
+      sorted = true
+    }
 
-		const { name, size, type, offset, bpm, duration, sampleRate, ...rest } =
-			await getAudioDetails(track)
+    const { name, size, type, offset, bpm, duration, sampleRate, ...rest } =
+      await getAudioDetails(track)
 
-		// adjust for miscalc tempo > 160bpm
-		const normalizedBpm = bpm > 160 ? bpm / 2 : bpm
+    // adjust for miscalc tempo > 160bpm
+    const normalizedBpm = bpm > 160 ? bpm / 2 : bpm
 
-		const updatedTrack = {
-			name,
-			size,
-			type,
-			duration,
-			bpm: normalizedBpm,
-			offset,
-			sampleRate,
-			...rest
-		}
+    const updatedTrack = {
+      name,
+      size,
+      type,
+      duration,
+      bpm: normalizedBpm,
+      offset,
+      sampleRate,
+      ...rest
+    }
 
-		const [trackWithId] = await putTracks([updatedTrack])
-		updatedTracks.push(trackWithId)
+    const [trackWithId] = await putTracks([updatedTrack])
+    updatedTracks.push(trackWithId)
 
-		// Remove from analyzing state
-		setAppState.analyzing(prev => {
-			prev.delete(track.id)
-			return prev
-		})
-	}
-	return updatedTracks
+    // Remove from analyzing state
+    setAppState.analyzing(prev => {
+      prev.delete(track.id)
+      return prev
+    })
+  }
+  return updatedTracks
 }
 
 const getAudioDetails = async (
-	track: Track
+  track: Track
 ): Promise<{
-	name: string
-	size: number
-	type: string
-	offset: number
-	bpm: number
-	duration: number
-	sampleRate: number
+  name: string
+  size: number
+  type: string
+  offset: number
+  bpm: number
+  duration: number
+  sampleRate: number
 }> => {
-	const file = await getPermission(track)
-	if (!file) {
-		setAppState.analyzing(new Set())
-		throw errorHandler('Permission to the file or folder was denied.')
-	}
+  const file = await getPermission(track)
+  if (!file) {
+    setAppState.analyzing(new Set())
+    throw errorHandler('Permission to the file or folder was denied.')
+  }
 
-	const { name, size, type } = file
-	const arrayBuffer = await file.arrayBuffer()
+  const { name, size, type } = file
+  const arrayBuffer = await file.arrayBuffer()
 
-	const audioCtx = new AudioContext()
-	const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
-	const { duration, sampleRate } = audioBuffer
+  const audioCtx = new AudioContext()
+  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
+  const { duration, sampleRate } = audioBuffer
 
-	let offset = 0
-	let bpm = 1
+  let offset = 0
+  let bpm = 1
 
-	try {
-		;({ offset, bpm } = await detectBPM(audioBuffer))
-	} catch (e) {
-		errorHandler(`Unable to determine BPM for ${name}`)
-	}
+  try {
+    ;({ offset, bpm } = await detectBPM(audioBuffer))
+  } catch (e) {
+    errorHandler(`Unable to determine BPM for ${name}`)
+  }
 
-	audioCtx.close()
+  audioCtx.close()
 
-	// Reduce offset to 2 decimal places
-	offset = Math.round(offset * 1e2) / 1e2
+  // Reduce offset to 2 decimal places
+  offset = Math.round(offset * 1e2) / 1e2
 
-	return {
-		name,
-		size,
-		type,
-		offset,
-		bpm,
-		duration,
-		sampleRate
-	}
+  return {
+    name,
+    size,
+    type,
+    offset,
+    bpm,
+    duration,
+    sampleRate
+  }
 }
 
 // CalcMarkers can be called independently for changes in beat offset or beat resolution
 const calcMarkers = async (trackId: Track['id']): Promise<void> => {
-	if (!trackId) return
+  if (!trackId) return
 
-	const [waveform] = getAudioState[trackId].waveform()
-	if (!waveform) return
+  const [waveform] = getAudioState[trackId].waveform()
+  if (!waveform) return
 
-	const regionsPlugin = waveform.getActivePlugins()[0] as RegionsPlugin
+  const regionsPlugin = waveform.getActivePlugins()[0] as RegionsPlugin
 
-	if (!regionsPlugin) return
-	regionsPlugin.clearRegions()
+  if (!regionsPlugin) return
+  regionsPlugin.clearRegions()
 
-	const track = await db.tracks.get(trackId)
-	if (!track) return
-	let { name, duration, offset, adjustedOffset, bpm } = track || {}
+  const track = await db.tracks.get(trackId)
+  if (!track) return
+  let { name, duration, offset, adjustedOffset, bpm } = track || {}
 
-	// isNaN check here to allow for zero values
-	const valsMissing =
-		!duration || Number.isNaN(Number(bpm)) || Number.isNaN(Number(offset))
+  // isNaN check here to allow for zero values
+  const valsMissing =
+    !duration || Number.isNaN(Number(bpm)) || Number.isNaN(Number(offset))
 
-	if (valsMissing) {
-		const analyzedTracks = await analyzeTracks([track])
-		;({ bpm, offset } = analyzedTracks[0])
-	}
+  if (valsMissing) {
+    const analyzedTracks = await analyzeTracks([track])
+    ;({ bpm, offset } = analyzedTracks[0])
+  }
 
-	if (!duration) return errorHandler(`Please try adding ${name} again.`)
+  if (!duration) return errorHandler(`Please try adding ${name} again.`)
 
-	const { beatResolution = '1:4' } = await getTrackPrefs(trackId)
+  const { beatResolution = '1:4' } = await getTrackPrefs(trackId)
 
-	const beatInterval = 60 / (bpm || 1)
-	const skipLength = beatInterval * Number(beatResolution.split(':')[1])
+  const beatInterval = 60 / (bpm || 1)
+  const skipLength = beatInterval * Number(beatResolution.split(':')[1])
 
-	let startPoint = adjustedOffset || offset || 0
+  let startPoint = adjustedOffset || offset || 0
 
-	// Work backward from initialPeak to start of track (zerotime) based on bpm
-	while (startPoint - beatInterval > 0) startPoint -= beatInterval
+  // Work backward from initialPeak to start of track (zerotime) based on bpm
+  while (startPoint - beatInterval > 0) startPoint -= beatInterval
 
-	// Now that we have zerotime, move forward with markers based on the bpm
-	for (let time = startPoint; time < duration; time += skipLength) {
-		regionsPlugin.addRegion({
-			start: time,
-			end: time,
-			color: 'rgba(4, 146, 247, 0.757)',
-			drag: false
-		})
-	}
+  // Now that we have zerotime, move forward with markers based on the bpm
+  for (let time = startPoint; time < duration; time += skipLength) {
+    regionsPlugin.addRegion({
+      start: time,
+      end: time,
+      color: 'rgba(4, 146, 247, 0.757)',
+      drag: false
+    })
+  }
 }
 
 // const createMix = async (TrackPrefsArray: TrackPrefs[]) => {
