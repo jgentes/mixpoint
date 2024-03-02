@@ -156,11 +156,11 @@ const ThemeLoader = () => {
         serviceName="Mixpoint"
         tracingOrigins={[
           Env === 'production'
-            ? 'https://mixpoint.dev'
+            ? 'mixpoint.dev'
             : Env === 'preview'
-              ? 'https://preview.mixpoint.dev'
-              : 'http://localhost:3000',
-          'https://stems.mixpoint.dev'
+              ? 'preview.mixpoint.dev'
+              : 'localhost',
+          'stems.mixpoint.dev'
         ]}
         networkRecording={{
           enabled: true,
