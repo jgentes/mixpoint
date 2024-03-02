@@ -154,7 +154,14 @@ const ThemeLoader = () => {
         manualStart={Env === 'development'}
         enableCanvasRecording={Env === 'production'}
         serviceName="Mixpoint"
-        tracingOrigins={false}
+        tracingOrigins={[
+          Env === 'production'
+            ? 'https://app.mixpoint.dev'
+            : Env === 'preview'
+              ? 'https://preview.mixpoint.dev'
+              : 'http://localhost:3000',
+          'https://stems.mixpoint.dev'
+        ]}
         networkRecording={{
           enabled: true,
           recordHeadersAndBody: true
