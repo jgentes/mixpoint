@@ -1,5 +1,16 @@
-- uses: OctoMind-dev/automagically-action-execute@v2
-  with:
-    url: https://github.com/jgentes/mixpoint
-    token: ${{ secrets.OCTOMIND_KEY }}
-    testTargetId: 0c597ea8-15ea-432e-bb19-c94ff266acb3
+name: Octomind Tests
+on:
+  push:
+    branches: [main, production]
+  pull_request:
+    branches: [main, production]
+jobs:
+  test:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - uses: OctoMind-dev/automagically-action-execute@v2
+        with:
+          url: https://github.com/jgentes/mixpoint
+          token: ${{ secrets.OCTOMIND_KEY }}
+          testTargetId: 0c597ea8-15ea-432e-bb19-c94ff266acb3
