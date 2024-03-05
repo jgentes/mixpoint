@@ -1,55 +1,53 @@
 {
-	"name": "mixpoint",
-	"sideEffects": false,
-	"type": "module",
-	"version": "0.5.0",
-	"private": true,
-	"scripts": {
-		"build": "remix build --sourcemap && npx --yes @highlight-run/sourcemap-uploader upload --apiKey $HIGHLIGHT_SOURCEMAP_KEY --path ./build && find build -name '*.js.map' -type f -delete",
-		"dev": "remix dev",
-		"lint": "biome check . --apply",
-		"test": "playwright test"
-	},
-	"dependencies": {
-		"@fontsource/public-sans": "~4.5.11",
-		"@highlight-run/remix": "^2.0.16",
-		"@nextui-org/react": "^2.2.9",
-		"@remix-run/react": "^2.6.0",
-		"@vercel/analytics": "^1.1.2",
-		"@vercel/remix": "^2.5.1",
-		"appwrite": "^13.0.1",
-		"dexie": "~3.2.2",
-		"dexie-react-hooks": "~1.1.1",
-		"framer-motion": "^10.16.16",
-		"isbot": "^4.4.0",
-		"jsdom": "^21.1.1",
-		"moment": "~2.29.4",
-		"next-themes": "^0.2.1",
-		"react": "~18",
-		"react-dom": "~18",
-		"react-hot-toast": "^2.4.1",
-		"remix-island": "^0.1.2",
-		"teaful": "~0.11.1",
-		"use-count-up": "^3.0.1",
-		"wavesurfer.js": "^7.3.3",
-		"web-audio-beat-detector": "~8.1.37"
-	},
-	"devDependencies": {
-		"@argos-ci/playwright": "^1.3.2",
-		"@biomejs/biome": "1.4.1",
-		"@highlight-run/sourcemap-uploader": "^0.6.0",
-		"@playwright/test": "^1.40.1",
-		"@remix-run/dev": "^2.6.0",
-		"@remix-run/serve": "^2.6.0",
-		"@types/node": "^20.11.17",
-		"@types/react": "^18.2.55",
-		"@types/react-dom": "^18.2.19",
-		"@types/wicg-file-system-access": "~2020.9.5",
-		"tailwindcss": "^3.3.6",
-		"typescript": "^5.3.3",
-		"zod": "^3.22.3"
-	},
-	"engines": {
-		"node": "20"
-	}
+  "name": "mixpoint",
+  "sideEffects": false,
+  "type": "module",
+  "version": "0.5.0",
+  "private": true,
+  "scripts": {
+    "build": "remix build --sourcemap && npx --yes @highlight-run/sourcemap-uploader upload --apiKey $HIGHLIGHT_SOURCEMAP_KEY --path ./build && find build -name '*.js.map' -type f -delete",
+    "dev": "remix dev",
+    "lint": "biome check . --apply"
+  },
+  "dependencies": {
+    "@fontsource/public-sans": "~4.5.11",
+    "@highlight-run/remix": "^2.0.16",
+    "@nextui-org/react": "^2.2.9",
+    "@remix-run/react": "^2.6.0",
+    "@vercel/analytics": "^1.1.2",
+    "@vercel/remix": "^2.5.1",
+    "appwrite": "^13.0.1",
+    "dexie": "~3.2.2",
+    "dexie-react-hooks": "~1.1.1",
+    "framer-motion": "^10.16.16",
+    "isbot": "^4.4.0",
+    "jsdom": "^21.1.1",
+    "moment": "~2.29.4",
+    "next-themes": "^0.2.1",
+    "react": "~18",
+    "react-dom": "~18",
+    "react-hot-toast": "^2.4.1",
+    "remix-island": "^0.1.2",
+    "teaful": "~0.11.1",
+    "use-count-up": "^3.0.1",
+    "wavesurfer.js": "^7.3.3",
+    "web-audio-beat-detector": "~8.1.37"
+  },
+  "devDependencies": {
+    "@argos-ci/playwright": "^1.3.2",
+    "@biomejs/biome": "1.4.1",
+    "@highlight-run/sourcemap-uploader": "^0.6.0",
+    "@remix-run/dev": "^2.6.0",
+    "@remix-run/serve": "^2.6.0",
+    "@types/node": "^20.11.17",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "@types/wicg-file-system-access": "~2020.9.5",
+    "tailwindcss": "^3.3.6",
+    "typescript": "^5.3.3",
+    "zod": "^3.22.3"
+  },
+  "engines": {
+    "node": "20"
+  }
 }
