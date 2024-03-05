@@ -117,7 +117,7 @@ const browseFile = async (trackSlot?: 0 | 1): Promise<void> => {
 
   if (files?.length) {
     const tracks = (await processTracks(files)) || []
-    if (tracks.length === 1) addToMix(tracks[trackSlot || 0])
+    if (tracks.length === 1) addToMix(tracks[0], trackSlot)
   }
 }
 

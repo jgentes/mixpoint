@@ -109,6 +109,7 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
     <div
       className="
 				border-2 border-dashed p-5 text-center cursor-pointer rounded border-default-500 bg-default-50 hover:bg-warning-500 hover:bg-opacity-10 hover:border-warning-500 active:border-warning-500 active:bg-warning-500m mb-3"
+      aria-label={stemStates[stemState].primaryText}
       onClick={stemHandler}
     >
       {stemStates[stemState].icon}
