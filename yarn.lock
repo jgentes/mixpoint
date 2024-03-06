@@ -944,19 +944,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@highlight-run/sourcemap-uploader@npm:^0.6.0":
-  version: 0.6.0
-  resolution: "@highlight-run/sourcemap-uploader@npm:0.6.0"
-  dependencies:
-    commander: ^10.0.0
-    cross-fetch: ^3.1.5
-    glob: ^9.3.0
-  bin:
-    sourcemap-uploader: ./dist/index.js
-  checksum: 36ef45675cb02a79ffc4011f6258d484de046514ea0b68984f1084e334fb83a8d567850a10d9cf99edabe562bdfae7bf918c50364e03d9da51af1839892d2dd4
-  languageName: node
-  linkType: hard
-
 "@internationalized/date@npm:^3.5.1":
   version: 3.5.1
   resolution: "@internationalized/date@npm:3.5.1"
@@ -4798,13 +4785,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^10.0.0":
-  version: 10.0.1
-  resolution: "commander@npm:10.0.1"
-  checksum: 436901d64a818295803c1996cd856621a74f30b9f9e28a588e726b2b1670665bccd7c1a77007ebf328729f0139838a88a19265858a0fa7a8728c4656796db948
-  languageName: node
-  linkType: hard
-
 "commander@npm:^4.0.0":
   version: 4.1.1
   resolution: "commander@npm:4.1.1"
@@ -4924,15 +4904,6 @@ __metadata:
   dependencies:
     node-fetch: 2.6.7
   checksum: f6b8c6ee3ef993ace6277fd789c71b6acf1b504fd5f5c7128df4ef2f125a429e29cd62dc8c127523f04a5f2fa4771ed80e3f3d9695617f441425045f505cf3bb
-  languageName: node
-  linkType: hard
-
-"cross-fetch@npm:^3.1.5":
-  version: 3.1.8
-  resolution: "cross-fetch@npm:3.1.8"
-  dependencies:
-    node-fetch: ^2.6.12
-  checksum: 78f993fa099eaaa041122ab037fe9503ecbbcb9daef234d1d2e0b9230a983f64d645d088c464e21a247b825a08dc444a6e7064adfa93536d3a9454b4745b3632
   languageName: node
   linkType: hard
 
@@ -6066,18 +6037,6 @@ __metadata:
     once: ^1.3.0
     path-is-absolute: ^1.0.0
   checksum: 29452e97b38fa704dabb1d1045350fb2467cf0277e155aa9ff7077e90ad81d1ea9d53d3ee63bd37c05b09a065e90f16aec4a65f5b8de401d1dac40bc5605d133
-  languageName: node
-  linkType: hard
-
-"glob@npm:^9.3.0":
-  version: 9.3.5
-  resolution: "glob@npm:9.3.5"
-  dependencies:
-    fs.realpath: ^1.0.0
-    minimatch: ^8.0.2
-    minipass: ^4.2.4
-    path-scurry: ^1.6.1
-  checksum: 94b093adbc591bc36b582f77927d1fb0dbf3ccc231828512b017601408be98d1fe798fc8c0b19c6f2d1a7660339c3502ce698de475e9d938ccbb69b47b647c84
   languageName: node
   linkType: hard
 
@@ -7679,15 +7638,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:^8.0.2":
-  version: 8.0.4
-  resolution: "minimatch@npm:8.0.4"
-  dependencies:
-    brace-expansion: ^2.0.1
-  checksum: 2e46cffb86bacbc524ad45a6426f338920c529dd13f3a732cc2cf7618988ee1aae88df4ca28983285aca9e0f45222019ac2d14ebd17c1edadd2ee12221ab801a
-  languageName: node
-  linkType: hard
-
 "minimatch@npm:^9.0.0, minimatch@npm:^9.0.1":
   version: 9.0.3
   resolution: "minimatch@npm:9.0.3"
@@ -7773,13 +7723,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minipass@npm:^4.2.4":
-  version: 4.2.8
-  resolution: "minipass@npm:4.2.8"
-  checksum: 7f4914d5295a9a30807cae5227a37a926e6d910c03f315930fde52332cf0575dfbc20295318f91f0baf0e6bb11a6f668e30cde8027dea7a11b9d159867a3c830
-  languageName: node
-  linkType: hard
-
 "minipass@npm:^5.0.0":
   version: 5.0.0
   resolution: "minipass@npm:5.0.0"
@@ -7812,7 +7755,6 @@ __metadata:
     "@biomejs/biome": 1.4.1
     "@fontsource/public-sans": ~4.5.11
     "@highlight-run/remix": ^2.0.16
-    "@highlight-run/sourcemap-uploader": ^0.6.0
     "@nextui-org/react": ^2.2.9
     "@remix-run/dev": ^2.8.0
     "@remix-run/react": ^2.8.0
@@ -8018,20 +7960,6 @@ __metadata:
     encoding:
       optional: true
   checksum: 8d816ffd1ee22cab8301c7756ef04f3437f18dace86a1dae22cf81db8ef29c0bf6655f3215cb0cdb22b420b6fe141e64b26905e7f33f9377a7fa59135ea3e10b
-  languageName: node
-  linkType: hard
-
-"node-fetch@npm:^2.6.12":
-  version: 2.7.0
-  resolution: "node-fetch@npm:2.7.0"
-  dependencies:
-    whatwg-url: ^5.0.0
-  peerDependencies:
-    encoding: ^0.1.0
-  peerDependenciesMeta:
-    encoding:
-      optional: true
-  checksum: d76d2f5edb451a3f05b15115ec89fc6be39de37c6089f1b6368df03b91e1633fd379a7e01b7ab05089a25034b2023d959b47e59759cb38d88341b2459e89d6e5
   languageName: node
   linkType: hard
 
@@ -8344,7 +8272,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"path-scurry@npm:^1.10.1, path-scurry@npm:^1.6.1":
+"path-scurry@npm:^1.10.1":
   version: 1.10.1
   resolution: "path-scurry@npm:1.10.1"
   dependencies:
