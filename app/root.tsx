@@ -5,7 +5,6 @@ import { H, HighlightInit } from '@highlight-run/remix/client'
 import { NextUIProvider } from '@nextui-org/react'
 import {
   Links,
-  LiveReload,
   Meta,
   Outlet,
   Scripts,
@@ -29,8 +28,8 @@ import { Appwrite, account } from '~/AppwriteService'
 import { setAppState } from '~/api/db/appState.client'
 import ConfirmModal from '~/components/ConfirmModal'
 import { InitialLoader } from '~/components/Loader'
-import globalStyles from '~/global.css'
-import tailwind from '~/tailwind.css'
+import globalStyles from '~/global.css?url'
+import tailwind from '~/tailwind.css?url'
 import { Env } from './utils/env'
 
 const getCookie = (cookieString: string, cookieName: string) => {
@@ -97,15 +96,6 @@ const links: LinksFunction = () => [
   { rel: 'stylesheet', href: tailwind },
   { rel: 'stylesheet', href: globalStyles }
 ]
-
-const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <>
-      {children}
-      <LiveReload />
-    </>
-  )
-}
 
 const ThemeLoader = () => {
   const { ENV } = useLoaderData<typeof loader>()
@@ -188,10 +178,10 @@ const ThemeLoader = () => {
 }
 
 const App = () => (
-  <HtmlDoc>
+  <>
     <ThemeLoader />
     <Scripts />
-  </HtmlDoc>
+  </>
 )
 
 const ErrorBoundary = (error: Error) => {
@@ -202,7 +192,7 @@ const ErrorBoundary = (error: Error) => {
     : routeError?.message || JSON.stringify(routeError)
 
   return (
-    <HtmlDoc>
+    <>
       {!isRouteErrorResponse(error) || Env === 'development' ? null : (
         <>
           <script src="https://unpkg.com/highlight.run" />
@@ -218,7 +208,7 @@ const ErrorBoundary = (error: Error) => {
       )}
       <InitialLoader message={message || 'Something went wrong'} />
       <Scripts />
-    </HtmlDoc>
+    </>
   )
 }
 

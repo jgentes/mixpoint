@@ -1,6 +1,5 @@
 import { Account, Client, ID } from 'appwrite'
 import { Env } from '~/utils/env'
-import { errorHandler } from './utils/notifications'
 
 const APPWRITE_ENDPOINT = `https://${
   Env === 'preview' || Env === 'production'
