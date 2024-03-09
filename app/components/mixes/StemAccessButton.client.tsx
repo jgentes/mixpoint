@@ -50,6 +50,7 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
 
     return (
       <CircularProgress
+        aria-label="Stem Timer Progress"
         size="md"
         color={color}
         className="mx-auto"
