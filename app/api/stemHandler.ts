@@ -36,8 +36,6 @@ const stemAudio = async (trackId: Track['id']) => {
 
   const handleErr = (msg?: string) => {
     setAudioState[trackId].stemState('error')
-    // delete the file so retry will work
-    fetch(ENDPOINT_URL, { method: 'DELETE' })
     throw errorHandler(`Error generating stems: ${msg}`)
   }
 
@@ -62,35 +60,37 @@ const stemAudio = async (trackId: Track['id']) => {
 
   const checkForStems = async (): Promise<StemsArray> => {
     return new Promise((resolve, reject) => {
-      const waitForStems = async () => {
+      const waitForStems = async (): Promise<void> => {
         const res = await fetch(ENDPOINT_URL, {
           method: 'HEAD'
         })
 
-        if (res.status !== 404) {
+        if (res.status === 202) {
           setTimeout(waitForStems, 10000) // Retry after 10 seconds
           return
         }
+        if (res.status === 500) return handleErr('Error generating stems')
+        if (res.status === 200) {
+          try {
+            const stems = await Promise.all(
+              STEMS.map(async stem => {
+                const res = await fetch(`${ENDPOINT_URL_NOEXT}/${stem}.mp3`)
 
-        try {
-          const stems = await Promise.all(
-            STEMS.map(async stem => {
-              const res = await fetch(`${ENDPOINT_URL_NOEXT}/${stem}.mp3`)
+                if (res.ok)
+                  return {
+                    name: `${FILENAME} - ${stem}.mp3`,
+                    type: stem,
+                    file: await res.blob()
+                  }
+                throw new Error(await res?.text())
+              })
+            )
 
-              if (res.ok)
-                return {
-                  name: `${FILENAME} - ${stem}.mp3`,
-                  type: stem,
-                  file: await res.blob()
-                }
-              throw new Error(await res?.text())
-            })
-          )
-
-          resolve(stems)
-        } catch (error) {
-          reject(error)
-        }
+            resolve(stems)
+          } catch (error) {
+            reject(error)
+          }
+        } else return handleErr(`Unkexpected server response: ${res.status}`)
       }
 
       waitForStems()

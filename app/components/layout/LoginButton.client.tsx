@@ -1,9 +1,7 @@
 import {
   Button,
-  Checkbox,
   Divider,
   Input,
-  Link,
   Modal,
   ModalBody,
   ModalContent,
@@ -13,7 +11,7 @@ import {
 } from '@nextui-org/react'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
-import { Appwrite, account } from '~/AppwriteService'
+import { Appwrite } from '~/AppwriteService'
 import { appState, setAppState } from '~/api/db/appState.client'
 import { GithubIcon, GoogleIcon } from '~/components/icons'
 import { errorHandler } from '~/utils/notifications'
