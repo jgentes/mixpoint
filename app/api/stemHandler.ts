@@ -5,7 +5,6 @@ import { getStemsDirHandle } from '~/api/fileHandlers'
 import { errorHandler } from '~/utils/notifications'
 
 const STEMPROXY = 'https://stems.mixpoint.dev'
-//const STEMPROXY = 'http://localhost:8787'
 
 type StemsArray = {
   name: string
@@ -52,8 +51,8 @@ const stemAudio = async (trackId: Track['id']) => {
 
     // set timer for processing stems
     const { size } = (await db.tracks.get(trackId)) || {}
-    // 0.0125 seconds per MB
-    setAudioState[trackId].stemTimer(((size || 1) / 100) * 0.013)
+    // 0.025 seconds per MB
+    setAudioState[trackId].stemTimer(((size || 1) / 1000) * 0.025)
 
     return // started
   }
@@ -90,7 +89,7 @@ const stemAudio = async (trackId: Track['id']) => {
           } catch (error) {
             reject(error)
           }
-        } else return handleErr(`Unkexpected server response: ${res.status}`)
+        } else return handleErr(`Unexpected server response: ${res.status}`)
       }
 
       waitForStems()
