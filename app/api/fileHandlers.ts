@@ -6,7 +6,6 @@ import {
   setAudioState
 } from '~/api/db/appState.client'
 import {
-  STEMS,
   Stem,
   Track,
   TrackCache,
@@ -210,10 +209,9 @@ const validateTrackStemAccess = async (
     try {
       for await (const [name, fileHandle] of trackStemDirHandle.entries()) {
         const file = (await fileHandle.getFile(name)) as File
-        const stemName = name.substring(0, name.lastIndexOf('.'))
-        if (stemName && STEMS.includes(stemName as Stem)) {
-          localStems[stemName as Stem] = { file }
-        }
+        const match = name.match(/- (bass|vocals|other|drums)\.mp3$/)
+        const stemName = match ? match[1] : null
+        if (stemName) localStems[stemName as Stem] = { file }
       }
     } catch (e) {
       throw errorHandler(e as Error)

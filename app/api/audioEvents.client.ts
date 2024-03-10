@@ -140,6 +140,7 @@ const audioEvents = {
 
     // Destroy waveform and stems before removing from audioState
     audioEvents.destroy(trackId)
+    audioEvents.destroyStems(trackId)
 
     // Remove track from mix state (dexie)
     await _removeFromMix(trackId)
@@ -165,10 +166,10 @@ const audioEvents = {
     } else tracks = [trackId]
 
     // synchronize playback of all tracks
-    audioEvents.multiSync(tracks.filter(id => !!id))
+    audioEvents.playSync(tracks.filter(id => !!id))
   },
 
-  multiSync: async (trackIds: Track['id'][]) => {
+  playSync: async (trackIds: Track['id'][]) => {
     // Sync all waveforms to the same position
     let [syncTimer] = getAppState.syncTimer()
     if (syncTimer) cancelAnimationFrame(syncTimer)
@@ -187,10 +188,11 @@ const audioEvents = {
 
       // for volume meters
       for (const trackId of trackIds) {
-        const [{ waveform, stems, analyserNode }] = getAudioState[trackId]()
+        const [{ stems, analyserNode }] = getAudioState[trackId]()
 
         const volumes: number[] = [] // to aggregate for main volume meter
 
+        let waveform
         if (stems) {
           for (const [stem, { analyserNode }] of Object.entries(stems)) {
             if (analyserNode) {
@@ -199,11 +201,15 @@ const audioEvents = {
               setAudioState[trackId].stems[stem as Stem].volumeMeter(vol)
             }
           }
-        } else volumes.push(getVolume(analyserNode))
+          waveform = stems.drums.waveform
+        } else {
+          volumes.push(getVolume(analyserNode))
+          waveform = getAudioState[trackId].waveform()
+        }
 
         // aggregate stem volumes for main volume meter
         setAudioState[trackId].volumeMeter(Math.max(...volumes))
-        setAudioState[trackId].time(waveform.getCurrentTime())
+        setAudioState[trackId].time(waveform.getCurrentTime()) // for track timer, not play position
       }
     }
 
@@ -226,14 +232,16 @@ const audioEvents = {
         // if we have stems, mute the main waveforms
         waveform.setVolume(0)
 
-        for (const [stem, { waveform }] of Object.entries(stems)) {
-          if (waveform) {
+        for (const [stem, { waveform: stemWaveform }] of Object.entries(
+          stems
+        )) {
+          if (stemWaveform) {
             initAudioContext({
               trackId,
               stem: stem as Stem,
-              media: waveform.getMediaElement()
+              media: stemWaveform.getMediaElement()
             })
-            waveform.play()
+            stemWaveform.play()
           }
         }
       }
@@ -540,8 +548,8 @@ const audioEvents = {
     // add track to analyzing state
     setAppState.analyzing(prev => prev.add(trackId))
 
-    const [{ waveform }] = getAudioState[trackId]()
-    if (waveform) waveform.destroy()
+    const [oldWaveform] = getAudioState[trackId].waveform()
+    if (oldWaveform) audioEvents.destroy(trackId)
 
     let file
 
@@ -561,13 +569,19 @@ const audioEvents = {
     await setTrackPrefs(trackId, {
       stemZoom: stem === 'all' ? undefined : stem
     })
+
+    const [{ waveform, time, playing }] = getAudioState[trackId]()
+    if (waveform && playing) {
+      waveform.setVolume(0)
+      waveform.setTime(time)
+      waveform.play()
+    }
   },
 
   destroy: (trackId: Track['id']) => {
     const [waveform] = getAudioState[trackId].waveform()
-
-    audioEvents.destroyStems(trackId)
     if (waveform) waveform.destroy()
+    setAudioState[trackId].waveform()
   },
 
   destroyStems: (trackId: Track['id']) => {
@@ -578,6 +592,8 @@ const audioEvents = {
         stem?.waveform?.destroy()
       }
     }
+
+    setAudioState[trackId].stems()
 
     // Remove from stemsAnalyzing
     setAppState.stemsAnalyzing(prev => {

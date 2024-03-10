@@ -96,14 +96,14 @@ const initWaveform = async ({
 
   // Save waveform in audioState to track user interactions with the waveform and show progress
   if (stem) {
-    setAudioState[trackId].stems[stem as Stem]({
+    await setAudioState[trackId].stems[stem as Stem]({
       waveform,
       volume: 1,
       volumeMeter: 0,
       mute: false
     })
   } else {
-    setAudioState[trackId].waveform(waveform)
+    await setAudioState[trackId].waveform(waveform)
   }
 
   waveform.once('ready', () => audioEvents.onReady(trackId, stem))
@@ -135,7 +135,7 @@ const initAudioContext = ({
 
   const analyserNode = audioContext.createAnalyser()
 
-  // Connect the audio to the equalizer
+  // Connect the audio to the analyzer
   media.addEventListener(
     'play',
     async () => {
@@ -218,7 +218,10 @@ const Waveform = ({
 
     validateTrackStemAccess(trackId)
 
-    return () => audioEvents.destroy(trackId)
+    return () => {
+      audioEvents.destroy(trackId)
+      audioEvents.destroyStems(trackId)
+    }
   }, [trackId])
 
   return <TrackView trackId={trackId} />

@@ -7,7 +7,7 @@
 			"type": "msedge",
 			"url": "http://localhost:3000/*",
 			"port": 9222,
-			"preLaunchTask": "yarn dev",
+			"webRoot": "${workspaceFolder}/app",
 			"skipFiles": [
 				"<node_internals>/**/*.js",
 				"${workspaceFolder}/node_modules/**/*.js"

@@ -42,17 +42,19 @@ const stemAudio = async (trackId: Track['id']) => {
     const formData = new FormData()
     formData.append('file', file)
 
-    const res = await fetch(ENDPOINT_URL, {
-      method: 'PUT',
-      body: formData
-    })
-
-    if (!res.ok) return handleErr(await res?.text())
+    try {
+      await fetch(ENDPOINT_URL, {
+        method: 'PUT',
+        body: formData
+      })
+    } catch (e) {
+      return handleErr('Error uploading file for stem processing')
+    }
 
     // set timer for processing stems
     const { size } = (await db.tracks.get(trackId)) || {}
-    // 0.025 seconds per MB
-    setAudioState[trackId].stemTimer(((size || 1) / 1000) * 0.025)
+    // 0.03 seconds per MB
+    setAudioState[trackId].stemTimer(((size || 1) / 1000) * 0.03)
 
     return // started
   }

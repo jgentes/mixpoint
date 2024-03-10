@@ -172,8 +172,7 @@ const ZoomSelectControl = ({ trackId }: { trackId: Track['id'] }) => {
   return (
     <Select
       size="sm"
-      placeholder="All Stems"
-      value={stemZoom}
+      selectedKeys={[stemZoom]}
       aria-label="Stem Zoom"
       onChange={e => {
         if (e.target.value)
