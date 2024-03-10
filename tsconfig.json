@@ -1,22 +1,17 @@
 {
   "compilerOptions": {
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ES2020"
-    ],
+    "lib": ["DOM", "DOM.Iterable", "ES2020"],
     "sourceMap": true,
     "inlineSources": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
     "resolveJsonModule": true,
-    "moduleResolution": "node",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "baseUrl": ".",
     "noEmit": true,
     "paths": {
-      "~/*": [
-        "./app/*"
-      ]
+      "~/*": ["./app/*"]
     },
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
@@ -26,9 +21,5 @@
     "strictNullChecks": true,
     "esModuleInterop": true
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "remix.env.d.ts"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", "env.d.ts"]
 }

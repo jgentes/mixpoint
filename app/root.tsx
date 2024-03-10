@@ -5,7 +5,6 @@ import { H, HighlightInit } from '@highlight-run/remix/client'
 import { NextUIProvider } from '@nextui-org/react'
 import {
   Links,
-  LiveReload,
   Meta,
   Outlet,
   Scripts,
@@ -29,11 +28,9 @@ import { Appwrite, account } from '~/AppwriteService'
 import { setAppState } from '~/api/db/appState.client'
 import ConfirmModal from '~/components/ConfirmModal'
 import { InitialLoader } from '~/components/Loader'
-import globalStyles from '~/global.css'
-import tailwind from '~/tailwind.css'
-import { handleError } from './entry.server'
+import globalStyles from '~/global.css?url'
+import tailwind from '~/tailwind.css?url'
 import { Env } from './utils/env'
-import { errorHandler } from './utils/notifications'
 
 const getCookie = (cookieString: string, cookieName: string) => {
   const cookies = cookieString ? cookieString.split('; ') : []
@@ -100,15 +97,6 @@ const links: LinksFunction = () => [
   { rel: 'stylesheet', href: globalStyles }
 ]
 
-const HtmlDoc = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <>
-      {children}
-      <LiveReload />
-    </>
-  )
-}
-
 const ThemeLoader = () => {
   const { ENV } = useLoaderData<typeof loader>()
   const [searchParams] = useSearchParams()
@@ -154,7 +142,10 @@ const ThemeLoader = () => {
         manualStart={Env === 'development'}
         enableCanvasRecording={Env === 'production'}
         serviceName="Mixpoint"
-        tracingOrigins={false}
+        tracingOrigins={[
+          // match mixpoint.dev and any subdomain except appwrite.mixpoint.dev
+          /^(?!appwrite.)([a-zA-Z0-9-]*.)?mixpoint.dev$/
+        ]}
         networkRecording={{
           enabled: true,
           recordHeadersAndBody: true
@@ -187,10 +178,10 @@ const ThemeLoader = () => {
 }
 
 const App = () => (
-  <HtmlDoc>
+  <>
     <ThemeLoader />
     <Scripts />
-  </HtmlDoc>
+  </>
 )
 
 const ErrorBoundary = (error: Error) => {
@@ -201,7 +192,7 @@ const ErrorBoundary = (error: Error) => {
     : routeError?.message || JSON.stringify(routeError)
 
   return (
-    <HtmlDoc>
+    <>
       {!isRouteErrorResponse(error) || Env === 'development' ? null : (
         <>
           <script src="https://unpkg.com/highlight.run" />
@@ -217,7 +208,7 @@ const ErrorBoundary = (error: Error) => {
       )}
       <InitialLoader message={message || 'Something went wrong'} />
       <Scripts />
-    </HtmlDoc>
+    </>
   )
 }
 
