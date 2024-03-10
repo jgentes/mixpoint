@@ -69,7 +69,7 @@ const stemAudio = async (trackId: Track['id']) => {
           setTimeout(waitForStems, 10000) // Retry after 10 seconds
           return
         }
-        if (res.status === 500) return handleErr('Error generating stems')
+        if (res.status === 500) reject(handleErr('Error generating stems'))
         if (res.status === 200) {
           try {
             const stems = await Promise.all(

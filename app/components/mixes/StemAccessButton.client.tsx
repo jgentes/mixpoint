@@ -29,14 +29,6 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
     }
   }
 
-  const stemHandler = async () => {
-    try {
-      stemState === 'getStems' ? stemAudio(trackId) : await getStemsDir()
-    } catch (e) {
-      return // error handled in promises
-    }
-  }
-
   const TimerCircle = ({ color }: { color: 'success' | 'warning' }) => {
     const { value = 1 } = useCountUp({
       isCounting: true,
@@ -102,23 +94,31 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
     error: {
       icon: <WarningIcon className="text-3xl text-warning-600 mx-auto" />,
       primaryText: 'Something went wrong',
-      secondaryText: 'Please refresh the page and try again'
+      secondaryText: 'Please try again'
+    }
+  }
+
+  const stemHandler = async () => {
+    try {
+      stemState === 'getStems' ? await stemAudio(trackId) : await getStemsDir()
+    } catch (e) {
+      return // error handled in promises
     }
   }
 
   return (
     <div
       className="
-				border-2 border-dashed p-5 text-center cursor-pointer rounded border-default-500 bg-default-50 hover:bg-warning-500 hover:bg-opacity-10 hover:border-warning-500 active:border-warning-500 active:bg-warning-500m mb-3"
-      aria-label={stemStates[stemState].primaryText}
+				border-2 border-dashed p-5 text-center cursor-pointer rounded border-default-500 bg-default-50 hover:bg-warning-500 hover:bg-opacity-10 hover:border-warning-500 active:border-warning-500 active:bg-warning-500m mb-3 h-32"
+      aria-label={stemStates[stemState as keyof typeof stemStates].primaryText}
       onClick={stemHandler}
     >
-      {stemStates[stemState].icon}
+      {stemStates[stemState as keyof typeof stemStates].icon}
       <div className="text-default-600 text-md font-semibold">
-        {stemStates[stemState].primaryText}
+        {stemStates[stemState as keyof typeof stemStates].primaryText}
       </div>
       <div className="text-default-600 text-sm">
-        {stemStates[stemState].secondaryText}
+        {stemStates[stemState as keyof typeof stemStates].secondaryText}
       </div>
     </div>
   )
