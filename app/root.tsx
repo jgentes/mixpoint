@@ -43,7 +43,7 @@ const getCookie = (cookieString: string, cookieName: string) => {
   return null
 }
 
-// this is used to inject environment variables into the browser
+// this is used to inject environment variables into the browser and session cookie on the server
 export async function loader({ request }: LoaderFunctionArgs) {
   const HIGHLIGHT_PROJECT_ID =
     process.env.HIGHLIGHT_PROJECT_ID || 'highlight-project-id'
@@ -80,13 +80,13 @@ export const Head = createHead(() => (
   </>
 ))
 
-const meta: MetaFunction = () => [
+export const meta: MetaFunction = () => [
   { title: 'Mixpoint' },
   { description: 'Mixpoint is multi-track audio mixing app for the browser' },
   { viewport: 'width=device-width, initial-scale=1' }
 ]
 
-const links: LinksFunction = () => [
+export const links: LinksFunction = () => [
   {
     rel: 'icon',
     type: 'image/svg+xml',
@@ -184,7 +184,7 @@ const App = () => (
   </>
 )
 
-const ErrorBoundary = (error: Error) => {
+export const ErrorBoundary = (error: Error) => {
   const routeError = (useRouteError() as Error) || error
 
   const message = isRouteErrorResponse(routeError)
@@ -212,4 +212,4 @@ const ErrorBoundary = (error: Error) => {
   )
 }
 
-export { App as default, links, meta, ErrorBoundary }
+export default App
