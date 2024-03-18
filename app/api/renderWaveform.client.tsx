@@ -37,7 +37,7 @@ const PRIMARY_WAVEFORM_CONFIG = (trackId: Track['id']): WaveSurferOptions => ({
         'rgba(145, 145, 145, 0.8)',
         'rgba(145, 145, 145, 0.8)'
       ],
-      progressColor: 'rgba(0, 0, 0, 0.25)',
+      progressColor: 'rgba(125, 125, 125, 0.25)',
       hideScrollbar: true
     })
 

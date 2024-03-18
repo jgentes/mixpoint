@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@fontsource/public-sans": "~4.5.11",
-    "@highlight-run/remix": "^2.0.16",
+    "@highlight-run/remix": "2.0",
     "@nextui-org/react": "^2.2.9",
     "@remix-run/react": "^2.8.0",
     "@vercel/analytics": "^1.1.2",
@@ -27,7 +27,7 @@
     "react-dom": "~18",
     "react-hot-toast": "^2.4.1",
     "remix-island": "^0.1.2",
-    "teaful": "~0.11.1",
+    "teaful": "^0.11.1",
     "use-count-up": "^3.0.1",
     "wavesurfer.js": "^7.3.3",
     "web-audio-beat-detector": "~8.1.37"
