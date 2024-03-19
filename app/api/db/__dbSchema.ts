@@ -70,8 +70,8 @@ type Track = {
   sets?: MixSet['id'][]
 }
 
-// a mixpoint is a point in time where the To track begins to overlay the From track.
-// a mixpoint is not the output of two tracks mixed together.
+// a mixpoint is based on the "From" track and is the time where the To track begins to overlay the From track
+// a mixpoint is not the output of two tracks mixed together
 
 type Mixpoint = {
   timestamp: number

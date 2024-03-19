@@ -1,4 +1,4 @@
-//import { HandleError } from '@highlight-run/remix/server'
+import { HandleError } from '@highlight-run/remix/server'
 import { type EntryContext } from '@vercel/remix'
 import { renderHeadToString } from 'remix-island'
 import { Head } from './root'
@@ -14,7 +14,7 @@ const nodeOptions = {
   projectID: process.env.HIGHLIGHT_PROJECT_ID || 'hightlight-project-id'
 }
 
-//export const handleError = HandleError(nodeOptions)
+export const handleError = HandleError(nodeOptions)
 
 const ABORT_DELAY = 5_000
 

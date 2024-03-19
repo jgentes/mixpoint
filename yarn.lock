@@ -1043,10 +1043,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@highlight-run/node@npm:3.8.0":
-  version: 3.8.0
-  resolution: "@highlight-run/node@npm:3.8.0"
-  checksum: 287126ae9539b631ff8047bc82e56ce2b3803f4567c599e76a8c9d36318c6d4e601ed420ac28061a9de81bce4826bd9135a3b2cdc6971c94e92da73112b85810
+"@highlight-run/node@npm:3.8.1":
+  version: 3.8.1
+  resolution: "@highlight-run/node@npm:3.8.1"
+  checksum: 9d311f915e17fc12be50d53541df36c442c1e70f326793cac982d72c271b63aeee4956713d244307d9d4f4d9f851cfb59cef650123899a641a10317ef547c771
   languageName: node
   linkType: hard
 
@@ -1060,18 +1060,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@highlight-run/remix@npm:2.0":
-  version: 2.0.22
-  resolution: "@highlight-run/remix@npm:2.0.22"
+"@highlight-run/remix@npm:^2.0.24":
+  version: 2.0.24
+  resolution: "@highlight-run/remix@npm:2.0.24"
   dependencies:
-    "@highlight-run/node": 3.8.0
+    "@highlight-run/node": 3.8.1
     "@highlight-run/react": 3.2.1
-    "@opentelemetry/instrumentation": 0.49.1
-    highlight.run: 8.8.0
+    "@opentelemetry/instrumentation": ^0.49.1
+    highlight.run: 8.9.0
     js-cookie: ^3.0.5
   peerDependencies:
     react: ">=18"
-  checksum: ba6fd7e5b470ca21f1291b267869db4c4f2894dd96a183f00d55cb3eca97ad7b0b99dcba5803c43e13676854449b89e6a04010b504885a464e0cecf7ba575f4c
+  checksum: 08483298425262945d55ce74dda63eed11b1bf304a88570a84755ac0e9f98b2356bfc10e3411fca0bcb59bb268ee19c57e5bad2ca644ae8e34b2ec6d6d31aa57
   languageName: node
   linkType: hard
 
@@ -2535,7 +2535,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation@npm:0.49.1":
+"@opentelemetry/instrumentation@npm:^0.49.1":
   version: 0.49.1
   resolution: "@opentelemetry/instrumentation@npm:0.49.1"
   dependencies:
@@ -7138,10 +7138,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"highlight.run@npm:8.8.0":
-  version: 8.8.0
-  resolution: "highlight.run@npm:8.8.0"
-  checksum: 50ff70da7f52242676821bf051cb0580c2037959be0aa8e2737a70489c77002a61c61a62b61de9f2cb2f5a6b1976a1c7cbb09cf1fa4597d3b35aafcad7c9b291
+"highlight.run@npm:8.9.0":
+  version: 8.9.0
+  resolution: "highlight.run@npm:8.9.0"
+  checksum: 537aad3b53f5e59ea5c46c3cfa2276e5ed2b7f1d2ed7ee303b92ad044469c6539f28425613d616a6cda491c4b8db56df909beed1c0526947c82b5e268bdbed47
   languageName: node
   linkType: hard
 
@@ -8780,7 +8780,7 @@ __metadata:
     "@argos-ci/playwright": ^1.3.2
     "@biomejs/biome": 1.4.1
     "@fontsource/public-sans": ~4.5.11
-    "@highlight-run/remix": 2.0
+    "@highlight-run/remix": ^2.0.24
     "@nextui-org/react": ^2.2.9
     "@remix-run/dev": ^2.8.0
     "@remix-run/react": ^2.8.0
