@@ -20,7 +20,7 @@ class MixpointDb extends Dexie {
 
   constructor() {
     super('MixpointDb')
-    this.version(1).stores({
+    this.version(3).stores({
       tracks: '++id, name, bpm, [name+size]',
       mixpoints: '++id',
       mixes: '++id, tracks',
