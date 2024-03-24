@@ -10,6 +10,7 @@ const STATE_ROW_LIMIT = 100
 
 class MixpointDb extends Dexie {
   tracks: Dexie.Table<Track, number>
+  mixpoints: Dexie.Table<Mixpoint, number>
   mixes: Dexie.Table<Mix, number>
   sets: Dexie.Table<MixSet, number>
   mixPrefs: Dexie.Table<MixPrefs>
@@ -21,6 +22,7 @@ class MixpointDb extends Dexie {
     super('MixpointDb')
     this.version(1).stores({
       tracks: '++id, name, bpm, [name+size]',
+      mixpoints: '++id',
       mixes: '++id, tracks',
       sets: '++id, mixes',
       mixPrefs: 'date',
@@ -28,18 +30,21 @@ class MixpointDb extends Dexie {
       userPrefs: 'date',
       trackCache: 'id'
     })
-    this.version(2).upgrade(tx => {
-      tx.table('userPrefs')
-        .toCollection()
-        .modify(userPref => {
-          if (userPref.sortDirection === 'asc')
-            userPref.sortDirection = 'ascending'
-          if (userPref.sortDirection === 'desc')
-            userPref.sortDirection = 'descending'
-        })
-    })
+    // example migration:
+    //
+    // this.version(2).upgrade(tx => {
+    //   tx.table('userPrefs')
+    //     .toCollection()
+    //     .modify(userPref => {
+    //       if (userPref.sortDirection === 'asc')
+    //         userPref.sortDirection = 'ascending'
+    //       if (userPref.sortDirection === 'desc')
+    //         userPref.sortDirection = 'descending'
+    //     })
+    // })
 
     this.tracks = this.table('tracks')
+    this.mixpoints = this.table('mixpoints')
     this.mixes = this.table('mixes')
     this.sets = this.table('sets')
     this.mixPrefs = this.table('mixPrefs')
@@ -66,22 +71,32 @@ type Track = {
   sampleRate?: number
   offset?: number // first beat as determined by bpm analysis
   adjustedOffset?: number
-  mixpoints?: Mixpoint[]
-  sets?: MixSet['id'][]
+  mixpoints?: {
+    to: { [trackid: number]: Set<Mixpoint['id']> }
+    from: { [trackid: number]: Set<Mixpoint['id']> }
+  }
+  mixes?: Set<number>
+  sets?: Set<number>
 }
 
-// a mixpoint is based on the "From" track and is the time where the To track begins to overlay the From track
-// a mixpoint is not the output of two tracks mixed together
+const EFFECTS = ['gain', 'linear-ramp', 'exp-ramp'] as const
+type Effect = (typeof EFFECTS)[number]
 
+// a mixpoint is a point in a track where the user can add transition effects
 type Mixpoint = {
-  timestamp: number
-  mixes: Mix['id'][]
+  id?: number // id always exists but add/put complains if it's not there and in this type definition
+  name: string
+  effects: {
+    [timecode: number]: { [key in Effect]: number } // timecode is a percentage of the track duration
+  }
 }
 
 // a mix is a representation of the transition between tracks
 
 type Mix = {
   id: number
+  from: Track['id']
+  to: Track['id']
   status: string // Todo: define good | bad | unknown?
   effects: {
     timestamp: number
@@ -89,6 +104,8 @@ type Mix = {
   }[]
   lastState: MixPrefs
 }
+
+// would have used "Set" but it's protected in JS, so named it MixSet instead
 
 type MixSet = {
   id: number
@@ -171,6 +188,8 @@ for (const table of tables) {
 export type {
   Track as __Track,
   Mix as __Mix,
+  Mixpoint as __Mixpoint,
+  Effect as __Effect,
   MixSet as __MixSet,
   TrackPrefs as __TrackPrefs,
   MixPrefs as __MixPrefs,
@@ -180,4 +199,4 @@ export type {
   TrackCache as __TrackCache,
   Stem as __Stem
 }
-export { db as __db, STEMS as __STEMS }
+export { db as __db, STEMS as __STEMS, EFFECTS as __EFFECTS }

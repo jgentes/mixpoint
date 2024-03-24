@@ -21,7 +21,7 @@ import {
   setTrackPrefs,
   updateTrack
 } from '~/api/db/dbHandlers'
-import { initAudioContext, initWaveform } from '~/api/renderWaveform.client'
+import { initWaveform } from '~/api/renderWaveform.client'
 import { convertToSecs } from '~/utils/tableOps'
 
 // audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
@@ -40,6 +40,54 @@ const _getAllWaveforms = (): WaveSurfer[] => {
 }
 
 const audioEvents = {
+  initAudioContext: ({
+    trackId,
+    stem,
+    media
+  }: { trackId: Track['id']; stem?: Stem; media: HTMLAudioElement }) => {
+    // audioContext cannot be initialized without user intervention, so this function is called when the audio is played for the first time per track or stem
+
+    // Ensure this function is not called twice for the same track or stem
+    const [gainExists] = stem
+      ? getAudioState[trackId].stems[stem].gainNode()
+      : getAudioState[trackId].gainNode()
+
+    if (gainExists) return
+
+    let [audioContext] = getAppState.audioContext()
+    if (!audioContext) {
+      audioContext = new AudioContext()
+      setAppState.audioContext(audioContext)
+    }
+
+    // gainNode is used to control volume of all stems at once
+    const gainNode = audioContext.createGain()
+    gainNode.connect(audioContext.destination)
+
+    const analyserNode = audioContext.createAnalyser()
+
+    // Connect the audio to the analyzer
+    media.addEventListener(
+      'play',
+      async () => {
+        // Create a MediaElementSourceNode from the audio element
+        const mediaNode = audioContext?.createMediaElementSource(media)
+
+        mediaNode?.connect(gainNode)
+        mediaNode?.connect(analyserNode)
+      },
+      { once: true }
+    )
+
+    // Save waveform in audioState to track user interactions with the waveform and show progress
+    if (stem) {
+      setAudioState[trackId].stems[stem as Stem].gainNode(gainNode)
+      setAudioState[trackId].stems[stem as Stem].analyserNode(analyserNode)
+    } else {
+      setAudioState[trackId].analyserNode(analyserNode)
+      setAudioState[trackId].gainNode(gainNode)
+    }
+  },
   onReady: async (trackId: Track['id'], stem?: Stem) => {
     const [waveform] = getAudioState[trackId].waveform()
     if (!waveform) return
@@ -221,7 +269,7 @@ const audioEvents = {
 
       setAudioState[trackId as number].playing(true)
 
-      initAudioContext({
+      audioEvents.initAudioContext({
         trackId,
         media: waveform.getMediaElement()
       })
@@ -236,7 +284,7 @@ const audioEvents = {
           stems
         )) {
           if (stemWaveform) {
-            initAudioContext({
+            audioEvents.initAudioContext({
               trackId,
               stem: stem as Stem,
               media: stemWaveform.getMediaElement()
