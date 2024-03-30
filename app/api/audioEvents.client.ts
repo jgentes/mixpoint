@@ -364,7 +364,7 @@ const audioEvents = {
 
     let currentIndex = findClosestRegion(!direction ? currentTime : time)
     currentIndex = currentIndex === -1 ? regions.length - 1 : currentIndex
-
+    console.log(currentIndex, regions)
     const previous = regions[(currentIndex || 1) - 1]
     const current = regions[currentIndex]
     const next = regions[Math.min(currentIndex, regions.length - 2) + 1]
@@ -479,6 +479,8 @@ const audioEvents = {
     // Update mixPrefs
     await setTrackPrefs(trackId, { beatResolution })
 
+    await calcMarkers(trackId)
+
     // Adjust zoom
     switch (beatResolution) {
       case '1:4':
@@ -491,8 +493,6 @@ const audioEvents = {
         waveform.zoom(80)
         break
     }
-
-    calcMarkers(trackId)
   },
 
   bpm: async (
