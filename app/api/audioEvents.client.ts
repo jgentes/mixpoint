@@ -431,6 +431,8 @@ const audioEvents = {
     // Update mixPrefs
     await setTrackPrefs(trackId, { beatResolution })
 
+    await calcMarkers(trackId)
+
     // Adjust zoom
     switch (beatResolution) {
       case '1:4':
@@ -443,8 +445,6 @@ const audioEvents = {
         waveform.zoom(80)
         break
     }
-
-    calcMarkers(trackId)
   },
 
   bpm: async (
