@@ -364,7 +364,7 @@ const audioEvents = {
 
     let currentIndex = findClosestRegion(!direction ? currentTime : time)
     currentIndex = currentIndex === -1 ? regions.length - 1 : currentIndex
-    console.log(currentIndex, regions)
+
     const previous = regions[(currentIndex || 1) - 1]
     const current = regions[currentIndex]
     const next = regions[Math.min(currentIndex, regions.length - 2) + 1]
@@ -619,10 +619,10 @@ const audioEvents = {
     })
 
     const [{ waveform, time, playing }] = getAudioState[trackId]()
-    if (waveform && playing) {
+    if (waveform) {
       waveform.setVolume(0)
       waveform.setTime(time)
-      waveform.play()
+      if (playing) waveform.play()
     }
   },
 
