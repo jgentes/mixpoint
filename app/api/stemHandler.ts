@@ -54,7 +54,7 @@ const stemAudio = async (trackId: Track['id']) => {
     // set timer for processing stems
     const { size } = (await db.tracks.get(trackId)) || {}
     // 0.03 seconds per MB
-    setAudioState[trackId].stemTimer(((size || 1) / 1000) * 0.025)
+    setAudioState[trackId].stemTimer(((size || 1) / 1000) * 0.02)
 
     return // started
   }
