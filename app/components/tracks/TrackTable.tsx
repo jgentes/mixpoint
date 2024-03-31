@@ -332,7 +332,7 @@ const TrackTable = () => {
             }}
           />
           <Dropdown>
-            <DropdownTrigger className="bg-default/30">
+            <DropdownTrigger>
               <Button
                 endContent={
                   <ChevronIcon className="text-xl rotate-90 text-foreground min-w-unit-5" />
@@ -341,7 +341,7 @@ const TrackTable = () => {
                 radius="sm"
                 disableRipple
                 aria-label="Column selector"
-                className="text-default-600 pl-6 pr-5 rounded"
+                className="text-default-600 pl-6 pr-5 rounded bg-default/30"
               >
                 Columns
               </Button>
