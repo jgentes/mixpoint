@@ -29,7 +29,7 @@
     "remix-island": "^0.1.2",
     "teaful": "^0.11.1",
     "use-count-up": "^3.0.1",
-    "wavesurfer.js": "^7.3.3",
+    "wavesurfer.js": "^7.7.7",
     "web-audio-beat-detector": "~8.1.37"
   },
   "devDependencies": {
