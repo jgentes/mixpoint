@@ -3,6 +3,9 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { audioEvents } from '~/api/audioEvents.client'
 import {
   __Mix as Mix,
+  __Mixpoint as Mixpoint,
+  __Effect as Effect,
+  __EFFECTS as EFFECTS,
   __MixPrefs as MixPrefs,
   __MixSet as MixSet,
   __STEMS as STEMS,
@@ -167,6 +170,46 @@ const setTrackPrefs = async (
   await setPrefs('mix', { tracks, trackPrefs })
 }
 
+const putMixpoint = async (
+  name: string,
+  effect: { [key in Effect]: number }[],
+  mixpointId?: number
+) => {
+  if (!effect) return errorHandler('No effect provided')
+
+  const effects: { [timecode: number]: { [key in Effect]: number } } = {}
+
+  for (const [index, effectObj] of effect.entries()) {
+    effects[index] = effectObj
+  }
+  
+  if (!mixpointId) {
+    
+    if (!name) {return errorHandler('No name provided')}
+    
+    return await db.mixpoints.put({
+      name,
+      effects
+    })
+  }
+
+  const currentMixpoint = (await db.mixpoints.get(mixpointId))
+  if (!currentMixpoint) return errorHandler(`Mixpoint ${mixpointId} not found`)
+
+  const newEffects = {...currentMixpoint.effects, ...effects}
+
+  const newMixpoint = {
+    ...currentMixpoint,
+    ...{name: name || currentMixpoint.name, effects: newEffects }
+  }
+
+  await db.mixpoints.put(newMixpoint, mixpointId)
+}
+
+const deleteMixpoint = async (mixpointId: number) => {
+  await db.mixpoints.delete(mixpointId)
+}
+
 const addToMix = async (track: Track, trackSlot?: 0 | 1) => {
   const file = await getPermission(track)
   if (!file) return
@@ -202,6 +245,7 @@ const _removeFromMix = async (id: Track['id']) => {
 export type {
   Track,
   Mix,
+  Mixpoint,
   MixSet,
   TrackPrefs,
   MixPrefs,
@@ -209,16 +253,20 @@ export type {
   UserPrefs,
   StoreTypes,
   TrackCache,
+  Effect,
   Stem
 }
 export {
   db,
   STEMS,
+  EFFECTS,
   useLiveQuery,
   updateTrack,
   putTracks,
   removeTracks,
   getDirtyTracks,
+  putMixpoint,
+  deleteMixpoint,
   getMix,
   removeMix,
   addToMix,
