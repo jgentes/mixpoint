@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ES2020"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2020"
+    ],
     "sourceMap": true,
     "inlineSources": true,
     "isolatedModules": true,
@@ -11,15 +15,24 @@
     "baseUrl": ".",
     "noEmit": true,
     "paths": {
-      "~/*": ["./app/*"]
+      "~/*": [
+        "./app/*"
+      ]
     },
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "types": [
+      "bun-types"
+    ],
     "target": "ES2020",
     "noImplicitAny": true,
     "strictNullChecks": true,
     "esModuleInterop": true
   },
-  "include": ["**/*.ts", "**/*.tsx", "env.d.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "env.d.ts"
+  ]
 }

@@ -104,9 +104,12 @@ const ThemeLoader = () => {
 
   useEffect(() => {
     // initial loading screen timeout
-    const timer = setTimeout(() => {
-      setLoading(false)
-    }, 500)
+    const timer = setTimeout(
+      () => {
+        setLoading(false)
+      },
+      Env === 'development' ? 0 : 500
+    )
 
     const checkSession = async () => {
       try {
