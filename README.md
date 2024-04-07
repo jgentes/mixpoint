@@ -51,7 +51,7 @@ The app is built using `Remix` which uses esBuild (now Vite) for really fast hot
 - [NextUI](https://github.com/nextui-org/nextui) React library
 - [BiomeJS](https://biomejs.dev/) for linting & formatting
 - [Bun](https://bun.sh/) (node replacement) & [Vite](https://vitejs.dev/) bundler
-- [Teaful](https://github.com/teafuljs/teaful) for App State
+- [Pullstate](https://lostpebble.github.io/pullstate/) for App State
 - [Dexie](https://dexie.org/) (IndexedDb) for Persistent State
 - [WaveSurfer.js](https://wavesurfer.xyz/) for audio visualization
 - Meta's [Demucs](https://github.com/facebookresearch/demucs) for audio stem separation

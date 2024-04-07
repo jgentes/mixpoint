@@ -1,11 +1,11 @@
 import { Accordion, AccordionItem } from '@nextui-org/react'
 import { useEffect, useState } from 'react'
-import { appState } from '~/api/db/appState.client'
-import TrackTable from '~/components//tracks/TrackTable'
+import { appState } from '~/api/db/appState'
 import { ChevronIcon } from '~/components/icons'
+import TrackTable from '~/components/tracks/TrackTable'
 
 const TrackDrawer = () => {
-  const [openDrawer, setOpenDrawer] = appState.openDrawer()
+  const openDrawer = appState.useState(state => state.openDrawer)
   const [trackDrawer, setTrackDrawer] = useState<string[]>([])
 
   useEffect(
@@ -24,7 +24,11 @@ const TrackDrawer = () => {
       <AccordionItem
         key="track-drawer"
         aria-label="track-drawer"
-        onPress={() => setOpenDrawer(!openDrawer)}
+        onPress={() =>
+          appState.update(state => {
+            state.openDrawer = !openDrawer
+          })
+        }
         title={
           <ChevronIcon
             className={`text-3xl text-default-600 ${

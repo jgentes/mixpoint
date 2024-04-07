@@ -1,4 +1,4 @@
-import { MixPrefs } from '~/api/db/dbHandlers'
+import { getPrefs, useLiveQuery } from '~/api/handlers/dbHandlers'
 import MixCard from '~/components/mixes/MixCard'
 import {
   CrossfaderControl,
@@ -6,10 +6,10 @@ import {
   StemsCrossfaders
 } from '~/components/tracks/Controls'
 
-const MixView = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
-  if (!tracks?.length) return null
+const MixView = () => {
+  const { tracks } = useLiveQuery(() => getPrefs('mix', 'tracks')) || {}
 
-  return (
+  return !tracks?.length ? null : (
     <div className="flex justify-between m-4">
       <MixCard trackId={tracks[0]} trackSlot={0} />
       <div className="flex flex-col mt-2">

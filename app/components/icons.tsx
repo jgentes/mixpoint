@@ -1,4 +1,4 @@
-import { SVGProps } from 'react'
+import { type SVGProps } from 'react'
 
 // Icons come primarily from https://icon-sets.iconify.design/material-symbols-light
 const createIcon = (d: string) => {

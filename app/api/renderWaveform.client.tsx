@@ -2,17 +2,12 @@ import { useEffect } from 'react'
 import WaveSurfer, { type WaveSurferOptions } from 'wavesurfer.js'
 import Minimap from 'wavesurfer.js/dist/plugins/minimap.js'
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
-import { audioEvents } from '~/api/audioEvents.client'
-import {
-  appState,
-  getAppState,
-  setAppState,
-  setAudioState
-} from '~/api/db/appState.client'
-import { Stem, Track, db } from '~/api/db/dbHandlers'
-import { getPermission } from '~/api/fileHandlers'
-import { validateTrackStemAccess } from '~/api/fileHandlers'
-import { ProgressBar } from '~/components/Loader'
+import { appState, audioState } from '~/api/db/appState'
+import { audioEvents } from '~/api/handlers/audioEvents.client'
+import { type Stem, type Track, db } from '~/api/handlers/dbHandlers'
+import { getPermission } from '~/api/handlers/fileHandlers'
+import { validateTrackStemAccess } from '~/api/handlers/fileHandlers'
+import { ProgressBar } from '~/components/layout/Loader'
 import { errorHandler } from '~/utils/notifications'
 
 const PRIMARY_WAVEFORM_CONFIG = (trackId: Track['id']): WaveSurferOptions => ({
@@ -72,6 +67,12 @@ const initWaveform = async ({
 }): Promise<void> => {
   if (!trackId) throw errorHandler('No track ID provided to initWaveform')
 
+  // add to analyzing state
+  appState.update(state => {
+    stem ? state.stemsAnalyzing.add(trackId) : state.analyzing.add(trackId)
+    return
+  })
+
   // an Audio object is required for Wavesurfer to use Web Audio
   const media = new Audio(URL.createObjectURL(file))
 
@@ -93,23 +94,35 @@ const initWaveform = async ({
 
   const waveform = WaveSurfer.create(config)
 
+  // initialize audioState for the track if necessary
+  const state = audioState.getRawState()
+  if (!state[trackId]) {
+    audioState.update(state => {
+      state[trackId] = { stems: {} }
+    })
+  }
+
   // Save waveform in audioState to track user interactions with the waveform and show progress
   if (stem) {
-    await setAudioState[trackId].stems[stem as Stem]({
-      waveform,
-      volume: 1,
-      volumeMeter: 0,
-      mute: false
+    audioState.update(state => {
+      state[trackId].stems[stem as Stem] = {
+        waveform,
+        volume: 1,
+        volumeMeter: 0,
+        mute: false
+      }
     })
   } else {
-    await setAudioState[trackId].waveform(waveform)
+    audioState.update(state => {
+      state[trackId].waveform = waveform
+    })
   }
 
   waveform.once('ready', () => audioEvents.onReady(trackId, stem))
 }
 
 const TrackView = ({ trackId }: { trackId: Track['id'] }) => {
-  const [analyzingTracks] = appState.analyzing()
+  const analyzingTracks = appState.useState(state => state.analyzing)
   const analyzing = analyzingTracks.has(trackId)
 
   const containerClass =
@@ -158,13 +171,11 @@ const Waveform = ({
     }
 
     // prevent duplication on re-render while loading
-    const [analyzingTracks] = getAppState.analyzing()
+    const state = appState.getRawState()
+    const analyzingTracks = state.analyzing
     const analyzing = analyzingTracks.has(trackId)
 
     if (!analyzing) init()
-
-    // add track to analyzing state
-    setAppState.analyzing(prev => prev.add(trackId))
 
     validateTrackStemAccess(trackId)
 

@@ -13,17 +13,17 @@ import {
   TableBody,
   TableCell,
   TableColumn,
-  TableColumnProps,
+  type TableColumnProps,
   TableHeader,
   TableRow
 } from '@nextui-org/react'
 import moment from 'moment'
-import { Key, ReactNode, useCallback, useMemo, useState } from 'react'
-import { audioEvents } from '~/api/audioEvents.client'
-import { analyzeTracks } from '~/api/audioHandlers.client'
-import { appState, setAppState, setModalState } from '~/api/db/appState.client'
+import { type Key, type ReactNode, useCallback, useMemo, useState } from 'react'
+import { appState, modalState } from '~/api/db/appState'
+import { audioEvents } from '~/api/handlers/audioEvents.client'
+import { analyzeTracks } from '~/api/handlers/audioHandlers.client'
 import {
-  Track,
+  type Track,
   addToMix,
   db,
   getDirtyTracks,
@@ -31,9 +31,8 @@ import {
   removeTracks,
   setPrefs,
   useLiveQuery
-} from '~/api/db/dbHandlers'
-import { browseFile } from '~/api/fileHandlers'
-import { ProgressBar } from '~/components/Loader'
+} from '~/api/handlers/dbHandlers'
+import { browseFile } from '~/api/handlers/fileHandlers'
 import {
   AddIcon,
   AnalyzeIcon,
@@ -41,22 +40,22 @@ import {
   ChevronIcon,
   SearchIcon
 } from '~/components/icons'
+import { ProgressBar } from '~/components/layout/Loader'
 import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
 import { formatMinutes, getComparator } from '~/utils/tableOps'
 
 const TrackTable = () => {
   // Re-render when page or selection changes
-  const [page] = appState.page()
-  const [rowsPerPage] = appState.rowsPerPage()
-  const [selected] = appState.selected()
-  const [analyzingTracks] = appState.analyzing()
+  const { page, rowsPerPage, selected, analyzingTracks, search, processing } =
+    appState.useState(state => ({
+      page: state.page,
+      rowsPerPage: state.rowsPerPage,
+      selected: state.selected,
+      analyzingTracks: state.analyzing,
+      search: state.search,
+      processing: state.processing
+    }))
   const selectedCount = selected.size
-
-  // Re-render when search query changes
-  const [search] = appState.search()
-
-  // Show loader while processing tracks
-  const [processing] = appState.processing()
 
   // Allow drag & drop files / folders into the table
   const [dragOver, setDragOver] = useState(false)
@@ -121,7 +120,10 @@ const TrackTable = () => {
     await addToMix(t)
 
     // if this is the first track in the mix, leave the drawer open
-    if (!tracks.length) setAppState.openDrawer(true)
+    if (!tracks.length)
+      appState.update(state => {
+        state.openDrawer = true
+      })
   }
 
   const AddToMixButton = useCallback(
@@ -262,7 +264,7 @@ const TrackTable = () => {
   }, [visibleColumns, columns])
 
   const showRemoveTracksModal = () =>
-    setModalState({
+    modalState.update(() => ({
       openState: true,
       headerText: 'Are you sure?',
       bodyText: 'Removing tracks here will not delete them from your computer.',
@@ -271,18 +273,23 @@ const TrackTable = () => {
         selectedCount > 1 ? 's' : ''
       }`,
       onConfirm: async () => {
-        setModalState.openState(false)
+        modalState.update(s => {
+          s.openState = false
+        })
         for (const id of selected) await audioEvents.ejectTrack(Number(id))
         await removeTracks([...selected].map(Number))
-        setAppState.selected(new Set())
+        appState.update(state => {
+          state.selected = new Set()
+        })
       },
-      onCancel: async () => {
-        setModalState.openState(false)
-      }
-    })
+      onCancel: async () =>
+        modalState.update(s => {
+          s.openState = false
+        })
+    }))
 
   const showAnalyzeDirtyModal = () =>
-    setModalState({
+    modalState.update(() => ({
       openState: true,
       headerText: 'Are you sure?',
       bodyText: `This will analyze ${dirtyTracks.length} track${
@@ -291,13 +298,17 @@ const TrackTable = () => {
       confirmColor: 'success',
       confirmText: `Analyze track${dirtyTracks.length > 1 ? 's' : ''}`,
       onConfirm: async () => {
-        setModalState.openState(false)
+        modalState.update(s => {
+          s.openState = false
+        })
         analyzeTracks(dirtyTracks)
       },
       onCancel: async () => {
-        setModalState.openState(false)
+        modalState.update(s => {
+          s.openState = false
+        })
       }
-    })
+    }))
 
   const currentPageTracks = (): Set<Key> => {
     const startIndex = (page - 1) * Number(rowsPerPage)
@@ -321,13 +332,21 @@ const TrackTable = () => {
             startContent={<SearchIcon className="text-default-500 text-xl" />}
             value={String(search)}
             variant="bordered"
-            onClear={() => setAppState.search('')}
+            onClear={() =>
+              appState.update(state => {
+                state.search = ''
+              })
+            }
             onValueChange={value => {
               if (value) {
-                setAppState.search(value)
-                setAppState.page(1)
+                appState.update(state => {
+                  state.search = value
+                  state.page = 1
+                })
               } else {
-                setAppState.search('')
+                appState.update(state => {
+                  state.search = ''
+                })
               }
             }}
           />
@@ -414,8 +433,10 @@ const TrackTable = () => {
           placeholder="10"
           size="sm"
           onChange={e => {
-            setAppState.rowsPerPage(Number(e.target.value))
-            setAppState.page(1)
+            appState.update(state => {
+              state.rowsPerPage = Number(e.target.value)
+              state.page = 1
+            })
           }}
           classNames={{
             base: 'w-min',
@@ -464,7 +485,9 @@ const TrackTable = () => {
       selectionMode="multiple"
       sortDescriptor={{ column: sortColumn, direction: sortDirection }}
       onSelectionChange={keys =>
-        setAppState.selected(keys === 'all' ? currentPageTracks() : keys)
+        appState.update(state => {
+          state.selected = keys === 'all' ? currentPageTracks() : keys
+        })
       }
       onSortChange={({ column, direction }) =>
         setPrefs('user', { sortDirection: direction, sortColumn: column })
@@ -537,7 +560,11 @@ const TrackTable = () => {
         page={page}
         total={pages}
         variant="light"
-        onChange={pageNum => setAppState.page(pageNum)}
+        onChange={pageNum =>
+          appState.update(state => {
+            state.page = pageNum
+          })
+        }
       />
       <span className="text-small text-default-500">
         {selectedCount === tracks.length

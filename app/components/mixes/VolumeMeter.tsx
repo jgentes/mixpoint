@@ -1,5 +1,5 @@
-import { audioState } from '~/api/db/appState.client'
-import { Stem, Track } from '~/api/db/dbHandlers'
+import { audioState } from '~/api/db/appState'
+import { type Stem, type Track } from '~/api/handlers/dbHandlers'
 
 const VolumeMeter = ({
   trackId,
@@ -10,9 +10,11 @@ const VolumeMeter = ({
 }) => {
   if (!trackId) return null
 
-  const [volumeMeter = 0] = stemType
-    ? audioState[trackId].stems[stemType].volumeMeter()
-    : audioState[trackId].volumeMeter()
+  const volumeMeter = stemType
+    ? audioState.useState(
+        state => state[trackId]?.stems[stemType]?.volumeMeter
+      ) || 0
+    : audioState.useState(state => state[trackId]?.volumeMeter) || 0
 
   return (
     <div

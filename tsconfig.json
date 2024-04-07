@@ -1,31 +1,37 @@
 {
   "compilerOptions": {
+    // latest features
     "lib": [
       "DOM",
       "DOM.Iterable",
-      "ES2020"
+      "ESNext"
     ],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "jsx": "react-jsx",
+    "allowJs": true,
+    // source maps
     "sourceMap": true,
     "inlineSources": true,
     "isolatedModules": true,
-    "jsx": "react-jsx",
-    "resolveJsonModule": true,
-    "module": "ESNext",
+    // bundler
     "moduleResolution": "Bundler",
-    "baseUrl": ".",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
     "noEmit": true,
+    "resolveJsonModule": true,
+    // best practices
+    "strict": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
     "paths": {
       "~/*": [
         "./app/*"
       ]
     },
-    "allowJs": true,
+    // other checks
     "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "types": [
-      "bun-types"
-    ],
-    "target": "ES2020",
     "noImplicitAny": true,
     "strictNullChecks": true,
     "esModuleInterop": true

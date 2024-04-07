@@ -1,4 +1,8 @@
-import { Track, getTrackName, useLiveQuery } from '~/api/db/dbHandlers'
+import {
+  type Track,
+  getTrackName,
+  useLiveQuery
+} from '~/api/handlers/dbHandlers'
 import StemPanel from '~/components/mixes/StemPanel'
 import TrackPanel from '~/components/mixes/TrackPanel'
 import {

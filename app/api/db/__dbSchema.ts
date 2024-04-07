@@ -1,7 +1,7 @@
 // This file initializes Dexie (indexDB), defines the schema and creates tables
 // Be sure to create MIGRATIONS for any changes to SCHEMA!
 import Dexie from 'dexie'
-import { Key } from 'react'
+import { type Key } from 'react'
 
 // eventually allow the user to change these
 const STATE_ROW_LIMIT = 100

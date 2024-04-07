@@ -1,15 +1,15 @@
-import { Key, useCallback, useEffect, useRef, useState } from 'react'
-import { audioEvents } from '~/api/audioEvents.client'
+import { type Key, useCallback, useEffect, useRef, useState } from 'react'
+import { audioEvents } from '~/api/handlers/audioEvents.client'
 import {
-  MixPrefs,
+  type MixPrefs,
   STEMS,
-  Stem,
-  Track,
-  TrackPrefs,
+  type Stem,
+  type Track,
+  type TrackPrefs,
   db,
   getTrackPrefs,
   useLiveQuery
-} from '~/api/db/dbHandlers'
+} from '~/api/handlers/dbHandlers'
 
 import {
   Button,
@@ -22,7 +22,7 @@ import {
   Tabs,
   Tooltip
 } from '@nextui-org/react'
-import { audioState } from '~/api/db/appState.client'
+import { audioState } from '~/api/db/appState'
 import {
   EjectIcon,
   HeadsetIcon,
@@ -321,7 +321,7 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
     }
   }
 
-  const [isPlaying] = audioState[trackId].playing()
+  const isPlaying = audioState.useState(state => state[trackId]?.playing)
 
   return (
     <>
@@ -477,8 +477,10 @@ const StemControl = ({
 }) => {
   if (!trackId) return null
 
-  const [volume = 100] = audioState[trackId].stems[stemType].volume()
-  const [mute = false] = audioState[trackId].stems[stemType].mute()
+  const volume =
+    audioState.useState(state => state[trackId]?.stems[stemType]?.volume) || 100
+  const mute =
+    audioState.useState(state => state[trackId]?.stems[stemType]?.mute) || false
 
   const [solo, setSolo] = useState(false)
 
@@ -559,7 +561,7 @@ const TrackTime = ({
   trackId,
   className
 }: { trackId: Track['id']; className?: string }) => {
-  const [time = 0] = audioState[trackId].time()
+  const time = audioState.useState(state => state[trackId]?.time) || 0
 
   return <div className={className}>{timeFormat(time)}</div>
 }

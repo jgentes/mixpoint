@@ -1,8 +1,8 @@
-import { audioEvents } from '~/api/audioEvents.client'
-import { appState, audioState } from '~/api/db/appState.client'
-import { Track, db, useLiveQuery } from '~/api/db/dbHandlers'
+import { appState, audioState } from '~/api/db/appState'
+import { audioEvents } from '~/api/handlers/audioEvents.client'
+import { type Track, db, useLiveQuery } from '~/api/handlers/dbHandlers'
 import { Waveform } from '~/api/renderWaveform.client'
-import { ProgressBar } from '~/components/Loader'
+import { ProgressBar } from '~/components/layout/Loader'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import {
   BeatResolutionControl,
@@ -14,13 +14,13 @@ import {
 import { timeFormat } from '~/utils/tableOps'
 
 const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
-  const [analyzingTracks] = appState.analyzing()
+  const analyzingTracks = appState.useState(state => state.analyzing)
   const analyzing = analyzingTracks.has(trackId)
 
   const { duration = 0 } =
     useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
 
-  const [stemState] = audioState[trackId].stemState()
+  const stemState = audioState.useState(state => state[trackId]?.stemState)
 
   const loaderClassNames =
     'p-0 border-1 border-divider rounded bg-default-50 overflow-hidden'

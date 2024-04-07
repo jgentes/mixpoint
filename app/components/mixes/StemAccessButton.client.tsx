@@ -1,10 +1,13 @@
 import { CircularProgress } from '@nextui-org/react'
-import { ReactElement } from 'react'
+import type { ReactElement } from 'react'
 import { useCountUp } from 'use-count-up'
-import { StemState, audioState } from '~/api/db/appState.client'
-import { Track } from '~/api/db/dbHandlers'
-import { getStemsDirHandle, validateTrackStemAccess } from '~/api/fileHandlers'
-import { stemAudio } from '~/api/stemHandler'
+import { type StemState, audioState } from '~/api/db/appState'
+import type { Track } from '~/api/handlers/dbHandlers'
+import {
+  getStemsDirHandle,
+  validateTrackStemAccess
+} from '~/api/handlers/fileHandlers'
+import { stemAudio } from '~/api/handlers/stemHandler'
 import {
   OfflineDownloadIcon,
   RuleFolderIcon,
@@ -16,8 +19,10 @@ import { errorHandler } from '~/utils/notifications'
 const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
 
-  const [stemState = 'selectStemDir'] = audioState[trackId].stemState()
-  const [stemTimer = 45] = audioState[trackId].stemTimer()
+  const stemState =
+    audioState.useState(state => state[trackId]?.stemState) || 'selectStemDir'
+  const stemTimer =
+    audioState.useState(state => state[trackId]?.stemTimer) || 45
 
   const getStemsDir = async () => {
     try {

@@ -1,8 +1,14 @@
 import { useEffect } from 'react'
 import { type WaveSurferOptions } from 'wavesurfer.js'
-import { audioEvents } from '~/api/audioEvents.client'
-import { audioState, getAppState, setAppState } from '~/api/db/appState.client'
-import { STEMS, Stem, Track, db, getTrackPrefs } from '~/api/db/dbHandlers'
+import { appState, audioState } from '~/api/db/appState'
+import { audioEvents } from '~/api/handlers/audioEvents.client'
+import {
+  STEMS,
+  type Stem,
+  type Track,
+  db,
+  getTrackPrefs
+} from '~/api/handlers/dbHandlers'
 import { initWaveform } from '~/api/renderWaveform.client'
 import StemAccessButton from '~/components/mixes/StemAccessButton.client'
 import { StemControl } from '~/components/tracks/Controls'
@@ -11,7 +17,7 @@ import { errorHandler } from '~/utils/notifications'
 const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) throw errorHandler('No track ID provided to StemPanel')
 
-  const [stemState] = audioState[trackId].stemState()
+  const stemState = audioState.useState(state => state[trackId]?.stemState)
 
   // check stems on disk to determine component state
   useEffect(() => {
@@ -49,13 +55,12 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
     }
 
     // prevent duplication on re-render while loading
-    const [analyzingTracks] = getAppState.stemsAnalyzing()
+
+    const state = appState.getRawState()
+    const analyzingTracks = state.stemsAnalyzing
     const analyzing = analyzingTracks.has(trackId)
 
     if (!analyzing) initStems()
-
-    // add stems to analyzing state
-    setAppState.stemsAnalyzing(prev => prev.add(trackId))
 
     return () => audioEvents.destroyStems(trackId)
   }, [trackId, stemState])
