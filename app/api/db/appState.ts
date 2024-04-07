@@ -1,0 +1,108 @@
+// This file handles application state that is not persisted through page refreshes, therefore not in IndexedDB. appState is different from Prefs in that it isn't persistent.
+import { enableMapSet } from 'immer'
+enableMapSet()
+
+import { Store, createPullstateCore, registerInDevtools } from 'pullstate'
+
+import type { ButtonProps } from '@nextui-org/react'
+import { type Key } from 'react'
+import type WaveSurfer from 'wavesurfer.js'
+import { type Stem, type Track } from '~/api/handlers/dbHandlers'
+import { Env } from '~/utils/env'
+
+// AudioState captures whether audio is being analyzed, processed, or played
+// It's worth mentioning that mixPrefs also has the keys of tracks current being mixed. The difference is that the database is intended to retain state after refresh, and appState will retain data for a large number of tracks for efficiency (ie. don't re-analyze a waveform you've already analyzed), so references should generally be made to appstate for what tracks are currently being mixed
+const audioState = new Store<{
+  [trackId: Track['id']]: AudioState
+}>({})
+
+type AudioState = {
+  waveform?: WaveSurfer
+  playing?: boolean
+  time?: number
+  gainNode?: GainNode // gain controls actual loudness of track
+  analyserNode?: AnalyserNode // analyzerNode is used for volumeMeter
+  volume?: number // volume is the crossfader value
+  volumeMeter?: number // value between 0 and 1
+  stems: Partial<Stems>
+  stemState?: StemState
+  stemTimer?: number
+}
+
+type Stems = {
+  [key in Stem]: {
+    waveform: WaveSurfer
+    gainNode?: GainNode // gain controls actual loudness of stem
+    analyserNode?: AnalyserNode // analyzerNode idbs used for volumeMeter
+    volume: number // volume is the crossfader value
+    volumeMeter: number
+    mute: boolean
+  }
+}
+
+type StemState =
+  | 'selectStemDir'
+  | 'grantStemDirAccess'
+  | 'getStems'
+  | 'uploadingFile'
+  | 'processingStems'
+  | 'downloadingStems'
+  | 'ready'
+  | 'error'
+
+// App captures the state of various parts of the app, mostly the table, such as search value, which which rows are selected and track drawer open/closed state
+const appState = new Store<{
+  search: string | number
+  selected: Set<Key> // NextUI table uses string keys
+  rowsPerPage: number
+  page: number
+  showButton: number | null
+  openDrawer: boolean
+  processing: boolean
+  analyzing: Set<Track['id']>
+  stemsAnalyzing: Set<Track['id']>
+  syncTimer: ReturnType<typeof requestAnimationFrame> | undefined
+  audioContext?: AudioContext
+  userEmail: string // email address
+}>({
+  search: '',
+  selected: new Set(),
+  rowsPerPage: 10,
+  page: 1,
+  showButton: null,
+  openDrawer: false,
+  processing: false,
+  analyzing: new Set(),
+  stemsAnalyzing: new Set(),
+  syncTimer: undefined,
+  userEmail: ''
+})
+
+// ModalState is a generic handler for various modals, usually when doing something significant like deleting tracks
+
+type ModalType = Partial<{
+  openState: boolean
+  headerText: string
+  bodyText: string
+  confirmColor: ButtonProps['color']
+  confirmText: string
+  onConfirm: () => void
+  onCancel: () => void
+}>
+
+const modalState = new Store<ModalType>({
+  openState: false
+})
+
+const pullState = createPullstateCore({ appState, audioState, modalState })
+
+if (Env === 'development') {
+  registerInDevtools({
+    appState,
+    audioState,
+    modalState
+  })
+}
+
+export { appState, audioState, modalState, pullState }
+export type { AudioState, StemState, Stems }
