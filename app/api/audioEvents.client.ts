@@ -248,8 +248,8 @@ const audioEvents = {
               volumes.push(vol)
               setAudioState[trackId].stems[stem as Stem].volumeMeter(vol)
             }
+            waveform = stems[stem].waveform
           }
-          waveform = stems.drums.waveform
         } else {
           volumes.push(getVolume(analyserNode))
           waveform = getAudioState[trackId].waveform()
