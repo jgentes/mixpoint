@@ -1,4 +1,5 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform aroun'
+import { useSnapshot } from 'valtio'
 import type WaveSurfer from 'wavesurfer.js'
 import RegionsPlugin, {
   type Region
@@ -199,10 +200,8 @@ const audioEvents = {
     // Remove track from mix state (dexie)
     await _removeFromMix(trackId)
 
-    // Remove track from audioState (pullstate)
-    const state = audioState.useState()
-    const { [trackId]: _, ...rest } = state
-    audioState.update(() => rest)
+    // Remove track from audioState (valtio)
+    delete audioState[trackId]
 
     // If this is not the last track in the mix, open drawer, otherwise the drawer will open automatically
     const { tracks } = (await getPrefs('mix', 'tracks')) || {}

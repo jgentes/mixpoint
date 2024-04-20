@@ -2,17 +2,17 @@
 import { enableMapSet } from 'immer'
 enableMapSet()
 
-import { Store, createPullstateCore, registerInDevtools } from 'pullstate'
-
 import type { ButtonProps } from '@nextui-org/react'
 import { type Key } from 'react'
+import { proxy } from 'valtio'
+import { devtools } from 'valtio/utils'
 import type WaveSurfer from 'wavesurfer.js'
 import { type Stem, type Track } from '~/api/handlers/dbHandlers'
 import { Env } from '~/utils/env'
 
 // AudioState captures whether audio is being analyzed, processed, or played
 // It's worth mentioning that mixPrefs also has the keys of tracks current being mixed. The difference is that the database is intended to retain state after refresh, and appState will retain data for a large number of tracks for efficiency (ie. don't re-analyze a waveform you've already analyzed), so references should generally be made to appstate for what tracks are currently being mixed
-const audioState = new Store<{
+const audioState = proxy<{
   [trackId: Track['id']]: AudioState
 }>({})
 
@@ -50,8 +50,19 @@ type StemState =
   | 'ready'
   | 'error'
 
+// ModalState is a generic handler for various modals, usually when doing something significant like deleting tracks
+type ModalState = Partial<{
+  openState: boolean
+  headerText: string
+  bodyText: string
+  confirmColor: ButtonProps['color']
+  confirmText: string
+  onConfirm: () => void
+  onCancel: () => void
+}>
+
 // App captures the state of various parts of the app, mostly the table, such as search value, which which rows are selected and track drawer open/closed state
-const appState = new Store<{
+const appState = proxy<{
   search: string | number
   selected: Set<Key> // NextUI table uses string keys
   rowsPerPage: number
@@ -64,6 +75,7 @@ const appState = new Store<{
   syncTimer: ReturnType<typeof requestAnimationFrame> | undefined
   audioContext?: AudioContext
   userEmail: string // email address
+  modal: ModalState
 }>({
   search: '',
   selected: new Set(),
@@ -75,34 +87,14 @@ const appState = new Store<{
   analyzing: new Set(),
   stemsAnalyzing: new Set(),
   syncTimer: undefined,
-  userEmail: ''
+  userEmail: '',
+  modal: { openState: false }
 })
-
-// ModalState is a generic handler for various modals, usually when doing something significant like deleting tracks
-
-type ModalType = Partial<{
-  openState: boolean
-  headerText: string
-  bodyText: string
-  confirmColor: ButtonProps['color']
-  confirmText: string
-  onConfirm: () => void
-  onCancel: () => void
-}>
-
-const modalState = new Store<ModalType>({
-  openState: false
-})
-
-const pullState = createPullstateCore({ appState, audioState, modalState })
 
 if (Env === 'development') {
-  registerInDevtools({
-    appState,
-    audioState,
-    modalState
-  })
+  devtools(appState, { name: 'appState', enable: true })
+  devtools(audioState, { name: 'audioState', enable: true })
 }
 
-export { appState, audioState, modalState, pullState }
+export { appState, audioState }
 export type { AudioState, StemState, Stems }

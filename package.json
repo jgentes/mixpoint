@@ -23,12 +23,12 @@
     "jsdom": "^21.1.1",
     "moment": "~2.29.4",
     "next-themes": "^0.2.1",
-    "pullstate": "^1.25.0",
     "react": "~18",
     "react-dom": "~18",
     "react-hot-toast": "^2.4.1",
     "remix-island": "^0.1.2",
     "use-count-up": "^3.0.1",
+    "valtio": "^1.13.2",
     "wavesurfer.js": "^7.7.9",
     "web-audio-beat-detector": "~8.1.37"
   },

@@ -19,7 +19,8 @@ import {
 } from '@nextui-org/react'
 import moment from 'moment'
 import { type Key, type ReactNode, useCallback, useMemo, useState } from 'react'
-import { appState, modalState } from '~/api/db/appState'
+import { useSnapshot } from 'valtio'
+import { appState } from '~/api/db/appState'
 import { audioEvents } from '~/api/handlers/audioEvents.client'
 import { analyzeTracks } from '~/api/handlers/audioHandlers.client'
 import {
@@ -46,15 +47,8 @@ import { formatMinutes, getComparator } from '~/utils/tableOps'
 
 const TrackTable = () => {
   // Re-render when page or selection changes
-  const { page, rowsPerPage, selected, analyzingTracks, search, processing } =
-    appState.useState(state => ({
-      page: state.page,
-      rowsPerPage: state.rowsPerPage,
-      selected: state.selected,
-      analyzingTracks: state.analyzing,
-      search: state.search,
-      processing: state.processing
-    }))
+  const { page, rowsPerPage, selected, analyzing, search, processing } =
+    useSnapshot(appState)
   const selectedCount = selected.size
 
   // Allow drag & drop files / folders into the table
@@ -120,10 +114,7 @@ const TrackTable = () => {
     await addToMix(t)
 
     // if this is the first track in the mix, leave the drawer open
-    if (!tracks.length)
-      appState.update(state => {
-        state.openDrawer = true
-      })
+    if (!tracks.length) appState.openDrawer = true
   }
 
   const AddToMixButton = useCallback(
@@ -133,7 +124,7 @@ const TrackTable = () => {
       const isInMix = tracks.includes(track.id)
 
       // Prevent user from adding a new track before previous added track finishes analyzing
-      const isBeingAnalyzed = tracks.some(id => analyzingTracks.has(id))
+      const isBeingAnalyzed = tracks.some(id => analyzing.has(id))
 
       return (
         <Button
@@ -162,14 +153,14 @@ const TrackTable = () => {
         </Button>
       )
     },
-    [analyzingTracks, addToMixHandler]
+    [analyzing, addToMixHandler]
   )
 
   const BpmFormatter = useCallback(
     (track: Track) => {
       return track.bpm ? (
         <div className="pl-1">{track.bpm.toFixed(0)}</div>
-      ) : analyzingTracks.size > 1 || analyzingTracks.has(track.id) ? (
+      ) : analyzing.size > 1 || analyzing.has(track.id) ? (
         <div className="relative w-1/2 top-1/2 -mt-0.5 ml-1">
           <ProgressBar />
         </div>
@@ -177,7 +168,7 @@ const TrackTable = () => {
         analyzeButton(track)
       )
     },
-    [analyzingTracks, analyzeButton]
+    [analyzing, analyzeButton]
   )
 
   // Build table columns
@@ -228,7 +219,7 @@ const TrackTable = () => {
         align: 'center',
         width: '5%',
         formatter: track => (
-          <div className="pl-3">{track.mixpoints?.length || 0}</div>
+          <div className="pl-3">{track.mixpoints?.size || 0}</div>
         )
       },
       {
@@ -236,9 +227,7 @@ const TrackTable = () => {
         label: 'Sets',
         align: 'center',
         width: '5%',
-        formatter: track => (
-          <div className="pl-2">{track.sets?.length || 0}</div>
-        )
+        formatter: track => <div className="pl-2">{track.sets?.size || 0}</div>
       },
       {
         dbKey: 'lastModified',
@@ -263,8 +252,8 @@ const TrackTable = () => {
     )
   }, [visibleColumns, columns])
 
-  const showRemoveTracksModal = () =>
-    modalState.update(() => ({
+  const showRemoveTracksModal = () => {
+    appState.modal = {
       openState: true,
       headerText: 'Are you sure?',
       bodyText: 'Removing tracks here will not delete them from your computer.',
@@ -273,23 +262,20 @@ const TrackTable = () => {
         selectedCount > 1 ? 's' : ''
       }`,
       onConfirm: async () => {
-        modalState.update(s => {
-          s.openState = false
-        })
+        appState.modal.openState = false
+
         for (const id of selected) await audioEvents.ejectTrack(Number(id))
         await removeTracks([...selected].map(Number))
-        appState.update(state => {
-          state.selected = new Set()
-        })
+        appState.selected = new Set()
       },
-      onCancel: async () =>
-        modalState.update(s => {
-          s.openState = false
-        })
-    }))
+      onCancel: async () => {
+        appState.modal.openState = false
+      }
+    }
+  }
 
-  const showAnalyzeDirtyModal = () =>
-    modalState.update(() => ({
+  const showAnalyzeDirtyModal = () => {
+    appState.modal = {
       openState: true,
       headerText: 'Are you sure?',
       bodyText: `This will analyze ${dirtyTracks.length} track${
@@ -298,17 +284,14 @@ const TrackTable = () => {
       confirmColor: 'success',
       confirmText: `Analyze track${dirtyTracks.length > 1 ? 's' : ''}`,
       onConfirm: async () => {
-        modalState.update(s => {
-          s.openState = false
-        })
+        appState.modal.openState = false
         analyzeTracks(dirtyTracks)
       },
       onCancel: async () => {
-        modalState.update(s => {
-          s.openState = false
-        })
+        appState.modal.openState = false
       }
-    }))
+    }
+  }
 
   const currentPageTracks = (): Set<Key> => {
     const startIndex = (page - 1) * Number(rowsPerPage)
@@ -332,21 +315,15 @@ const TrackTable = () => {
             startContent={<SearchIcon className="text-default-500 text-xl" />}
             value={String(search)}
             variant="bordered"
-            onClear={() =>
-              appState.update(state => {
-                state.search = ''
-              })
-            }
+            onClear={() => {
+              appState.search = ''
+            }}
             onValueChange={value => {
               if (value) {
-                appState.update(state => {
-                  state.search = value
-                  state.page = 1
-                })
+                appState.search = value
+                appState.page = 1
               } else {
-                appState.update(state => {
-                  state.search = ''
-                })
+                appState.search = ''
               }
             }}
           />
@@ -417,7 +394,7 @@ const TrackTable = () => {
               className="ml-1 text-sm cursor-pointer"
             >
               (
-              {analyzingTracks.size
+              {analyzing.size
                 ? `${dirtyTracks.length} to analyze`
                 : `click to analyze ${dirtyTracks.length} track${
                     dirtyTracks.length > 1 ? 's' : ''
@@ -433,10 +410,8 @@ const TrackTable = () => {
           placeholder="10"
           size="sm"
           onChange={e => {
-            appState.update(state => {
-              state.rowsPerPage = Number(e.target.value)
-              state.page = 1
-            })
+            appState.rowsPerPage = Number(e.target.value)
+            appState.page = 1
           }}
           classNames={{
             base: 'w-min',
@@ -484,11 +459,9 @@ const TrackTable = () => {
       selectedKeys={selected}
       selectionMode="multiple"
       sortDescriptor={{ column: sortColumn, direction: sortDirection }}
-      onSelectionChange={keys =>
-        appState.update(state => {
-          state.selected = keys === 'all' ? currentPageTracks() : keys
-        })
-      }
+      onSelectionChange={keys => {
+        appState.selected = keys === 'all' ? currentPageTracks() : keys
+      }}
       onSortChange={({ column, direction }) =>
         setPrefs('user', { sortDirection: direction, sortColumn: column })
       }
@@ -560,11 +533,9 @@ const TrackTable = () => {
         page={page}
         total={pages}
         variant="light"
-        onChange={pageNum =>
-          appState.update(state => {
-            state.page = pageNum
-          })
-        }
+        onChange={pageNum => {
+          appState.page = pageNum
+        }}
       />
       <span className="text-small text-default-500">
         {selectedCount === tracks.length

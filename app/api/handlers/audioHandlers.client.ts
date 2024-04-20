@@ -1,7 +1,7 @@
 import { H } from '@highlight-run/remix/client'
 import type RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 import { guess as detectBPM } from 'web-audio-beat-detector'
-import { appState, audioState, modalState } from '~/api/db/appState'
+import { appState, audioState } from '~/api/db/appState'
 import {
   type Track,
   db,
@@ -71,9 +71,7 @@ async function getTracksRecursively(
   const addTracksToDb = async () => {
     // Ensure we have id's for our tracks, add them to the DB with updated lastModified dates
     const updatedTracks = await putTracks(trackArray)
-    appState.update(state => {
-      state.processing = false
-    })
+    appState.processing = true
     H.track('Track Added', { trackQuantity: updatedTracks.length })
     return updatedTracks
   }
@@ -81,11 +79,9 @@ async function getTracksRecursively(
   // Warn user if large number of tracks are added, this is due to memory leak in web audio api
   if (trackArray.length > 100) {
     // Show indicator inside empty table
-    appState.update(state => {
-      state.processing = true
-    })
+    appState.processing = true
 
-    modalState.update(() => ({
+    appState.modal = {
       openState: true,
       headerText: 'More than 100 tracks added',
       bodyText:
@@ -93,21 +89,15 @@ async function getTracksRecursively(
       confirmText: 'Continue',
       confirmColor: 'success',
       onConfirm: async () => {
-        modalState.update(s => {
-          s.openState = false
-        })
+        appState.modal.openState = false
         const updatedTracks = await addTracksToDb()
         await analyzeTracks(updatedTracks)
       },
       onCancel: () => {
-        modalState.update(s => {
-          s.openState = false
-        })
-        appState.update(state => {
-          state.processing = false
-        })
+        appState.modal.openState = false
+        appState.processing = false
       }
-    }))
+    }
     return []
   }
 
@@ -116,12 +106,10 @@ async function getTracksRecursively(
 
 const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
   // Set analyzing state now to avoid tracks appearing with 'analyze' button
-  appState.update(state => {
-    state.analyzing = new Set([
-      ...state.analyzing,
-      ...tracks.map(track => track.id)
-    ])
-  })
+  appState.analyzing = new Set([
+    ...appState.analyzing,
+    ...tracks.map(track => track.id)
+  ])
 
   // Return array of updated tracks
   const updatedTracks: Track[] = []
@@ -134,9 +122,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
         sortColumn: 'lastModified',
         sortDirection: 'descending'
       })
-      appState.update(state => {
-        state.page = 1
-      })
+      appState.page = 1
       sorted = true
     }
 
@@ -161,10 +147,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
     updatedTracks.push(trackWithId)
 
     // Remove from analyzing state
-    appState.update(state => {
-      state.analyzing.delete(track.id)
-      return
-    })
+    appState.analyzing.delete(track.id)
   }
   return updatedTracks
 }
@@ -182,9 +165,7 @@ const getAudioDetails = async (
 }> => {
   const file = await getPermission(track)
   if (!file) {
-    appState.update(state => {
-      state.analyzing = new Set()
-    })
+    appState.analyzing = new Set()
     throw errorHandler('Permission to the file or folder was denied.')
   }
 
@@ -224,7 +205,7 @@ const getAudioDetails = async (
 const calcMarkers = async (trackId: Track['id']): Promise<void> => {
   if (!trackId) return
 
-  const waveform = audioState.useState(state => state[trackId]?.waveform)
+  const waveform = audioState[trackId]?.waveform
   if (!waveform) return
 
   const regionsPlugin = waveform.getActivePlugins()[0] as RegionsPlugin
