@@ -13,10 +13,7 @@ const Main: React.FunctionComponent = () => {
   const mixViewVisible = !!tracks?.filter(t => t).length
 
   useEffect(() => {
-    if (!mixViewVisible)
-      appState.update(state => {
-        state.openDrawer = false
-      })
+    if (!mixViewVisible) appState.openDrawer = false
   }, [mixViewVisible])
 
   return mixViewVisible ? (

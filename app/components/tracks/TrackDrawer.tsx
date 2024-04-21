@@ -5,7 +5,7 @@ import { ChevronIcon } from '~/components/icons'
 import TrackTable from '~/components/tracks/TrackTable'
 
 const TrackDrawer = () => {
-  const openDrawer = appState.useState(state => state.openDrawer)
+  const openDrawer = appState.openDrawer
   const [trackDrawer, setTrackDrawer] = useState<string[]>([])
 
   useEffect(
@@ -24,11 +24,9 @@ const TrackDrawer = () => {
       <AccordionItem
         key="track-drawer"
         aria-label="track-drawer"
-        onPress={() =>
-          appState.update(state => {
-            state.openDrawer = !openDrawer
-          })
-        }
+        onPress={() => {
+          appState.openDrawer = !openDrawer
+        }}
         title={
           <ChevronIcon
             className={`text-3xl text-default-600 ${

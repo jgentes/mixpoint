@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useSnapshot } from 'valtio'
 import WaveSurfer, { type WaveSurferOptions } from 'wavesurfer.js'
 import Minimap from 'wavesurfer.js/dist/plugins/minimap.js'
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
@@ -68,10 +69,7 @@ const initWaveform = async ({
   if (!trackId) throw errorHandler('No track ID provided to initWaveform')
 
   // add to analyzing state
-  appState.update(state => {
-    stem ? state.stemsAnalyzing.add(trackId) : state.analyzing.add(trackId)
-    return
-  })
+  stem ? appState.stemsAnalyzing.add(trackId) : appState.analyzing.add(trackId)
 
   // an Audio object is required for Wavesurfer to use Web Audio
   const media = new Audio(URL.createObjectURL(file))
@@ -95,35 +93,26 @@ const initWaveform = async ({
   const waveform = WaveSurfer.create(config)
 
   // initialize audioState for the track if necessary
-  const state = audioState.getRawState()
-  if (!state[trackId]) {
-    audioState.update(state => {
-      state[trackId] = { stems: {} }
-    })
-  }
+  const track = audioState[trackId]
+  if (!track) audioState[trackId] = { stems: {} }
 
   // Save waveform in audioState to track user interactions with the waveform and show progress
   if (stem) {
-    audioState.update(state => {
-      state[trackId].stems[stem as Stem] = {
-        waveform,
-        volume: 1,
-        volumeMeter: 0,
-        mute: false
-      }
-    })
+    audioState[trackId].stems[stem as Stem] = {
+      waveform,
+      volume: 1,
+      volumeMeter: 0,
+      mute: false
+    }
   } else {
-    audioState.update(state => {
-      state[trackId].waveform = waveform
-    })
+    audioState[trackId].waveform = waveform
   }
 
   waveform.once('ready', () => audioEvents.onReady(trackId, stem))
 }
 
 const TrackView = ({ trackId }: { trackId: Track['id'] }) => {
-  const analyzingTracks = appState.useState(state => state.analyzing)
-  const analyzing = analyzingTracks.has(trackId)
+  const analyzing = appState.analyzing.has(trackId)
 
   const containerClass =
     'p-0 border-1 border-divider rounded bg-default-50 overflow-hidden'
@@ -171,9 +160,7 @@ const Waveform = ({
     }
 
     // prevent duplication on re-render while loading
-    const state = appState.getRawState()
-    const analyzingTracks = state.analyzing
-    const analyzing = analyzingTracks.has(trackId)
+    const analyzing = appState.analyzing.has(trackId)
 
     if (!analyzing) init()
 

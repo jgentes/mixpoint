@@ -19,10 +19,8 @@ import { errorHandler } from '~/utils/notifications'
 const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
 
-  const stemState =
-    audioState.useState(state => state[trackId]?.stemState) || 'selectStemDir'
-  const stemTimer =
-    audioState.useState(state => state[trackId]?.stemTimer) || 45
+  const stemState = audioState[trackId]?.stemState || 'selectStemDir'
+  const stemTimer = audioState[trackId]?.stemTimer || 45
 
   const getStemsDir = async () => {
     try {

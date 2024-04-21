@@ -125,14 +125,10 @@ const ThemeLoader = () => {
 
         if (user?.email) {
           H.identify(user.email, { id: user.$id })
-          appState.update(s => {
-            s.userEmail = user.email
-          })
+          appState.userEmail = user.email
         }
       } catch (err) {
-        appState.update(s => {
-          s.userEmail = ''
-        })
+        appState.userEmail = ''
       }
     }
 

@@ -11,10 +11,8 @@ const VolumeMeter = ({
   if (!trackId) return null
 
   const volumeMeter = stemType
-    ? audioState.useState(
-        state => state[trackId]?.stems[stemType]?.volumeMeter
-      ) || 0
-    : audioState.useState(state => state[trackId]?.volumeMeter) || 0
+    ? audioState[trackId]?.stems[stemType]?.volumeMeter || 0
+    : audioState[trackId]?.volumeMeter || 0
 
   return (
     <div

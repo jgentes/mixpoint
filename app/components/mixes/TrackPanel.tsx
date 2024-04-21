@@ -1,3 +1,4 @@
+import { useSnapshot } from 'valtio'
 import { appState, audioState } from '~/api/db/appState'
 import { audioEvents } from '~/api/handlers/audioEvents.client'
 import { type Track, db, useLiveQuery } from '~/api/handlers/dbHandlers'
@@ -14,13 +15,12 @@ import {
 import { timeFormat } from '~/utils/tableOps'
 
 const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
-  const analyzingTracks = appState.useState(state => state.analyzing)
-  const analyzing = analyzingTracks.has(trackId)
+  const analyzing = appState.analyzing.has(trackId)
 
   const { duration = 0 } =
     useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
 
-  const stemState = audioState.useState(state => state[trackId]?.stemState)
+  const state = useSnapshot(audioState)
 
   const loaderClassNames =
     'p-0 border-1 border-divider rounded bg-default-50 overflow-hidden'
@@ -37,7 +37,9 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
         </div>
       </div>
 
-      {stemState !== 'ready' ? null : <ZoomSelectControl trackId={trackId} />}
+      {state[trackId]?.stemState !== 'ready' ? null : (
+        <ZoomSelectControl trackId={trackId} />
+      )}
 
       <BeatResolutionControl trackId={trackId} />
     </div>

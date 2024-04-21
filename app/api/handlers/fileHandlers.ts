@@ -93,11 +93,10 @@ const browseFile = async (trackSlot?: 0 | 1): Promise<void> => {
   const { tracks } = (await getPrefs('mix', 'tracks')) || {}
   const mixViewVisible = !!tracks?.filter(t => t).length
 
-  const openDrawer = appState.useState(state => state.openDrawer)
-  if (!openDrawer && mixViewVisible)
-    return appState.update(state => {
-      state.openDrawer = true
-    })
+  if (!appState.openDrawer && mixViewVisible) {
+    appState.openDrawer = true
+    return
+  }
 
   if (typeof window.showOpenFilePicker !== 'function') {
     window.showOpenFilePicker = showOpenFilePickerPolyfill as (
@@ -161,8 +160,7 @@ const validateTrackStemAccess = async (
 ): Promise<StemState> => {
   if (!trackId) throw errorHandler('No Track id provided for stems')
 
-  const state = audioState.getRawState()
-  const stemState = state[trackId]?.stemState
+  const stemState = audioState[trackId]?.stemState
 
   const checkAccess = async () => {
     // See if we have stems in cache
@@ -227,16 +225,10 @@ const validateTrackStemAccess = async (
   const accessState = await checkAccess()
   if (accessState === 'ready') {
     // remove analyzing
-    appState.update(state => {
-      state.stemsAnalyzing.delete(trackId)
-      return
-    })
+    appState.stemsAnalyzing.delete(trackId)
   }
 
-  if (stemState !== accessState)
-    audioState.update(state => {
-      state[trackId].stemState = accessState
-    })
+  if (stemState !== accessState) audioState[trackId].stemState = accessState
 
   return accessState
 }

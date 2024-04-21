@@ -232,7 +232,7 @@ const audioEvents = {
               const vol = getVolume(analyserNode)
               volumes.push(vol)
               if (audioState[trackId]?.stems[stem as Stem]) {
-                // biome-ignore lint/style/noNonNullAssertion: <explanation>
+                // biome-ignore lint/style/noNonNullAssertion: odd previous if check doesn't address this
                 audioState[trackId].stems[stem as Stem]!.volumeMeter = vol
               }
             }
@@ -313,7 +313,8 @@ const audioEvents = {
         for (const [stem, { waveform }] of Object.entries(stems)) {
           // set volume meter to zero for the stem
           if (stems[stem as Stem]) {
-            stems[stem as Stem].volumeMeter = 0
+            // biome-ignore lint/style/noNonNullAssertion: odd previous if check doesn't address this
+            stems[stem as Stem]!.volumeMeter = 0
           }
 
           if (waveform) stopWaveform(waveform)
@@ -332,11 +333,7 @@ const audioEvents = {
   ) => {
     if (!trackId) return
 
-    const { waveform, playing, time } = audioState.useState(state => ({
-      waveform: state[trackId].waveform,
-      playing: state[trackId].playing,
-      time: state[trackId].time
-    }))
+    const { waveform, playing, time = 0 } = audioState[trackId]
     if (!waveform) return
 
     const currentTime = seconds ?? time
@@ -388,11 +385,10 @@ const audioEvents = {
       }
     }
 
-    audioState.update(state => {
-      state[trackId].time = closestTime
-    })
+    audioState[trackId].time = closestTime
 
-    const stems = audioState.useState(state => state[trackId]?.stems)
+    const stems = audioState[trackId].stems
+
     if (stems) {
       for (const [, { waveform: stemWave }] of Object.entries(stems)) {
         stemWave?.seekTo(closestTime / duration)
@@ -436,12 +432,7 @@ const audioEvents = {
       stems,
       gainNode,
       stemState
-    } = audioState.useState(state => ({
-      volume: state[trackId].volume,
-      stems: state[trackId].stems,
-      gainNode: state[trackId].gainNode,
-      stemState: state[trackId].stemState
-    }))
+    } = audioState[trackId]
 
     // if we have a stemType, this is a stem crossfader
     if (stemType) {
@@ -451,9 +442,10 @@ const audioEvents = {
       // (75% crossfader x 50% stem fader = 37.5% stem volume)
       const stemGain = stems[stemType]?.gainNode
       stemGain?.gain.setValueAtTime(trackVol * volume, 0)
-      audioState.update(state => {
-        state[trackId].stems[stemType].volume = volume
-      })
+      if (audioState[trackId].stems[stemType]) {
+        // biome-ignore lint/style/noNonNullAssertion: odd previous if check doesn't address this
+        audioState[trackId].stems[stemType]!.volume = volume
+      }
       return
     }
 
@@ -462,21 +454,14 @@ const audioEvents = {
       gainNode?.gain.setValueAtTime(volume, 0)
     } else if (stems) {
       for (const stem of Object.keys(stems)) {
-        const stemGain = audioState.useState(
-          state => state[trackId]?.stems[stem as Stem]?.gainNode
-        )
-        const stemVol =
-          audioState.useState(
-            state => state[trackId]?.stems[stem as Stem]?.volume
-          ) || 1
+        const stemGain = audioState[trackId]?.stems[stem as Stem]?.gainNode
+        const stemVol = audioState[trackId]?.stems[stem as Stem]?.volume || 1
 
         // adjust the gain of the stem as a percentage of the track volume
         // (75% crossfader x 50% stem fader = 37.5% stem volume)
         stemGain?.gain.setValueAtTime(trackVol * stemVol, 0)
       }
-      audioState.update(state => {
-        state[trackId].volume = volume
-      })
+      audioState[trackId].volume = volume
     }
   },
 
@@ -484,7 +469,7 @@ const audioEvents = {
     trackId: Track['id'],
     beatResolution: TrackPrefs['beatResolution']
   ): Promise<void> => {
-    const waveform = audioState.useState(state => state[trackId]?.waveform)
+    const waveform = audioState[trackId]?.waveform
     if (!waveform || !beatResolution) return
 
     // Update mixPrefs
@@ -510,11 +495,7 @@ const audioEvents = {
     trackId: Track['id'],
     adjustedBpm: TrackPrefs['adjustedBpm']
   ): Promise<void> => {
-    const { stems, waveform, playing } = audioState.useState(state => ({
-      stems: state[trackId].stems,
-      waveform: state[trackId].waveform,
-      playing: state[trackId].playing
-    }))
+    const { stems, waveform, playing } = audioState[trackId]
     if (!adjustedBpm) return
 
     const { bpm } = (await db.tracks.get(trackId)) || {}
@@ -556,12 +537,12 @@ const audioEvents = {
     trackId: Track['id'],
     mixpoint?: string
   ): Promise<void> => {
-    const waveform = audioState.useState(state => state[trackId]?.waveform)
+    const waveform = audioState[trackId]?.waveform
     if (!waveform) return
 
     audioEvents.pause(trackId)
 
-    const time = audioState.useState(state => state[trackId]?.time) || 0
+    const time = audioState[trackId]?.time || 0
     const { mixpointTime = 0 } = (await getTrackPrefs(trackId)) || {}
 
     const newMixpoint = mixpoint ? convertToSecs(mixpoint) : time
@@ -573,34 +554,35 @@ const audioEvents = {
   },
 
   stemVolume: (trackId: Track['id'], stemType: Stem, volume: number) => {
-    const stems = audioState.useState(state => state[trackId]?.stems)
+    const stems = audioState[trackId]?.stems
     if (!stems) return
 
     const gainNode = stems[stemType as Stem]?.gainNode
     if (gainNode) gainNode.gain.setValueAtTime(volume, 0)
 
     // set volume in state, which in turn will update components (volume sliders)
-    audioState.update(state => {
-      state[trackId].stems[stemType as Stem].volume = volume
-    })
+    if (audioState[trackId].stems[stemType]) {
+      // biome-ignore lint/style/noNonNullAssertion: odd previous if check doesn't address this
+      audioState[trackId].stems[stemType]!.volume = volume
+    }
   },
 
   stemMuteToggle: (trackId: Track['id'], stemType: Stem, mute: boolean) => {
-    const stems = audioState.useState(state => state[trackId]?.stems)
+    const stems = audioState[trackId]?.stems
     if (!stems) return
 
     const stem = stems[stemType as Stem]
     const { gainNode, volume } = stem || {}
 
     gainNode?.gain.setValueAtTime(mute ? 0 : volume || 1, 0)
-
-    audioState.update(state => {
-      state[trackId].stems[stemType as Stem].mute = mute
-    })
+    if (audioState[trackId].stems[stemType as Stem]) {
+      // biome-ignore lint/style/noNonNullAssertion: odd previous if check doesn't address this
+      audioState[trackId].stems[stemType as Stem]!.mute = mute
+    }
   },
 
   stemSoloToggle: (trackId: Track['id'], stem: Stem, solo: boolean) => {
-    const stems = audioState.useState(state => state[trackId]?.stems)
+    const stems = audioState[trackId]?.stems
     if (!stems) return
 
     for (const s of Object.keys(stems)) {
@@ -613,12 +595,9 @@ const audioEvents = {
     stem: TrackPrefs['stemZoom'] | 'all'
   ) => {
     // add track to analyzing state
-    appState.update(state => {
-      state.analyzing.add(trackId)
-      return
-    })
+    appState.analyzing.add(trackId)
 
-    const oldWaveform = audioState.useState(state => state[trackId]?.waveform)
+    const oldWaveform = audioState[trackId]?.waveform
     if (oldWaveform) audioEvents.destroy(trackId)
 
     let file
@@ -640,11 +619,7 @@ const audioEvents = {
       stemZoom: stem === 'all' ? undefined : stem
     })
 
-    const { waveform, time, playing } = audioState.useState(state => ({
-      waveform: state[trackId].waveform,
-      time: state[trackId].time,
-      playing: state[trackId].playing
-    }))
+    const { waveform, time = 0, playing } = audioState[trackId]
     if (waveform) {
       waveform.setVolume(0)
       waveform.setTime(time)
@@ -653,16 +628,12 @@ const audioEvents = {
   },
 
   destroy: (trackId: Track['id']) => {
-    const state = audioState.getRawState()
-    const waveform = state[trackId]?.waveform
-
+    const waveform = audioState[trackId]?.waveform
     if (waveform) waveform.destroy()
-    //setAudioState[trackId].waveform() // delete ok if everything works, wanted to not let this linger in state, but can't set it to null or undefined and probably not good to delete the key
   },
 
   destroyStems: (trackId: Track['id']) => {
-    const state = audioState.getRawState()
-    const stems = state[trackId]?.stems
+    const stems = audioState[trackId]?.stems
 
     if (stems) {
       for (const stem of Object.values(stems)) {
@@ -670,13 +641,8 @@ const audioEvents = {
       }
     }
 
-    // audioState.update(state => {state[trackId].stems = {}}) // delete ok if everything works, wanted to not let this linger in state, but can't set it to null or undefined and probably not good to delete the key
-
     // Remove from stemsAnalyzing
-    appState.update(state => {
-      state.stemsAnalyzing.delete(trackId)
-      return
-    })
+    appState.stemsAnalyzing.delete(trackId)
   }
 }
 

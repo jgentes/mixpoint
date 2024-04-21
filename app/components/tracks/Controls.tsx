@@ -321,7 +321,7 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
     }
   }
 
-  const isPlaying = audioState.useState(state => state[trackId]?.playing)
+  const isPlaying = audioState[trackId]?.playing
 
   return (
     <>
@@ -477,10 +477,8 @@ const StemControl = ({
 }) => {
   if (!trackId) return null
 
-  const volume =
-    audioState.useState(state => state[trackId]?.stems[stemType]?.volume) || 100
-  const mute =
-    audioState.useState(state => state[trackId]?.stems[stemType]?.mute) || false
+  const volume = audioState[trackId]?.stems[stemType]?.volume || 100
+  const mute = audioState[trackId]?.stems[stemType]?.mute || false
 
   const [solo, setSolo] = useState(false)
 
@@ -561,7 +559,7 @@ const TrackTime = ({
   trackId,
   className
 }: { trackId: Track['id']; className?: string }) => {
-  const time = audioState.useState(state => state[trackId]?.time) || 0
+  const time = audioState[trackId]?.time || 0
 
   return <div className={className}>{timeFormat(time)}</div>
 }
