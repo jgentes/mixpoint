@@ -23,11 +23,9 @@ import { convertToSecs } from '~/utils/tableOps'
 // audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
 
 const _getAllWaveforms = (): WaveSurfer[] => {
-  const state = audioState.useState()
-
   const waveforms: WaveSurfer[] = []
 
-  for (const { waveform } of Object.values(state)) {
+  for (const { waveform } of Object.values(audioState)) {
     if (!waveform) continue
     waveforms.push(waveform)
   }
@@ -45,20 +43,15 @@ const audioEvents = {
 
     // Ensure this function is not called twice for the same track or stem
     const gainExists = stem
-      ? audioState.useState(
-          state => state[trackId]?.stems[stem as Stem]?.gainNode,
-          [trackId, stem]
-        )
-      : audioState.useState(state => state[trackId]?.gainNode, [trackId])
+      ? audioState[trackId]?.stems[stem as Stem]?.gainNode
+      : audioState[trackId]?.gainNode
 
     if (gainExists) return
 
-    let audioContext = appState.useState(state => state.audioContext)
+    let audioContext = appState.audioContext
     if (!audioContext) {
       audioContext = new AudioContext()
-      appState.update(state => {
-        state.audioContext = audioContext
-      })
+      appState.audioContext = audioContext
     }
 
     // gainNode is used to control volume of all stems at once
@@ -81,20 +74,16 @@ const audioEvents = {
     )
 
     // Save waveform in audioState to track user interactions with the waveform and show progress
-    if (stem) {
-      audioState.update(state => {
-        state[trackId].stems[stem].gainNode = gainNode
-        state[trackId].stems[stem].analyserNode = analyserNode
-      })
+    if (stem && audioState[trackId]?.stems[stem]) {
+      audioState[trackId].stems[stem].gainNode = gainNode
+      audioState[trackId].stems[stem].analyserNode = analyserNode
     } else {
-      audioState.update(state => {
-        state[trackId].gainNode = gainNode
-        state[trackId].analyserNode = analyserNode
-      })
+      audioState[trackId].gainNode = gainNode
+      audioState[trackId].analyserNode = analyserNode
     }
   },
   onReady: async (trackId: Track['id'], stem?: Stem) => {
-    const waveform = audioState.useState(state => state[trackId]?.waveform)
+    const waveform = audioState[trackId]?.waveform
     if (!waveform) return
 
     if (!stem) {
@@ -112,10 +101,7 @@ const audioEvents = {
       )
 
       // Remove analyzing overlay
-      appState.update(state => {
-        state.analyzing.delete(trackId)
-        return
-      })
+      appState.analyzing.delete(trackId)
 
       // Style scrollbar (this is a workaround for https://github.com/katspaugh/wavesurfer.js/issues/2933)
       const style = document.createElement('style')
@@ -140,22 +126,17 @@ const audioEvents = {
       waveform.getWrapper().classList.add('wrapper')
 
       // Update time
-      let time = audioState.useState(state => state[trackId]?.time)
+      let time = audioState[trackId]?.time
       if (!time) {
         time = mixpointTime || regionsPlugin.getRegions()[0]?.start || 0
-        audioState.update(state => {
-          state[trackId].time = time
-        })
+        audioState[trackId].time = time
       }
 
       // account for resize of browser window
       waveform.on('redraw', () => audioEvents.seek(trackId))
     } else {
       // Remove from stemsAnalyzing
-      appState.update(state => {
-        state.stemsAnalyzing.delete(trackId)
-        return
-      })
+      appState.stemsAnalyzing.delete(trackId)
     }
 
     // Update BPM if adjusted
@@ -207,18 +188,14 @@ const audioEvents = {
     const { tracks } = (await getPrefs('mix', 'tracks')) || {}
     const mixViewVisible = !!tracks?.filter(t => t).length
 
-    if (mixViewVisible)
-      appState.update(state => {
-        state.openDrawer = true
-      })
+    if (mixViewVisible) appState.openDrawer = true
   },
 
   play: async (trackId?: Track['id']) => {
     let tracks
     if (!trackId) {
       // pull players from audioState to play all
-      tracks = audioState.useState()
-      tracks = Object.keys(tracks).map(Number)
+      tracks = Object.keys(audioState).map(Number)
     } else tracks = [trackId]
 
     // synchronize playback of all tracks
@@ -227,7 +204,7 @@ const audioEvents = {
 
   playSync: async (trackIds: Track['id'][]) => {
     // Sync all waveforms to the same position
-    let syncTimer = appState.useState(state => state.syncTimer)
+    let syncTimer = appState.syncTimer
     if (syncTimer) cancelAnimationFrame(syncTimer)
 
     const dataArray = new Uint8Array(2048) // fftSize
@@ -240,16 +217,11 @@ const audioEvents = {
     // setup sync loop
     const syncLoop = () => {
       syncTimer = requestAnimationFrame(syncLoop)
-      appState.update(state => {
-        state.syncTimer = syncTimer
-      })
+      appState.syncTimer = syncTimer
 
       // for volume meters
       for (const trackId of trackIds) {
-        const { stems, analyserNode } = audioState.useState(state => ({
-          stems: state[trackId].stems,
-          analyserNode: state[trackId].analyserNode
-        }))
+        const { stems, analyserNode } = audioState[trackId]
 
         const volumes: number[] = [] // to aggregate for main volume meter
 
@@ -259,37 +231,31 @@ const audioEvents = {
             if (analyserNode) {
               const vol = getVolume(analyserNode)
               volumes.push(vol)
-              audioState.update(state => {
-                state[trackId].stems[stem as Stem].volumeMeter = vol
-              })
+              if (audioState[trackId]?.stems[stem as Stem]) {
+                // biome-ignore lint/style/noNonNullAssertion: <explanation>
+                audioState[trackId].stems[stem as Stem]!.volumeMeter = vol
+              }
             }
           }
-          waveform = stems.drums.waveform
+          waveform = stems.drums?.waveform
         } else {
-          volumes.push(getVolume(analyserNode))
-          waveform = audioState.useState(state => state[trackId]?.waveform)
+          if (analyserNode) volumes.push(getVolume(analyserNode))
+          waveform = audioState[trackId].waveform
         }
 
         // aggregate stem volumes for main volume meter
-        audioState.update(state => {
-          state[trackId].volumeMeter = Math.max(...volumes)
-          state[trackId].time = waveform.getCurrentTime() // for track timer, not play position
-        })
+        audioState[trackId].volumeMeter = Math.max(...volumes)
+        audioState[trackId].time = waveform?.getCurrentTime() // for track timer, not play position
       }
     }
 
     syncTimer = requestAnimationFrame(syncLoop)
 
     for (const trackId of trackIds) {
-      const { waveform, stems } = audioState.useState(state => ({
-        waveform: state[trackId].waveform,
-        stems: state[trackId].stems
-      }))
+      const { waveform, stems } = audioState[trackId]
       if (!waveform) continue
 
-      audioState.update(state => {
-        state[trackId as number].playing = true
-      })
+      audioState[trackId as number].playing = true
 
       audioEvents.initAudioContext({
         trackId,
@@ -323,16 +289,15 @@ const audioEvents = {
     let waveforms
     let trackIds
 
-    const syncTimer = appState.useState(state => state.syncTimer)
-    if (syncTimer) cancelAnimationFrame(syncTimer)
+    if (appState.syncTimer) cancelAnimationFrame(appState.syncTimer)
 
     if (trackId) {
-      const waveform = audioState.useState(state => state[trackId]?.waveform)
+      const waveform = audioState[trackId]?.waveform
       waveforms = [waveform]
       trackIds = [trackId]
     } else {
       waveforms = _getAllWaveforms()
-      const tracks = audioState.useState()
+      const tracks = useSnapshot(audioState)
       trackIds = Object.keys(tracks)
     }
 
@@ -343,21 +308,19 @@ const audioEvents = {
     }
 
     for (const id of trackIds) {
-      const stems = audioState.useState(state => state[Number(id)].stems)
+      const stems = audioState[Number(id)].stems
       if (stems) {
         for (const [stem, { waveform }] of Object.entries(stems)) {
           // set volume meter to zero for the stem
-          audioState.update(state => {
-            state[Number(id)].stems[stem as Stem].volumeMeter = 0
-          })
+          if (stems[stem as Stem]) {
+            stems[stem as Stem].volumeMeter = 0
+          }
 
           if (waveform) stopWaveform(waveform)
         }
       }
-      audioState.update(state => {
-        state[Number(id)].playing = false
-        state[Number(id)].volumeMeter = 0
-      })
+      audioState[Number(id)].playing = false
+      audioState[Number(id)].volumeMeter = 0
     }
   },
 
