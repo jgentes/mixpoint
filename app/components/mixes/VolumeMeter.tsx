@@ -1,5 +1,5 @@
-import { audioState } from '~/api/db/appState'
 import { type Stem, type Track } from '~/api/handlers/dbHandlers'
+import { audioState } from '~/api/models/appState.client'
 
 const VolumeMeter = ({
   trackId,

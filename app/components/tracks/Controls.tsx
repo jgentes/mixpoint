@@ -22,7 +22,7 @@ import {
   Tabs,
   Tooltip
 } from '@nextui-org/react'
-import { audioState } from '~/api/db/appState'
+import { audioState } from '~/api/models/appState.client'
 import {
   EjectIcon,
   HeadsetIcon,

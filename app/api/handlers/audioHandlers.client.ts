@@ -1,7 +1,6 @@
 import { H } from '@highlight-run/remix/client'
 import type RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 import { guess as detectBPM } from 'web-audio-beat-detector'
-import { appState, audioState } from '~/api/db/appState'
 import {
   type Track,
   db,
@@ -10,6 +9,7 @@ import {
   setPrefs
 } from '~/api/handlers/dbHandlers'
 import { getPermission } from '~/api/handlers/fileHandlers'
+import { appState, audioState } from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 
 // This is the main track processing workflow when files are added to the app

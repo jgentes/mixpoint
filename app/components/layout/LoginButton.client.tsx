@@ -13,7 +13,7 @@ import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { useSnapshot } from 'valtio'
 import { Appwrite } from '~/AppwriteService'
-import { appState } from '~/api/db/appState'
+import { appState } from '~/api/models/appState.client'
 import { GithubIcon, GoogleIcon } from '~/components/icons'
 import { errorHandler } from '~/utils/notifications'
 

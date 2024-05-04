@@ -1,7 +1,7 @@
 import { useSnapshot } from 'valtio'
-import { appState, audioState } from '~/api/db/appState'
 import { audioEvents } from '~/api/handlers/audioEvents.client'
 import { type Track, db, useLiveQuery } from '~/api/handlers/dbHandlers'
+import { appState, audioState } from '~/api/models/appState.client'
 import { Waveform } from '~/api/renderWaveform.client'
 import { ProgressBar } from '~/components/layout/Loader'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
@@ -20,7 +20,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
   const { duration = 0 } =
     useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
 
-  const state = useSnapshot(audioState)
+  const { stemState } = useSnapshot(audioState[trackId])
 
   const loaderClassNames =
     'p-0 border-1 border-divider rounded bg-default-50 overflow-hidden'
@@ -37,9 +37,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
         </div>
       </div>
 
-      {state[trackId]?.stemState !== 'ready' ? null : (
-        <ZoomSelectControl trackId={trackId} />
-      )}
+      {stemState !== 'ready' ? null : <ZoomSelectControl trackId={trackId} />}
 
       <BeatResolutionControl trackId={trackId} />
     </div>

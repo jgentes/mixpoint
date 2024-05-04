@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect } from 'react'
-import { appState } from '~/api/db/appState'
 import { getPrefs } from '~/api/handlers/dbHandlers'
+import { appState } from '~/api/models/appState.client'
 import Heart from '~/components/layout/HeartIcon'
 import LeftNav from '~/components/layout/LeftNav'
 import MixView from '~/components/mixes/MixView'

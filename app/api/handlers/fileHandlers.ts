@@ -1,4 +1,3 @@
-import { type StemState, appState, audioState } from '~/api/db/appState'
 import {
   type Stem,
   type Track,
@@ -9,6 +8,11 @@ import {
   setPrefs,
   storeTrackCache
 } from '~/api/handlers/dbHandlers'
+import {
+  type StemState,
+  appState,
+  audioState
+} from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 import { processTracks } from './audioHandlers.client'
 
@@ -160,7 +164,7 @@ const validateTrackStemAccess = async (
 ): Promise<StemState> => {
   if (!trackId) throw errorHandler('No Track id provided for stems')
 
-  const stemState = audioState[trackId]?.stemState
+  const { stemState } = audioState[trackId] || {}
 
   const checkAccess = async () => {
     // See if we have stems in cache
@@ -228,7 +232,8 @@ const validateTrackStemAccess = async (
     appState.stemsAnalyzing.delete(trackId)
   }
 
-  if (stemState !== accessState) audioState[trackId].stemState = accessState
+  if (stemState !== accessState && audioState[trackId])
+    audioState[trackId].stemState = accessState
 
   return accessState
 }

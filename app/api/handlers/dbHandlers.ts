@@ -1,5 +1,7 @@
 // This file provides a few helper functions for interacting with the database
 import { useLiveQuery } from 'dexie-react-hooks'
+import { audioEvents } from '~/api/handlers/audioEvents.client'
+import { getPermission } from '~/api/handlers/fileHandlers'
 import {
   __EFFECTS as EFFECTS,
   type __Effect as Effect,
@@ -16,9 +18,7 @@ import {
   type __TrackPrefs as TrackPrefs,
   type __UserPrefs as UserPrefs,
   __db as db
-} from '~/api/db/__dbSchema'
-import { audioEvents } from '~/api/handlers/audioEvents.client'
-import { getPermission } from '~/api/handlers/fileHandlers'
+} from '~/api/models/__dbSchema'
 import { errorHandler } from '~/utils/notifications'
 
 const CACHE_LIMIT = 25

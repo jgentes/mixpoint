@@ -1,6 +1,6 @@
 import { Accordion, AccordionItem } from '@nextui-org/react'
 import { useEffect, useState } from 'react'
-import { appState } from '~/api/db/appState'
+import { appState } from '~/api/models/appState.client'
 import { ChevronIcon } from '~/components/icons'
 import TrackTable from '~/components/tracks/TrackTable'
 

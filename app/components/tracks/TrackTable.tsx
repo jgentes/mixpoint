@@ -20,7 +20,6 @@ import {
 import moment from 'moment'
 import { type Key, type ReactNode, useCallback, useMemo, useState } from 'react'
 import { useSnapshot } from 'valtio'
-import { appState } from '~/api/db/appState'
 import { audioEvents } from '~/api/handlers/audioEvents.client'
 import { analyzeTracks } from '~/api/handlers/audioHandlers.client'
 import {
@@ -34,6 +33,7 @@ import {
   useLiveQuery
 } from '~/api/handlers/dbHandlers'
 import { browseFile } from '~/api/handlers/fileHandlers'
+import { appState } from '~/api/models/appState.client'
 import {
   AddIcon,
   AnalyzeIcon,

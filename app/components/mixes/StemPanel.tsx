@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { type WaveSurferOptions } from 'wavesurfer.js'
-import { appState, audioState } from '~/api/db/appState'
 import { audioEvents } from '~/api/handlers/audioEvents.client'
 import {
   STEMS,
@@ -9,6 +8,7 @@ import {
   db,
   getTrackPrefs
 } from '~/api/handlers/dbHandlers'
+import { appState, audioState } from '~/api/models/appState.client'
 import { initWaveform } from '~/api/renderWaveform.client'
 import StemAccessButton from '~/components/mixes/StemAccessButton.client'
 import { StemControl } from '~/components/tracks/Controls'
@@ -18,7 +18,7 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) throw errorHandler('No track ID provided to StemPanel')
 
   const stemState = audioState[trackId]?.stemState
-
+  console.log('stemstate: ', stemState)
   // check stems on disk to determine component state
   useEffect(() => {
     const initStems = async () => {
@@ -49,8 +49,8 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
         }
 
         // if zoom is set to a stem, use the stem cache to redraw the primary waveform with the stem
-        const { stemZoom } = (await getTrackPrefs(trackId)) || {}
-        if (stemZoom) audioEvents.stemZoom(trackId, stemZoom)
+        // const { stemZoom } = (await getTrackPrefs(trackId)) || {}
+        // if (stemZoom) audioEvents.stemZoom(trackId, stemZoom)
       }
     }
 

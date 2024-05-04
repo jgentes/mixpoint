@@ -1,5 +1,4 @@
 import { H } from '@highlight-run/remix/client'
-import { audioState } from '~/api/db/appState'
 import {
   STEMS,
   type Stem,
@@ -8,6 +7,7 @@ import {
   storeTrackCache
 } from '~/api/handlers/dbHandlers'
 import { getStemsDirHandle } from '~/api/handlers/fileHandlers'
+import { audioState } from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 
 const STEMPROXY = 'https://stems.mixpoint.dev'

@@ -1,17 +1,18 @@
 // This file handles application state that is not persisted through page refreshes, therefore not in IndexedDB. appState is different from Prefs in that it isn't persistent.
-import { enableMapSet } from 'immer'
-enableMapSet()
-
 import type { ButtonProps } from '@nextui-org/react'
 import { type Key } from 'react'
 import { proxy } from 'valtio'
 import { devtools } from 'valtio/utils'
 import type WaveSurfer from 'wavesurfer.js'
-import { type Stem, type Track } from '~/api/handlers/dbHandlers'
+import {
+  type Stem,
+  type Track,
+  getPrefs,
+  getTrackPrefs
+} from '~/api/handlers/dbHandlers'
 import { Env } from '~/utils/env'
 
-// AudioState captures whether audio is being analyzed, processed, or played
-// It's worth mentioning that mixPrefs also has the keys of tracks current being mixed. The difference is that the database is intended to retain state after refresh, and appState will retain data for a large number of tracks for efficiency (ie. don't re-analyze a waveform you've already analyzed), so references should generally be made to appstate for what tracks are currently being mixed
+// AudioState captures ephemeral state of a mix, while persistent state is stored in IndexedDB
 const audioState = proxy<{
   [trackId: Track['id']]: AudioState
 }>({})
@@ -24,20 +25,20 @@ type AudioState = {
   analyserNode?: AnalyserNode // analyzerNode is used for volumeMeter
   volume?: number // volume is the crossfader value
   volumeMeter?: number // value between 0 and 1
-  stems: Partial<Stems>
+  stems: Stems
   stemState?: StemState
   stemTimer?: number
 }
 
 type Stems = {
-  [key in Stem]: {
+  [key in Stem]: Partial<{
     waveform: WaveSurfer
     gainNode?: GainNode // gain controls actual loudness of stem
-    analyserNode?: AnalyserNode // analyzerNode idbs used for volumeMeter
+    analyserNode?: AnalyserNode // analyzerNode is used for volumeMeter
     volume: number // volume is the crossfader value
     volumeMeter: number
     mute: boolean
-  }
+  }>
 }
 
 type StemState =
@@ -95,6 +96,20 @@ if (Env === 'development') {
   devtools(appState, { name: 'appState', enable: true })
   devtools(audioState, { name: 'audioState', enable: true })
 }
+
+// Start audioState init (if we have a mix in IndexedDB)
+const mixPrefs = await getPrefs('mix')
+const tracks = mixPrefs.tracks?.filter(t => t)
+
+if (tracks?.length) {
+  for (const trackId of tracks) {
+    audioState[trackId] = {
+      stems: { bass: {}, drums: {}, other: {}, vocals: {} }
+    }
+  }
+}
+
+// End audioState init
 
 export { appState, audioState }
 export type { AudioState, StemState, Stems }

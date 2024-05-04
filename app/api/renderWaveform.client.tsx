@@ -1,13 +1,12 @@
 import { useEffect } from 'react'
-import { useSnapshot } from 'valtio'
 import WaveSurfer, { type WaveSurferOptions } from 'wavesurfer.js'
 import Minimap from 'wavesurfer.js/dist/plugins/minimap.js'
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
-import { appState, audioState } from '~/api/db/appState'
 import { audioEvents } from '~/api/handlers/audioEvents.client'
 import { type Stem, type Track, db } from '~/api/handlers/dbHandlers'
 import { getPermission } from '~/api/handlers/fileHandlers'
 import { validateTrackStemAccess } from '~/api/handlers/fileHandlers'
+import { appState, audioState } from '~/api/models/appState.client'
 import { ProgressBar } from '~/components/layout/Loader'
 import { errorHandler } from '~/utils/notifications'
 
@@ -68,6 +67,7 @@ const initWaveform = async ({
 }): Promise<void> => {
   if (!trackId) throw errorHandler('No track ID provided to initWaveform')
 
+  console.log('waveform init:', trackId, stem)
   // add to analyzing state
   stem ? appState.stemsAnalyzing.add(trackId) : appState.analyzing.add(trackId)
 
@@ -92,18 +92,9 @@ const initWaveform = async ({
 
   const waveform = WaveSurfer.create(config)
 
-  // initialize audioState for the track if necessary
-  const track = audioState[trackId]
-  if (!track) audioState[trackId] = { stems: {} }
-
-  // Save waveform in audioState to track user interactions with the waveform and show progress
+  // Save waveform in audioState
   if (stem) {
-    audioState[trackId].stems[stem as Stem] = {
-      waveform,
-      volume: 1,
-      volumeMeter: 0,
-      mute: false
-    }
+    //audioState[trackId].stems[stem as Stem].waveform = waveform
   } else {
     audioState[trackId].waveform = waveform
   }

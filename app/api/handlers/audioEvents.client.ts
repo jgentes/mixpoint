@@ -1,10 +1,8 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform aroun'
-import { useSnapshot } from 'valtio'
 import type WaveSurfer from 'wavesurfer.js'
 import RegionsPlugin, {
   type Region
 } from 'wavesurfer.js/dist/plugins/regions.js'
-import { appState, audioState } from '~/api/db/appState'
 import { calcMarkers } from '~/api/handlers/audioHandlers.client'
 import {
   type Stem,
@@ -17,6 +15,7 @@ import {
   setTrackPrefs,
   updateTrack
 } from '~/api/handlers/dbHandlers'
+import { appState, audioState } from '~/api/models/appState.client'
 import { initWaveform } from '~/api/renderWaveform.client'
 import { convertToSecs } from '~/utils/tableOps'
 
@@ -88,17 +87,17 @@ const audioEvents = {
 
     if (!stem) {
       // Generate beat markers (regions) and apply them to waveform
-      await calcMarkers(trackId)
+      //await calcMarkers(trackId)
 
-      const plugins = waveform.getActivePlugins()
-      const regionsPlugin = plugins[0] as RegionsPlugin
+      //  const plugins = waveform.getActivePlugins()
+      //  const regionsPlugin = plugins[0] as RegionsPlugin
 
       const { mixpointTime, beatResolution = 1 } = await getTrackPrefs(trackId)
 
       // Adjust zoom based on previous mixPrefs
-      waveform.zoom(
-        beatResolution === '1:1' ? 80 : beatResolution === '1:2' ? 40 : 20
-      )
+      // waveform.zoom(
+      //   beatResolution === '1:1' ? 80 : beatResolution === '1:2' ? 40 : 20
+      // )
 
       // Remove analyzing overlay
       appState.analyzing.delete(trackId)
@@ -120,20 +119,20 @@ const audioEvents = {
 				width: 15%;
 				background-clip: content-box;
 			}`
-      waveform.getWrapper().appendChild(style)
+      //waveform.getWrapper().appendChild(style)
 
       // add classname value to waveform.getWrapper()
-      waveform.getWrapper().classList.add('wrapper')
+      //waveform.getWrapper().classList.add('wrapper')
 
       // Update time
-      let time = audioState[trackId]?.time
-      if (!time) {
-        time = mixpointTime || regionsPlugin.getRegions()[0]?.start || 0
-        audioState[trackId].time = time
-      }
+      // let time = audioState[trackId]?.time
+      // if (!time) {
+      //   time = mixpointTime || regionsPlugin.getRegions()[0]?.start || 0
+      //   audioState[trackId].time = time
+      // }
 
       // account for resize of browser window
-      waveform.on('redraw', () => audioEvents.seek(trackId))
+      //waveform.on('redraw', () => audioEvents.seek(trackId))
     } else {
       // Remove from stemsAnalyzing
       appState.stemsAnalyzing.delete(trackId)
@@ -143,7 +142,7 @@ const audioEvents = {
     const { adjustedBpm } = await getTrackPrefs(trackId)
     const { bpm = 1 } = (await db.tracks.get(trackId)) || {}
     const playbackRate = (adjustedBpm || bpm) / bpm
-    waveform.setPlaybackRate(playbackRate)
+    //  waveform.setPlaybackRate(playbackRate)
   },
 
   clickToSeek: async (
@@ -232,8 +231,7 @@ const audioEvents = {
               const vol = getVolume(analyserNode)
               volumes.push(vol)
               if (audioState[trackId]?.stems[stem as Stem]) {
-                // biome-ignore lint/style/noNonNullAssertion: odd previous if check doesn't address this
-                audioState[trackId].stems[stem as Stem]!.volumeMeter = vol
+                audioState[trackId].stems[stem as Stem].volumeMeter = vol
               }
             }
           }
@@ -297,8 +295,7 @@ const audioEvents = {
       trackIds = [trackId]
     } else {
       waveforms = _getAllWaveforms()
-      const tracks = useSnapshot(audioState)
-      trackIds = Object.keys(tracks)
+      trackIds = Object.keys(audioState)
     }
 
     const stopWaveform = (waveform: WaveSurfer) => waveform.pause()
@@ -313,8 +310,7 @@ const audioEvents = {
         for (const [stem, { waveform }] of Object.entries(stems)) {
           // set volume meter to zero for the stem
           if (stems[stem as Stem]) {
-            // biome-ignore lint/style/noNonNullAssertion: odd previous if check doesn't address this
-            stems[stem as Stem]!.volumeMeter = 0
+            stems[stem as Stem].volumeMeter = 0
           }
 
           if (waveform) stopWaveform(waveform)
@@ -335,7 +331,7 @@ const audioEvents = {
 
     const { waveform, playing, time = 0 } = audioState[trackId]
     if (!waveform) return
-
+    console.log('seek')
     const currentTime = seconds ?? time
     if (playing) await audioEvents.pause(trackId)
 
@@ -443,8 +439,7 @@ const audioEvents = {
       const stemGain = stems[stemType]?.gainNode
       stemGain?.gain.setValueAtTime(trackVol * volume, 0)
       if (audioState[trackId].stems[stemType]) {
-        // biome-ignore lint/style/noNonNullAssertion: odd previous if check doesn't address this
-        audioState[trackId].stems[stemType]!.volume = volume
+        audioState[trackId].stems[stemType].volume = volume
       }
       return
     }
@@ -562,8 +557,7 @@ const audioEvents = {
 
     // set volume in state, which in turn will update components (volume sliders)
     if (audioState[trackId].stems[stemType]) {
-      // biome-ignore lint/style/noNonNullAssertion: odd previous if check doesn't address this
-      audioState[trackId].stems[stemType]!.volume = volume
+      audioState[trackId].stems[stemType].volume = volume
     }
   },
 
@@ -576,8 +570,7 @@ const audioEvents = {
 
     gainNode?.gain.setValueAtTime(mute ? 0 : volume || 1, 0)
     if (audioState[trackId].stems[stemType as Stem]) {
-      // biome-ignore lint/style/noNonNullAssertion: odd previous if check doesn't address this
-      audioState[trackId].stems[stemType as Stem]!.mute = mute
+      audioState[trackId].stems[stemType as Stem].mute = mute
     }
   },
 
@@ -613,7 +606,7 @@ const audioEvents = {
 
     if (!file) return
 
-    await initWaveform({ trackId, file })
+    //await initWaveform({ trackId, file })
 
     await setTrackPrefs(trackId, {
       stemZoom: stem === 'all' ? undefined : stem

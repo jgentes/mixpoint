@@ -1,13 +1,13 @@
 import { CircularProgress } from '@nextui-org/react'
 import type { ReactElement } from 'react'
 import { useCountUp } from 'use-count-up'
-import { type StemState, audioState } from '~/api/db/appState'
 import type { Track } from '~/api/handlers/dbHandlers'
 import {
   getStemsDirHandle,
   validateTrackStemAccess
 } from '~/api/handlers/fileHandlers'
 import { stemAudio } from '~/api/handlers/stemHandler'
+import { type StemState, audioState } from '~/api/models/appState.client'
 import {
   OfflineDownloadIcon,
   RuleFolderIcon,

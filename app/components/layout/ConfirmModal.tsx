@@ -7,7 +7,7 @@ import {
   ModalHeader
 } from '@nextui-org/react'
 import { useSnapshot } from 'valtio'
-import { appState } from '~/api/db/appState'
+import { appState } from '~/api/models/appState.client'
 import { WarningIcon } from '~/components/icons'
 
 const ConfirmModal = () => {
