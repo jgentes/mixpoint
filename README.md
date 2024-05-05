@@ -50,7 +50,7 @@ The app is built using `Remix` which uses esBuild (now Vite) for really fast hot
 - [Remix](https://remix.run/) SSR framework for React
 - [NextUI](https://github.com/nextui-org/nextui) React library
 - [BiomeJS](https://biomejs.dev/) for linting & formatting
-- [Bun](https://bun.sh/) (node replacement) & [Vite](https://vitejs.dev/) bundler
+- [Vite](https://vitejs.dev/) bundler
 - [Valtio](https://valtio.pmnd.rs/) for App State
 - [Dexie](https://dexie.org/) (IndexedDb) for Persistent State
 - [WaveSurfer.js](https://wavesurfer.xyz/) for audio visualization

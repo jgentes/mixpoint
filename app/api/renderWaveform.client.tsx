@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useLayoutEffect } from 'react'
 import WaveSurfer, { type WaveSurferOptions } from 'wavesurfer.js'
 import Minimap from 'wavesurfer.js/dist/plugins/minimap.js'
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
@@ -138,7 +138,7 @@ const Waveform = ({
 }): JSX.Element | null => {
   if (!trackId) throw errorHandler('No track to initialize.')
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // Retrieve track, file and region data, then store waveform in audioState
     const init = async () => {
       const track = await db.tracks.get(trackId)
