@@ -6,12 +6,12 @@ import {
   db,
   getPrefs,
   setPrefs,
-  storeTrackCache
+  storeTrackCache,
 } from '~/api/handlers/dbHandlers'
 import {
   type StemState,
   appState,
-  audioState
+  audioState,
 } from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 import { processTracks } from './audioHandlers.client'
@@ -33,7 +33,7 @@ function showOpenFilePickerPolyfill(options: OpenFilePickerOptions) {
             getFile: async () =>
               new Promise(resolve => {
                 resolve(file)
-              })
+              }),
           }
         })
       )
@@ -70,10 +70,13 @@ const _getFile = async (track: Track): Promise<File | null> => {
  * (user must have interacted with the page first!)
  *  otherwise returns null
  */
-const getPermission = async (track: Track): Promise<File | null> => {
+const getPermission = async (trackId: Track['id']): Promise<File | null> => {
   // First see if we have the file in the cache
-  const cache = await db.trackCache.get(track.id)
+  const cache = await db.trackCache.get(trackId)
   if (cache?.file) return cache.file
+
+  const track = await db.tracks.get(trackId)
+  if (!track) throw errorHandler('Could not retrieve track from database.')
 
   // Check perms, directory handle is preferred over file handle
   const file = await _getFile(track)
@@ -147,7 +150,7 @@ const getStemsDirHandle = async (): Promise<
   const newStemsDirHandle = await window.showDirectoryPicker({
     startIn: stemsDirHandle,
     id: 'stemsDir',
-    mode: 'readwrite'
+    mode: 'readwrite',
   })
 
   if (
@@ -178,7 +181,7 @@ const validateTrackStemAccess = async (
     // do we have access to the stem dir?
     try {
       const stemDirAccess = await stemsDirHandle.queryPermission({
-        mode: 'readwrite'
+        mode: 'readwrite',
       })
       if (stemDirAccess !== 'granted') return 'grantStemDirAccess'
     } catch (e) {
@@ -194,7 +197,7 @@ const validateTrackStemAccess = async (
     const FILENAME = name.substring(0, name.lastIndexOf('.'))
 
     // does the stem dir for this track exist?
-    let trackStemDirHandle
+    let trackStemDirHandle: FileSystemDirectoryHandle
     try {
       trackStemDirHandle = await stemsDirHandle.getDirectoryHandle(
         `${FILENAME} - stems`

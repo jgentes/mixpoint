@@ -1,116 +1,59 @@
-import { useLayoutEffect } from 'react'
+import WavesurferPlayer, { useWavesurfer } from '@wavesurfer/react'
+import {
+  type MutableRefObject,
+  type RefObject,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import WaveSurfer, { type WaveSurferOptions } from 'wavesurfer.js'
 import Minimap from 'wavesurfer.js/dist/plugins/minimap.js'
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 import { audioEvents } from '~/api/handlers/audioEvents.client'
-import { type Stem, type Track, db } from '~/api/handlers/dbHandlers'
+import {
+  type Stem,
+  type Track,
+  db,
+  useLiveQuery
+} from '~/api/handlers/dbHandlers'
 import { getPermission } from '~/api/handlers/fileHandlers'
 import { validateTrackStemAccess } from '~/api/handlers/fileHandlers'
 import { appState, audioState } from '~/api/models/appState.client'
 import { ProgressBar } from '~/components/layout/Loader'
 import { errorHandler } from '~/utils/notifications'
 
-const PRIMARY_WAVEFORM_CONFIG = (trackId: Track['id']): WaveSurferOptions => ({
-  container: `#zoomview-container_${trackId}`,
-  height: 60,
-  autoScroll: true,
-  autoCenter: true,
-  hideScrollbar: false,
-  barWidth: 2,
-  barHeight: 0.9,
-  barGap: 1,
-  plugins: [
-    // Do not change the order of plugins! They are referenced by index :(
-    RegionsPlugin.create(),
-    Minimap.create({
-      container: `#overview-container_${trackId}`,
-      height: 22,
-      waveColor: [
-        'rgba(117, 116, 116, 0.5)',
-        'rgba(145, 145, 145, 0.8)',
-        'rgba(145, 145, 145, 0.8)',
-        'rgba(145, 145, 145, 0.8)'
-      ],
-      progressColor: 'rgba(125, 125, 125, 0.25)',
-      hideScrollbar: true
-    })
-
-    // Playhead.create({
-    // 	moveOnSeek: true,
-    // 	returnOnPause: false,
-    // 	draw: true,
-    // }),
-    // CursorPlugin.create({
-    // 	showTime: true,
-    // 	opacity: "1",
-    // 	customShowTimeStyle: {
-    // 		color: "#eee",
-    // 		padding: "0 4px",
-    // 		"font-size": "10px",
-    // 		backgroundColor: "rgba(0, 0, 0, 0.3)",
-    // 	},
-    // }),
-  ]
-})
-
-// This function accepts either a full track (with no stem) or an individual stem ('bass', etc)
-const initWaveform = async ({
+const Waveform = ({
   trackId,
-  file,
-  stem,
-  waveformConfig = PRIMARY_WAVEFORM_CONFIG(trackId)
+  stem
 }: {
   trackId: Track['id']
-  file: File
   stem?: Stem
-  waveformConfig?: WaveSurferOptions
-}): Promise<void> => {
-  if (!trackId) throw errorHandler('No track ID provided to initWaveform')
-
-  console.log('waveform init:', trackId, stem)
-  // add to analyzing state
-  stem ? appState.stemsAnalyzing.add(trackId) : appState.analyzing.add(trackId)
-
+}) => {
   // an Audio object is required for Wavesurfer to use Web Audio
-  const media = new Audio(URL.createObjectURL(file))
+  const { file } =
+    useLiveQuery(() => db.trackCache.get(trackId), [trackId]) || {}
 
-  const config: WaveSurferOptions = {
-    media,
-    cursorColor: '#555',
-    interact: false,
-    waveColor: [
-      'rgb(200, 165, 49)',
-      'rgb(211, 194, 138)',
-      'rgb(189, 60, 0)',
-      'rgb(189, 60, 0)',
-      'rgb(189, 60, 0)',
-      'rgb(189, 60, 0)'
-    ],
-    progressColor: 'rgba(200, 165, 49, 0.5)',
-    ...waveformConfig
-  }
+  if (!file) getPermission(trackId)
 
-  const waveform = WaveSurfer.create(config)
+  //validateTrackStemAccess(trackId)
 
-  // Save waveform in audioState
-  if (stem) {
-    //audioState[trackId].stems[stem as Stem].waveform = waveform
-  } else {
-    audioState[trackId].waveform = waveform
-  }
+  if (!trackId || !file) return null
 
-  waveform.once('ready', () => audioEvents.onReady(trackId, stem))
-}
-
-const TrackView = ({ trackId }: { trackId: Track['id'] }) => {
   const analyzing = appState.analyzing.has(trackId)
 
   const containerClass =
     'p-0 border-1 border-divider rounded bg-default-50 overflow-hidden'
 
-  return (
+  return analyzing ? (
+    <div className={`${containerClass} absolute z-10 w-full h-20 top-0`}>
+      <div className="relative w-1/2 top-1/2 -mt-0.5 m-auto">
+        <ProgressBar />
+      </div>
+    </div>
+  ) : (
     <div
-      id={`zoomview-container_${trackId}`}
       className={`${containerClass} relative h-20 z-1`}
       onClick={e => {
         const parent = e.currentTarget.firstElementChild as HTMLElement
@@ -120,50 +63,49 @@ const TrackView = ({ trackId }: { trackId: Track['id'] }) => {
         audioEvents.seek(trackId, 0, e.deltaY > 0 ? 'next' : 'previous')
       }
     >
-      {!analyzing ? null : (
-        <div className={`${containerClass} absolute z-10 w-full h-20 top-0`}>
-          <div className="relative w-1/2 top-1/2 -mt-0.5 m-auto">
-            <ProgressBar />
-          </div>
-        </div>
-      )}
+      <WavesurferPlayer
+        media={file ? new Audio(URL.createObjectURL(file)) : undefined}
+        onReady={waveform => audioEvents.onReady(waveform, trackId, stem)}
+        height={60}
+        autoScroll={true}
+        autoCenter={true}
+        hideScrollbar={false}
+        barWidth={2}
+        barHeight={0.9}
+        barGap={1}
+        cursorColor="#555"
+        interact={false}
+        waveColor={[
+          'rgb(200, 165, 49)',
+          'rgb(211, 194, 138)',
+          'rgb(189, 60, 0)',
+          'rgb(189, 60, 0)',
+          'rgb(189, 60, 0)',
+          'rgb(189, 60, 0)'
+        ]}
+        progressColor="rgba(200, 165, 49, 0.5)"
+        plugins={[
+          // Do not change the order of plugins! They are referenced by index :(
+          RegionsPlugin.create(),
+          Minimap.create({
+            //@ts-ignore wavesurfer typing issue
+            container: `#overview-container_${trackId}${
+              stem ? `_${stem}` : ''
+            }`,
+            height: 22,
+            waveColor: [
+              'rgba(117, 116, 116, 0.5)',
+              'rgba(145, 145, 145, 0.8)',
+              'rgba(145, 145, 145, 0.8)',
+              'rgba(145, 145, 145, 0.8)'
+            ],
+            progressColor: 'rgba(125, 125, 125, 0.25)',
+            hideScrollbar: true
+          })
+        ]}
+      />
     </div>
   )
 }
 
-const Waveform = ({
-  trackId
-}: {
-  trackId: Track['id']
-}): JSX.Element | null => {
-  if (!trackId) throw errorHandler('No track to initialize.')
-
-  useLayoutEffect(() => {
-    // Retrieve track, file and region data, then store waveform in audioState
-    const init = async () => {
-      const track = await db.tracks.get(trackId)
-      if (!track) throw errorHandler('Could not retrieve track from database.')
-
-      const file = await getPermission(track)
-      if (!file) throw errorHandler(`Please try adding ${track.name} again.`)
-
-      initWaveform({ trackId, file })
-    }
-
-    // prevent duplication on re-render while loading
-    const analyzing = appState.analyzing.has(trackId)
-
-    if (!analyzing) init()
-
-    validateTrackStemAccess(trackId)
-
-    return () => {
-      audioEvents.destroy(trackId)
-      audioEvents.destroyStems(trackId)
-    }
-  }, [trackId])
-
-  return <TrackView trackId={trackId} />
-}
-
-export { PRIMARY_WAVEFORM_CONFIG, Waveform, initWaveform }
+export { Waveform }

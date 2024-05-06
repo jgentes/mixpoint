@@ -9,7 +9,6 @@ import {
   getTrackPrefs
 } from '~/api/handlers/dbHandlers'
 import { appState, audioState } from '~/api/models/appState.client'
-import { initWaveform } from '~/api/renderWaveform.client'
 import StemAccessButton from '~/components/mixes/StemAccessButton.client'
 import { StemControl } from '~/components/tracks/Controls'
 import { errorHandler } from '~/utils/notifications'
@@ -39,12 +38,12 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
               normalize: true
             }
 
-            await initWaveform({
-              trackId,
-              file,
-              stem: stem as Stem,
-              waveformConfig
-            })
+            // await initWaveform({
+            //   trackId,
+            //   file,
+            //   stem: stem as Stem,
+            //   waveformConfig
+            // })
           }
         }
 

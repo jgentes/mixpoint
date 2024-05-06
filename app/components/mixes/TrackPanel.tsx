@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import { audioEvents } from '~/api/handlers/audioEvents.client'
 import { type Track, db, useLiveQuery } from '~/api/handlers/dbHandlers'
+import { getPermission } from '~/api/handlers/fileHandlers'
 import { appState, audioState } from '~/api/models/appState.client'
 import { Waveform } from '~/api/renderWaveform.client'
 import { ProgressBar } from '~/components/layout/Loader'
@@ -12,9 +14,15 @@ import {
   TrackTime,
   ZoomSelectControl
 } from '~/components/tracks/Controls'
+import { errorHandler } from '~/utils/notifications'
 import { timeFormat } from '~/utils/tableOps'
 
 const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
+  // add to analyzing state
+  // stem
+  //   ? appState.stemsAnalyzing.add(trackId)
+  //   : appState.analyzing.add(trackId)
+
   const analyzing = appState.analyzing.has(trackId)
 
   const { duration = 0 } =

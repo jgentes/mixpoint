@@ -1,9 +1,9 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform aroun'
-import type WaveSurfer from "wavesurfer.js";
+import type WaveSurfer from 'wavesurfer.js'
 import RegionsPlugin, {
   type Region,
-} from "wavesurfer.js/dist/plugins/regions.js";
-import { calcMarkers } from "~/api/handlers/audioHandlers.client";
+} from 'wavesurfer.js/dist/plugins/regions.js'
+import { calcMarkers } from '~/api/handlers/audioHandlers.client'
 import {
   type Stem,
   type Track,
@@ -14,23 +14,22 @@ import {
   getTrackPrefs,
   setTrackPrefs,
   updateTrack,
-} from "~/api/handlers/dbHandlers";
-import { appState, audioState } from "~/api/models/appState.client";
-import { initWaveform } from "~/api/renderWaveform.client";
-import { convertToSecs } from "~/utils/tableOps";
+} from '~/api/handlers/dbHandlers'
+import { appState, audioState } from '~/api/models/appState.client'
+import { convertToSecs } from '~/utils/tableOps'
 
 // audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
 
 const _getAllWaveforms = (): WaveSurfer[] => {
-  const waveforms: WaveSurfer[] = [];
+  const waveforms: WaveSurfer[] = []
 
   for (const { waveform } of Object.values(audioState)) {
-    if (!waveform) continue;
-    waveforms.push(waveform);
+    if (!waveform) continue
+    waveforms.push(waveform)
   }
 
-  return waveforms;
-};
+  return waveforms
+}
 
 const audioEvents = {
   initAudioContext: ({
@@ -38,238 +37,229 @@ const audioEvents = {
     stem,
     media,
   }: {
-    trackId: Track["id"];
-    stem?: Stem;
-    media: HTMLAudioElement;
+    trackId: Track['id']
+    stem?: Stem
+    media: HTMLAudioElement
   }) => {
     // audioContext cannot be initialized without user intervention, so this function is called when the audio is played for the first time per track or stem
 
     // Ensure this function is not called twice for the same track or stem
     const gainExists = stem
       ? audioState[trackId]?.stems[stem as Stem]?.gainNode
-      : audioState[trackId]?.gainNode;
+      : audioState[trackId]?.gainNode
 
-    if (gainExists) return;
+    if (gainExists) return
 
-    let audioContext = appState.audioContext;
+    let audioContext = appState.audioContext
     if (!audioContext) {
-      audioContext = new AudioContext();
-      appState.audioContext = audioContext;
+      audioContext = new AudioContext()
+      appState.audioContext = audioContext
     }
 
     // gainNode is used to control volume of all stems at once
-    const gainNode = audioContext.createGain();
-    gainNode.connect(audioContext.destination);
+    const gainNode = audioContext.createGain()
+    gainNode.connect(audioContext.destination)
 
-    const analyserNode = audioContext.createAnalyser();
+    const analyserNode = audioContext.createAnalyser()
 
     // Connect the audio to the analyzer
     media.addEventListener(
-      "play",
+      'play',
       async () => {
         // Create a MediaElementSourceNode from the audio element
-        const mediaNode = audioContext?.createMediaElementSource(media);
+        const mediaNode = audioContext?.createMediaElementSource(media)
 
-        mediaNode?.connect(gainNode);
-        mediaNode?.connect(analyserNode);
+        mediaNode?.connect(gainNode)
+        mediaNode?.connect(analyserNode)
       },
       { once: true }
-    );
+    )
 
     // Save waveform in audioState to track user interactions with the waveform and show progress
     if (stem && audioState[trackId]?.stems[stem]) {
-      audioState[trackId].stems[stem].gainNode = gainNode;
-      audioState[trackId].stems[stem].analyserNode = analyserNode;
+      audioState[trackId].stems[stem].gainNode = gainNode
+      audioState[trackId].stems[stem].analyserNode = analyserNode
     } else {
-      audioState[trackId].gainNode = gainNode;
-      audioState[trackId].analyserNode = analyserNode;
+      audioState[trackId].gainNode = gainNode
+      audioState[trackId].analyserNode = analyserNode
     }
   },
-  onReady: async (trackId: Track["id"], stem?: Stem) => {
-    const waveform = audioState[trackId]?.waveform;
-    console.log("onrady:", waveform, stem);
-    if (!waveform) return;
+  onReady: async (waveform: WaveSurfer, trackId: Track['id'], stem?: Stem) => {
+    // Save waveform in audioState
+    console.log('onready', trackId, stem)
+    if (stem) {
+      audioState[trackId].stems[stem as Stem].waveform = waveform
 
-    if (!stem) {
-      // Generate beat markers (regions) and apply them to waveform
-      await calcMarkers(trackId);
-
-      const plugins = waveform.getActivePlugins();
-      const regionsPlugin = plugins[0] as RegionsPlugin;
-
-      const { mixpointTime, beatResolution = 1 } = await getTrackPrefs(trackId);
-
-      // Adjust zoom based on previous mixPrefs
-      waveform.zoom(
-        beatResolution === "1:1" ? 80 : beatResolution === "1:2" ? 40 : 20
-      );
-
-      // Remove analyzing overlay
-      appState.analyzing.delete(trackId);
-
-      // Style scrollbar (this is a workaround for https://github.com/katspaugh/wavesurfer.js/issues/2933)
-      const style = document.createElement("style");
-      style.textContent = `::-webkit-scrollbar {
-				height: 18px;
-			}
-
-			::-webkit-scrollbar-corner, ::-webkit-scrollbar-track {
-				border-top: 1px solid rgba(128,128,128,.3);
-			}
-
-			::-webkit-scrollbar-thumb {
-				background-color: rgba(4, 146, 247, 0.5);
-				border-radius: 8px;
-				border: 6px solid transparent;
-				width: 15%;
-				background-clip: content-box;
-			}`;
-      //waveform.getWrapper().appendChild(style)
-
-      // add classname value to waveform.getWrapper()
-      waveform.getWrapper().classList.add("wrapper");
-
-      // Update time
-      let time = audioState[trackId]?.time;
-      if (!time) {
-        time = mixpointTime || regionsPlugin.getRegions()[0]?.start || 0;
-        audioState[trackId].time = time;
-      }
-
-      // account for resize of browser window
-      waveform.on("redraw", () => audioEvents.seek(trackId));
-    } else {
       // Remove from stemsAnalyzing
-      appState.stemsAnalyzing.delete(trackId);
+      appState.stemsAnalyzing.delete(trackId)
+    } else {
+      audioState[trackId].waveform = waveform
+      // // Generate beat markers (regions) and apply them to waveform
+      // await calcMarkers(trackId)
+      // const plugins = waveform.getActivePlugins()
+      // const regionsPlugin = plugins[0] as RegionsPlugin
+      // const { mixpointTime, beatResolution = 1 } = await getTrackPrefs(trackId)
+      // // Adjust zoom based on previous mixPrefs
+      // waveform.zoom(
+      //   beatResolution === '1:1' ? 80 : beatResolution === '1:2' ? 40 : 20
+      // )
+      // // Remove analyzing overlay
+      // appState.analyzing.delete(trackId)
+      // // Style scrollbar (this is a workaround for https://github.com/katspaugh/wavesurfer.js/issues/2933)
+      // const style = document.createElement('style')
+      // style.textContent = `::-webkit-scrollbar {
+      // 	height: 18px;
+      // }
+      // ::-webkit-scrollbar-corner, ::-webkit-scrollbar-track {
+      // 	border-top: 1px solid rgba(128,128,128,.3);
+      // }
+      // ::-webkit-scrollbar-thumb {
+      // 	background-color: rgba(4, 146, 247, 0.5);
+      // 	border-radius: 8px;
+      // 	border: 6px solid transparent;
+      // 	width: 15%;
+      // 	background-clip: content-box;
+      // }`
+      // //waveform.getWrapper().appendChild(style)
+      // // add classname value to waveform.getWrapper()
+      // waveform.getWrapper().classList.add('wrapper')
+      // // Update time
+      // let time = audioState[trackId]?.time
+      // if (!time) {
+      //   time = mixpointTime || regionsPlugin.getRegions()[0]?.start || 0
+      //   audioState[trackId].time = time
+      // }
+      // // account for resize of browser window
+      // waveform.on('redraw', () => audioEvents.seek(trackId))
     }
 
     // Update BPM if adjusted
-    const { adjustedBpm } = await getTrackPrefs(trackId);
-    const { bpm = 1 } = (await db.tracks.get(trackId)) || {};
-    const playbackRate = (adjustedBpm || bpm) / bpm;
-    waveform.setPlaybackRate(playbackRate);
+    const { adjustedBpm } = await getTrackPrefs(trackId)
+    const { bpm = 1 } = (await db.tracks.get(trackId)) || {}
+    const playbackRate = (adjustedBpm || bpm) / bpm
+    waveform.setPlaybackRate(playbackRate)
   },
 
   clickToSeek: async (
-    trackId: Track["id"],
+    trackId: Track['id'],
     e: React.MouseEvent,
     parentElement: HTMLElement
   ) => {
     // get click position of parent element and convert to time
-    const shadowRoot = parentElement.shadowRoot as ShadowRoot;
-    const wrapper = shadowRoot.querySelector(".wrapper") as HTMLElement;
-    const scrollbar = shadowRoot.querySelector(".scroll") as HTMLElement;
-    const boundary = wrapper.getBoundingClientRect();
+    const shadowRoot = parentElement.shadowRoot as ShadowRoot
+    const wrapper = shadowRoot.querySelector('.wrapper') as HTMLElement
+    const scrollbar = shadowRoot.querySelector('.scroll') as HTMLElement
+    const boundary = wrapper.getBoundingClientRect()
     const position = Math.min(
       1,
       (e.clientX +
         scrollbar.scrollLeft -
         Math.abs(scrollbar.scrollLeft - Math.abs(boundary.x))) /
         boundary.width
-    );
+    )
 
-    const { duration = 1 } = (await db.tracks.get(trackId)) || {};
+    const { duration = 1 } = (await db.tracks.get(trackId)) || {}
 
-    audioEvents.seek(trackId, duration * position);
+    audioEvents.seek(trackId, duration * position)
   },
 
-  ejectTrack: async (trackId: Track["id"]) => {
-    if (!trackId) return;
+  ejectTrack: async (trackId: Track['id']) => {
+    if (!trackId) return
 
-    audioEvents.pause(trackId);
+    audioEvents.pause(trackId)
 
     // Destroy waveform and stems before removing from audioState
-    audioEvents.destroy(trackId);
-    audioEvents.destroyStems(trackId);
+    audioEvents.destroy(trackId)
+    audioEvents.destroyStems(trackId)
 
     // Remove track from mix state (dexie)
-    await _removeFromMix(trackId);
+    await _removeFromMix(trackId)
 
     // Remove track from audioState (valtio)
-    delete audioState[trackId];
+    delete audioState[trackId]
 
     // If this is not the last track in the mix, open drawer, otherwise the drawer will open automatically
-    const { tracks } = (await getPrefs("mix", "tracks")) || {};
-    const mixViewVisible = !!tracks?.filter((t) => t).length;
+    const { tracks } = (await getPrefs('mix', 'tracks')) || {}
+    const mixViewVisible = !!tracks?.filter(t => t).length
 
-    if (mixViewVisible) appState.openDrawer = true;
+    if (mixViewVisible) appState.openDrawer = true
   },
 
-  play: async (trackId?: Track["id"]) => {
-    let tracks;
+  play: async (trackId?: Track['id']) => {
+    let tracks
     if (!trackId) {
       // pull players from audioState to play all
-      tracks = Object.keys(audioState).map(Number);
-    } else tracks = [trackId];
+      tracks = Object.keys(audioState).map(Number)
+    } else tracks = [trackId]
 
     // synchronize playback of all tracks
-    audioEvents.playSync(tracks.filter((id) => !!id));
+    audioEvents.playSync(tracks.filter(id => !!id))
   },
 
-  playSync: async (trackIds: Track["id"][]) => {
+  playSync: async (trackIds: Track['id'][]) => {
     // Sync all waveforms to the same position
-    let syncTimer = appState.syncTimer;
-    if (syncTimer) cancelAnimationFrame(syncTimer);
+    let syncTimer = appState.syncTimer
+    if (syncTimer) cancelAnimationFrame(syncTimer)
 
-    const dataArray = new Uint8Array(2048); // fftSize
+    const dataArray = new Uint8Array(2048) // fftSize
 
     const getVolume = (analyserNode: AnalyserNode) => {
-      analyserNode.getByteTimeDomainData(dataArray);
-      return (Math.max(...dataArray) - 128) / 128;
-    };
+      analyserNode.getByteTimeDomainData(dataArray)
+      return (Math.max(...dataArray) - 128) / 128
+    }
 
     // setup sync loop
     const syncLoop = () => {
-      syncTimer = requestAnimationFrame(syncLoop);
-      appState.syncTimer = syncTimer;
+      syncTimer = requestAnimationFrame(syncLoop)
+      appState.syncTimer = syncTimer
 
       // for volume meters
       for (const trackId of trackIds) {
-        const { stems, analyserNode } = audioState[trackId];
+        const { stems, analyserNode } = audioState[trackId]
 
-        const volumes: number[] = []; // to aggregate for main volume meter
+        const volumes: number[] = [] // to aggregate for main volume meter
 
-        let waveform;
+        let waveform
         if (stems) {
           for (const [stem, { analyserNode }] of Object.entries(stems)) {
             if (analyserNode) {
-              const vol = getVolume(analyserNode);
-              volumes.push(vol);
+              const vol = getVolume(analyserNode)
+              volumes.push(vol)
               if (audioState[trackId]?.stems[stem as Stem]) {
-                audioState[trackId].stems[stem as Stem].volumeMeter = vol;
+                audioState[trackId].stems[stem as Stem].volumeMeter = vol
               }
             }
           }
-          waveform = stems.drums?.waveform;
+          waveform = stems.drums?.waveform
         } else {
-          if (analyserNode) volumes.push(getVolume(analyserNode));
-          waveform = audioState[trackId].waveform;
+          if (analyserNode) volumes.push(getVolume(analyserNode))
+          waveform = audioState[trackId].waveform
         }
 
         // aggregate stem volumes for main volume meter
-        audioState[trackId].volumeMeter = Math.max(...volumes);
-        audioState[trackId].time = waveform?.getCurrentTime(); // for track timer, not play position
+        audioState[trackId].volumeMeter = Math.max(...volumes)
+        audioState[trackId].time = waveform?.getCurrentTime() // for track timer, not play position
       }
-    };
+    }
 
-    syncTimer = requestAnimationFrame(syncLoop);
+    syncTimer = requestAnimationFrame(syncLoop)
 
     for (const trackId of trackIds) {
-      const { waveform, stems } = audioState[trackId];
-      if (!waveform) continue;
+      const { waveform, stems } = audioState[trackId]
+      if (!waveform) continue
 
-      audioState[trackId as number].playing = true;
+      audioState[trackId as number].playing = true
 
       audioEvents.initAudioContext({
         trackId,
         media: waveform.getMediaElement(),
-      });
+      })
 
-      waveform.play();
+      waveform.play()
 
       if (stems) {
         // if we have stems, mute the main waveforms
-        waveform.setVolume(0);
+        waveform.setVolume(0)
 
         for (const [stem, { waveform: stemWaveform }] of Object.entries(
           stems
@@ -279,151 +269,150 @@ const audioEvents = {
               trackId,
               stem: stem as Stem,
               media: stemWaveform.getMediaElement(),
-            });
-            stemWaveform.play();
+            })
+            stemWaveform.play()
           }
         }
       }
     }
   },
 
-  pause: async (trackId?: Track["id"]) => {
+  pause: async (trackId?: Track['id']) => {
     // this needs to pause all stems so requires a bit of logic
-    let waveforms;
-    let trackIds;
+    let waveforms
+    let trackIds
 
-    if (appState.syncTimer) cancelAnimationFrame(appState.syncTimer);
+    if (appState.syncTimer) cancelAnimationFrame(appState.syncTimer)
 
     if (trackId) {
-      const waveform = audioState[trackId]?.waveform;
-      waveforms = [waveform];
-      trackIds = [trackId];
+      const waveform = audioState[trackId]?.waveform
+      waveforms = [waveform]
+      trackIds = [trackId]
     } else {
-      waveforms = _getAllWaveforms();
-      trackIds = Object.keys(audioState);
+      waveforms = _getAllWaveforms()
+      trackIds = Object.keys(audioState)
     }
 
-    const stopWaveform = (waveform: WaveSurfer) => waveform.pause();
+    const stopWaveform = (waveform: WaveSurfer) => waveform.pause()
 
     for (const waveform of waveforms) {
-      if (waveform) stopWaveform(waveform);
+      if (waveform) stopWaveform(waveform)
     }
 
     for (const id of trackIds) {
-      const stems = audioState[Number(id)].stems;
+      const stems = audioState[Number(id)].stems
       if (stems) {
         for (const [stem, { waveform }] of Object.entries(stems)) {
           // set volume meter to zero for the stem
           if (stems[stem as Stem]) {
-            stems[stem as Stem].volumeMeter = 0;
+            stems[stem as Stem].volumeMeter = 0
           }
 
-          if (waveform) stopWaveform(waveform);
+          if (waveform) stopWaveform(waveform)
         }
       }
-      audioState[Number(id)].playing = false;
-      audioState[Number(id)].volumeMeter = 0;
+      audioState[Number(id)].playing = false
+      audioState[Number(id)].volumeMeter = 0
     }
   },
 
   // Scroll to previous/next beat marker
   seek: async (
-    trackId: Track["id"],
+    trackId: Track['id'],
     seconds?: number, // no default here, we want to be able to seek to 0
-    direction?: "previous" | "next"
+    direction?: 'previous' | 'next'
   ) => {
-    if (!trackId) return;
+    if (!trackId) return
 
-    const { waveform, playing, time = 0 } = audioState[trackId];
-    if (!waveform) return;
-    console.log("seek");
-    const currentTime = seconds ?? time;
-    if (playing) await audioEvents.pause(trackId);
+    const { waveform, playing, time = 0 } = audioState[trackId]
+    if (!waveform) return
+    console.log('seek')
+    const currentTime = seconds ?? time
+    if (playing) await audioEvents.pause(trackId)
 
-    const { duration = 1 } = (await db.tracks.get(trackId)) || {};
+    const { duration = 1 } = (await db.tracks.get(trackId)) || {}
 
-    const regionsPlugin = waveform.getActivePlugins()[0] as RegionsPlugin;
+    const regionsPlugin = waveform.getActivePlugins()[0] as RegionsPlugin
 
     // find the closest marker to the current time
-    const regions = regionsPlugin.getRegions();
+    const regions = regionsPlugin.getRegions()
 
     const findClosestRegion = (time: number) => {
       return regions.findIndex((region: Region) => {
-        if (region.start > time) return true;
-      });
-    };
+        if (region.start > time) return true
+      })
+    }
 
-    let currentIndex = findClosestRegion(!direction ? currentTime : time);
-    currentIndex = currentIndex === -1 ? regions.length - 1 : currentIndex;
+    let currentIndex = findClosestRegion(!direction ? currentTime : time)
+    currentIndex = currentIndex === -1 ? regions.length - 1 : currentIndex
 
-    const previous = regions[(currentIndex || 1) - 1];
-    const current = regions[currentIndex];
-    const next = regions[Math.min(currentIndex, regions.length - 2) + 1];
+    const previous = regions[(currentIndex || 1) - 1]
+    const current = regions[currentIndex]
+    const next = regions[Math.min(currentIndex, regions.length - 2) + 1]
 
-    const previousDiff = Math.abs(currentTime - previous.start);
-    const currentDiff = Math.abs(currentTime - current.start);
-    const nextDiff = Math.abs(currentTime - next.start);
+    const previousDiff = Math.abs(currentTime - previous.start)
+    const currentDiff = Math.abs(currentTime - current.start)
+    const nextDiff = Math.abs(currentTime - next.start)
 
-    let closestTime = current.start; // default current wins
+    let closestTime = current.start // default current wins
     if (direction) {
       closestTime =
-        direction === "previous"
+        direction === 'previous'
           ? regions[Math.max(currentIndex - 2, 0)].start
-          : current.start;
+          : current.start
     } else if (previousDiff < currentDiff) {
       // previous wins
       if (currentDiff < nextDiff) {
         // previous wins
-        closestTime = previous.start;
+        closestTime = previous.start
       } else {
         if (previousDiff < nextDiff) {
           // previous wins
-          closestTime = previous.start;
+          closestTime = previous.start
         } else {
           // next wins
-          closestTime = next.start;
+          closestTime = next.start
         }
       }
     }
 
-    audioState[trackId].time = closestTime;
+    audioState[trackId].time = closestTime
 
-    const stems = audioState[trackId].stems;
+    const stems = audioState[trackId].stems
 
     if (stems) {
       for (const [, { waveform: stemWave }] of Object.entries(stems)) {
-        stemWave?.seekTo(closestTime / duration);
+        stemWave?.seekTo(closestTime / duration)
       }
     }
 
-    waveform.seekTo(closestTime / duration);
+    waveform.seekTo(closestTime / duration)
 
     // resume playing if not at the end of track
-    if (playing && closestTime < duration) audioEvents.play(trackId);
+    if (playing && closestTime < duration) audioEvents.play(trackId)
   },
 
-  seekMixpoint: async (trackId: Track["id"]) => {
-    const { mixpointTime = 0 } = (await getTrackPrefs(trackId)) || {};
-    audioEvents.seek(trackId, mixpointTime);
+  seekMixpoint: async (trackId: Track['id']) => {
+    const { mixpointTime = 0 } = (await getTrackPrefs(trackId)) || {}
+    audioEvents.seek(trackId, mixpointTime)
   },
 
   // crossfade handles the sliders that mix between stems or full track
   crossfade: async (sliderVal: number, stemType?: Stem) => {
-    const { tracks } = await getPrefs("mix");
+    const { tracks } = await getPrefs('mix')
 
-    const sliderPercent = sliderVal / 100;
+    const sliderPercent = sliderVal / 100
 
     // Keep volumes at 100% when at 50% crossfade
     // [left, right] @ 0% = [1, 0] 50% = [1, 1] 100% = [0, 1]
     const volumes = [
       Math.min(1, 1 + Math.cos(sliderPercent * Math.PI)),
       Math.min(1, 1 + Math.cos((1 - sliderPercent) * Math.PI)),
-    ];
+    ]
 
     if (tracks) {
       for (const [i, track] of tracks.entries()) {
-        if (track)
-          audioEvents.updateVolume(Number(track), volumes[i], stemType);
+        if (track) audioEvents.updateVolume(Number(track), volumes[i], stemType)
       }
     }
   },
@@ -434,215 +423,215 @@ const audioEvents = {
       stems,
       gainNode,
       stemState,
-    } = audioState[trackId];
+    } = audioState[trackId]
 
     // if we have a stemType, this is a stem crossfader
     if (stemType) {
-      if (!stems) return;
+      if (!stems) return
 
       // adjust the gain of the stem as a percentage of the track volume
       // (75% crossfader x 50% stem fader = 37.5% stem volume)
-      const stemGain = stems[stemType]?.gainNode;
-      stemGain?.gain.setValueAtTime(trackVol * volume, 0);
+      const stemGain = stems[stemType]?.gainNode
+      stemGain?.gain.setValueAtTime(trackVol * volume, 0)
       if (audioState[trackId].stems[stemType]) {
-        audioState[trackId].stems[stemType].volume = volume;
+        audioState[trackId].stems[stemType].volume = volume
       }
-      return;
+      return
     }
 
     // otherwise this is main crossfader
-    if (stemState !== "ready") {
-      gainNode?.gain.setValueAtTime(volume, 0);
+    if (stemState !== 'ready') {
+      gainNode?.gain.setValueAtTime(volume, 0)
     } else if (stems) {
       for (const stem of Object.keys(stems)) {
-        const stemGain = audioState[trackId]?.stems[stem as Stem]?.gainNode;
-        const stemVol = audioState[trackId]?.stems[stem as Stem]?.volume || 1;
+        const stemGain = audioState[trackId]?.stems[stem as Stem]?.gainNode
+        const stemVol = audioState[trackId]?.stems[stem as Stem]?.volume || 1
 
         // adjust the gain of the stem as a percentage of the track volume
         // (75% crossfader x 50% stem fader = 37.5% stem volume)
-        stemGain?.gain.setValueAtTime(trackVol * stemVol, 0);
+        stemGain?.gain.setValueAtTime(trackVol * stemVol, 0)
       }
-      audioState[trackId].volume = volume;
+      audioState[trackId].volume = volume
     }
   },
 
   beatResolution: async (
-    trackId: Track["id"],
-    beatResolution: TrackPrefs["beatResolution"]
+    trackId: Track['id'],
+    beatResolution: TrackPrefs['beatResolution']
   ): Promise<void> => {
-    const waveform = audioState[trackId]?.waveform;
-    if (!waveform || !beatResolution) return;
+    const waveform = audioState[trackId]?.waveform
+    if (!waveform || !beatResolution) return
 
     // Update mixPrefs
-    await setTrackPrefs(trackId, { beatResolution });
+    await setTrackPrefs(trackId, { beatResolution })
 
-    await calcMarkers(trackId);
+    await calcMarkers(trackId)
 
     // Adjust zoom
     switch (beatResolution) {
-      case "1:4":
-        waveform.zoom(20);
-        break;
-      case "1:2":
-        waveform.zoom(40);
-        break;
-      case "1:1":
-        waveform.zoom(80);
-        break;
+      case '1:4':
+        waveform.zoom(20)
+        break
+      case '1:2':
+        waveform.zoom(40)
+        break
+      case '1:1':
+        waveform.zoom(80)
+        break
     }
   },
 
   bpm: async (
-    trackId: Track["id"],
-    adjustedBpm: TrackPrefs["adjustedBpm"]
+    trackId: Track['id'],
+    adjustedBpm: TrackPrefs['adjustedBpm']
   ): Promise<void> => {
-    const { stems, waveform, playing } = audioState[trackId];
-    if (!adjustedBpm) return;
+    const { stems, waveform, playing } = audioState[trackId]
+    if (!adjustedBpm) return
 
-    const { bpm } = (await db.tracks.get(trackId)) || {};
+    const { bpm } = (await db.tracks.get(trackId)) || {}
 
-    const playbackRate = adjustedBpm / (bpm || adjustedBpm);
+    const playbackRate = adjustedBpm / (bpm || adjustedBpm)
 
-    if (playing) audioEvents.pause(trackId);
+    if (playing) audioEvents.pause(trackId)
 
     const adjustPlaybackRate = (waveform: WaveSurfer) =>
-      waveform.setPlaybackRate(playbackRate);
+      waveform.setPlaybackRate(playbackRate)
 
     // update stem playback rate in realtime
     if (stems) {
       for (const { waveform } of Object.values(stems)) {
-        if (!waveform) continue;
+        if (!waveform) continue
 
-        adjustPlaybackRate(waveform);
+        adjustPlaybackRate(waveform)
       }
     } else {
-      if (waveform) adjustPlaybackRate(waveform);
+      if (waveform) adjustPlaybackRate(waveform)
     }
 
-    if (playing) audioEvents.play(trackId);
+    if (playing) audioEvents.play(trackId)
 
     // Update mixPrefs
-    await setTrackPrefs(trackId, { adjustedBpm });
+    await setTrackPrefs(trackId, { adjustedBpm })
   },
 
   offset: async (
-    trackId: Track["id"],
-    adjustedOffset: Track["adjustedOffset"]
+    trackId: Track['id'],
+    adjustedOffset: Track['adjustedOffset']
   ): Promise<void> => {
-    await updateTrack(trackId, { adjustedOffset });
+    await updateTrack(trackId, { adjustedOffset })
 
-    calcMarkers(trackId);
+    calcMarkers(trackId)
   },
 
   setMixpoint: async (
-    trackId: Track["id"],
+    trackId: Track['id'],
     mixpoint?: string
   ): Promise<void> => {
-    const waveform = audioState[trackId]?.waveform;
-    if (!waveform) return;
+    const waveform = audioState[trackId]?.waveform
+    if (!waveform) return
 
-    audioEvents.pause(trackId);
+    audioEvents.pause(trackId)
 
-    const time = audioState[trackId]?.time || 0;
-    const { mixpointTime = 0 } = (await getTrackPrefs(trackId)) || {};
+    const time = audioState[trackId]?.time || 0
+    const { mixpointTime = 0 } = (await getTrackPrefs(trackId)) || {}
 
-    const newMixpoint = mixpoint ? convertToSecs(mixpoint) : time;
-    if (newMixpoint === mixpointTime) return;
+    const newMixpoint = mixpoint ? convertToSecs(mixpoint) : time
+    if (newMixpoint === mixpointTime) return
 
-    setTrackPrefs(trackId, { mixpointTime: newMixpoint });
+    setTrackPrefs(trackId, { mixpointTime: newMixpoint })
 
-    audioEvents.seek(trackId, newMixpoint);
+    audioEvents.seek(trackId, newMixpoint)
   },
 
-  stemVolume: (trackId: Track["id"], stemType: Stem, volume: number) => {
-    const stems = audioState[trackId]?.stems;
-    if (!stems) return;
+  stemVolume: (trackId: Track['id'], stemType: Stem, volume: number) => {
+    const stems = audioState[trackId]?.stems
+    if (!stems) return
 
-    const gainNode = stems[stemType as Stem]?.gainNode;
-    if (gainNode) gainNode.gain.setValueAtTime(volume, 0);
+    const gainNode = stems[stemType as Stem]?.gainNode
+    if (gainNode) gainNode.gain.setValueAtTime(volume, 0)
 
     // set volume in state, which in turn will update components (volume sliders)
     if (audioState[trackId].stems[stemType]) {
-      audioState[trackId].stems[stemType].volume = volume;
+      audioState[trackId].stems[stemType].volume = volume
     }
   },
 
-  stemMuteToggle: (trackId: Track["id"], stemType: Stem, mute: boolean) => {
-    const stems = audioState[trackId]?.stems;
-    if (!stems) return;
+  stemMuteToggle: (trackId: Track['id'], stemType: Stem, mute: boolean) => {
+    const stems = audioState[trackId]?.stems
+    if (!stems) return
 
-    const stem = stems[stemType as Stem];
-    const { gainNode, volume } = stem || {};
+    const stem = stems[stemType as Stem]
+    const { gainNode, volume } = stem || {}
 
-    gainNode?.gain.setValueAtTime(mute ? 0 : volume || 1, 0);
+    gainNode?.gain.setValueAtTime(mute ? 0 : volume || 1, 0)
     if (audioState[trackId].stems[stemType as Stem]) {
-      audioState[trackId].stems[stemType as Stem].mute = mute;
+      audioState[trackId].stems[stemType as Stem].mute = mute
     }
   },
 
-  stemSoloToggle: (trackId: Track["id"], stem: Stem, solo: boolean) => {
-    const stems = audioState[trackId]?.stems;
-    if (!stems) return;
+  stemSoloToggle: (trackId: Track['id'], stem: Stem, solo: boolean) => {
+    const stems = audioState[trackId]?.stems
+    if (!stems) return
 
     for (const s of Object.keys(stems)) {
-      if (s !== stem) audioEvents.stemMuteToggle(trackId, s as Stem, solo);
+      if (s !== stem) audioEvents.stemMuteToggle(trackId, s as Stem, solo)
     }
   },
 
   stemZoom: async (
-    trackId: Track["id"],
-    stem: TrackPrefs["stemZoom"] | "all"
+    trackId: Track['id'],
+    stem: TrackPrefs['stemZoom'] | 'all'
   ) => {
     // add track to analyzing state
-    appState.analyzing.add(trackId);
+    appState.analyzing.add(trackId)
 
-    const oldWaveform = audioState[trackId]?.waveform;
-    if (oldWaveform) audioEvents.destroy(trackId);
+    const oldWaveform = audioState[trackId]?.waveform
+    if (oldWaveform) audioEvents.destroy(trackId)
 
-    let file;
+    let file
 
-    if (stem === "all") {
-      ({ file } = (await db.trackCache.get(trackId)) || {});
+    if (stem === 'all') {
+      ;({ file } = (await db.trackCache.get(trackId)) || {})
     } else {
-      const { stems } = (await db.trackCache.get(trackId)) || {};
-      if (!stems) return;
+      const { stems } = (await db.trackCache.get(trackId)) || {}
+      if (!stems) return
 
-      file = stems[stem as Stem]?.file;
+      file = stems[stem as Stem]?.file
     }
 
-    if (!file) return;
+    if (!file) return
 
     //await initWaveform({ trackId, file })
 
     await setTrackPrefs(trackId, {
-      stemZoom: stem === "all" ? undefined : stem,
-    });
+      stemZoom: stem === 'all' ? undefined : stem,
+    })
 
-    const { waveform, time = 0, playing } = audioState[trackId];
+    const { waveform, time = 0, playing } = audioState[trackId]
     if (waveform) {
-      waveform.setVolume(0);
-      waveform.setTime(time);
-      if (playing) waveform.play();
+      waveform.setVolume(0)
+      waveform.setTime(time)
+      if (playing) waveform.play()
     }
   },
 
-  destroy: (trackId: Track["id"]) => {
-    const waveform = audioState[trackId]?.waveform;
-    if (waveform) waveform.destroy();
+  destroy: (trackId: Track['id']) => {
+    const waveform = audioState[trackId]?.waveform
+    if (waveform) waveform.destroy()
   },
 
-  destroyStems: (trackId: Track["id"]) => {
-    const stems = audioState[trackId]?.stems;
+  destroyStems: (trackId: Track['id']) => {
+    const stems = audioState[trackId]?.stems
 
     if (stems) {
       for (const stem of Object.values(stems)) {
-        stem?.waveform?.destroy();
+        stem?.waveform?.destroy()
       }
     }
 
     // Remove from stemsAnalyzing
-    appState.stemsAnalyzing.delete(trackId);
+    appState.stemsAnalyzing.delete(trackId)
   },
-};
+}
 
-export { audioEvents };
+export { audioEvents }
