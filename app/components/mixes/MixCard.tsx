@@ -16,19 +16,21 @@ const MixCard = ({
   trackId,
   trackSlot
 }: { trackId: Track['id']; trackSlot: 0 | 1 }) => {
-  const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
+  const MixCardHeader = () => {
+    const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
 
-  const mixCardHeader = (
-    <div className="flex mb-3 gap-2 justify-between">
-      <EjectControl trackId={trackId} />
-      <div className="text-md font-medium whitespace-nowrap overflow-hidden overflow-ellipsis flex-grow">
-        {trackName}
+    return (
+      <div className="flex mb-3 gap-2 justify-between">
+        <EjectControl trackId={trackId} />
+        <div className="text-md font-medium whitespace-nowrap overflow-hidden overflow-ellipsis flex-grow">
+          {trackName}
+        </div>
+        <BpmControl trackId={trackId} className="w-28" />
       </div>
-      <BpmControl trackId={trackId} className="w-28" />
-    </div>
-  )
+    )
+  }
 
-  const mixCardFooter = (
+  const MixCardFooter = () => (
     <div className="text-center mt-2">
       <TrackNavControl trackId={trackId} />
     </div>
@@ -40,7 +42,7 @@ const MixCard = ({
         <Dropzone className="h-full" trackSlot={trackSlot} />
       ) : (
         <>
-          {mixCardHeader}
+          <MixCardHeader />
 
           <div className="mt-2">
             <StemPanel trackId={trackId} />
@@ -50,7 +52,7 @@ const MixCard = ({
             <TrackPanel trackId={trackId} />
           </div>
 
-          {mixCardFooter}
+          <MixCardFooter />
         </>
       )}
     </div>

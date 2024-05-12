@@ -1,28 +1,11 @@
-import WavesurferPlayer, { useWavesurfer } from '@wavesurfer/react'
-import {
-  type MutableRefObject,
-  type RefObject,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
-import WaveSurfer, { type WaveSurferOptions } from 'wavesurfer.js'
+import WavesurferPlayer, { type WavesurferProps } from '@wavesurfer/react'
+import { useEffect, useState } from 'react'
+import type WaveSurfer from 'wavesurfer.js'
 import Minimap from 'wavesurfer.js/dist/plugins/minimap.js'
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 import { audioEvents } from '~/api/handlers/audioEvents.client'
-import {
-  type Stem,
-  type Track,
-  db,
-  useLiveQuery
-} from '~/api/handlers/dbHandlers'
+import type { Stem, Track } from '~/api/handlers/dbHandlers'
 import { getPermission } from '~/api/handlers/fileHandlers'
-import { validateTrackStemAccess } from '~/api/handlers/fileHandlers'
-import { appState, audioState } from '~/api/models/appState.client'
-import { ProgressBar } from '~/components/layout/Loader'
-import { errorHandler } from '~/utils/notifications'
 
 const Waveform = ({
   trackId,
@@ -32,59 +15,54 @@ const Waveform = ({
   stem?: Stem
 }) => {
   // an Audio object is required for Wavesurfer to use Web Audio
-  const { file } =
-    useLiveQuery(() => db.trackCache.get(trackId), [trackId]) || {}
+  const [file, setFile] = useState<File | undefined>()
 
-  if (!file) getPermission(trackId)
+  useEffect(() => {
+    const getFile = async () => {
+      const file = await getPermission(trackId, stem)
+      setFile(file)
+    }
 
-  //validateTrackStemAccess(trackId)
+    getFile()
+  }, [trackId, stem])
 
-  if (!trackId || !file) return null
+  let waveformProps: WavesurferProps = {
+    media: file ? new Audio(URL.createObjectURL(file)) : undefined,
+    onReady: (waveform: WaveSurfer) =>
+      audioEvents.onReady(waveform, trackId, stem),
+    height: 60,
+    autoScroll: true,
+    autoCenter: true,
+    hideScrollbar: false,
+    barWidth: 2,
+    barHeight: 0.9,
+    barGap: 1,
+    cursorColor: '#555',
+    interact: false,
+    waveColor: [
+      'rgb(200, 165, 49)',
+      'rgb(211, 194, 138)',
+      'rgb(189, 60, 0)',
+      'rgb(189, 60, 0)',
+      'rgb(189, 60, 0)',
+      'rgb(189, 60, 0)'
+    ],
+    progressColor: 'rgba(200, 165, 49, 0.5)'
+  }
 
-  const analyzing = appState.analyzing.has(trackId)
-
-  const containerClass =
-    'p-0 border-1 border-divider rounded bg-default-50 overflow-hidden'
-
-  return analyzing ? (
-    <div className={`${containerClass} absolute z-10 w-full h-20 top-0`}>
-      <div className="relative w-1/2 top-1/2 -mt-0.5 m-auto">
-        <ProgressBar />
-      </div>
-    </div>
-  ) : (
-    <div
-      className={`${containerClass} relative h-20 z-1`}
-      onClick={e => {
-        const parent = e.currentTarget.firstElementChild as HTMLElement
-        audioEvents.clickToSeek(trackId, e, parent)
-      }}
-      onWheel={e =>
-        audioEvents.seek(trackId, 0, e.deltaY > 0 ? 'next' : 'previous')
+  // apply props for stems vs. track
+  waveformProps = stem
+    ? {
+        ...waveformProps,
+        height: 17,
+        fillParent: true,
+        hideScrollbar: true,
+        barWidth: 1,
+        normalize: true
       }
-    >
-      <WavesurferPlayer
-        media={file ? new Audio(URL.createObjectURL(file)) : undefined}
-        onReady={waveform => audioEvents.onReady(waveform, trackId, stem)}
-        height={60}
-        autoScroll={true}
-        autoCenter={true}
-        hideScrollbar={false}
-        barWidth={2}
-        barHeight={0.9}
-        barGap={1}
-        cursorColor="#555"
-        interact={false}
-        waveColor={[
-          'rgb(200, 165, 49)',
-          'rgb(211, 194, 138)',
-          'rgb(189, 60, 0)',
-          'rgb(189, 60, 0)',
-          'rgb(189, 60, 0)',
-          'rgb(189, 60, 0)'
-        ]}
-        progressColor="rgba(200, 165, 49, 0.5)"
-        plugins={[
+    : {
+        ...waveformProps,
+        plugins: [
           // Do not change the order of plugins! They are referenced by index :(
           RegionsPlugin.create(),
           Minimap.create({
@@ -102,10 +80,10 @@ const Waveform = ({
             progressColor: 'rgba(125, 125, 125, 0.25)',
             hideScrollbar: true
           })
-        ]}
-      />
-    </div>
-  )
+        ]
+      }
+
+  return <WavesurferPlayer {...waveformProps} />
 }
 
 export { Waveform }

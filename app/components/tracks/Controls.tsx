@@ -22,7 +22,10 @@ import {
   Tabs,
   Tooltip
 } from '@nextui-org/react'
+import { track } from '@vercel/analytics'
+import { useSnapshot } from 'valtio'
 import { audioState } from '~/api/models/appState.client'
+import { Waveform } from '~/api/renderWaveform.client'
 import {
   EjectIcon,
   HeadsetIcon,
@@ -477,8 +480,9 @@ const StemControl = ({
 }) => {
   if (!trackId) return null
 
-  const volume = audioState[trackId]?.stems[stemType]?.volume || 100
-  const mute = audioState[trackId]?.stems[stemType]?.mute || false
+  const volume =
+    useSnapshot(audioState[trackId])?.stems[stemType]?.volume || 100
+  const mute = useSnapshot(audioState[trackId])?.stems[stemType]?.mute || false
 
   const [solo, setSolo] = useState(false)
 
@@ -496,13 +500,15 @@ const StemControl = ({
       </div>
       <div className="w-full">
         <div
-          id={`zoomview-container_${trackId}_${stemType}`}
           className="p-0 border-1 border-divider rounded bg-default-50 overflow-hidden relative z-1 h-5"
           onClick={e => {
             const parent = e.currentTarget.firstElementChild as HTMLElement
             audioEvents.clickToSeek(trackId, e, parent)
           }}
-        />
+        >
+          <Waveform trackId={trackId} stem={stemType} />
+        </div>
+
         <VolumeMeter trackId={trackId} stemType={stemType} />
       </div>
       {solo ? (

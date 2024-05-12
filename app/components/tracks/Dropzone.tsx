@@ -28,7 +28,7 @@ const itemsDropped = async (items: DataTransferItemList, trackSlot?: 0 | 1) => {
   // https://stackoverflow.com/q/55658851/1058302
   await Promise.all(itemQueue)
   const tracks = await processTracks(handleArray)
-  if (tracks[0]) addToMix(tracks[0], trackSlot)
+  if (tracks[0]) addToMix(tracks[0].id, trackSlot)
 }
 
 const Dropzone = ({

@@ -1,7 +1,7 @@
 // This file initializes Dexie (indexDB), defines the schema and creates tables
 // Be sure to create MIGRATIONS for any changes to SCHEMA!
 import Dexie from 'dexie'
-import { type Key } from 'react'
+import type { Key } from 'react'
 
 // eventually allow the user to change these
 const STATE_ROW_LIMIT = 100
@@ -28,7 +28,7 @@ class MixpointDb extends Dexie {
       mixPrefs: 'date',
       setPrefs: 'date',
       userPrefs: 'date',
-      trackCache: 'id'
+      trackCache: 'id',
     })
     // example migration:
     //
@@ -197,6 +197,6 @@ export type {
   UserPrefs as __UserPrefs,
   StoreTypes as __StoreTypes,
   TrackCache as __TrackCache,
-  Stem as __Stem
+  Stem as __Stem,
 }
 export { db as __db, STEMS as __STEMS, EFFECTS as __EFFECTS }

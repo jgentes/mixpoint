@@ -43,11 +43,11 @@ function showOpenFilePickerPolyfill(options: OpenFilePickerOptions) {
   })
 }
 
-const _getFile = async (track: Track): Promise<File | null> => {
+const _getFile = async (track: Track): Promise<File | undefined> => {
   let handle = track.dirHandle || track.fileHandle
-  if (!handle) return null
+  if (!handle) return
 
-  let file = null
+  let file = undefined
   const perms = await handle.queryPermission()
 
   if (perms === 'granted' && track.name) {
@@ -61,7 +61,7 @@ const _getFile = async (track: Track): Promise<File | null> => {
   // Cache the file
   if (file) await storeTrackCache({ id: track.id, file })
 
-  // In the case perms aren't granted, return null - we need to request permission
+  // In the case perms aren't granted, return undefined - we need to request permission
   return file
 }
 
@@ -70,9 +70,17 @@ const _getFile = async (track: Track): Promise<File | null> => {
  * (user must have interacted with the page first!)
  *  otherwise returns null
  */
-const getPermission = async (trackId: Track['id']): Promise<File | null> => {
+const getPermission = async (
+  trackId: Track['id'],
+  stem?: Stem
+): Promise<File | undefined> => {
   // First see if we have the file in the cache
   const cache = await db.trackCache.get(trackId)
+  if (stem) {
+    if (cache?.stems?.[stem]) return cache?.stems[stem]?.file
+    return // if we have no file for the stem, stop here
+  }
+
   if (cache?.file) return cache.file
 
   const track = await db.tracks.get(trackId)
@@ -119,7 +127,7 @@ const browseFile = async (trackSlot?: 0 | 1): Promise<void> => {
 
   if (files?.length) {
     const tracks = (await processTracks(files)) || []
-    if (tracks.length === 1) addToMix(tracks[0], trackSlot)
+    if (tracks.length === 1) addToMix(tracks[0].id, trackSlot)
   }
 }
 

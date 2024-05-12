@@ -6,7 +6,7 @@ import {
   db,
   getTrackPrefs,
   putTracks,
-  setPrefs
+  setPrefs,
 } from '~/api/handlers/dbHandlers'
 import { getPermission } from '~/api/handlers/fileHandlers'
 import { appState, audioState } from '~/api/models/appState.client'
@@ -36,7 +36,7 @@ async function getTracksRecursively(
   // Change sort order to lastModified so new tracks are visible at the top
   await setPrefs('user', {
     sortColumn: 'lastModified',
-    sortDirection: 'descending'
+    sortDirection: 'descending',
   })
 
   const filesToTracks = async (
@@ -55,7 +55,7 @@ async function getTracksRecursively(
           size,
           type,
           fileHandle: fileOrDirectoryHandle,
-          dirHandle
+          dirHandle,
         })
     } else if (fileOrDirectoryHandle.kind === 'directory') {
       for await (const handle of fileOrDirectoryHandle.values()) {
@@ -96,7 +96,7 @@ async function getTracksRecursively(
       onCancel: () => {
         appState.modal.openState = false
         appState.processing = false
-      }
+      },
     }
     return []
   }
@@ -108,26 +108,26 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
   // Set analyzing state now to avoid tracks appearing with 'analyze' button
   appState.analyzing = new Set([
     ...appState.analyzing,
-    ...tracks.map(track => track.id)
+    ...tracks.map(track => track.id),
   ])
 
   // Return array of updated tracks
   const updatedTracks: Track[] = []
 
-  let sorted
+  let sorted = false
   for (const track of tracks) {
     if (!sorted) {
       // Change sort order to lastModified so new tracks are visible at the top
       await setPrefs('user', {
         sortColumn: 'lastModified',
-        sortDirection: 'descending'
+        sortDirection: 'descending',
       })
       appState.page = 1
       sorted = true
     }
 
     const { name, size, type, offset, bpm, duration, sampleRate, ...rest } =
-      await getAudioDetails(track)
+      await getAudioDetails(track.id)
 
     // adjust for miscalc tempo > 160bpm
     const normalizedBpm = bpm > 160 ? bpm / 2 : bpm
@@ -140,7 +140,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
       bpm: normalizedBpm,
       offset,
       sampleRate,
-      ...rest
+      ...rest,
     }
 
     const [trackWithId] = await putTracks([updatedTrack])
@@ -153,7 +153,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
 }
 
 const getAudioDetails = async (
-  track: Track
+  trackId: Track['id']
 ): Promise<{
   name: string
   size: number
@@ -163,7 +163,7 @@ const getAudioDetails = async (
   duration: number
   sampleRate: number
 }> => {
-  const file = await getPermission(track)
+  const file = await getPermission(trackId)
   if (!file) {
     appState.analyzing = new Set()
     throw errorHandler('Permission to the file or folder was denied.')
@@ -197,7 +197,7 @@ const getAudioDetails = async (
     offset,
     bpm,
     duration,
-    sampleRate
+    sampleRate,
   }
 }
 
@@ -244,7 +244,7 @@ const calcMarkers = async (trackId: Track['id']): Promise<void> => {
       start: time,
       end: time,
       color: 'rgba(4, 146, 247, 0.757)',
-      drag: false
+      drag: false,
     })
   }
 }

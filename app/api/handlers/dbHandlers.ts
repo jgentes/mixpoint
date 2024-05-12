@@ -17,7 +17,7 @@ import {
   type __TrackCache as TrackCache,
   type __TrackPrefs as TrackPrefs,
   type __UserPrefs as UserPrefs,
-  __db as db
+  __db as db,
 } from '~/api/models/__dbSchema'
 import { errorHandler } from '~/utils/notifications'
 
@@ -26,7 +26,7 @@ const CACHE_LIMIT = 25
 const storeTrackCache = async ({
   id,
   file,
-  stems
+  stems,
 }: {
   id: TrackCache['id']
   file?: TrackCache['file']
@@ -87,7 +87,7 @@ const putTracks = async (tracks: TrackIdOptional[]): Promise<Track[]> => {
   }
 
   const updatedTracks = await db.tracks.bulkPut(bulkTracks as Track[], {
-    allKeys: true
+    allKeys: true,
   })
   return (await db.tracks.bulkGet(updatedTracks)) as Track[]
 }
@@ -135,7 +135,7 @@ const setPrefs = async (
   await db[`${table}Prefs`].put({
     ...prevState,
     ...state,
-    date: new Date()
+    date: new Date(),
   })
 }
 
@@ -190,7 +190,7 @@ const putMixpoint = async (
 
     return await db.mixpoints.put({
       name,
-      effects
+      effects,
     })
   }
 
@@ -201,7 +201,7 @@ const putMixpoint = async (
 
   const newMixpoint = {
     ...currentMixpoint,
-    ...{ name: name || currentMixpoint.name, effects: newEffects }
+    ...{ name: name || currentMixpoint.name, effects: newEffects },
   }
 
   await db.mixpoints.put(newMixpoint, mixpointId)
@@ -211,8 +211,8 @@ const deleteMixpoint = async (mixpointId: number) => {
   await db.mixpoints.delete(mixpointId)
 }
 
-const addToMix = async (track: Track, trackSlot?: 0 | 1) => {
-  const file = await getPermission(track)
+const addToMix = async (trackId: Track['id'], trackSlot?: 0 | 1) => {
+  const file = await getPermission(trackId)
   if (!file) return
 
   const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
@@ -223,8 +223,8 @@ const addToMix = async (track: Track, trackSlot?: 0 | 1) => {
 
   // if there's already a track in this position, remove it first
   if (tracks[index]) await audioEvents.ejectTrack(tracks[index])
-  tracks[index] = track.id
-  trackPrefs[index] = { id: track.id }
+  tracks[index] = trackId
+  trackPrefs[index] = { id: trackId }
 
   await setPrefs('mix', { tracks, trackPrefs })
 }
@@ -255,7 +255,7 @@ export type {
   StoreTypes,
   TrackCache,
   Effect,
-  Stem
+  Stem,
 }
 export {
   db,
@@ -277,5 +277,5 @@ export {
   getTrackPrefs,
   getTrackName,
   setTrackPrefs,
-  storeTrackCache
+  storeTrackCache,
 }

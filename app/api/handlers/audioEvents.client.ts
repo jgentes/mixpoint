@@ -1,8 +1,8 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform aroun'
+import { ref } from 'valtio'
 import type WaveSurfer from 'wavesurfer.js'
-import RegionsPlugin, {
-  type Region,
-} from 'wavesurfer.js/dist/plugins/regions.js'
+import type RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
+import type { Region } from 'wavesurfer.js/dist/plugins/regions.js'
 import { calcMarkers } from '~/api/handlers/audioHandlers.client'
 import {
   type Stem,
@@ -88,49 +88,56 @@ const audioEvents = {
     // Save waveform in audioState
     console.log('onready', trackId, stem)
     if (stem) {
-      audioState[trackId].stems[stem as Stem].waveform = waveform
-
       // Remove from stemsAnalyzing
       appState.stemsAnalyzing.delete(trackId)
+
+      audioState[trackId].stems[stem as Stem].waveform = ref(waveform)
     } else {
-      audioState[trackId].waveform = waveform
-      // // Generate beat markers (regions) and apply them to waveform
-      // await calcMarkers(trackId)
-      // const plugins = waveform.getActivePlugins()
-      // const regionsPlugin = plugins[0] as RegionsPlugin
-      // const { mixpointTime, beatResolution = 1 } = await getTrackPrefs(trackId)
-      // // Adjust zoom based on previous mixPrefs
-      // waveform.zoom(
-      //   beatResolution === '1:1' ? 80 : beatResolution === '1:2' ? 40 : 20
-      // )
-      // // Remove analyzing overlay
-      // appState.analyzing.delete(trackId)
-      // // Style scrollbar (this is a workaround for https://github.com/katspaugh/wavesurfer.js/issues/2933)
-      // const style = document.createElement('style')
-      // style.textContent = `::-webkit-scrollbar {
-      // 	height: 18px;
-      // }
-      // ::-webkit-scrollbar-corner, ::-webkit-scrollbar-track {
-      // 	border-top: 1px solid rgba(128,128,128,.3);
-      // }
-      // ::-webkit-scrollbar-thumb {
-      // 	background-color: rgba(4, 146, 247, 0.5);
-      // 	border-radius: 8px;
-      // 	border: 6px solid transparent;
-      // 	width: 15%;
-      // 	background-clip: content-box;
-      // }`
-      // //waveform.getWrapper().appendChild(style)
-      // // add classname value to waveform.getWrapper()
-      // waveform.getWrapper().classList.add('wrapper')
-      // // Update time
-      // let time = audioState[trackId]?.time
-      // if (!time) {
-      //   time = mixpointTime || regionsPlugin.getRegions()[0]?.start || 0
-      //   audioState[trackId].time = time
-      // }
-      // // account for resize of browser window
-      // waveform.on('redraw', () => audioEvents.seek(trackId))
+      audioState[trackId].waveform = ref(waveform)
+
+      // Generate beat markers (regions) and apply them to waveform
+      await calcMarkers(trackId)
+      const plugins = waveform.getActivePlugins()
+      const regionsPlugin = plugins[0] as RegionsPlugin
+      const { mixpointTime, beatResolution = 1 } = await getTrackPrefs(trackId)
+      // Adjust zoom based on previous mixPrefs
+      waveform.zoom(
+        beatResolution === '1:1' ? 80 : beatResolution === '1:2' ? 40 : 20
+      )
+      // Remove analyzing overlay
+      appState.analyzing.delete(trackId)
+      // Style scrollbar (this is a workaround for https://github.com/katspaugh/wavesurfer.js/issues/2933)
+      const style = document.createElement('style')
+      style.textContent = `::-webkit-scrollbar {
+      	height: 18px;
+      }
+      ::-webkit-scrollbar-corner, ::-webkit-scrollbar-track {
+      	border-top: 1px solid rgba(128,128,128,.3);
+      }
+      ::-webkit-scrollbar-thumb {
+      	background-color: rgba(4, 146, 247, 0.5);
+      	border-radius: 8px;
+      	border: 6px solid transparent;
+      	width: 15%;
+      	background-clip: content-box;
+      }`
+      //waveform.getWrapper().appendChild(style)
+      // add classname value to waveform.getWrapper()
+      waveform.getWrapper().classList.add('wrapper')
+      // Update time
+      let time = audioState[trackId]?.time
+      if (!time) {
+        time = mixpointTime || regionsPlugin.getRegions()[0]?.start || 0
+        audioState[trackId].time = time
+      }
+
+      // if zoom is set to a stem, use the stem cache to redraw the primary waveform with the stem
+      // const { stemZoom } = (await getTrackPrefs(trackId)) || {}
+      // console.log('stemzoom:', stemZoom)
+      // if (stemZoom) audioEvents.stemZoom(trackId, stemZoom)
+
+      // account for resize of browser window
+      waveform.on('redraw', () => audioEvents.seek(trackId))
     }
 
     // Update BPM if adjusted
@@ -186,7 +193,7 @@ const audioEvents = {
   },
 
   play: async (trackId?: Track['id']) => {
-    let tracks
+    let tracks = []
     if (!trackId) {
       // pull players from audioState to play all
       tracks = Object.keys(audioState).map(Number)
@@ -219,7 +226,7 @@ const audioEvents = {
 
         const volumes: number[] = [] // to aggregate for main volume meter
 
-        let waveform
+        let waveform: WaveSurfer | undefined
         if (stems) {
           for (const [stem, { analyserNode }] of Object.entries(stems)) {
             if (analyserNode) {
@@ -279,8 +286,8 @@ const audioEvents = {
 
   pause: async (trackId?: Track['id']) => {
     // this needs to pause all stems so requires a bit of logic
-    let waveforms
-    let trackIds
+    let waveforms = []
+    let trackIds = []
 
     if (appState.syncTimer) cancelAnimationFrame(appState.syncTimer)
 
@@ -588,7 +595,7 @@ const audioEvents = {
     const oldWaveform = audioState[trackId]?.waveform
     if (oldWaveform) audioEvents.destroy(trackId)
 
-    let file
+    let file: File | undefined
 
     if (stem === 'all') {
       ;({ file } = (await db.trackCache.get(trackId)) || {})

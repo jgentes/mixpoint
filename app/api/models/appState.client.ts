@@ -1,16 +1,16 @@
 // This file handles application state that is not persisted through page refreshes, therefore not in IndexedDB. appState is different from Prefs in that it isn't persistent.
 import type { ButtonProps } from '@nextui-org/react'
-import { type Key } from 'react'
+import type { Key } from 'react'
 import { proxy } from 'valtio'
-import { devtools } from 'valtio/utils'
+import { devtools, proxySet } from 'valtio/utils'
 import type WaveSurfer from 'wavesurfer.js'
 import { type Stem, type Track, getPrefs } from '~/api/handlers/dbHandlers'
 import { Env } from '~/utils/env'
 
 // AudioState captures ephemeral state of a mix, while persistent state is stored in IndexedDB
 const audioState = proxy<{
-  tracks: AudioState[]
-}>({ tracks: [] })
+  [trackId: Track['id']]: AudioState
+}>({})
 
 type AudioState = {
   waveform?: WaveSurfer
@@ -74,14 +74,14 @@ const appState = proxy<{
   modal: ModalState
 }>({
   search: '',
-  selected: new Set(),
+  selected: proxySet(),
   rowsPerPage: 10,
   page: 1,
   showButton: null,
   openDrawer: false,
   processing: false,
-  analyzing: new Set(),
-  stemsAnalyzing: new Set(),
+  analyzing: proxySet(),
+  stemsAnalyzing: proxySet(),
   syncTimer: undefined,
   userEmail: '',
   modal: { openState: false },

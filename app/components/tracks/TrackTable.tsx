@@ -108,20 +108,20 @@ const TrackTable = () => {
     </Button>
   )
 
-  const addToMixHandler = async (t: Track) => {
+  const addToMixHandler = async (trackId: Track['id']) => {
     const { tracks = [] } = await getPrefs('mix')
 
-    await addToMix(t)
+    await addToMix(trackId)
 
     // if this is the first track in the mix, leave the drawer open
     if (!tracks.length) appState.openDrawer = true
   }
 
   const AddToMixButton = useCallback(
-    ({ track }: { track: Track }) => {
+    ({ trackId }: { trackId: Track['id'] }) => {
       const { tracks = [] } = useLiveQuery(() => getPrefs('mix')) || {}
 
-      const isInMix = tracks.includes(track.id)
+      const isInMix = tracks.includes(trackId)
 
       // Prevent user from adding a new track before previous added track finishes analyzing
       const isBeingAnalyzed = tracks.some(id => analyzing.has(id))
@@ -146,7 +146,9 @@ const TrackTable = () => {
             )
           }
           onPress={() => {
-            !isInMix ? addToMixHandler(track) : audioEvents.ejectTrack(track.id)
+            !isInMix
+              ? addToMixHandler(trackId)
+              : audioEvents.ejectTrack(trackId)
           }}
         >
           {`Add${isInMix ? 'ed' : ' to Mix'}`}
@@ -193,7 +195,7 @@ const TrackTable = () => {
         label: '',
         align: 'center',
         width: '15%',
-        formatter: track => <AddToMixButton track={track} />
+        formatter: track => <AddToMixButton trackId={track.id} />
       },
       {
         dbKey: 'bpm',
