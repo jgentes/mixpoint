@@ -19,6 +19,7 @@ import {
   type __UserPrefs as UserPrefs,
   __db as db,
 } from '~/api/models/__dbSchema'
+import { mixState } from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 
 const CACHE_LIMIT = 25
@@ -140,7 +141,7 @@ const setPrefs = async (
 }
 
 const getTrackPrefs = async (trackId: Track['id']): Promise<TrackPrefs> => {
-  const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
+  const { tracks = [], trackPrefs = [] } = mixState
   const trackIndex = tracks.indexOf(trackId)
 
   return trackPrefs[trackIndex] || {}
@@ -159,7 +160,7 @@ const setTrackPrefs = async (
   trackId: Track['id'],
   state: Partial<TrackPrefs>
 ): Promise<void> => {
-  const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
+  const { tracks = [], trackPrefs = [] } = mixState
   const trackIndex = tracks.indexOf(trackId)
 
   if (trackIndex === -1) return errorHandler('Track not found in mix state')
@@ -167,7 +168,7 @@ const setTrackPrefs = async (
   const newState = { ...(trackPrefs[trackIndex] || {}), ...state }
   trackPrefs[trackIndex] = newState
 
-  await setPrefs('mix', { tracks, trackPrefs })
+  mixState.trackPrefs = trackPrefs
 }
 
 const putMixpoint = async (
@@ -215,7 +216,7 @@ const addToMix = async (trackId: Track['id'], trackSlot?: 0 | 1) => {
   const file = await getPermission(trackId)
   if (!file) return
 
-  const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
+  const { tracks = [], trackPrefs = [] } = mixState
 
   // tracks should retain their position (ie. [0, 1])
   // is there a track in first position? if not, put this track there
@@ -226,21 +227,20 @@ const addToMix = async (trackId: Track['id'], trackSlot?: 0 | 1) => {
   tracks[index] = trackId
   trackPrefs[index] = { id: trackId }
 
-  await setPrefs('mix', { tracks, trackPrefs })
+  mixState.tracks = tracks
+  mixState.trackPrefs = trackPrefs
 }
 
 const _removeFromMix = async (id: Track['id']) => {
   // always use ejectTrack audioEvent to ensure track is removed from appState!
-  const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
+  const { tracks = [] } = mixState
 
   const index = tracks.indexOf(id)
 
   if (index > -1) {
-    delete tracks[index]
-    delete trackPrefs[index]
+    delete mixState.tracks?.[index]
+    delete mixState.trackPrefs?.[index]
   }
-
-  await setPrefs('mix', { tracks, trackPrefs })
 }
 
 export type {

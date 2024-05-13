@@ -13,7 +13,6 @@ class MixpointDb extends Dexie {
   mixpoints: Dexie.Table<Mixpoint, number>
   mixes: Dexie.Table<Mix, number>
   sets: Dexie.Table<MixSet, number>
-  mixPrefs: Dexie.Table<MixPrefs>
   setPrefs: Dexie.Table<SetPrefs>
   userPrefs: Dexie.Table<UserPrefs>
   trackCache: Dexie.Table<TrackCache>
@@ -47,7 +46,6 @@ class MixpointDb extends Dexie {
     this.mixpoints = this.table('mixpoints')
     this.mixes = this.table('mixes')
     this.sets = this.table('sets')
-    this.mixPrefs = this.table('mixPrefs')
     this.setPrefs = this.table('setPrefs')
     this.userPrefs = this.table('userPrefs')
     this.trackCache = this.table('trackCache')
@@ -102,7 +100,6 @@ type Mix = {
     timestamp: number
     duration: number
   }[]
-  lastState: MixPrefs
 }
 
 // would have used "Set" but it's protected in JS, so named it MixSet instead
@@ -127,26 +124,11 @@ type TrackCache = {
   }>
 }
 
-// Note TrackPrefs is not a table. Track states are contained in MixPrefs
-type TrackPrefs = Partial<{
-  id: Track['id']
-  adjustedBpm: Track['bpm']
-  beatResolution: '1:1' | '1:2' | '1:4'
-  stemZoom: Stem
-  mixpointTime: number // seconds
-}>
-
 // State tables
 
 // Each row in a state table is a full representation of state at that point in time
 // This allows easy undo/redo of state changes by using timestamps (primary key)
 // State tables are limited to STATE_ROW_LIMIT rows (arbitrarily 100)
-
-type MixPrefs = Partial<{
-  date: Date // current mix is most recent mixPrefs
-  tracks: Track['id'][]
-  trackPrefs: TrackPrefs[]
-}>
 
 type SetPrefs = Partial<{
   date: Date
@@ -163,7 +145,6 @@ type UserPrefs = Partial<{
 
 // For state getter and setter
 type StoreTypes = {
-  mix: MixPrefs
   set: SetPrefs
   user: UserPrefs
 }
@@ -179,7 +160,7 @@ const createHooks = (table: keyof StoreTypes) => {
   })
 }
 
-const tables = ['mix', 'set', 'user'] as const
+const tables = ['set', 'user'] as const
 for (const table of tables) {
   createHooks(table)
 }
@@ -191,8 +172,6 @@ export type {
   Mixpoint as __Mixpoint,
   Effect as __Effect,
   MixSet as __MixSet,
-  TrackPrefs as __TrackPrefs,
-  MixPrefs as __MixPrefs,
   SetPrefs as __SetPrefs,
   UserPrefs as __UserPrefs,
   StoreTypes as __StoreTypes,

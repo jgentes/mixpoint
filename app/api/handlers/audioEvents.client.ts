@@ -15,7 +15,7 @@ import {
   setTrackPrefs,
   updateTrack,
 } from '~/api/handlers/dbHandlers'
-import { appState, audioState } from '~/api/models/appState.client'
+import { appState, audioState, mixState } from '~/api/models/appState.client'
 import { convertToSecs } from '~/utils/tableOps'
 
 // audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
@@ -53,7 +53,7 @@ const audioEvents = {
     let audioContext = appState.audioContext
     if (!audioContext) {
       audioContext = new AudioContext()
-      appState.audioContext = audioContext
+      appState.audioContext = ref(audioContext)
     }
 
     // gainNode is used to control volume of all stems at once
@@ -77,16 +77,15 @@ const audioEvents = {
 
     // Save waveform in audioState to track user interactions with the waveform and show progress
     if (stem && audioState[trackId]?.stems[stem]) {
-      audioState[trackId].stems[stem].gainNode = gainNode
-      audioState[trackId].stems[stem].analyserNode = analyserNode
+      audioState[trackId].stems[stem].gainNode = ref(gainNode)
+      audioState[trackId].stems[stem].analyserNode = ref(analyserNode)
     } else {
-      audioState[trackId].gainNode = gainNode
-      audioState[trackId].analyserNode = analyserNode
+      audioState[trackId].gainNode = ref(gainNode)
+      audioState[trackId].analyserNode = ref(analyserNode)
     }
   },
   onReady: async (waveform: WaveSurfer, trackId: Track['id'], stem?: Stem) => {
     // Save waveform in audioState
-    console.log('onready', trackId, stem)
     if (stem) {
       // Remove from stemsAnalyzing
       appState.stemsAnalyzing.delete(trackId)
@@ -186,7 +185,7 @@ const audioEvents = {
     delete audioState[trackId]
 
     // If this is not the last track in the mix, open drawer, otherwise the drawer will open automatically
-    const { tracks } = (await getPrefs('mix', 'tracks')) || {}
+    const tracks = mixState.tracks
     const mixViewVisible = !!tracks?.filter(t => t).length
 
     if (mixViewVisible) appState.openDrawer = true
@@ -255,7 +254,7 @@ const audioEvents = {
       const { waveform, stems } = audioState[trackId]
       if (!waveform) continue
 
-      audioState[trackId as number].playing = true
+      audioState[trackId].playing = true
 
       audioEvents.initAudioContext({
         trackId,
@@ -406,7 +405,7 @@ const audioEvents = {
 
   // crossfade handles the sliders that mix between stems or full track
   crossfade: async (sliderVal: number, stemType?: Stem) => {
-    const { tracks } = await getPrefs('mix')
+    const tracks = mixState.tracks
 
     const sliderPercent = sliderVal / 100
 

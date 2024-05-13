@@ -1,4 +1,5 @@
-import { getPrefs, useLiveQuery } from '~/api/handlers/dbHandlers'
+import { useSnapshot } from 'valtio'
+import { mixState } from '~/api/models/appState.client'
 import MixCard from '~/components/mixes/MixCard'
 import {
   CrossfaderControl,
@@ -7,7 +8,7 @@ import {
 } from '~/components/tracks/Controls'
 
 const MixView = () => {
-  const { tracks } = useLiveQuery(() => getPrefs('mix', 'tracks')) || {}
+  const { tracks } = useSnapshot(mixState)
 
   return !tracks?.length ? null : (
     <div className="flex justify-between m-4">

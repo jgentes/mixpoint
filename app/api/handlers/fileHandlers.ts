@@ -12,6 +12,7 @@ import {
   type StemState,
   appState,
   audioState,
+  mixState,
 } from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 import { processTracks } from './audioHandlers.client'
@@ -105,7 +106,7 @@ const getPermission = async (
 
 const browseFile = async (trackSlot?: 0 | 1): Promise<void> => {
   // if the track drawer isn't open and we're in mix view, open it, otherwise show file picker
-  const { tracks } = (await getPrefs('mix', 'tracks')) || {}
+  const tracks = mixState.tracks
   const mixViewVisible = !!tracks?.filter(t => t).length
 
   if (!appState.openDrawer && mixViewVisible) {

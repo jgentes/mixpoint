@@ -21,7 +21,7 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
 
   const { stemTimer = 45 } = useSnapshot(audioState[trackId])
-  const { stemState = 'selectStemDir' } = useSnapshot(audioState[trackId])
+  const { stemState } = useSnapshot(audioState[trackId])
 
   const getStemsDir = async () => {
     try {
@@ -110,7 +110,7 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
     }
   }
 
-  return stemState === 'ready' ? null : (
+  return !stemState || stemState === 'ready' ? null : (
     <div
       className="
 				border-2 border-dashed p-5 text-center cursor-pointer rounded border-default-500 bg-default-50 hover:bg-warning-500 hover:bg-opacity-10 hover:border-warning-500 active:border-warning-500 active:bg-warning-500m mb-3 h-32"

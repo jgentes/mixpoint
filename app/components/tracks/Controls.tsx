@@ -324,7 +324,7 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
     }
   }
 
-  const isPlaying = audioState[trackId]?.playing
+  const { playing } = useSnapshot(audioState[trackId])
 
   return (
     <>
@@ -343,8 +343,8 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
           icon: <SetMixpointIcon className="text-xl" />
         },
         {
-          val: isPlaying ? 'Pause' : 'Play',
-          icon: isPlaying ? (
+          val: playing ? 'Pause' : 'Play',
+          icon: playing ? (
             <PauseIcon className="text-3xl" />
           ) : (
             <PlayIcon className="text-3xl" />
@@ -355,7 +355,7 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
           icon: <NextIcon className="text-3xl" />
         }
       ].map(item => {
-        const noNudge = item.val.includes('Nudge') && !isPlaying
+        const noNudge = item.val.includes('Nudge') && !playing
 
         return (
           <Tooltip key={item.val} color="default" size="sm" content={item.val}>
@@ -565,7 +565,7 @@ const TrackTime = ({
   trackId,
   className
 }: { trackId: Track['id']; className?: string }) => {
-  const time = audioState[trackId]?.time || 0
+  const { time = 0 } = useSnapshot(audioState[trackId])
 
   return <div className={className}>{timeFormat(time)}</div>
 }

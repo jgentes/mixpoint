@@ -1,7 +1,6 @@
-import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect } from 'react'
-import { getPrefs } from '~/api/handlers/dbHandlers'
-import { appState } from '~/api/models/appState.client'
+import { useSnapshot } from 'valtio'
+import { appState, mixState } from '~/api/models/appState.client'
 import Heart from '~/components/layout/HeartIcon'
 import LeftNav from '~/components/layout/LeftNav'
 import MixView from '~/components/mixes/MixView'
@@ -9,7 +8,7 @@ import TrackDrawer from '~/components/tracks/TrackDrawer'
 import TrackTable from '~/components/tracks/TrackTable'
 
 const Main: React.FunctionComponent = () => {
-  const { tracks } = useLiveQuery(() => getPrefs('mix', 'tracks')) || {}
+  const { tracks } = useSnapshot(mixState)
   const mixViewVisible = !!tracks?.filter(t => t).length
 
   useEffect(() => {

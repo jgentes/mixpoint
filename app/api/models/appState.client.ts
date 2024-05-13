@@ -1,7 +1,7 @@
 // This file handles application state that is not persisted through page refreshes, therefore not in IndexedDB. appState is different from Prefs in that it isn't persistent.
 import type { ButtonProps } from '@nextui-org/react'
 import type { Key } from 'react'
-import { proxy } from 'valtio'
+import { proxy, subscribe } from 'valtio'
 import { devtools, proxySet } from 'valtio/utils'
 import type WaveSurfer from 'wavesurfer.js'
 import { type Stem, type Track, getPrefs } from '~/api/handlers/dbHandlers'
@@ -13,11 +13,11 @@ const audioState = proxy<{
 }>({})
 
 type AudioState = {
-  waveform?: WaveSurfer
+  waveform?: WaveSurfer // must be a valtio ref()
   playing?: boolean
   time?: number
-  gainNode?: GainNode // gain controls actual loudness of track
-  analyserNode?: AnalyserNode // analyzerNode is used for volumeMeter
+  gainNode?: GainNode // gain controls actual loudness of track, must be a ref()
+  analyserNode?: AnalyserNode // analyzerNode is used for volumeMeter, must be a ref()
   volume?: number // volume is the crossfader value
   volumeMeter?: number // value between 0 and 1
   stems: Stems
@@ -27,9 +27,9 @@ type AudioState = {
 
 type Stems = {
   [key in Stem]: Partial<{
-    waveform: WaveSurfer
-    gainNode?: GainNode // gain controls actual loudness of stem
-    analyserNode?: AnalyserNode // analyzerNode is used for volumeMeter
+    waveform: WaveSurfer // must be a valtio ref()
+    gainNode?: GainNode // gain controls actual loudness of stem, must be a ref()
+    analyserNode?: AnalyserNode // analyzerNode is used for volumeMeter, must be a ref()
     volume: number // volume is the crossfader value
     volumeMeter: number
     mute: boolean
@@ -87,26 +87,54 @@ const appState = proxy<{
   modal: { openState: false },
 })
 
+type MixPrefs = Partial<{
+  date: Date // current mix is most recent mixPrefs
+  tracks: Track['id'][]
+  trackPrefs: TrackPrefs[]
+}>
+
+type TrackPrefs = Partial<{
+  id: Track['id']
+  adjustedBpm: Track['bpm']
+  beatResolution: '1:1' | '1:2' | '1:4'
+  stemZoom: Stem
+  mixpointTime: number // seconds
+}>
+
+const mixState = proxyWithLocalStorage<MixPrefs>('mixState', {})
+
 if (Env === 'development') {
   devtools(appState, { name: 'appState', enable: true })
   devtools(audioState, { name: 'audioState', enable: true })
 }
 
-const initAudioState = async () => {
-  // Start audioState init (if we have a mix in IndexedDB)
-  const mixPrefs = await getPrefs('mix')
-  const tracks = mixPrefs.tracks?.filter(t => t)
+// const initAudioState = async () => {
+//   // Start audioState init (if we have a mix in IndexedDB)
+//   const tracks = mixPrefs.tracks?.filter(t => t)
 
-  if (tracks?.length) {
-    for (const trackId of tracks) {
-      audioState[trackId] = {
-        stems: { bass: {}, drums: {}, other: {}, vocals: {} },
-      }
-    }
-  }
+//   if (tracks?.length) {
+//     for (const trackId of tracks) {
+//       audioState[trackId] = {
+//         stems: { bass: {}, drums: {}, other: {}, vocals: {} },
+//       }
+//     }
+//   }
+// }
+
+// initAudioState()
+
+function proxyWithLocalStorage<T extends object>(key: string, initialValue: T) {
+  if (typeof window === 'undefined') return proxy(initialValue)
+  const storageItem = localStorage.getItem(key)
+
+  const state = proxy(
+    storageItem !== null ? (JSON.parse(storageItem) as T) : initialValue
+  )
+
+  subscribe(state, () => localStorage.setItem(key, JSON.stringify(state)))
+
+  return state
 }
 
-initAudioState()
-
-export { appState, audioState }
+export { appState, audioState, mixState }
 export type { AudioState, StemState, Stems }

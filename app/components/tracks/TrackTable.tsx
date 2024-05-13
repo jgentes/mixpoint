@@ -33,7 +33,7 @@ import {
   useLiveQuery
 } from '~/api/handlers/dbHandlers'
 import { browseFile } from '~/api/handlers/fileHandlers'
-import { appState } from '~/api/models/appState.client'
+import { appState, mixState } from '~/api/models/appState.client'
 import {
   AddIcon,
   AnalyzeIcon,
@@ -109,7 +109,7 @@ const TrackTable = () => {
   )
 
   const addToMixHandler = async (trackId: Track['id']) => {
-    const { tracks = [] } = await getPrefs('mix')
+    const tracks = mixState.tracks || []
 
     await addToMix(trackId)
 
@@ -119,7 +119,7 @@ const TrackTable = () => {
 
   const AddToMixButton = useCallback(
     ({ trackId }: { trackId: Track['id'] }) => {
-      const { tracks = [] } = useLiveQuery(() => getPrefs('mix')) || {}
+      const tracks = mixState.tracks || []
 
       const isInMix = tracks.includes(trackId)
 
