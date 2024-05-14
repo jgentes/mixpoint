@@ -15,6 +15,8 @@ import {
 import { timeFormat } from '~/utils/tableOps'
 
 const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
+  if (!trackId || !audioState[trackId]) return null
+
   // add to analyzing state
   appState.analyzing.add(trackId)
 
@@ -22,10 +24,10 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
     'p-0 border-1 border-divider rounded bg-default-50 overflow-hidden'
 
   const TrackHeader = () => {
+    const stemState = useSnapshot(audioState[trackId])?.stemState
+
     const { duration = 0 } =
       useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
-
-    const stemState = useSnapshot(audioState[trackId])?.stemState
 
     return (
       <div className="flex justify-between mb-2 items-center">

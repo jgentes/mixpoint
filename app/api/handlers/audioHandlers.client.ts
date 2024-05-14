@@ -1,15 +1,9 @@
 import { H } from '@highlight-run/remix/client'
 import type RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 import { guess as detectBPM } from 'web-audio-beat-detector'
-import {
-  type Track,
-  db,
-  getTrackPrefs,
-  putTracks,
-  setPrefs,
-} from '~/api/handlers/dbHandlers'
+import { type Track, db, putTracks, setPrefs } from '~/api/handlers/dbHandlers'
 import { getPermission } from '~/api/handlers/fileHandlers'
-import { appState, audioState } from '~/api/models/appState.client'
+import { appState, audioState, mixState } from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 
 // This is the main track processing workflow when files are added to the app
@@ -228,7 +222,7 @@ const calcMarkers = async (trackId: Track['id']): Promise<void> => {
 
   if (!duration) return errorHandler(`Please try adding ${name} again.`)
 
-  const { beatResolution = '1:4' } = await getTrackPrefs(trackId)
+  const { beatResolution = '1:4' } = mixState.trackPrefs[trackId] || {}
 
   const beatInterval = 60 / (bpm || 1)
   const skipLength = beatInterval * Number(beatResolution.split(':')[1])

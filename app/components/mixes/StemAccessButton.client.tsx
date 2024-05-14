@@ -18,10 +18,9 @@ import {
 import { errorHandler } from '~/utils/notifications'
 
 const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
-  if (!trackId) return null
+  if (!trackId || !audioState[trackId]) return null
 
-  const { stemTimer = 45 } = useSnapshot(audioState[trackId])
-  const { stemState } = useSnapshot(audioState[trackId])
+  const { stemState, stemTimer = 45 } = useSnapshot(audioState[trackId])
 
   const getStemsDir = async () => {
     try {

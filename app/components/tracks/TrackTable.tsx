@@ -109,18 +109,15 @@ const TrackTable = () => {
   )
 
   const addToMixHandler = async (trackId: Track['id']) => {
-    const tracks = mixState.tracks || []
-
     await addToMix(trackId)
 
     // if this is the first track in the mix, leave the drawer open
-    if (!tracks.length) appState.openDrawer = true
+    if (!mixState.tracks?.filter(t => t).length) appState.openDrawer = true
   }
 
   const AddToMixButton = useCallback(
     ({ trackId }: { trackId: Track['id'] }) => {
-      const tracks = mixState.tracks || []
-
+      const tracks = mixState.tracks
       const isInMix = tracks.includes(trackId)
 
       // Prevent user from adding a new track before previous added track finishes analyzing

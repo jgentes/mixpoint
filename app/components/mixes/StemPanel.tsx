@@ -1,14 +1,5 @@
-import { useEffect } from 'react'
 import { useSnapshot } from 'valtio'
-import type { WaveSurferOptions } from 'wavesurfer.js'
-import { audioEvents } from '~/api/handlers/audioEvents.client'
-import {
-  STEMS,
-  type Stem,
-  type Track,
-  db,
-  getTrackPrefs
-} from '~/api/handlers/dbHandlers'
+import { STEMS, type Stem, type Track } from '~/api/handlers/dbHandlers'
 import { validateTrackStemAccess } from '~/api/handlers/fileHandlers'
 import { appState, audioState } from '~/api/models/appState.client'
 import StemAccessButton from '~/components/mixes/StemAccessButton.client'
@@ -24,6 +15,8 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
   validateTrackStemAccess(trackId)
 
   const StemControls = () => {
+    if (!audioState[trackId]) return null
+
     const { stemState } = useSnapshot(audioState[trackId])
 
     console.log('stemstate: ', stemState)

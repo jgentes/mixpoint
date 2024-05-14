@@ -12,18 +12,18 @@ const audioState = proxy<{
   [trackId: Track['id']]: AudioState
 }>({})
 
-type AudioState = {
-  waveform?: WaveSurfer // must be a valtio ref()
-  playing?: boolean
-  time?: number
+type AudioState = Partial<{
+  waveform: WaveSurfer // must be a valtio ref()
+  playing: boolean
+  time: number
   gainNode?: GainNode // gain controls actual loudness of track, must be a ref()
   analyserNode?: AnalyserNode // analyzerNode is used for volumeMeter, must be a ref()
-  volume?: number // volume is the crossfader value
+  volume: number // volume is the crossfader value
   volumeMeter?: number // value between 0 and 1
   stems: Stems
-  stemState?: StemState
-  stemTimer?: number
-}
+  stemState: StemState
+  stemTimer: number
+}>
 
 type Stems = {
   [key in Stem]: Partial<{
@@ -87,41 +87,42 @@ const appState = proxy<{
   modal: { openState: false },
 })
 
-type MixPrefs = Partial<{
-  date: Date // current mix is most recent mixPrefs
-  tracks: Track['id'][]
-  trackPrefs: TrackPrefs[]
-}>
-
-type TrackPrefs = Partial<{
-  id: Track['id']
+type TrackState = Partial<{
   adjustedBpm: Track['bpm']
   beatResolution: '1:1' | '1:2' | '1:4'
   stemZoom: Stem
   mixpointTime: number // seconds
 }>
 
-const mixState = proxyWithLocalStorage<MixPrefs>('mixState', {})
+type PersistentMixState = {
+  tracks: Track['id'][]
+  trackPrefs: {
+    [trackId: Track['id']]: TrackState
+  }
+}
+
+const mixState = proxyWithLocalStorage<PersistentMixState>(
+  'mixState',
+  proxy({ tracks: [], trackPrefs: {} })
+)
 
 if (Env === 'development') {
   devtools(appState, { name: 'appState', enable: true })
   devtools(audioState, { name: 'audioState', enable: true })
 }
 
-// const initAudioState = async () => {
-//   // Start audioState init (if we have a mix in IndexedDB)
-//   const tracks = mixPrefs.tracks?.filter(t => t)
+const initAudioState = async () => {
+  // Start audioState init (if we have a mix in localstorage (valtio))
+  const tracks = mixState.tracks
 
-//   if (tracks?.length) {
-//     for (const trackId of tracks) {
-//       audioState[trackId] = {
-//         stems: { bass: {}, drums: {}, other: {}, vocals: {} },
-//       }
-//     }
-//   }
-// }
+  if (tracks?.length) {
+    for (const trackId of tracks) {
+      audioState[Number(trackId)] = {}
+    }
+  }
+}
 
-// initAudioState()
+initAudioState()
 
 function proxyWithLocalStorage<T extends object>(key: string, initialValue: T) {
   if (typeof window === 'undefined') return proxy(initialValue)
@@ -137,4 +138,4 @@ function proxyWithLocalStorage<T extends object>(key: string, initialValue: T) {
 }
 
 export { appState, audioState, mixState }
-export type { AudioState, StemState, Stems }
+export type { AudioState, StemState, Stems, TrackState }

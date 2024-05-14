@@ -18,10 +18,10 @@ import { GithubIcon, GoogleIcon } from '~/components/icons'
 import { errorHandler } from '~/utils/notifications'
 
 const LoginButton = () => {
+  const { userEmail } = useSnapshot(appState)
   const [email, setEmail] = useState('')
   const [modalState, setModalState] = useState(false)
 
-  const { userEmail } = useSnapshot(appState)
   const buttonText = userEmail ? 'Log Out' : 'Log In'
 
   const useOAuth = (provider: 'google' | 'github') => {

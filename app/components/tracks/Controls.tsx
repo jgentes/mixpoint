@@ -1,13 +1,10 @@
 import { type Key, useCallback, useEffect, useRef, useState } from 'react'
 import { audioEvents } from '~/api/handlers/audioEvents.client'
 import {
-  type MixPrefs,
   STEMS,
   type Stem,
   type Track,
-  type TrackPrefs,
   db,
-  getTrackPrefs,
   useLiveQuery
 } from '~/api/handlers/dbHandlers'
 
@@ -22,9 +19,12 @@ import {
   Tabs,
   Tooltip
 } from '@nextui-org/react'
-import { track } from '@vercel/analytics'
 import { useSnapshot } from 'valtio'
-import { audioState } from '~/api/models/appState.client'
+import {
+  audioState,
+  mixState,
+  type TrackState
+} from '~/api/models/appState.client'
 import { Waveform } from '~/api/renderWaveform.client'
 import {
   EjectIcon,
@@ -42,6 +42,7 @@ import {
 } from '~/components/icons'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
+import { mix } from 'framer-motion'
 
 const InputText = ({
   text,
@@ -169,8 +170,7 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
 const ZoomSelectControl = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
 
-  const { stemZoom = 'all' } =
-    useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
+  const { stemZoom = 'all' } = useSnapshot(mixState.trackPrefs[trackId]) || {}
 
   return (
     <Select
@@ -181,7 +181,7 @@ const ZoomSelectControl = ({ trackId }: { trackId: Track['id'] }) => {
         if (e.target.value)
           audioEvents.stemZoom(
             trackId,
-            e.target.value as TrackPrefs['stemZoom']
+            e.target.value as TrackState['stemZoom']
           )
       }}
       classNames={{
@@ -218,8 +218,7 @@ const BpmControl = ({
 
   const { bpm } = useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
 
-  const { adjustedBpm } =
-    useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
+  const { adjustedBpm } = useSnapshot(mixState.trackPrefs[trackId]) || {}
 
   return (
     <NumberControl
@@ -239,7 +238,7 @@ const OffsetControl = ({
   trackId,
   className
 }: {
-  trackId: TrackPrefs['id']
+  trackId: Track['id']
   className?: string
 }) => {
   if (!trackId) return null
@@ -264,13 +263,14 @@ const OffsetControl = ({
 const BeatResolutionControl = ({
   trackId
 }: {
-  trackId: TrackPrefs['id']
+  trackId: Track['id']
 }) => {
   if (!trackId) return null
 
   const { beatResolution = '1:4' } =
-    useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
+    useSnapshot(mixState.trackPrefs[trackId]) || {}
 
+  console.log('beatResolution: ', beatResolution)
   return (
     <Tooltip color="default" size="sm" content="Beat Resolution">
       <Tabs
@@ -288,7 +288,7 @@ const BeatResolutionControl = ({
         onSelectionChange={key =>
           audioEvents.beatResolution(
             trackId,
-            key as TrackPrefs['beatResolution']
+            key as TrackState['beatResolution']
           )
         }
       >
@@ -300,7 +300,11 @@ const BeatResolutionControl = ({
   )
 }
 
-const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
+const TrackNavControl = ({ trackId = 0 }: { trackId: Track['id'] }) => {
+  if (!trackId || !audioState[trackId]) return null
+
+  const { playing } = useSnapshot(audioState[trackId])
+
   const navEvent = (nav: string) => {
     switch (nav) {
       case 'Play':
@@ -323,8 +327,6 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
         break
     }
   }
-
-  const { playing } = useSnapshot(audioState[trackId])
 
   return (
     <>
@@ -435,8 +437,7 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) return null
 
-  const { mixpointTime } =
-    useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
+  const { mixpointTime } = useSnapshot(mixState.trackPrefs[trackId]) || {}
 
   const [mixpointVal, setMixpointVal] = useState<string>('0:00.00')
 

@@ -6,7 +6,6 @@ import {
   __EFFECTS as EFFECTS,
   type __Effect as Effect,
   type __Mix as Mix,
-  type __MixPrefs as MixPrefs,
   type __MixSet as MixSet,
   type __Mixpoint as Mixpoint,
   __STEMS as STEMS,
@@ -15,11 +14,10 @@ import {
   type __StoreTypes as StoreTypes,
   type __Track as Track,
   type __TrackCache as TrackCache,
-  type __TrackPrefs as TrackPrefs,
   type __UserPrefs as UserPrefs,
   __db as db,
 } from '~/api/models/__dbSchema'
-import { mixState } from '~/api/models/appState.client'
+import { audioState, mixState } from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 
 const CACHE_LIMIT = 25
@@ -140,35 +138,12 @@ const setPrefs = async (
   })
 }
 
-const getTrackPrefs = async (trackId: Track['id']): Promise<TrackPrefs> => {
-  const { tracks = [], trackPrefs = [] } = mixState
-  const trackIndex = tracks.indexOf(trackId)
-
-  return trackPrefs[trackIndex] || {}
-}
-
 const getTrackName = async (trackId: Track['id']) => {
   if (!trackId) return null
 
   const { name } = (await db.tracks.get(trackId)) || {}
 
   return name?.slice(0, -4) || 'Loading...'
-}
-
-// Update the state for an individual track in the mix, such as when offset is adjusted
-const setTrackPrefs = async (
-  trackId: Track['id'],
-  state: Partial<TrackPrefs>
-): Promise<void> => {
-  const { tracks = [], trackPrefs = [] } = mixState
-  const trackIndex = tracks.indexOf(trackId)
-
-  if (trackIndex === -1) return errorHandler('Track not found in mix state')
-
-  const newState = { ...(trackPrefs[trackIndex] || {}), ...state }
-  trackPrefs[trackIndex] = newState
-
-  mixState.trackPrefs = trackPrefs
 }
 
 const putMixpoint = async (
@@ -216,30 +191,30 @@ const addToMix = async (trackId: Track['id'], trackSlot?: 0 | 1) => {
   const file = await getPermission(trackId)
   if (!file) return
 
-  const { tracks = [], trackPrefs = [] } = mixState
+  const tracks = mixState.tracks
 
   // tracks should retain their position (ie. [0, 1])
   // is there a track in first position? if not, put this track there
   const index = trackSlot ?? tracks[0] ? 1 : 0
 
   // if there's already a track in this position, remove it first
-  if (tracks[index]) await audioEvents.ejectTrack(tracks[index])
-  tracks[index] = trackId
-  trackPrefs[index] = { id: trackId }
+  if (tracks[index]) {
+    await audioEvents.ejectTrack(Number(tracks[index]))
+  }
 
-  mixState.tracks = tracks
-  mixState.trackPrefs = trackPrefs
+  audioState[trackId] = {}
+
+  mixState.tracks[index] = trackId
+  mixState.trackPrefs[trackId] = {}
 }
 
 const _removeFromMix = async (id: Track['id']) => {
   // always use ejectTrack audioEvent to ensure track is removed from appState!
-  const { tracks = [] } = mixState
-
-  const index = tracks.indexOf(id)
+  const index = mixState.tracks.indexOf(id)
 
   if (index > -1) {
-    delete mixState.tracks?.[index]
-    delete mixState.trackPrefs?.[index]
+    delete mixState.tracks[index]
+    delete mixState.trackPrefs[index]
   }
 }
 
@@ -248,8 +223,6 @@ export type {
   Mix,
   Mixpoint,
   MixSet,
-  TrackPrefs,
-  MixPrefs,
   SetPrefs,
   UserPrefs,
   StoreTypes,
@@ -274,8 +247,6 @@ export {
   _removeFromMix,
   getPrefs,
   setPrefs,
-  getTrackPrefs,
   getTrackName,
-  setTrackPrefs,
   storeTrackCache,
 }

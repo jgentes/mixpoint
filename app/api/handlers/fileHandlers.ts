@@ -106,8 +106,7 @@ const getPermission = async (
 
 const browseFile = async (trackSlot?: 0 | 1): Promise<void> => {
   // if the track drawer isn't open and we're in mix view, open it, otherwise show file picker
-  const tracks = mixState.tracks
-  const mixViewVisible = !!tracks?.filter(t => t).length
+  const mixViewVisible = !!mixState.tracks?.filter(t => t).length
 
   if (!appState.openDrawer && mixViewVisible) {
     appState.openDrawer = true

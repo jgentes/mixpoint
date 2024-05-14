@@ -7,13 +7,10 @@ import { calcMarkers } from '~/api/handlers/audioHandlers.client'
 import {
   type Stem,
   type Track,
-  type TrackPrefs,
   _removeFromMix,
   db,
-  getPrefs,
-  getTrackPrefs,
-  setTrackPrefs,
   updateTrack,
+  type TrackPrefs,
 } from '~/api/handlers/dbHandlers'
 import { appState, audioState, mixState } from '~/api/models/appState.client'
 import { convertToSecs } from '~/utils/tableOps'
@@ -45,7 +42,7 @@ const audioEvents = {
 
     // Ensure this function is not called twice for the same track or stem
     const gainExists = stem
-      ? audioState[trackId]?.stems[stem as Stem]?.gainNode
+      ? audioState[trackId]?.stems?.[stem as Stem]?.gainNode
       : audioState[trackId]?.gainNode
 
     if (gainExists) return
@@ -76,8 +73,10 @@ const audioEvents = {
     )
 
     // Save waveform in audioState to track user interactions with the waveform and show progress
-    if (stem && audioState[trackId]?.stems[stem]) {
+    if (stem && audioState[trackId]?.stems?.[stem]) {
+      //@ts-ignore doesn't understand null check
       audioState[trackId].stems[stem].gainNode = ref(gainNode)
+      //@ts-ignore doesn't understand null check
       audioState[trackId].stems[stem].analyserNode = ref(analyserNode)
     } else {
       audioState[trackId].gainNode = ref(gainNode)
@@ -90,7 +89,10 @@ const audioEvents = {
       // Remove from stemsAnalyzing
       appState.stemsAnalyzing.delete(trackId)
 
-      audioState[trackId].stems[stem as Stem].waveform = ref(waveform)
+      if (audioState[trackId]?.stems?.[stem as Stem]) {
+        //@ts-ignore doesn't understand null check
+        audioState[trackId].stems[stem as Stem].waveform = ref(waveform)
+      }
     } else {
       audioState[trackId].waveform = ref(waveform)
 
@@ -98,7 +100,8 @@ const audioEvents = {
       await calcMarkers(trackId)
       const plugins = waveform.getActivePlugins()
       const regionsPlugin = plugins[0] as RegionsPlugin
-      const { mixpointTime, beatResolution = 1 } = await getTrackPrefs(trackId)
+      const { mixpointTime, beatResolution = 1 } =
+        mixState.trackPrefs[trackId] || {}
       // Adjust zoom based on previous mixPrefs
       waveform.zoom(
         beatResolution === '1:1' ? 80 : beatResolution === '1:2' ? 40 : 20
@@ -140,7 +143,7 @@ const audioEvents = {
     }
 
     // Update BPM if adjusted
-    const { adjustedBpm } = await getTrackPrefs(trackId)
+    const { adjustedBpm } = mixState.trackPrefs[trackId] || {}
     const { bpm = 1 } = (await db.tracks.get(trackId)) || {}
     const playbackRate = (adjustedBpm || bpm) / bpm
     waveform.setPlaybackRate(playbackRate)
@@ -185,8 +188,7 @@ const audioEvents = {
     delete audioState[trackId]
 
     // If this is not the last track in the mix, open drawer, otherwise the drawer will open automatically
-    const tracks = mixState.tracks
-    const mixViewVisible = !!tracks?.filter(t => t).length
+    const mixViewVisible = !!mixState.tracks?.filter(t => t).length
 
     if (mixViewVisible) appState.openDrawer = true
   },
@@ -231,7 +233,8 @@ const audioEvents = {
             if (analyserNode) {
               const vol = getVolume(analyserNode)
               volumes.push(vol)
-              if (audioState[trackId]?.stems[stem as Stem]) {
+              if (audioState[trackId]?.stems?.[stem as Stem]) {
+                //@ts-ignore doesn't understand null check
                 audioState[trackId].stems[stem as Stem].volumeMeter = vol
               }
             }
@@ -399,14 +402,12 @@ const audioEvents = {
   },
 
   seekMixpoint: async (trackId: Track['id']) => {
-    const { mixpointTime = 0 } = (await getTrackPrefs(trackId)) || {}
+    const { mixpointTime = 0 } = mixState.trackPrefs[trackId] || {}
     audioEvents.seek(trackId, mixpointTime)
   },
 
   // crossfade handles the sliders that mix between stems or full track
   crossfade: async (sliderVal: number, stemType?: Stem) => {
-    const tracks = mixState.tracks
-
     const sliderPercent = sliderVal / 100
 
     // Keep volumes at 100% when at 50% crossfade
@@ -416,8 +417,8 @@ const audioEvents = {
       Math.min(1, 1 + Math.cos((1 - sliderPercent) * Math.PI)),
     ]
 
-    if (tracks) {
-      for (const [i, track] of tracks.entries()) {
+    if (mixState.tracks.length) {
+      for (const [i, track] of mixState.tracks.entries()) {
         if (track) audioEvents.updateVolume(Number(track), volumes[i], stemType)
       }
     }
@@ -439,7 +440,8 @@ const audioEvents = {
       // (75% crossfader x 50% stem fader = 37.5% stem volume)
       const stemGain = stems[stemType]?.gainNode
       stemGain?.gain.setValueAtTime(trackVol * volume, 0)
-      if (audioState[trackId].stems[stemType]) {
+      if (audioState[trackId].stems?.[stemType]) {
+        //@ts-ignore doesn't understand null check
         audioState[trackId].stems[stemType].volume = volume
       }
       return
@@ -450,8 +452,8 @@ const audioEvents = {
       gainNode?.gain.setValueAtTime(volume, 0)
     } else if (stems) {
       for (const stem of Object.keys(stems)) {
-        const stemGain = audioState[trackId]?.stems[stem as Stem]?.gainNode
-        const stemVol = audioState[trackId]?.stems[stem as Stem]?.volume || 1
+        const stemGain = audioState[trackId]?.stems?.[stem as Stem]?.gainNode
+        const stemVol = audioState[trackId]?.stems?.[stem as Stem]?.volume || 1
 
         // adjust the gain of the stem as a percentage of the track volume
         // (75% crossfader x 50% stem fader = 37.5% stem volume)
@@ -468,8 +470,8 @@ const audioEvents = {
     const waveform = audioState[trackId]?.waveform
     if (!waveform || !beatResolution) return
 
-    // Update mixPrefs
-    await setTrackPrefs(trackId, { beatResolution })
+    // Update mixState
+    mixState.trackPrefs[trackId].beatResolution = beatResolution
 
     await calcMarkers(trackId)
 
@@ -516,8 +518,8 @@ const audioEvents = {
 
     if (playing) audioEvents.play(trackId)
 
-    // Update mixPrefs
-    await setTrackPrefs(trackId, { adjustedBpm })
+    // Update mixState
+    mixState.trackPrefs[trackId].adjustedBpm = adjustedBpm
   },
 
   offset: async (
@@ -539,12 +541,12 @@ const audioEvents = {
     audioEvents.pause(trackId)
 
     const time = audioState[trackId]?.time || 0
-    const { mixpointTime = 0 } = (await getTrackPrefs(trackId)) || {}
+    const { mixpointTime = 0 } = mixState.trackPrefs[trackId] || {}
 
     const newMixpoint = mixpoint ? convertToSecs(mixpoint) : time
     if (newMixpoint === mixpointTime) return
 
-    setTrackPrefs(trackId, { mixpointTime: newMixpoint })
+    mixState.trackPrefs[trackId].mixpointTime = newMixpoint
 
     audioEvents.seek(trackId, newMixpoint)
   },
@@ -557,7 +559,8 @@ const audioEvents = {
     if (gainNode) gainNode.gain.setValueAtTime(volume, 0)
 
     // set volume in state, which in turn will update components (volume sliders)
-    if (audioState[trackId].stems[stemType]) {
+    if (audioState[trackId].stems?.[stemType]) {
+      //@ts-ignore doesn't understand null check
       audioState[trackId].stems[stemType].volume = volume
     }
   },
@@ -570,7 +573,8 @@ const audioEvents = {
     const { gainNode, volume } = stem || {}
 
     gainNode?.gain.setValueAtTime(mute ? 0 : volume || 1, 0)
-    if (audioState[trackId].stems[stemType as Stem]) {
+    if (audioState[trackId].stems?.[stemType as Stem]) {
+      //@ts-ignore doesn't understand null check
       audioState[trackId].stems[stemType as Stem].mute = mute
     }
   },
@@ -609,9 +613,7 @@ const audioEvents = {
 
     //await initWaveform({ trackId, file })
 
-    await setTrackPrefs(trackId, {
-      stemZoom: stem === 'all' ? undefined : stem,
-    })
+    mixState.trackPrefs[trackId].stemZoom = stem === 'all' ? undefined : stem
 
     const { waveform, time = 0, playing } = audioState[trackId]
     if (waveform) {
