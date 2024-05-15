@@ -24,6 +24,7 @@ import { useSnapshot } from 'valtio'
 import {
   type MixState,
   type TrackState,
+  appState,
   audioState,
   mixState
 } from '~/api/models/appState.client'
@@ -42,6 +43,7 @@ import {
   VolumeOffIcon,
   VolumeUpIcon
 } from '~/components/icons'
+import { ProgressBar } from '~/components/layout/Loader'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
@@ -493,6 +495,22 @@ const StemControl = ({
 
   const iconStyle = 'text-xl cursor-pointer text-default-500'
 
+  const containerClass =
+    'p-0 border-1 border-divider rounded bg-default-50 overflow-hidden h-5'
+
+  const AnalyzingOverlay = () => {
+    const { stemsAnalyzing } = useSnapshot(appState)
+    const isAnalyzing = stemsAnalyzing.has(trackId)
+
+    return !isAnalyzing ? null : (
+      <div className={`${containerClass} absolute z-10 w-full top-0`}>
+        <div className="relative w-1/2 top-1/2 -mt-0.5 m-auto">
+          <ProgressBar />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex gap-2 justify-between">
       <div className="text-xs w-14 text-default-600">
@@ -500,12 +518,13 @@ const StemControl = ({
       </div>
       <div className="w-full">
         <div
-          className="p-0 border-1 border-divider rounded bg-default-50 overflow-hidden relative z-1 h-5"
+          className={`${containerClass} relative z-1`}
           onClick={e => {
-            const parent = e.currentTarget.firstElementChild as HTMLElement
+            const parent = e.currentTarget.querySelectorAll('div')[1]
             audioEvents.clickToSeek(trackId, e, parent)
           }}
         >
+          <AnalyzingOverlay />
           <Waveform trackId={trackId} stem={stemType} />
         </div>
 

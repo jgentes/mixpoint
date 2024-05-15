@@ -10,9 +10,13 @@ import {
   _removeFromMix,
   db,
   updateTrack,
-  type TrackPrefs,
 } from '~/api/handlers/dbHandlers'
-import { appState, audioState, mixState } from '~/api/models/appState.client'
+import {
+  type TrackState,
+  appState,
+  audioState,
+  mixState,
+} from '~/api/models/appState.client'
 import { convertToSecs } from '~/utils/tableOps'
 
 // audioEvent are emitted by controls (e.g. buttons) to signal changes in audio, such as Play, adjust BPM, etc and the listeners are attached to the waveform when it is rendered
@@ -465,7 +469,7 @@ const audioEvents = {
 
   beatResolution: async (
     trackId: Track['id'],
-    beatResolution: TrackPrefs['beatResolution']
+    beatResolution: TrackState['beatResolution']
   ): Promise<void> => {
     const waveform = audioState[trackId]?.waveform
     if (!waveform || !beatResolution) return
@@ -491,7 +495,7 @@ const audioEvents = {
 
   bpm: async (
     trackId: Track['id'],
-    adjustedBpm: TrackPrefs['adjustedBpm']
+    adjustedBpm: TrackState['adjustedBpm']
   ): Promise<void> => {
     const { stems, waveform, playing } = audioState[trackId]
     if (!adjustedBpm) return
@@ -590,7 +594,7 @@ const audioEvents = {
 
   stemZoom: async (
     trackId: Track['id'],
-    stem: TrackPrefs['stemZoom'] | 'all'
+    stem: TrackState['stemZoom'] | 'all'
   ) => {
     // add track to analyzing state
     appState.analyzing.add(trackId)

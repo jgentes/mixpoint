@@ -21,7 +21,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
   appState.analyzing.add(trackId)
 
   const containerClass =
-    'p-0 border-1 border-divider rounded bg-default-50 overflow-hidden'
+    'p-0 border-1 border-divider rounded bg-default-50 overflow-hidden h-20'
 
   const TrackHeader = () => {
     const { stemState } = useSnapshot(audioState[trackId])
@@ -88,7 +88,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
     const isAnalyzing = analyzing.has(trackId)
 
     return !isAnalyzing ? null : (
-      <div className={`${containerClass} absolute z-10 w-full h-20 top-0`}>
+      <div className={`${containerClass} absolute z-10 w-full top-0`}>
         <div className="relative w-1/2 top-1/2 -mt-0.5 m-auto">
           <ProgressBar />
         </div>
@@ -103,9 +103,9 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
       <MixCardOverview />
 
       <div
-        className={`${containerClass} relative h-20 z-1`}
+        className={`${containerClass} relative z-1`}
         onClick={e => {
-          const parent = e.currentTarget.firstElementChild as HTMLElement
+          const parent = e.currentTarget.querySelectorAll('div')[1]
           audioEvents.clickToSeek(trackId, e, parent)
         }}
         onWheel={e =>
