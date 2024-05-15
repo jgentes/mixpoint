@@ -19,8 +19,6 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
 
     const { stemState } = useSnapshot(audioState[trackId])
 
-    console.log('stemstate: ', stemState)
-
     return stemState !== 'ready' ? null : (
       <div className="flex flex-col gap-1 p-2 mb-3 rounded border-1 border-divider bg-background">
         {STEMS.map(stem => (

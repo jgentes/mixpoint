@@ -335,7 +335,7 @@ const audioEvents = {
 
     const { waveform, playing, time = 0 } = audioState[trackId]
     if (!waveform) return
-    console.log('seek')
+
     const currentTime = seconds ?? time
     if (playing) await audioEvents.pause(trackId)
 

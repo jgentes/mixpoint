@@ -24,7 +24,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
     'p-0 border-1 border-divider rounded bg-default-50 overflow-hidden'
 
   const TrackHeader = () => {
-    const stemState = useSnapshot(audioState[trackId])?.stemState
+    const { stemState } = useSnapshot(audioState[trackId])
 
     const { duration = 0 } =
       useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}

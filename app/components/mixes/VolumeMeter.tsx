@@ -1,4 +1,4 @@
-import { type Stem, type Track } from '~/api/handlers/dbHandlers'
+import type { Stem, Track } from '~/api/handlers/dbHandlers'
 import { audioState } from '~/api/models/appState.client'
 
 const VolumeMeter = ({
@@ -11,7 +11,7 @@ const VolumeMeter = ({
   if (!trackId) return null
 
   const volumeMeter = stemType
-    ? audioState[trackId]?.stems[stemType]?.volumeMeter || 0
+    ? audioState[trackId]?.stems?.[stemType]?.volumeMeter || 0
     : audioState[trackId]?.volumeMeter || 0
 
   return (

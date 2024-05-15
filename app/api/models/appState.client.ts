@@ -94,14 +94,14 @@ type TrackState = Partial<{
   mixpointTime: number // seconds
 }>
 
-type PersistentMixState = {
+type MixState = {
   tracks: Track['id'][]
   trackPrefs: {
     [trackId: Track['id']]: TrackState
   }
 }
 
-const mixState = proxyWithLocalStorage<PersistentMixState>(
+const mixState = proxyWithLocalStorage<MixState>(
   'mixState',
   proxy({ tracks: [], trackPrefs: {} })
 )
@@ -138,4 +138,4 @@ function proxyWithLocalStorage<T extends object>(key: string, initialValue: T) {
 }
 
 export { appState, audioState, mixState }
-export type { AudioState, StemState, Stems, TrackState }
+export type { AudioState, StemState, Stems, TrackState, MixState }

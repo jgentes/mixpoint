@@ -4,7 +4,7 @@ import {
   type Stem,
   type Track,
   db,
-  storeTrackCache
+  storeTrackCache,
 } from '~/api/handlers/dbHandlers'
 import { getStemsDirHandle } from '~/api/handlers/fileHandlers'
 import { audioState } from '~/api/models/appState.client'
@@ -36,15 +36,11 @@ const stemAudio = async (trackId: Track['id']) => {
 
   H.track('Track Stemmed')
 
-  audioState.update(state => {
-    state.stemState = 'uploadingFile'
-    state.stemTimer = 100
-  })
+  audioState[trackId].stemState = 'uploadingFile'
+  audioState[trackId].stemTimer = 100
 
   const handleErr = (msg?: string) => {
-    audioState.update(state => {
-      state.stemState = 'error'
-    })
+    audioState[trackId].stemState = 'error'
     throw errorHandler(`Error generating stems: ${msg}`)
   }
 
@@ -55,7 +51,7 @@ const stemAudio = async (trackId: Track['id']) => {
     try {
       await fetch(ENDPOINT_URL, {
         method: 'PUT',
-        body: formData
+        body: formData,
       })
     } catch (e) {
       return handleErr('Error uploading file for stem processing')
@@ -64,9 +60,7 @@ const stemAudio = async (trackId: Track['id']) => {
     // set timer for processing stems
     const { size } = (await db.tracks.get(trackId)) || {}
     // 0.03 seconds per MB
-    audioState.update(state => {
-      state.stemTimer = ((size || 1) / 1000) * 0.02
-    })
+    audioState[trackId].stemTimer = ((size || 1) / 1000) * 0.02
 
     return // started
   }
@@ -75,7 +69,7 @@ const stemAudio = async (trackId: Track['id']) => {
     return new Promise((resolve, reject) => {
       const waitForStems = async (): Promise<void> => {
         const res = await fetch(ENDPOINT_URL, {
-          method: 'HEAD'
+          method: 'HEAD',
         })
 
         if (res.status === 202) {
@@ -93,7 +87,7 @@ const stemAudio = async (trackId: Track['id']) => {
                   return {
                     name: `${FILENAME} - ${stem}.mp3`,
                     type: stem,
-                    file: await res.blob()
+                    file: await res.blob(),
                   }
                 throw new Error(await res?.text())
               })
@@ -113,22 +107,18 @@ const stemAudio = async (trackId: Track['id']) => {
   // send file to stemproxy and wait for stems
   await sendFile()
 
-  audioState.update(state => {
-    state.stemState = 'processingStems'
-  })
+  audioState[trackId].stemState = 'processingStems'
 
   // wait for stems to be generated
   const stems: StemsArray = await checkForStems()
 
-  audioState.update(state => {
-    state.stemState = 'downloadingStems'
-  })
+  audioState[trackId].stemState = 'downloadingStems'
 
   // create a new dir with name of audio file
-  let stemsDirHandle
+  let stemsDirHandle: FileSystemDirectoryHandle
   try {
     stemsDirHandle = await dirHandle.getDirectoryHandle(`${FILENAME} - stems`, {
-      create: true
+      create: true,
     })
   } catch (e) {
     throw errorHandler('Error creating directory for stems.')
@@ -136,7 +126,7 @@ const stemAudio = async (trackId: Track['id']) => {
 
   for (const { name, type, file } of stems) {
     const stemFile = await stemsDirHandle.getFileHandle(name, {
-      create: true
+      create: true,
     })
 
     const writable = await stemFile.createWritable()
@@ -150,13 +140,11 @@ const stemAudio = async (trackId: Track['id']) => {
     // store stem in cache
     await storeTrackCache({
       id: trackId,
-      stems: { [type]: { file } }
+      stems: { [type]: { file } },
     })
   }
   // give a couple of seconds before trying to render the stem waveform
-  audioState.update(state => {
-    state.stemState = 'ready'
-  })
+  audioState[trackId].stemState = 'ready'
 }
 
 export { stemAudio }
