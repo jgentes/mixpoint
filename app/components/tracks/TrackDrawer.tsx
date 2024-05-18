@@ -1,17 +1,11 @@
 import { Accordion, AccordionItem } from '@nextui-org/react'
-import { useEffect, useState } from 'react'
+import { useSnapshot } from 'valtio'
 import { appState } from '~/api/models/appState.client'
 import { ChevronIcon } from '~/components/icons'
 import TrackTable from '~/components/tracks/TrackTable'
 
 const TrackDrawer = () => {
-  const openDrawer = appState.openDrawer
-  const [trackDrawer, setTrackDrawer] = useState<string[]>([])
-
-  useEffect(
-    () => setTrackDrawer([openDrawer ? 'track-drawer' : '']),
-    [openDrawer]
-  )
+  const { openDrawer } = useSnapshot(appState)
 
   return (
     <Accordion
@@ -19,7 +13,7 @@ const TrackDrawer = () => {
       hideIndicator
       className="absolute bottom-0 p-0"
       disableAnimation
-      selectedKeys={trackDrawer}
+      selectedKeys={openDrawer ? 'all' : []}
     >
       <AccordionItem
         key="track-drawer"

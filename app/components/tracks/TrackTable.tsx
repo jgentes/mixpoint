@@ -345,7 +345,11 @@ const TrackTable = () => {
               disallowEmptySelection
               aria-label="Table columns"
               closeOnSelect={false}
-              selectedKeys={visibleColumns.size > 2 ? visibleColumns : 'all'}
+              selectedKeys={
+                visibleColumns.size > 2
+                  ? Array.from(visibleColumns).join(',')
+                  : 'all'
+              }
               selectionMode="multiple"
               onSelectionChange={keys =>
                 setPrefs('user', {
@@ -455,7 +459,7 @@ const TrackTable = () => {
         tr: ['rounded border-b-1 border-divider '],
         tbody: dragOver ? 'bg-primary-500 bg-opacity-10' : ''
       }}
-      selectedKeys={selected}
+      selectedKeys={Array.from(selected).join(',')}
       selectionMode="multiple"
       sortDescriptor={{ column: sortColumn, direction: sortDirection }}
       onSelectionChange={keys => {

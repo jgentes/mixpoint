@@ -77,11 +77,10 @@ const audioEvents = {
     )
 
     // Save waveform in audioState to track user interactions with the waveform and show progress
-    if (stem && audioState[trackId]?.stems?.[stem]) {
-      //@ts-ignore doesn't understand null check
-      audioState[trackId].stems[stem].gainNode = ref(gainNode)
-      //@ts-ignore doesn't understand null check
-      audioState[trackId].stems[stem].analyserNode = ref(analyserNode)
+    const stemState = audioState[trackId]?.stems?.[stem as Stem]
+    if (stemState) {
+      stemState.gainNode = ref(gainNode)
+      stemState.analyserNode = ref(analyserNode)
     } else {
       audioState[trackId].gainNode = ref(gainNode)
       audioState[trackId].analyserNode = ref(analyserNode)
@@ -89,14 +88,14 @@ const audioEvents = {
   },
   onReady: async (waveform: WaveSurfer, trackId: Track['id'], stem?: Stem) => {
     // Save waveform in audioState
+    console.log('onready', stem)
     if (stem) {
       // Remove from stemsAnalyzing
       appState.stemsAnalyzing.delete(trackId)
 
-      if (audioState[trackId]?.stems?.[stem as Stem]) {
-        //@ts-ignore doesn't understand null check
-        audioState[trackId].stems[stem as Stem].waveform = ref(waveform)
-      }
+      const stemState = audioState?.[trackId]?.stems?.[stem as Stem]
+
+      if (stemState) stemState.waveform = ref(waveform)
     } else {
       audioState[trackId].waveform = ref(waveform)
 
@@ -105,13 +104,16 @@ const audioEvents = {
       const plugins = waveform.getActivePlugins()
       const regionsPlugin = plugins[0] as RegionsPlugin
       const { mixpointTime, beatResolution = 1 } =
-        mixState.trackPrefs[trackId] || {}
+        mixState.trackState[trackId] || {}
+
       // Adjust zoom based on previous mixPrefs
       waveform.zoom(
         beatResolution === '1:1' ? 80 : beatResolution === '1:2' ? 40 : 20
       )
+
       // Remove analyzing overlay
       appState.analyzing.delete(trackId)
+
       // Style scrollbar (this is a workaround for https://github.com/katspaugh/wavesurfer.js/issues/2933)
       const style = document.createElement('style')
       style.textContent = `::-webkit-scrollbar {
@@ -127,9 +129,9 @@ const audioEvents = {
       	width: 15%;
       	background-clip: content-box;
       }`
-      //waveform.getWrapper().appendChild(style)
-      // add classname value to waveform.getWrapper()
+      waveform.getWrapper().appendChild(style)
       waveform.getWrapper().classList.add('wrapper')
+
       // Update time
       let time = audioState[trackId]?.time
       if (!time) {
@@ -137,17 +139,14 @@ const audioEvents = {
         audioState[trackId].time = time
       }
 
-      // if zoom is set to a stem, use the stem cache to redraw the primary waveform with the stem
-      // const { stemZoom } = (await getTrackPrefs(trackId)) || {}
-      // console.log('stemzoom:', stemZoom)
-      // if (stemZoom) audioEvents.stemZoom(trackId, stemZoom)
+      if (audioState[trackId].playing) audioEvents.play(trackId)
 
       // account for resize of browser window
       waveform.on('redraw', () => audioEvents.seek(trackId))
     }
 
     // Update BPM if adjusted
-    const { adjustedBpm } = mixState.trackPrefs[trackId] || {}
+    const { adjustedBpm } = mixState.trackState[trackId] || {}
     const { bpm = 1 } = (await db.tracks.get(trackId)) || {}
     const playbackRate = (adjustedBpm || bpm) / bpm
     waveform.setPlaybackRate(playbackRate)
@@ -237,10 +236,9 @@ const audioEvents = {
             if (analyserNode) {
               const vol = getVolume(analyserNode)
               volumes.push(vol)
-              if (audioState[trackId]?.stems?.[stem as Stem]) {
-                //@ts-ignore doesn't understand null check
-                audioState[trackId].stems[stem as Stem].volumeMeter = vol
-              }
+
+              const stemState = audioState[trackId]?.stems?.[stem as Stem]
+              if (stemState) stemState.volumeMeter = vol
             }
           }
           waveform = stems.drums?.waveform
@@ -406,7 +404,7 @@ const audioEvents = {
   },
 
   seekMixpoint: async (trackId: Track['id']) => {
-    const { mixpointTime = 0 } = mixState.trackPrefs[trackId] || {}
+    const { mixpointTime = 0 } = mixState.trackState[trackId] || {}
     audioEvents.seek(trackId, mixpointTime)
   },
 
@@ -444,10 +442,9 @@ const audioEvents = {
       // (75% crossfader x 50% stem fader = 37.5% stem volume)
       const stemGain = stems[stemType]?.gainNode
       stemGain?.gain.setValueAtTime(trackVol * volume, 0)
-      if (audioState[trackId].stems?.[stemType]) {
-        //@ts-ignore doesn't understand null check
-        audioState[trackId].stems[stemType].volume = volume
-      }
+
+      const stemState = audioState[trackId].stems?.[stemType]
+      if (stemState) stemState.volume = volume
       return
     }
 
@@ -475,7 +472,7 @@ const audioEvents = {
     if (!waveform || !beatResolution) return
 
     // Update mixState
-    mixState.trackPrefs[trackId].beatResolution = beatResolution
+    mixState.trackState[trackId].beatResolution = beatResolution
 
     await calcMarkers(trackId)
 
@@ -523,7 +520,7 @@ const audioEvents = {
     if (playing) audioEvents.play(trackId)
 
     // Update mixState
-    mixState.trackPrefs[trackId].adjustedBpm = adjustedBpm
+    mixState.trackState[trackId].adjustedBpm = adjustedBpm
   },
 
   offset: async (
@@ -545,12 +542,12 @@ const audioEvents = {
     audioEvents.pause(trackId)
 
     const time = audioState[trackId]?.time || 0
-    const { mixpointTime = 0 } = mixState.trackPrefs[trackId] || {}
+    const { mixpointTime = 0 } = mixState.trackState[trackId] || {}
 
     const newMixpoint = mixpoint ? convertToSecs(mixpoint) : time
     if (newMixpoint === mixpointTime) return
 
-    mixState.trackPrefs[trackId].mixpointTime = newMixpoint
+    mixState.trackState[trackId].mixpointTime = newMixpoint
 
     audioEvents.seek(trackId, newMixpoint)
   },
@@ -563,10 +560,8 @@ const audioEvents = {
     if (gainNode) gainNode.gain.setValueAtTime(volume, 0)
 
     // set volume in state, which in turn will update components (volume sliders)
-    if (audioState[trackId].stems?.[stemType]) {
-      //@ts-ignore doesn't understand null check
-      audioState[trackId].stems[stemType].volume = volume
-    }
+    const stemState = audioState[trackId].stems?.[stemType]
+    if (stemState) stemState.volume = volume
   },
 
   stemMuteToggle: (trackId: Track['id'], stemType: Stem, mute: boolean) => {
@@ -577,10 +572,9 @@ const audioEvents = {
     const { gainNode, volume } = stem || {}
 
     gainNode?.gain.setValueAtTime(mute ? 0 : volume || 1, 0)
-    if (audioState[trackId].stems?.[stemType as Stem]) {
-      //@ts-ignore doesn't understand null check
-      audioState[trackId].stems[stemType as Stem].mute = mute
-    }
+
+    const stemState = audioState[trackId].stems?.[stemType]
+    if (stemState) stemState.mute = mute
   },
 
   stemSoloToggle: (trackId: Track['id'], stem: Stem, solo: boolean) => {
@@ -589,41 +583,6 @@ const audioEvents = {
 
     for (const s of Object.keys(stems)) {
       if (s !== stem) audioEvents.stemMuteToggle(trackId, s as Stem, solo)
-    }
-  },
-
-  stemZoom: async (
-    trackId: Track['id'],
-    stem: TrackState['stemZoom'] | 'all'
-  ) => {
-    // add track to analyzing state
-    appState.analyzing.add(trackId)
-
-    const oldWaveform = audioState[trackId]?.waveform
-    if (oldWaveform) audioEvents.destroy(trackId)
-
-    let file: File | undefined
-
-    if (stem === 'all') {
-      ;({ file } = (await db.trackCache.get(trackId)) || {})
-    } else {
-      const { stems } = (await db.trackCache.get(trackId)) || {}
-      if (!stems) return
-
-      file = stems[stem as Stem]?.file
-    }
-
-    if (!file) return
-
-    //await initWaveform({ trackId, file })
-
-    mixState.trackPrefs[trackId].stemZoom = stem === 'all' ? undefined : stem
-
-    const { waveform, time = 0, playing } = audioState[trackId]
-    if (waveform) {
-      waveform.setVolume(0)
-      waveform.setTime(time)
-      if (playing) waveform.play()
     }
   },
 

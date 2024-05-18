@@ -171,21 +171,20 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
 }
 
 const ZoomSelectControl = ({ trackId }: { trackId: Track['id'] }) => {
-  if (!trackId || !mixState.trackPrefs[trackId]) return null
+  if (!trackId || !mixState.trackState[trackId]) return null
 
-  const { stemZoom = 'all' } = useSnapshot(mixState.trackPrefs[trackId]) || {}
+  const { stemZoom } = useSnapshot(mixState.trackState[trackId]) || {}
 
   return (
     <Select
       size="sm"
-      selectedKeys={[stemZoom]}
+      selectedKeys={[stemZoom || 'all']}
       aria-label="Stem Zoom"
       onChange={e => {
+        const zoomVal = e.target.value as Stem | 'all'
         if (e.target.value)
-          audioEvents.stemZoom(
-            trackId,
-            e.target.value as TrackState['stemZoom']
-          )
+          mixState.trackState[trackId].stemZoom =
+            zoomVal === 'all' ? undefined : zoomVal
       }}
       classNames={{
         mainWrapper: 'w-24 m-auto',
@@ -217,9 +216,9 @@ const BpmControl = ({
   trackId: Track['id']
   className: string
 }) => {
-  if (!trackId || !mixState.trackPrefs[trackId]) return null
+  if (!trackId || !mixState.trackState[trackId]) return null
 
-  const { adjustedBpm } = useSnapshot(mixState.trackPrefs[trackId]) || {}
+  const { adjustedBpm } = useSnapshot(mixState.trackState[trackId]) || {}
 
   const { bpm } = useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
 
@@ -268,10 +267,10 @@ const BeatResolutionControl = ({
 }: {
   trackId: Track['id']
 }) => {
-  if (!trackId || !mixState.trackPrefs[trackId]) return null
+  if (!trackId || !mixState.trackState[trackId]) return null
 
   const { beatResolution = '1:4' } =
-    useSnapshot(mixState.trackPrefs[trackId]) || {}
+    useSnapshot(mixState.trackState[trackId]) || {}
 
   return (
     <Tooltip color="default" size="sm" content="Beat Resolution">
@@ -437,9 +436,9 @@ const MixControl = ({ tracks }: { tracks: MixState['tracks'] }) => {
 }
 
 const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
-  if (!trackId || !mixState.trackPrefs[trackId]) return null
+  if (!trackId || !mixState.trackState[trackId]) return null
 
-  const { mixpointTime } = useSnapshot(mixState.trackPrefs[trackId]) || {}
+  const { mixpointTime } = useSnapshot(mixState.trackState[trackId]) || {}
 
   const [mixpointVal, setMixpointVal] = useState<string>('0:00.00')
 

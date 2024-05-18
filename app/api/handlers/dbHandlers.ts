@@ -205,7 +205,7 @@ const addToMix = async (trackId: Track['id'], trackSlot?: 0 | 1) => {
   audioState[trackId] = {}
 
   mixState.tracks[index] = trackId
-  mixState.trackPrefs[trackId] = {}
+  mixState.trackState[trackId] = {}
 }
 
 const _removeFromMix = async (id: Track['id']) => {
@@ -214,7 +214,7 @@ const _removeFromMix = async (id: Track['id']) => {
 
   if (index > -1) {
     delete mixState.tracks[index]
-    delete mixState.trackPrefs[index]
+    delete mixState.trackState[index]
   }
 }
 

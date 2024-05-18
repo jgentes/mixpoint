@@ -1,7 +1,8 @@
+import { useRef } from 'react'
 import { useSnapshot } from 'valtio'
 import { audioEvents } from '~/api/handlers/audioEvents.client'
 import { type Track, db, useLiveQuery } from '~/api/handlers/dbHandlers'
-import { appState, audioState } from '~/api/models/appState.client'
+import { appState, audioState, mixState } from '~/api/models/appState.client'
 import { Waveform } from '~/api/renderWaveform.client'
 import { ProgressBar } from '~/components/layout/Loader'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
@@ -16,9 +17,7 @@ import { timeFormat } from '~/utils/tableOps'
 
 const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId || !audioState[trackId]) return null
-
-  // add to analyzing state
-  appState.analyzing.add(trackId)
+  const overviewContainer = useRef<HTMLDivElement | null>(null)
 
   const containerClass =
     'p-0 border-1 border-divider rounded bg-default-50 overflow-hidden h-20'
@@ -57,7 +56,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
 
     return (
       <div
-        id={`overview-container_${trackId}`}
+        ref={overviewContainer}
         className={`${loaderClassNames} relative z-1 py-1 mb-3 h-8`}
         onClick={e => {
           const parents = e.currentTarget.firstElementChild as HTMLElement
@@ -96,6 +95,18 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
     )
   }
 
+  const TrackOrStem = () => {
+    if (!mixState.trackState[trackId]) return null
+
+    // rerender if stemZoom changes
+    useSnapshot(mixState.trackState[trackId]).stemZoom
+
+    // add to analyzing state
+    appState.analyzing.add(trackId)
+
+    return <Waveform trackId={trackId} overviewRef={overviewContainer} />
+  }
+
   return (
     <>
       <TrackHeader />
@@ -113,7 +124,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
         }
       >
         <AnalyzingOverlay />
-        <Waveform trackId={trackId} />
+        <TrackOrStem />
       </div>
 
       <VolumeMeter trackId={trackId} />

@@ -222,7 +222,7 @@ const calcMarkers = async (trackId: Track['id']): Promise<void> => {
 
   if (!duration) return errorHandler(`Please try adding ${name} again.`)
 
-  const { beatResolution = '1:4' } = mixState.trackPrefs[trackId] || {}
+  const { beatResolution = '1:4' } = mixState.trackState[trackId] || {}
 
   const beatInterval = 60 / (bpm || 1)
   const skipLength = beatInterval * Number(beatResolution.split(':')[1])

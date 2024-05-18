@@ -4,7 +4,7 @@ import type { Key } from 'react'
 import { proxy, subscribe } from 'valtio'
 import { devtools, proxySet } from 'valtio/utils'
 import type WaveSurfer from 'wavesurfer.js'
-import { type Stem, type Track, getPrefs } from '~/api/handlers/dbHandlers'
+import type { Stem, Track } from '~/api/handlers/dbHandlers'
 import { Env } from '~/utils/env'
 
 // AudioState captures ephemeral state of a mix, while persistent state is stored in IndexedDB
@@ -96,14 +96,15 @@ type TrackState = Partial<{
 
 type MixState = {
   tracks: Track['id'][]
-  trackPrefs: {
+  trackState: {
     [trackId: Track['id']]: TrackState
   }
 }
 
+// TODO: add a way to clear mixState via button on catchboundary
 const mixState = proxyWithLocalStorage<MixState>(
   'mixState',
-  proxy({ tracks: [], trackPrefs: {} })
+  proxy({ tracks: [], trackState: {} })
 )
 
 if (Env === 'development') {
