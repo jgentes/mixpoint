@@ -23,7 +23,7 @@ const ConfirmModal = () => {
     onConfirm = () => closeModal(),
     onCancel = () => closeModal(),
     openState
-  } = useSnapshot(appState.modal)
+  } = useSnapshot(appState).modal
 
   return (
     <Modal

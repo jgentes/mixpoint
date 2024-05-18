@@ -1,10 +1,6 @@
 // This file initializes Dexie (indexDB), defines the schema and creates tables
 // Be sure to create MIGRATIONS for any changes to SCHEMA!
 import Dexie from 'dexie'
-import type { Key } from 'react'
-
-// eventually allow the user to change these
-const STATE_ROW_LIMIT = 100
 
 // from https://dexie.org/docs/Typescript
 
@@ -13,8 +9,6 @@ class MixpointDb extends Dexie {
   mixpoints: Dexie.Table<Mixpoint, number>
   mixes: Dexie.Table<Mix, number>
   sets: Dexie.Table<MixSet, number>
-  setPrefs: Dexie.Table<SetPrefs>
-  userPrefs: Dexie.Table<UserPrefs>
   trackCache: Dexie.Table<TrackCache>
 
   constructor() {
@@ -24,9 +18,6 @@ class MixpointDb extends Dexie {
       mixpoints: '++id',
       mixes: '++id, tracks',
       sets: '++id, mixes',
-      mixPrefs: 'date',
-      setPrefs: 'date',
-      userPrefs: 'date',
       trackCache: 'id',
     })
     // example migration:
@@ -46,8 +37,6 @@ class MixpointDb extends Dexie {
     this.mixpoints = this.table('mixpoints')
     this.mixes = this.table('mixes')
     this.sets = this.table('sets')
-    this.setPrefs = this.table('setPrefs')
-    this.userPrefs = this.table('userPrefs')
     this.trackCache = this.table('trackCache')
   }
 }
@@ -124,47 +113,6 @@ type TrackCache = {
   }>
 }
 
-// State tables
-
-// Each row in a state table is a full representation of state at that point in time
-// This allows easy undo/redo of state changes by using timestamps (primary key)
-// State tables are limited to STATE_ROW_LIMIT rows (arbitrarily 100)
-
-type SetPrefs = Partial<{
-  date: Date
-  setId: MixSet['id']
-}>
-
-type UserPrefs = Partial<{
-  date: Date
-  sortDirection: 'ascending' | 'descending'
-  sortColumn: Key
-  visibleColumns: Set<Key> // track table visible columns
-  stemsDirHandle: FileSystemDirectoryHandle // local folder on file system to store stems
-}>
-
-// For state getter and setter
-type StoreTypes = {
-  set: SetPrefs
-  user: UserPrefs
-}
-
-// db hooks to limit the number of rows in a state table
-const createHooks = (table: keyof StoreTypes) => {
-  db[`${table}Prefs`].hook('creating', async () => {
-    const count = await db[`${table}Prefs`].count()
-    if (count > STATE_ROW_LIMIT) {
-      const oldest = await db[`${table}Prefs`].orderBy('date').first()
-      if (oldest) db[`${table}Prefs`].delete(oldest.date)
-    }
-  })
-}
-
-const tables = ['set', 'user'] as const
-for (const table of tables) {
-  createHooks(table)
-}
-
 // Avoid having two files export same type names
 export type {
   Track as __Track,
@@ -172,9 +120,6 @@ export type {
   Mixpoint as __Mixpoint,
   Effect as __Effect,
   MixSet as __MixSet,
-  SetPrefs as __SetPrefs,
-  UserPrefs as __UserPrefs,
-  StoreTypes as __StoreTypes,
   TrackCache as __TrackCache,
   Stem as __Stem,
 }

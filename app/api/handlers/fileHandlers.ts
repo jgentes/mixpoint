@@ -4,8 +4,6 @@ import {
   type TrackCache,
   addToMix,
   db,
-  getPrefs,
-  setPrefs,
   storeTrackCache,
 } from '~/api/handlers/dbHandlers'
 import {
@@ -13,6 +11,7 @@ import {
   appState,
   audioState,
   mixState,
+  userState,
 } from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 import { processTracks } from './audioHandlers.client'
@@ -134,7 +133,7 @@ const browseFile = async (trackSlot?: 0 | 1): Promise<void> => {
 const getStemsDirHandle = async (): Promise<
   FileSystemDirectoryHandle | undefined
 > => {
-  const { stemsDirHandle } = await getPrefs('user')
+  const { stemsDirHandle } = userState
 
   if (stemsDirHandle) {
     // check if we have permission
@@ -165,7 +164,7 @@ const getStemsDirHandle = async (): Promise<
     (await newStemsDirHandle.queryPermission({ mode: 'readwrite' })) ===
     'granted'
   ) {
-    await setPrefs('user', { stemsDirHandle: newStemsDirHandle })
+    userState.stemsDirHandle = newStemsDirHandle
     return newStemsDirHandle
   }
 }
@@ -183,7 +182,7 @@ const validateTrackStemAccess = async (
     if (stems) return 'ready'
 
     // do we have a stem dir defined?
-    const { stemsDirHandle } = await getPrefs('user')
+    const { stemsDirHandle } = userState
     if (!stemsDirHandle) return 'selectStemDir'
 
     // do we have access to the stem dir?

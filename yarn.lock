@@ -2023,7 +2023,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nextui-org/react@npm:^2.2.9":
+"@nextui-org/react@npm:^2.3.6":
   version: 2.3.6
   resolution: "@nextui-org/react@npm:2.3.6"
   dependencies:
@@ -9172,7 +9172,7 @@ __metadata:
     "@biomejs/biome": "npm:1.7.2"
     "@fontsource/public-sans": "npm:~4.5.11"
     "@highlight-run/remix": "npm:^2.0.24"
-    "@nextui-org/react": "npm:^2.2.9"
+    "@nextui-org/react": "npm:^2.3.6"
     "@remix-run/dev": "npm:^2.9.1"
     "@remix-run/react": "npm:^2.8.1"
     "@remix-run/serve": "npm:^2.8.0"

@@ -1,9 +1,14 @@
 import { H } from '@highlight-run/remix/client'
 import type RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 import { guess as detectBPM } from 'web-audio-beat-detector'
-import { type Track, db, putTracks, setPrefs } from '~/api/handlers/dbHandlers'
+import { type Track, db, putTracks } from '~/api/handlers/dbHandlers'
 import { getPermission } from '~/api/handlers/fileHandlers'
-import { appState, audioState, mixState } from '~/api/models/appState.client'
+import {
+  appState,
+  audioState,
+  mixState,
+  userState,
+} from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 
 // This is the main track processing workflow when files are added to the app
@@ -28,10 +33,8 @@ async function getTracksRecursively(
   const trackArray: partialTrack[] = []
 
   // Change sort order to lastModified so new tracks are visible at the top
-  await setPrefs('user', {
-    sortColumn: 'lastModified',
-    sortDirection: 'descending',
-  })
+  userState.sortColumn = 'lastModified'
+  userState.sortDirection = 'descending'
 
   const filesToTracks = async (
     fileOrDirectoryHandle: FileSystemFileHandle | FileSystemDirectoryHandle,
@@ -112,10 +115,8 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
   for (const track of tracks) {
     if (!sorted) {
       // Change sort order to lastModified so new tracks are visible at the top
-      await setPrefs('user', {
-        sortColumn: 'lastModified',
-        sortDirection: 'descending',
-      })
+      userState.sortColumn = 'lastModified'
+      userState.sortDirection = 'descending'
       appState.page = 1
       sorted = true
     }

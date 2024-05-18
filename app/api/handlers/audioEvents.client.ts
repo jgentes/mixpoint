@@ -104,7 +104,7 @@ const audioEvents = {
       const { mixpointTime, beatResolution = 1 } =
         mixState.trackState[trackId] || {}
 
-      // Adjust zoom based on previous mixPrefs
+      // Adjust zoom based on previous mixState
       waveform.zoom(
         beatResolution === '1:1' ? 80 : beatResolution === '1:2' ? 40 : 20
       )
@@ -313,7 +313,8 @@ const audioEvents = {
     }
 
     for (const id of trackIds) {
-      const stems = audioState[Number(id)].stems
+      if (!audioState[Number(id)]) continue
+      const stems = audioState[Number(id)]?.stems
       if (stems) {
         for (const [stem, { waveform }] of Object.entries(stems)) {
           // set volume meter to zero for the stem

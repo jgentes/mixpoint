@@ -27,13 +27,11 @@ import {
   addToMix,
   db,
   getDirtyTracks,
-  getPrefs,
   removeTracks,
-  setPrefs,
   useLiveQuery
 } from '~/api/handlers/dbHandlers'
 import { browseFile } from '~/api/handlers/fileHandlers'
-import { appState, mixState } from '~/api/models/appState.client'
+import { appState, mixState, userState } from '~/api/models/appState.client'
 import {
   AddIcon,
   AnalyzeIcon,
@@ -55,11 +53,12 @@ const TrackTable = () => {
   const [dragOver, setDragOver] = useState(false)
 
   // Retrieve sort state from database
+
   const {
     sortDirection = 'descending',
     sortColumn = 'lastModified',
     visibleColumns = new Set<string>()
-  } = useLiveQuery(() => getPrefs('user')) || {}
+  } = useSnapshot(userState) || {}
 
   // Monitor db for track updates (and filter using searchquery if present)
   const trackCount = useLiveQuery(() => db.tracks.count())
@@ -351,11 +350,9 @@ const TrackTable = () => {
                   : 'all'
               }
               selectionMode="multiple"
-              onSelectionChange={keys =>
-                setPrefs('user', {
-                  visibleColumns: new Set(['name', 'action', ...keys])
-                })
-              }
+              onSelectionChange={keys => {
+                userState.visibleColumns = new Set(['name', 'action', ...keys])
+              }}
             >
               {columns
                 .filter(
@@ -459,15 +456,16 @@ const TrackTable = () => {
         tr: ['rounded border-b-1 border-divider '],
         tbody: dragOver ? 'bg-primary-500 bg-opacity-10' : ''
       }}
-      selectedKeys={Array.from(selected).join(',')}
+      selectedKeys={selected}
       selectionMode="multiple"
       sortDescriptor={{ column: sortColumn, direction: sortDirection }}
       onSelectionChange={keys => {
         appState.selected = keys === 'all' ? currentPageTracks() : keys
       }}
-      onSortChange={({ column, direction }) =>
-        setPrefs('user', { sortDirection: direction, sortColumn: column })
-      }
+      onSortChange={({ column, direction }) => {
+        userState.sortColumn = column
+        userState.sortDirection = direction
+      }}
       onDrop={e => {
         e.preventDefault()
         itemsDropped(e.dataTransfer.items)

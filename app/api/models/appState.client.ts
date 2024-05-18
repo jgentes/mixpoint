@@ -1,4 +1,4 @@
-// This file handles application state that is not persisted through page refreshes, therefore not in IndexedDB. appState is different from Prefs in that it isn't persistent.
+// This file handles application state that may be persisted to local storage.
 import type { ButtonProps } from '@nextui-org/react'
 import type { Key } from 'react'
 import { proxy, subscribe } from 'valtio'
@@ -101,14 +101,25 @@ type MixState = {
   }
 }
 
+type UserState = Partial<{
+  sortDirection: 'ascending' | 'descending'
+  sortColumn: Key
+  visibleColumns: Set<Key> // track table visible columns
+  stemsDirHandle: FileSystemDirectoryHandle // local folder on file system to store stems
+}>
+
 // TODO: add a way to clear mixState via button on catchboundary
 const mixState = proxyWithLocalStorage<MixState>(
   'mixState',
   proxy({ tracks: [], trackState: {} })
 )
 
+const userState = proxyWithLocalStorage<UserState>('userState', proxy({}))
+
 if (Env === 'development') {
   devtools(appState, { name: 'appState', enable: true })
+  devtools(mixState, { name: 'appState', enable: true })
+  devtools(userState, { name: 'userState', enable: true })
   devtools(audioState, { name: 'audioState', enable: true })
 }
 
@@ -138,5 +149,5 @@ function proxyWithLocalStorage<T extends object>(key: string, initialValue: T) {
   return state
 }
 
-export { appState, audioState, mixState }
-export type { AudioState, StemState, Stems, TrackState, MixState }
+export { appState, audioState, mixState, userState }
+export type { AudioState, StemState, Stems, TrackState, MixState, UserState }

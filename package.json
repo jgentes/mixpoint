@@ -12,7 +12,7 @@
   "dependencies": {
     "@fontsource/public-sans": "~4.5.11",
     "@highlight-run/remix": "^2.0.24",
-    "@nextui-org/react": "^2.2.9",
+    "@nextui-org/react": "^2.3.6",
     "@remix-run/react": "^2.8.1",
     "@vercel/analytics": "^1.1.2",
     "@wavesurfer/react": "^1.0.5",

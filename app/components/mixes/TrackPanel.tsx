@@ -48,7 +48,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
   }
 
   const MixCardOverview = () => {
-    const analyzing = useSnapshot(appState.analyzing)
+    const { analyzing } = useSnapshot(appState)
     const isAnalyzing = analyzing.has(trackId)
 
     const loaderClassNames =
@@ -83,7 +83,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
   )
 
   const AnalyzingOverlay = () => {
-    const analyzing = useSnapshot(appState.analyzing)
+    const { analyzing } = useSnapshot(appState)
     const isAnalyzing = analyzing.has(trackId)
 
     return !isAnalyzing ? null : (

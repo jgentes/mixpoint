@@ -9,12 +9,9 @@ import {
   type __MixSet as MixSet,
   type __Mixpoint as Mixpoint,
   __STEMS as STEMS,
-  type __SetPrefs as SetPrefs,
   type __Stem as Stem,
-  type __StoreTypes as StoreTypes,
   type __Track as Track,
   type __TrackCache as TrackCache,
-  type __UserPrefs as UserPrefs,
   __db as db,
 } from '~/api/models/__dbSchema'
 import { audioState, mixState } from '~/api/models/appState.client'
@@ -112,32 +109,6 @@ const getMix = async (id: number): Promise<Mix | undefined> =>
 
 const removeMix = async (id: number): Promise<void> => await db.mixes.delete(id)
 
-// state getter and setter
-
-// this function is a work of typescript wizardry
-const getPrefs = async <T extends keyof StoreTypes>(
-  table: T,
-  key?: keyof StoreTypes[T]
-): Promise<Partial<StoreTypes[T]>> => {
-  const state =
-    ((await db[`${table}Prefs`].orderBy('date').last()) as StoreTypes[T]) || {}
-
-  return key ? ({ [key]: state[key] } as Partial<StoreTypes[T]>) : state
-}
-
-const setPrefs = async (
-  table: keyof StoreTypes,
-  state: Partial<StoreTypes[typeof table]>
-): Promise<void> => {
-  const prevState = await getPrefs(table)
-
-  await db[`${table}Prefs`].put({
-    ...prevState,
-    ...state,
-    date: new Date(),
-  })
-}
-
 const getTrackName = async (trackId: Track['id']) => {
   if (!trackId) return null
 
@@ -218,18 +189,7 @@ const _removeFromMix = async (id: Track['id']) => {
   }
 }
 
-export type {
-  Track,
-  Mix,
-  Mixpoint,
-  MixSet,
-  SetPrefs,
-  UserPrefs,
-  StoreTypes,
-  TrackCache,
-  Effect,
-  Stem,
-}
+export type { Track, Mix, Mixpoint, MixSet, TrackCache, Effect, Stem }
 export {
   db,
   STEMS,
@@ -245,8 +205,6 @@ export {
   removeMix,
   addToMix,
   _removeFromMix,
-  getPrefs,
-  setPrefs,
   getTrackName,
   storeTrackCache,
 }
