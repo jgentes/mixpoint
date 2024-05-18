@@ -97,8 +97,6 @@ const audioEvents = {
 
       if (stemState) stemState.waveform = ref(waveform)
     } else {
-      audioState[trackId].waveform = ref(waveform)
-
       // Generate beat markers (regions) and apply them to waveform
       await calcMarkers(trackId)
       const plugins = waveform.getActivePlugins()
@@ -139,10 +137,14 @@ const audioEvents = {
         audioState[trackId].time = time
       }
 
-      if (audioState[trackId].playing) audioEvents.play(trackId)
+      waveform.setTime(time)
 
       // account for resize of browser window
       waveform.on('redraw', () => audioEvents.seek(trackId))
+
+      audioState[trackId].waveform = ref(waveform)
+
+      if (audioState[trackId].playing) audioEvents.play(trackId)
     }
 
     // Update BPM if adjusted
@@ -476,6 +478,9 @@ const audioEvents = {
 
     await calcMarkers(trackId)
 
+    // Remove event listener to prevent audio stutter on zoom if playing
+    waveform.un('redraw', () => audioEvents.seek(trackId))
+
     // Adjust zoom
     switch (beatResolution) {
       case '1:4':
@@ -488,6 +493,9 @@ const audioEvents = {
         waveform.zoom(80)
         break
     }
+
+    // Add the listener back on
+    waveform.on('redraw', () => audioEvents.seek(trackId))
   },
 
   bpm: async (
