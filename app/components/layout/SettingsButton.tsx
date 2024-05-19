@@ -76,7 +76,7 @@ const SettingsButton = ({ className }: { className?: string }) => (
         key="indexeddb"
         className="text-danger"
         color="danger"
-        description="Fix everything else"
+        description="Reset Mixpoint to starting state"
       >
         Clear IndexedDB
       </DropdownItem>

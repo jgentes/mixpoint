@@ -23,19 +23,16 @@ const InitialLoader = ({ message }: { message?: string }) => {
       className="fixed top-0 left-0 w-screen h-screen flex justify-center items-center text-xs z-50"
     >
       {!message ? null : (
-        <>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="fixed top-12"
-            onClick={() => {
-              window.location.href = '/'
-            }}
-          >
-            Go Back
-          </Button>
-          <SettingsButton className="fixed top-12" />
-        </>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="fixed top-12"
+          onClick={() => {
+            window.location.href = '/'
+          }}
+        >
+          Go Back
+        </Button>
       )}
       <div style={{ minWidth: '190px', maxWidth: '30%' }}>
         <div className="flex pb-1">
@@ -45,6 +42,11 @@ const InitialLoader = ({ message }: { message?: string }) => {
         <ProgressBar message={message} />
         <p className="pt-1">{message || 'Loading...'}</p>
       </div>
+      {!message ? null : (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2">
+          <SettingsButton />
+        </div>
+      )}
     </div>
   )
 }
