@@ -20,7 +20,7 @@ const Waveform = ({
   // an Audio object is required for Wavesurfer to use Web Audio
   const [file, setFile] = useState<File | undefined>()
 
-  const { stemZoom } = mixState.trackState[trackId]
+  const { stemZoom } = mixState.trackState?.[trackId] || {}
 
   useEffect(() => {
     const getFile = async () =>

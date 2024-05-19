@@ -1,4 +1,4 @@
-import { type SVGProps } from 'react'
+import type { SVGProps } from 'react'
 
 // Icons come primarily from https://icon-sets.iconify.design/material-symbols-light
 const createIcon = (d: string) => {
@@ -94,6 +94,9 @@ const VolumeUpIcon = createIcon(
 const UploadFolderIcon = createIcon(
   'M11.5 16.23h1v-4.7l2.12 2.12l.707-.708L12 9.615l-3.288 3.289l.707.708L11.5 11.53zM4.615 19q-.69 0-1.152-.462Q3 18.075 3 17.385V6.615q0-.69.463-1.152Q3.925 5 4.615 5h4.981l2 2h7.789q.69 0 1.152.463q.463.462.463 1.152v8.77q0 .69-.462 1.152q-.463.463-1.153.463zm0-1h14.77q.269 0 .442-.173t.173-.442v-8.77q0-.269-.173-.442T19.385 8h-8.19l-2-2h-4.58q-.269 0-.442.173T4 6.615v10.77q0 .269.173.442t.442.173M4 18V6z'
 )
+const SettingsIcon = createIcon(
+  'm17.804 20.508l-6.55-6.562q-.558.258-1.138.406t-1.231.148q-2.292 0-3.896-1.604T3.384 9q0-.65.145-1.251t.421-1.153l3.535 3.496L9.977 7.6L6.519 4.104q.552-.277 1.136-.44t1.23-.164q2.291 0 3.895 1.604T14.386 9q0 .69-.139 1.27q-.138.58-.415 1.1l6.561 6.55q.224.229.224.555t-.22.544l-1.531 1.532q-.219.218-.529.199q-.309-.02-.532-.242m.552-.875l1.155-1.156l-6.919-6.92q.392-.538.592-1.2t.2-1.357q0-1.827-1.414-3.276T8.342 4.55l2.485 2.485q.242.242.242.565t-.242.566L8.05 10.942q-.242.243-.565.243t-.566-.243L4.435 8.458q-.218 2.425 1.25 3.733q1.469 1.309 3.2 1.309q.663 0 1.325-.19q.663-.19 1.227-.597zM11.8 11.877'
+)
 const GithubIcon = (props: SVGProps<SVGSVGElement>) => (
   // biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
   <svg
@@ -154,6 +157,7 @@ export {
   MoonIcon,
   SunIcon,
   GithubIcon,
+  SettingsIcon,
   HeartIcon,
   OfflineDownloadIcon,
   RuleFolderIcon,

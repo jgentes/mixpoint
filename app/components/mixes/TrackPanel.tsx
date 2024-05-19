@@ -96,7 +96,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
   }
 
   const TrackOrStem = () => {
-    if (!mixState.trackState[trackId]) return null
+    if (!mixState.trackState?.[trackId]) return null
 
     // rerender if stemZoom changes
     useSnapshot(mixState.trackState[trackId]).stemZoom

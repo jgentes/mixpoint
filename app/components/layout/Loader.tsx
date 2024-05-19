@@ -1,6 +1,7 @@
-import { Button, Progress } from '@nextui-org/react'
+import { Button, Progress, Tooltip } from '@nextui-org/react'
 import { WarningIcon } from '~/components/icons'
 import Logo from '~/components/layout/MixpointLogo'
+import SettingsButton from '~/components/layout/SettingsButton'
 
 const ProgressBar = ({ message }: { message?: string }) => (
   <Progress
@@ -22,16 +23,19 @@ const InitialLoader = ({ message }: { message?: string }) => {
       className="fixed top-0 left-0 w-screen h-screen flex justify-center items-center text-xs z-50"
     >
       {!message ? null : (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="fixed top-12"
-          onClick={() => {
-            window.location.href = '/'
-          }}
-        >
-          Go Back
-        </Button>
+        <>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="fixed top-12"
+            onClick={() => {
+              window.location.href = '/'
+            }}
+          >
+            Go Back
+          </Button>
+          <SettingsButton className="fixed top-12" />
+        </>
       )}
       <div style={{ minWidth: '190px', maxWidth: '30%' }}>
         <div className="flex pb-1">

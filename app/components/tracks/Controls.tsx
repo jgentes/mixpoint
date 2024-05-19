@@ -171,7 +171,7 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
 }
 
 const ZoomSelectControl = ({ trackId }: { trackId: Track['id'] }) => {
-  if (!trackId || !mixState.trackState[trackId]) return null
+  if (!trackId || !mixState.trackState?.[trackId]) return null
 
   const { stemZoom } = useSnapshot(mixState.trackState[trackId]) || {}
 
@@ -216,7 +216,7 @@ const BpmControl = ({
   trackId: Track['id']
   className: string
 }) => {
-  if (!trackId || !mixState.trackState[trackId]) return null
+  if (!trackId || !mixState.trackState?.[trackId]) return null
 
   const { adjustedBpm } = useSnapshot(mixState.trackState[trackId]) || {}
 
@@ -267,7 +267,7 @@ const BeatResolutionControl = ({
 }: {
   trackId: Track['id']
 }) => {
-  if (!trackId || !mixState.trackState[trackId]) return null
+  if (!trackId || !mixState.trackState?.[trackId]) return null
 
   const { beatResolution = '1:4' } =
     useSnapshot(mixState.trackState[trackId]) || {}
@@ -434,7 +434,7 @@ const MixControl = () => {
 }
 
 const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
-  if (!trackId || !mixState.trackState[trackId]) return null
+  if (!trackId || !mixState.trackState?.[trackId]) return null
 
   const { mixpointTime } = useSnapshot(mixState.trackState[trackId]) || {}
 

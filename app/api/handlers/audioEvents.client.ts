@@ -146,7 +146,7 @@ const audioEvents = {
     }
 
     // Update BPM if adjusted
-    const { adjustedBpm } = mixState.trackState[trackId] || {}
+    const { adjustedBpm } = mixState.trackState?.[trackId] || {}
     const { bpm = 1 } = (await db.tracks.get(trackId)) || {}
     const playbackRate = (adjustedBpm || bpm) / bpm
     waveform.setPlaybackRate(playbackRate)

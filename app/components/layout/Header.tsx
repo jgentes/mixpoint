@@ -1,8 +1,9 @@
 import { Button, Tooltip } from '@nextui-org/react'
 import { GithubIcon } from '~/components/icons'
-import DarkMode from '~/components/layout/DarkModeButton'
+import DarkModeButton from '~/components/layout/DarkModeButton'
 import LoginButton from '~/components/layout/LoginButton.client'
 import Logo from '~/components/layout/MixpointLogo'
+import SettingsButton from '~/components/layout/SettingsButton'
 
 const Header = () => (
   <div className="p-4 flex flex-row bg-primary-50 justify-between items-center border-b border-default sticky z-10">
@@ -25,7 +26,8 @@ const Header = () => (
           <GithubIcon className="h-5" />
         </Button>
       </Tooltip>
-      <DarkMode />
+      <DarkModeButton />
+      <SettingsButton />
     </div>
   </div>
 )
