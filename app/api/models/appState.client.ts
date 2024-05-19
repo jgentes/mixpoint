@@ -118,9 +118,9 @@ const userState = proxyWithLocalStorage<UserState>('userState', proxy({}))
 
 if (Env === 'development') {
   devtools(appState, { name: 'appState', enable: true })
-  devtools(mixState, { name: 'appState', enable: true })
+  devtools(mixState, { name: 'mixState', enable: true })
   devtools(userState, { name: 'userState', enable: true })
-  devtools(audioState, { name: 'audioState', enable: true })
+  // audioState waveforms cause memory issues in devtools
 }
 
 const initAudioState = async () => {

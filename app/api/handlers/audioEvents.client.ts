@@ -7,7 +7,6 @@ import { calcMarkers } from '~/api/handlers/audioHandlers.client'
 import {
   type Stem,
   type Track,
-  _removeFromMix,
   db,
   updateTrack,
 } from '~/api/handlers/dbHandlers'
@@ -88,7 +87,6 @@ const audioEvents = {
   },
   onReady: async (waveform: WaveSurfer, trackId: Track['id'], stem?: Stem) => {
     // Save waveform in audioState
-    console.log('onready', stem)
     if (stem) {
       // Remove from stemsAnalyzing
       appState.stemsAnalyzing.delete(trackId)
@@ -186,16 +184,11 @@ const audioEvents = {
     audioEvents.destroy(trackId)
     audioEvents.destroyStems(trackId)
 
-    // Remove track from mix state (dexie)
-    await _removeFromMix(trackId)
-
-    // Remove track from audioState (valtio)
+    // Remove track from state
+    const trackIindex = mixState.tracks.indexOf(trackId)
+    delete mixState.tracks[trackIindex]
+    delete mixState.trackState[trackId]
     delete audioState[trackId]
-
-    // If this is not the last track in the mix, open drawer, otherwise the drawer will open automatically
-    const mixViewVisible = !!mixState.tracks?.filter(t => t).length
-
-    if (mixViewVisible) appState.openDrawer = true
   },
 
   play: async (trackId?: Track['id']) => {

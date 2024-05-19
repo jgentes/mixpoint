@@ -1,8 +1,6 @@
-import {
-  type Track,
-  getTrackName,
-  useLiveQuery
-} from '~/api/handlers/dbHandlers'
+import { useSnapshot } from 'valtio'
+import { getTrackName, useLiveQuery } from '~/api/handlers/dbHandlers'
+import { mixState } from '~/api/models/appState.client'
 import StemPanel from '~/components/mixes/StemPanel'
 import TrackPanel from '~/components/mixes/TrackPanel'
 import {
@@ -12,10 +10,9 @@ import {
 } from '~/components/tracks/Controls'
 import Dropzone from '~/components/tracks/Dropzone'
 
-const MixCard = ({
-  trackId,
-  trackSlot
-}: { trackId: Track['id']; trackSlot: 0 | 1 }) => {
+const MixCard = ({ trackSlot }: { trackSlot: 0 | 1 }) => {
+  const trackId = useSnapshot(mixState).tracks[trackSlot]
+
   const MixCardHeader = () => {
     const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
 

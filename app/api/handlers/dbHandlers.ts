@@ -179,16 +179,6 @@ const addToMix = async (trackId: Track['id'], trackSlot?: 0 | 1) => {
   mixState.trackState[trackId] = {}
 }
 
-const _removeFromMix = async (id: Track['id']) => {
-  // always use ejectTrack audioEvent to ensure track is removed from appState!
-  const index = mixState.tracks.indexOf(id)
-
-  if (index > -1) {
-    delete mixState.tracks[index]
-    delete mixState.trackState[index]
-  }
-}
-
 export type { Track, Mix, Mixpoint, MixSet, TrackCache, Effect, Stem }
 export {
   db,
@@ -204,7 +194,6 @@ export {
   getMix,
   removeMix,
   addToMix,
-  _removeFromMix,
   getTrackName,
   storeTrackCache,
 }

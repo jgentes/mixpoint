@@ -382,9 +382,7 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: Track['id'] }) => {
   )
 }
 
-const MixControl = ({ tracks }: { tracks: MixState['tracks'] }) => {
-  if (!tracks?.length) return null
-
+const MixControl = () => {
   const navEvent = (nav: Key) => {
     switch (nav) {
       case 'Play':
@@ -394,7 +392,7 @@ const MixControl = ({ tracks }: { tracks: MixState['tracks'] }) => {
         audioEvents.pause()
         break
       case 'Go to Mixpoint':
-        for (const track of tracks) audioEvents.seekMixpoint(track)
+        for (const track of mixState.tracks) audioEvents.seekMixpoint(track)
         break
     }
   }

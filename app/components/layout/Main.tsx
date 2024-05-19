@@ -1,6 +1,6 @@
-import { useEffect } from 'react'
-import { useSnapshot } from 'valtio'
-import { appState, mixState } from '~/api/models/appState.client'
+import { useEffect, useState } from 'react'
+import { subscribe } from 'valtio'
+import { mixState } from '~/api/models/appState.client'
 import Heart from '~/components/layout/HeartIcon'
 import LeftNav from '~/components/layout/LeftNav'
 import MixView from '~/components/mixes/MixView'
@@ -8,14 +8,20 @@ import TrackDrawer from '~/components/tracks/TrackDrawer'
 import TrackTable from '~/components/tracks/TrackTable'
 
 const Main: React.FunctionComponent = () => {
-  const { tracks } = useSnapshot(mixState)
-  const mixViewVisible = !!tracks?.filter(t => t).length
+  const mixVisible = mixState.tracks?.filter(t => t).length > 0
+  const [mixView, setMixView] = useState(mixVisible)
 
-  useEffect(() => {
-    if (!mixViewVisible) appState.openDrawer = false
-  }, [mixViewVisible])
+  useEffect(
+    () =>
+      subscribe(mixState.tracks, () => {
+        // this is needed otherwise changes in mixState.tracks will force a refresh of Main
+        const mixVisible = mixState.tracks?.filter(t => t).length > 0
+        setMixView(mixVisible)
+      }),
+    []
+  )
 
-  return mixViewVisible ? (
+  return mixView ? (
     <>
       <MixView />
       <TrackDrawer />
