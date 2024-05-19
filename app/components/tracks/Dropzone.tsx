@@ -1,8 +1,11 @@
 import { useState } from 'react'
+import { useSnapshot } from 'valtio'
 import { processTracks } from '~/api/handlers/audioHandlers.client'
 import { addToMix } from '~/api/handlers/dbHandlers'
 import { browseFile } from '~/api/handlers/fileHandlers'
+import { appState } from '~/api/models/appState.client'
 import { UploadFolderIcon } from '~/components/icons'
+import { ProgressBar } from '~/components/layout/Loader'
 
 const itemsDropped = async (items: DataTransferItemList, trackSlot?: 0 | 1) => {
   const handleArray: (FileSystemFileHandle | FileSystemDirectoryHandle)[] = []
@@ -35,9 +38,14 @@ const Dropzone = ({
   className,
   trackSlot
 }: { className?: string; trackSlot?: 0 | 1 }) => {
+  const { dropZoneLoader } = useSnapshot(appState)
   const [dragOver, setDragOver] = useState(false)
 
-  return (
+  return dropZoneLoader ? (
+    <div className="relative w-1/2 top-1/2 -mt-0.5 m-auto">
+      <ProgressBar />
+    </div>
+  ) : (
     <div
       id="dropzone"
       className={`border-2 border-dashed cursor-pointer border-default-500 p-2 text-center rounded flex justify-center items-center duration-0 ${

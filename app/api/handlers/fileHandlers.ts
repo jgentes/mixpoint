@@ -125,7 +125,9 @@ const browseFile = async (trackSlot?: 0 | 1): Promise<void> => {
     })
 
   if (files?.length) {
+    appState.dropZoneLoader = true
     const tracks = (await processTracks(files)) || []
+    appState.dropZoneLoader = false
     if (tracks.length === 1) addToMix(tracks[0].id, trackSlot)
   }
 }

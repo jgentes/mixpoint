@@ -65,6 +65,7 @@ const appState = proxy<{
   page: number
   showButton: number | null
   openDrawer: boolean
+  dropZoneLoader: boolean
   processing: boolean
   analyzing: Set<Track['id']>
   stemsAnalyzing: Set<Track['id']>
@@ -79,6 +80,7 @@ const appState = proxy<{
   page: 1,
   showButton: null,
   openDrawer: false,
+  dropZoneLoader: false,
   processing: false,
   analyzing: proxySet(),
   stemsAnalyzing: proxySet(),
