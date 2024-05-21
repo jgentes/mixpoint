@@ -3,7 +3,7 @@ import toast from 'react-hot-toast'
 
 const errorHandler = (error: Error | string) => {
   const err = typeof error === 'string' ? Error(error) : error
-  console.error(err.message)
+  console.error(error)
   toast.error(err?.message)
   H.consumeError(err)
 }

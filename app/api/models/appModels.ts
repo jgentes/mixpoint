@@ -1,10 +1,9 @@
 // This file initializes Dexie (indexDB), defines the schema and creates tables
 // Be sure to create MIGRATIONS for any changes to SCHEMA!
+import type { ButtonProps } from '@nextui-org/react'
 import Dexie from 'dexie'
-import { Key } from 'react'
-
-// eventually allow the user to change these
-const STATE_ROW_LIMIT = 100
+import type { Key } from 'react'
+import type WaveSurfer from 'wavesurfer.js'
 
 // from https://dexie.org/docs/Typescript
 
@@ -13,22 +12,18 @@ class MixpointDb extends Dexie {
   mixpoints: Dexie.Table<Mixpoint, number>
   mixes: Dexie.Table<Mix, number>
   sets: Dexie.Table<MixSet, number>
-  mixPrefs: Dexie.Table<MixPrefs>
-  setPrefs: Dexie.Table<SetPrefs>
-  userPrefs: Dexie.Table<UserPrefs>
   trackCache: Dexie.Table<TrackCache>
+  appState: Dexie.Table<AppState>
 
   constructor() {
     super('MixpointDb')
-    this.version(3).stores({
+    this.version(4).stores({
       tracks: '++id, name, bpm, [name+size]',
       mixpoints: '++id',
       mixes: '++id, tracks',
       sets: '++id, mixes',
-      mixPrefs: 'date',
-      setPrefs: 'date',
-      userPrefs: 'date',
-      trackCache: 'id'
+      trackCache: 'id',
+      appState: ''
     })
     // example migration:
     //
@@ -47,10 +42,8 @@ class MixpointDb extends Dexie {
     this.mixpoints = this.table('mixpoints')
     this.mixes = this.table('mixes')
     this.sets = this.table('sets')
-    this.mixPrefs = this.table('mixPrefs')
-    this.setPrefs = this.table('setPrefs')
-    this.userPrefs = this.table('userPrefs')
     this.trackCache = this.table('trackCache')
+    this.appState = this.table('appState')
   }
 }
 
@@ -97,12 +90,11 @@ type Mix = {
   id: number
   from: Track['id']
   to: Track['id']
-  status: string // Todo: define good | bad | unknown?
+  status: string // TODO: define good | bad | unknown?
   effects: {
     timestamp: number
     duration: number
   }[]
-  lastState: MixPrefs
 }
 
 // would have used "Set" but it's protected in JS, so named it MixSet instead
@@ -119,6 +111,7 @@ type MixSet = {
 const STEMS = ['drums', 'bass', 'vocals', 'other'] as const
 type Stem = (typeof STEMS)[number]
 
+// TrackCache is a cache for track files, including stems
 type TrackCache = {
   id: Track['id']
   file?: File
@@ -127,76 +120,112 @@ type TrackCache = {
   }>
 }
 
-// Note TrackPrefs is not a table. Track states are contained in MixPrefs
-type TrackPrefs = Partial<{
-  id: Track['id']
+// AppState provides persistence for Valtio state, which has much simpler get/set than Dexie
+type AppState = Partial<{
+  userState: UserState
+  mixState: MixState
+}>
+
+type TrackState = Partial<{
   adjustedBpm: Track['bpm']
   beatResolution: '1:1' | '1:2' | '1:4'
   stemZoom: Stem
   mixpointTime: number // seconds
 }>
 
-// State tables
-
-// Each row in a state table is a full representation of state at that point in time
-// This allows easy undo/redo of state changes by using timestamps (primary key)
-// State tables are limited to STATE_ROW_LIMIT rows (arbitrarily 100)
-
-type MixPrefs = Partial<{
-  date: Date // current mix is most recent mixPrefs
+type MixState = {
   tracks: Track['id'][]
-  trackPrefs: TrackPrefs[]
-}>
+  trackState: {
+    [trackId: Track['id']]: TrackState
+  }
+}
 
-type SetPrefs = Partial<{
-  date: Date
-  setId: MixSet['id']
-}>
-
-type UserPrefs = Partial<{
-  date: Date
+type UserState = Partial<{
   sortDirection: 'ascending' | 'descending'
   sortColumn: Key
   visibleColumns: Set<Key> // track table visible columns
   stemsDirHandle: FileSystemDirectoryHandle // local folder on file system to store stems
 }>
 
-// For state getter and setter
-type StoreTypes = {
-  mix: MixPrefs
-  set: SetPrefs
-  user: UserPrefs
+// AudioState is the working state of the mix, limited to the # of tracks in use, thereby not storing waveforms for all tracks
+type AudioState = Partial<{
+  waveform: WaveSurfer // must be a valtio ref()
+  playing: boolean
+  time: number
+  gainNode?: GainNode // gain controls actual loudness of track, must be a ref()
+  analyserNode?: AnalyserNode // analyzerNode is used for volumeMeter, must be a ref()
+  volume: number // volume is the crossfader value
+  volumeMeter?: number // value between 0 and 1
+  stems: Stems
+  stemState: StemState
+  stemTimer: number
+}>
+
+type Stems = {
+  [key in Stem]: Partial<{
+    waveform: WaveSurfer // must be a valtio ref()
+    gainNode?: GainNode // gain controls actual loudness of stem, must be a ref()
+    analyserNode?: AnalyserNode // analyzerNode is used for volumeMeter, must be a ref()
+    volume: number // volume is the crossfader value
+    volumeMeter: number
+    mute: boolean
+  }>
 }
 
-// db hooks to limit the number of rows in a state table
-const createHooks = (table: keyof StoreTypes) => {
-  db[`${table}Prefs`].hook('creating', async () => {
-    const count = await db[`${table}Prefs`].count()
-    if (count > STATE_ROW_LIMIT) {
-      const oldest = await db[`${table}Prefs`].orderBy('date').first()
-      if (oldest) db[`${table}Prefs`].delete(oldest.date)
-    }
-  })
-}
+type StemState =
+  | 'selectStemDir'
+  | 'grantStemDirAccess'
+  | 'getStems'
+  | 'uploadingFile'
+  | 'processingStems'
+  | 'downloadingStems'
+  | 'ready'
+  | 'error'
 
-const tables = ['mix', 'set', 'user'] as const
-for (const table of tables) {
-  createHooks(table)
+// ModalState is a generic handler for various modals, usually when doing something significant like deleting tracks
+type ModalState = Partial<{
+  openState: boolean
+  headerText: string
+  bodyText: string
+  confirmColor: ButtonProps['color']
+  confirmText: string
+  onConfirm: () => void
+  onCancel: () => void
+}>
+
+// UiState captures the state of various parts of the app, mostly the table, such as search value, which which rows are selected and track drawer open/closed state
+type UiState = {
+  search: string | number
+  selected: Set<Key> // NextUI table uses string keys
+  rowsPerPage: number
+  page: number
+  showButton: number | null
+  openDrawer: boolean
+  dropZoneLoader: boolean
+  processing: boolean
+  analyzing: Set<Track['id']>
+  stemsAnalyzing: Set<Track['id']>
+  syncTimer: ReturnType<typeof requestAnimationFrame> | undefined
+  audioContext?: AudioContext
+  userEmail: string // email address
+  modal: ModalState
 }
 
 // Avoid having two files export same type names
 export type {
-  Track as __Track,
-  Mix as __Mix,
-  Mixpoint as __Mixpoint,
-  Effect as __Effect,
-  MixSet as __MixSet,
-  TrackPrefs as __TrackPrefs,
-  MixPrefs as __MixPrefs,
-  SetPrefs as __SetPrefs,
-  UserPrefs as __UserPrefs,
-  StoreTypes as __StoreTypes,
-  TrackCache as __TrackCache,
-  Stem as __Stem
+  Track,
+  Mix,
+  Mixpoint,
+  Effect,
+  MixSet,
+  TrackCache,
+  Stem,
+  StemState,
+  AppState,
+  UserState,
+  MixState,
+  TrackState,
+  AudioState,
+  UiState
 }
-export { db as __db, STEMS as __STEMS, EFFECTS as __EFFECTS }
+export { db, STEMS, EFFECTS }

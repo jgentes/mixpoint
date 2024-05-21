@@ -1,38 +1,34 @@
 {
   "compilerOptions": {
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ES2020"
-    ],
+    // latest features
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "jsx": "react-jsx",
+    "allowJs": true,
+    // source maps
     "sourceMap": true,
     "inlineSources": true,
     "isolatedModules": true,
-    "jsx": "react-jsx",
-    "resolveJsonModule": true,
-    "module": "ESNext",
+    // bundler
     "moduleResolution": "Bundler",
-    "baseUrl": ".",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
     "noEmit": true,
-    "paths": {
-      "~/*": [
-        "./app/*"
-      ]
-    },
-    "allowJs": true,
-    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    // best practices
     "strict": true,
-    "types": [
-      "bun-types"
-    ],
-    "target": "ES2020",
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./app/*"]
+    },
+    // other checks
+    "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "esModuleInterop": true
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "env.d.ts"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", "env.d.ts"]
 }

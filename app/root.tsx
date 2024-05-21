@@ -15,9 +15,9 @@ import {
 } from '@remix-run/react'
 import { Analytics } from '@vercel/analytics/react'
 import {
-  LinksFunction,
-  LoaderFunctionArgs,
-  MetaFunction,
+  type LinksFunction,
+  type LoaderFunctionArgs,
+  type MetaFunction,
   json
 } from '@vercel/remix'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
@@ -25,11 +25,12 @@ import { useEffect, useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { createHead } from 'remix-island'
 import { Appwrite, account } from '~/AppwriteService'
-import { setAppState } from '~/api/db/appState.client'
-import ConfirmModal from '~/components/ConfirmModal'
-import { InitialLoader } from '~/components/Loader'
+import { uiState } from '~/api/models/appState.client'
+import ConfirmModal from '~/components/layout/ConfirmModal'
+import { InitialLoader } from '~/components/layout/Loader'
 import globalStyles from '~/global.css?url'
 import tailwind from '~/tailwind.css?url'
+import { errorHandler } from '~/utils/notifications'
 import { Env } from './utils/env'
 
 const getCookie = (cookieString: string, cookieName: string) => {
@@ -124,10 +125,10 @@ const ThemeLoader = () => {
 
         if (user?.email) {
           H.identify(user.email, { id: user.$id })
-          setAppState.userEmail(user.email)
+          uiState.userEmail = user.email
         }
       } catch (err) {
-        setAppState.userEmail('')
+        uiState.userEmail = ''
       }
     }
 
@@ -190,13 +191,15 @@ const App = () => (
 export const ErrorBoundary = (error: Error) => {
   const routeError = (useRouteError() as Error) || error
 
+  errorHandler(routeError)
+
   const message = isRouteErrorResponse(routeError)
     ? routeError.data.message || routeError.data || routeError
-    : routeError?.message || JSON.stringify(routeError)
+    : routeError?.message || JSON.stringify(routeError) // if not route error, allow for Error or string
 
   return (
     <>
-      {!isRouteErrorResponse(error) || Env === 'development' ? null : (
+      {!isRouteErrorResponse(routeError) || Env === 'development' ? null : (
         <>
           <script src="https://unpkg.com/highlight.run" />
           <script

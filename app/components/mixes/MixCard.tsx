@@ -1,4 +1,6 @@
-import { Track, getTrackName, useLiveQuery } from '~/api/db/dbHandlers'
+import { useSnapshot } from 'valtio'
+import { getTrackName, useLiveQuery } from '~/api/handlers/dbHandlers'
+import { mixState } from '~/api/models/appState.client'
 import StemPanel from '~/components/mixes/StemPanel'
 import TrackPanel from '~/components/mixes/TrackPanel'
 import {
@@ -8,23 +10,24 @@ import {
 } from '~/components/tracks/Controls'
 import Dropzone from '~/components/tracks/Dropzone'
 
-const MixCard = ({
-  trackId,
-  trackSlot
-}: { trackId: Track['id']; trackSlot: 0 | 1 }) => {
-  const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
+const MixCard = ({ trackSlot }: { trackSlot: 0 | 1 }) => {
+  const trackId = useSnapshot(mixState).tracks[trackSlot]
 
-  const mixCardHeader = (
-    <div className="flex mb-3 gap-2 justify-between">
-      <EjectControl trackId={trackId} />
-      <div className="text-md font-medium whitespace-nowrap overflow-hidden overflow-ellipsis flex-grow">
-        {trackName}
+  const MixCardHeader = () => {
+    const trackName = useLiveQuery(() => getTrackName(trackId), [trackId])
+
+    return (
+      <div className="flex mb-3 gap-2 justify-between">
+        <EjectControl trackId={trackId} />
+        <div className="text-md font-medium whitespace-nowrap overflow-hidden overflow-ellipsis flex-grow">
+          {trackName}
+        </div>
+        <BpmControl trackId={trackId} className="w-28" />
       </div>
-      <BpmControl trackId={trackId} className="w-28" />
-    </div>
-  )
+    )
+  }
 
-  const mixCardFooter = (
+  const MixCardFooter = () => (
     <div className="text-center mt-2">
       <TrackNavControl trackId={trackId} />
     </div>
@@ -36,7 +39,7 @@ const MixCard = ({
         <Dropzone className="h-full" trackSlot={trackSlot} />
       ) : (
         <>
-          {mixCardHeader}
+          <MixCardHeader />
 
           <div className="mt-2">
             <StemPanel trackId={trackId} />
@@ -46,7 +49,7 @@ const MixCard = ({
             <TrackPanel trackId={trackId} />
           </div>
 
-          {mixCardFooter}
+          <MixCardFooter />
         </>
       )}
     </div>

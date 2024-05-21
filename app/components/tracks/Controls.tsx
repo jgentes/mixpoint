@@ -1,15 +1,12 @@
-import { Key, useCallback, useEffect, useRef, useState } from 'react'
-import { audioEvents } from '~/api/audioEvents.client'
+import { type Key, useCallback, useEffect, useRef, useState } from 'react'
+import { audioEvents } from '~/api/handlers/audioEvents.client'
 import {
-  MixPrefs,
   STEMS,
-  Stem,
-  Track,
-  TrackPrefs,
+  type Stem,
+  type Track,
   db,
-  getTrackPrefs,
   useLiveQuery
-} from '~/api/db/dbHandlers'
+} from '~/api/handlers/dbHandlers'
 
 import {
   Button,
@@ -22,7 +19,16 @@ import {
   Tabs,
   Tooltip
 } from '@nextui-org/react'
-import { audioState } from '~/api/db/appState.client'
+import { mix } from 'framer-motion'
+import { useSnapshot } from 'valtio'
+import {
+  type MixState,
+  type TrackState,
+  audioState,
+  mixState,
+  uiState
+} from '~/api/models/appState.client'
+import { Waveform } from '~/api/renderWaveform.client'
 import {
   EjectIcon,
   HeadsetIcon,
@@ -37,6 +43,7 @@ import {
   VolumeOffIcon,
   VolumeUpIcon
 } from '~/components/icons'
+import { ProgressBar } from '~/components/layout/Loader'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
 
@@ -164,22 +171,20 @@ const EjectControl = ({ trackId }: { trackId: Track['id'] }) => {
 }
 
 const ZoomSelectControl = ({ trackId }: { trackId: Track['id'] }) => {
-  if (!trackId) return null
+  if (!trackId || !mixState.trackState?.[trackId]) return null
 
-  const { stemZoom = 'all' } =
-    useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
+  const { stemZoom } = useSnapshot(mixState.trackState[trackId]) || {}
 
   return (
     <Select
       size="sm"
-      selectedKeys={[stemZoom]}
+      selectedKeys={[stemZoom || 'all']}
       aria-label="Stem Zoom"
       onChange={e => {
+        const zoomVal = e.target.value as Stem | 'all'
         if (e.target.value)
-          audioEvents.stemZoom(
-            trackId,
-            e.target.value as TrackPrefs['stemZoom']
-          )
+          mixState.trackState[trackId].stemZoom =
+            zoomVal === 'all' ? undefined : zoomVal
       }}
       classNames={{
         mainWrapper: 'w-24 m-auto',
@@ -211,12 +216,11 @@ const BpmControl = ({
   trackId: Track['id']
   className: string
 }) => {
-  if (!trackId) return null
+  if (!trackId || !mixState.trackState?.[trackId]) return null
+
+  const { adjustedBpm } = useSnapshot(mixState.trackState[trackId]) || {}
 
   const { bpm } = useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
-
-  const { adjustedBpm } =
-    useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
 
   return (
     <NumberControl
@@ -236,7 +240,7 @@ const OffsetControl = ({
   trackId,
   className
 }: {
-  trackId: TrackPrefs['id']
+  trackId: Track['id']
   className?: string
 }) => {
   if (!trackId) return null
@@ -261,12 +265,12 @@ const OffsetControl = ({
 const BeatResolutionControl = ({
   trackId
 }: {
-  trackId: TrackPrefs['id']
+  trackId: Track['id']
 }) => {
-  if (!trackId) return null
+  if (!trackId || !mixState.trackState?.[trackId]) return null
 
   const { beatResolution = '1:4' } =
-    useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
+    useSnapshot(mixState.trackState[trackId]) || {}
 
   return (
     <Tooltip color="default" size="sm" content="Beat Resolution">
@@ -285,7 +289,7 @@ const BeatResolutionControl = ({
         onSelectionChange={key =>
           audioEvents.beatResolution(
             trackId,
-            key as TrackPrefs['beatResolution']
+            key as TrackState['beatResolution']
           )
         }
       >
@@ -297,7 +301,11 @@ const BeatResolutionControl = ({
   )
 }
 
-const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
+const TrackNavControl = ({ trackId = 0 }: { trackId: Track['id'] }) => {
+  if (!trackId || !audioState[trackId]) return null
+
+  const { playing } = useSnapshot(audioState[trackId])
+
   const navEvent = (nav: string) => {
     switch (nav) {
       case 'Play':
@@ -321,8 +329,6 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
     }
   }
 
-  const [isPlaying] = audioState[trackId].playing()
-
   return (
     <>
       {[
@@ -340,8 +346,8 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
           icon: <SetMixpointIcon className="text-xl" />
         },
         {
-          val: isPlaying ? 'Pause' : 'Play',
-          icon: isPlaying ? (
+          val: playing ? 'Pause' : 'Play',
+          icon: playing ? (
             <PauseIcon className="text-3xl" />
           ) : (
             <PlayIcon className="text-3xl" />
@@ -352,7 +358,7 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
           icon: <NextIcon className="text-3xl" />
         }
       ].map(item => {
-        const noNudge = item.val.includes('Nudge') && !isPlaying
+        const noNudge = item.val.includes('Nudge') && !playing
 
         return (
           <Tooltip key={item.val} color="default" size="sm" content={item.val}>
@@ -376,9 +382,7 @@ const TrackNavControl = ({ trackId = 0 }: { trackId: TrackPrefs['id'] }) => {
   )
 }
 
-const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
-  if (!tracks?.length) return null
-
+const MixControl = () => {
   const navEvent = (nav: Key) => {
     switch (nav) {
       case 'Play':
@@ -388,7 +392,7 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
         audioEvents.pause()
         break
       case 'Go to Mixpoint':
-        for (const track of tracks) audioEvents.seekMixpoint(track)
+        for (const track of mixState.tracks) audioEvents.seekMixpoint(track)
         break
     }
   }
@@ -430,10 +434,9 @@ const MixControl = ({ tracks }: { tracks: MixPrefs['tracks'] }) => {
 }
 
 const MixpointControl = ({ trackId }: { trackId: Track['id'] }) => {
-  if (!trackId) return null
+  if (!trackId || !mixState.trackState?.[trackId]) return null
 
-  const { mixpointTime } =
-    useLiveQuery(() => getTrackPrefs(trackId), [trackId]) || {}
+  const { mixpointTime } = useSnapshot(mixState.trackState[trackId]) || {}
 
   const [mixpointVal, setMixpointVal] = useState<string>('0:00.00')
 
@@ -477,8 +480,8 @@ const StemControl = ({
 }) => {
   if (!trackId) return null
 
-  const [volume = 100] = audioState[trackId].stems[stemType].volume()
-  const [mute = false] = audioState[trackId].stems[stemType].mute()
+  const { volume = 100, mute = false } =
+    useSnapshot(audioState[trackId])?.stems?.[stemType] || {}
 
   const [solo, setSolo] = useState(false)
 
@@ -489,6 +492,22 @@ const StemControl = ({
 
   const iconStyle = 'text-xl cursor-pointer text-default-500'
 
+  const containerClass =
+    'p-0 border-1 border-divider rounded bg-default-50 overflow-hidden h-5'
+
+  const AnalyzingOverlay = () => {
+    const { stemsAnalyzing } = useSnapshot(uiState)
+    const isAnalyzing = stemsAnalyzing.has(trackId)
+
+    return !isAnalyzing ? null : (
+      <div className={`${containerClass} absolute z-10 w-full top-0`}>
+        <div className="relative w-1/2 top-1/2 -mt-0.5 m-auto">
+          <ProgressBar />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex gap-2 justify-between">
       <div className="text-xs w-14 text-default-600">
@@ -496,13 +515,16 @@ const StemControl = ({
       </div>
       <div className="w-full">
         <div
-          id={`zoomview-container_${trackId}_${stemType}`}
-          className="p-0 border-1 border-divider rounded bg-default-50 overflow-hidden relative z-1 h-5"
+          className={`${containerClass} relative z-1`}
           onClick={e => {
-            const parent = e.currentTarget.firstElementChild as HTMLElement
+            const parent = e.currentTarget.querySelectorAll('div')[1]
             audioEvents.clickToSeek(trackId, e, parent)
           }}
-        />
+        >
+          <AnalyzingOverlay />
+          <Waveform trackId={trackId} stem={stemType} />
+        </div>
+
         <VolumeMeter trackId={trackId} stemType={stemType} />
       </div>
       {solo ? (
@@ -559,7 +581,7 @@ const TrackTime = ({
   trackId,
   className
 }: { trackId: Track['id']; className?: string }) => {
-  const [time = 0] = audioState[trackId].time()
+  const { time = 0 } = useSnapshot(audioState[trackId])
 
   return <div className={className}>{timeFormat(time)}</div>
 }

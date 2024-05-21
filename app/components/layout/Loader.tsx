@@ -1,6 +1,7 @@
-import { Button, Progress } from '@nextui-org/react'
+import { Button, Progress, Tooltip } from '@nextui-org/react'
 import { WarningIcon } from '~/components/icons'
 import Logo from '~/components/layout/MixpointLogo'
+import SettingsButton from '~/components/layout/SettingsButton'
 
 const ProgressBar = ({ message }: { message?: string }) => (
   <Progress
@@ -41,6 +42,11 @@ const InitialLoader = ({ message }: { message?: string }) => {
         <ProgressBar message={message} />
         <p className="pt-1">{message || 'Loading...'}</p>
       </div>
+      {!message ? null : (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2">
+          <SettingsButton />
+        </div>
+      )}
     </div>
   )
 }

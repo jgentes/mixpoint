@@ -1,24 +1,20 @@
 // This file provides a few helper functions for interacting with the database
 import { useLiveQuery } from 'dexie-react-hooks'
-import { audioEvents } from '~/api/audioEvents.client'
+import { audioEvents } from '~/api/handlers/audioEvents.client'
+import { getPermission } from '~/api/handlers/fileHandlers'
 import {
-  __Mix as Mix,
-  __Mixpoint as Mixpoint,
-  __Effect as Effect,
-  __EFFECTS as EFFECTS,
-  __MixPrefs as MixPrefs,
-  __MixSet as MixSet,
-  __STEMS as STEMS,
-  __SetPrefs as SetPrefs,
-  __Stem as Stem,
-  __StoreTypes as StoreTypes,
-  __Track as Track,
-  __TrackCache as TrackCache,
-  __TrackPrefs as TrackPrefs,
-  __UserPrefs as UserPrefs,
-  __db as db
-} from '~/api/db/__dbSchema'
-import { getPermission } from '~/api/fileHandlers'
+  EFFECTS,
+  type Effect,
+  type Mix,
+  type MixSet,
+  type Mixpoint,
+  STEMS,
+  type Stem,
+  type Track,
+  type TrackCache,
+  db
+} from '~/api/models/appModels'
+import { audioState, mixState } from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 
 const CACHE_LIMIT = 25
@@ -113,61 +109,12 @@ const getMix = async (id: number): Promise<Mix | undefined> =>
 
 const removeMix = async (id: number): Promise<void> => await db.mixes.delete(id)
 
-// state getter and setter
-
-// this function is a work of typescript wizardry
-const getPrefs = async <T extends keyof StoreTypes>(
-  table: T,
-  key?: keyof StoreTypes[T]
-): Promise<Partial<StoreTypes[T]>> => {
-  const state =
-    ((await db[`${table}Prefs`].orderBy('date').last()) as StoreTypes[T]) || {}
-
-  return key ? ({ [key]: state[key] } as Partial<StoreTypes[T]>) : state
-}
-
-const setPrefs = async (
-  table: keyof StoreTypes,
-  state: Partial<StoreTypes[typeof table]>
-): Promise<void> => {
-  const prevState = await getPrefs(table)
-
-  await db[`${table}Prefs`].put({
-    ...prevState,
-    ...state,
-    date: new Date()
-  })
-}
-
-const getTrackPrefs = async (trackId: Track['id']): Promise<TrackPrefs> => {
-  const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
-  const trackIndex = tracks.indexOf(trackId)
-
-  return trackPrefs[trackIndex] || {}
-}
-
 const getTrackName = async (trackId: Track['id']) => {
   if (!trackId) return null
 
   const { name } = (await db.tracks.get(trackId)) || {}
 
   return name?.slice(0, -4) || 'Loading...'
-}
-
-// Update the state for an individual track in the mix, such as when offset is adjusted
-const setTrackPrefs = async (
-  trackId: Track['id'],
-  state: Partial<TrackPrefs>
-): Promise<void> => {
-  const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
-  const trackIndex = tracks.indexOf(trackId)
-
-  if (trackIndex === -1) return errorHandler('Track not found in mix state')
-
-  const newState = { ...(trackPrefs[trackIndex] || {}), ...state }
-  trackPrefs[trackIndex] = newState
-
-  await setPrefs('mix', { tracks, trackPrefs })
 }
 
 const putMixpoint = async (
@@ -182,25 +129,26 @@ const putMixpoint = async (
   for (const [index, effectObj] of effect.entries()) {
     effects[index] = effectObj
   }
-  
+
   if (!mixpointId) {
-    
-    if (!name) {return errorHandler('No name provided')}
-    
+    if (!name) {
+      return errorHandler('No name provided')
+    }
+
     return await db.mixpoints.put({
       name,
       effects
     })
   }
 
-  const currentMixpoint = (await db.mixpoints.get(mixpointId))
+  const currentMixpoint = await db.mixpoints.get(mixpointId)
   if (!currentMixpoint) return errorHandler(`Mixpoint ${mixpointId} not found`)
 
-  const newEffects = {...currentMixpoint.effects, ...effects}
+  const newEffects = { ...currentMixpoint.effects, ...effects }
 
   const newMixpoint = {
     ...currentMixpoint,
-    ...{name: name || currentMixpoint.name, effects: newEffects }
+    ...{ name: name || currentMixpoint.name, effects: newEffects }
   }
 
   await db.mixpoints.put(newMixpoint, mixpointId)
@@ -210,52 +158,28 @@ const deleteMixpoint = async (mixpointId: number) => {
   await db.mixpoints.delete(mixpointId)
 }
 
-const addToMix = async (track: Track, trackSlot?: 0 | 1) => {
-  const file = await getPermission(track)
+const addToMix = async (trackId: Track['id'], trackSlot?: 0 | 1) => {
+  const file = await getPermission(trackId)
   if (!file) return
 
-  const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
+  const tracks = mixState.tracks
 
   // tracks should retain their position (ie. [0, 1])
   // is there a track in first position? if not, put this track there
   const index = trackSlot ?? tracks[0] ? 1 : 0
 
   // if there's already a track in this position, remove it first
-  if (tracks[index]) await audioEvents.ejectTrack(tracks[index])
-  tracks[index] = track.id
-  trackPrefs[index] = { id: track.id }
-
-  await setPrefs('mix', { tracks, trackPrefs })
-}
-
-const _removeFromMix = async (id: Track['id']) => {
-  // always use ejectTrack audioEvent to ensure track is removed from appState!
-  const { tracks = [], trackPrefs = [] } = await getPrefs('mix')
-
-  const index = tracks.indexOf(id)
-
-  if (index > -1) {
-    delete tracks[index]
-    delete trackPrefs[index]
+  if (tracks[index]) {
+    await audioEvents.ejectTrack(Number(tracks[index]))
   }
 
-  await setPrefs('mix', { tracks, trackPrefs })
+  audioState[trackId] = {}
+
+  mixState.tracks[index] = trackId
+  mixState.trackState[trackId] = {}
 }
 
-export type {
-  Track,
-  Mix,
-  Mixpoint,
-  MixSet,
-  TrackPrefs,
-  MixPrefs,
-  SetPrefs,
-  UserPrefs,
-  StoreTypes,
-  TrackCache,
-  Effect,
-  Stem
-}
+export type { Track, Mix, Mixpoint, MixSet, TrackCache, Effect, Stem }
 export {
   db,
   STEMS,
@@ -270,11 +194,6 @@ export {
   getMix,
   removeMix,
   addToMix,
-  _removeFromMix,
-  getPrefs,
-  setPrefs,
-  getTrackPrefs,
   getTrackName,
-  setTrackPrefs,
   storeTrackCache
 }

@@ -13,27 +13,25 @@ import {
   TableBody,
   TableCell,
   TableColumn,
-  TableColumnProps,
+  type TableColumnProps,
   TableHeader,
   TableRow
 } from '@nextui-org/react'
 import moment from 'moment'
-import { Key, ReactNode, useCallback, useMemo, useState } from 'react'
-import { audioEvents } from '~/api/audioEvents.client'
-import { analyzeTracks } from '~/api/audioHandlers.client'
-import { appState, setAppState, setModalState } from '~/api/db/appState.client'
+import { type Key, type ReactNode, useCallback, useMemo, useState } from 'react'
+import { useSnapshot } from 'valtio'
+import { audioEvents } from '~/api/handlers/audioEvents.client'
+import { analyzeTracks } from '~/api/handlers/audioHandlers.client'
 import {
-  Track,
+  type Track,
   addToMix,
   db,
   getDirtyTracks,
-  getPrefs,
   removeTracks,
-  setPrefs,
   useLiveQuery
-} from '~/api/db/dbHandlers'
-import { browseFile } from '~/api/fileHandlers'
-import { ProgressBar } from '~/components/Loader'
+} from '~/api/handlers/dbHandlers'
+import { browseFile } from '~/api/handlers/fileHandlers'
+import { mixState, uiState, userState } from '~/api/models/appState.client'
 import {
   AddIcon,
   AnalyzeIcon,
@@ -41,32 +39,26 @@ import {
   ChevronIcon,
   SearchIcon
 } from '~/components/icons'
+import { ProgressBar } from '~/components/layout/Loader'
 import Dropzone, { itemsDropped } from '~/components/tracks/Dropzone'
 import { formatMinutes, getComparator } from '~/utils/tableOps'
 
 const TrackTable = () => {
   // Re-render when page or selection changes
-  const [page] = appState.page()
-  const [rowsPerPage] = appState.rowsPerPage()
-  const [selected] = appState.selected()
-  const [analyzingTracks] = appState.analyzing()
+  const { page, rowsPerPage, selected, analyzing, search, processing } =
+    useSnapshot(uiState)
   const selectedCount = selected.size
-
-  // Re-render when search query changes
-  const [search] = appState.search()
-
-  // Show loader while processing tracks
-  const [processing] = appState.processing()
 
   // Allow drag & drop files / folders into the table
   const [dragOver, setDragOver] = useState(false)
 
   // Retrieve sort state from database
+
   const {
     sortDirection = 'descending',
     sortColumn = 'lastModified',
     visibleColumns = new Set<string>()
-  } = useLiveQuery(() => getPrefs('user')) || {}
+  } = useSnapshot(userState) || {}
 
   // Monitor db for track updates (and filter using searchquery if present)
   const trackCount = useLiveQuery(() => db.tracks.count())
@@ -115,23 +107,20 @@ const TrackTable = () => {
     </Button>
   )
 
-  const addToMixHandler = async (t: Track) => {
-    const { tracks = [] } = await getPrefs('mix')
-
-    await addToMix(t)
+  const addToMixHandler = async (trackId: Track['id']) => {
+    await addToMix(trackId)
 
     // if this is the first track in the mix, leave the drawer open
-    if (!tracks.length) setAppState.openDrawer(true)
+    if (!mixState.tracks?.filter(t => t).length) uiState.openDrawer = true
   }
 
   const AddToMixButton = useCallback(
-    ({ track }: { track: Track }) => {
-      const { tracks = [] } = useLiveQuery(() => getPrefs('mix')) || {}
-
-      const isInMix = tracks.includes(track.id)
+    ({ trackId }: { trackId: Track['id'] }) => {
+      const { tracks } = useSnapshot(mixState)
+      const isInMix = tracks.includes(trackId)
 
       // Prevent user from adding a new track before previous added track finishes analyzing
-      const isBeingAnalyzed = tracks.some(id => analyzingTracks.has(id))
+      const isBeingAnalyzed = tracks.some(id => analyzing.has(id))
 
       return (
         <Button
@@ -153,21 +142,23 @@ const TrackTable = () => {
             )
           }
           onPress={() => {
-            !isInMix ? addToMixHandler(track) : audioEvents.ejectTrack(track.id)
+            !isInMix
+              ? addToMixHandler(trackId)
+              : audioEvents.ejectTrack(trackId)
           }}
         >
           {`Add${isInMix ? 'ed' : ' to Mix'}`}
         </Button>
       )
     },
-    [analyzingTracks, addToMixHandler]
+    [analyzing, addToMixHandler]
   )
 
   const BpmFormatter = useCallback(
     (track: Track) => {
       return track.bpm ? (
         <div className="pl-1">{track.bpm.toFixed(0)}</div>
-      ) : analyzingTracks.size > 1 || analyzingTracks.has(track.id) ? (
+      ) : analyzing.size > 1 || analyzing.has(track.id) ? (
         <div className="relative w-1/2 top-1/2 -mt-0.5 ml-1">
           <ProgressBar />
         </div>
@@ -175,7 +166,7 @@ const TrackTable = () => {
         analyzeButton(track)
       )
     },
-    [analyzingTracks, analyzeButton]
+    [analyzing, analyzeButton]
   )
 
   // Build table columns
@@ -200,7 +191,7 @@ const TrackTable = () => {
         label: '',
         align: 'center',
         width: '15%',
-        formatter: track => <AddToMixButton track={track} />
+        formatter: track => <AddToMixButton trackId={track.id} />
       },
       {
         dbKey: 'bpm',
@@ -226,7 +217,7 @@ const TrackTable = () => {
         align: 'center',
         width: '5%',
         formatter: track => (
-          <div className="pl-3">{track.mixpoints?.length || 0}</div>
+          <div className="pl-3">{track.mixpoints?.size || 0}</div>
         )
       },
       {
@@ -234,9 +225,7 @@ const TrackTable = () => {
         label: 'Sets',
         align: 'center',
         width: '5%',
-        formatter: track => (
-          <div className="pl-2">{track.sets?.length || 0}</div>
-        )
+        formatter: track => <div className="pl-2">{track.sets?.size || 0}</div>
       },
       {
         dbKey: 'lastModified',
@@ -261,8 +250,8 @@ const TrackTable = () => {
     )
   }, [visibleColumns, columns])
 
-  const showRemoveTracksModal = () =>
-    setModalState({
+  const showRemoveTracksModal = () => {
+    uiState.modal = {
       openState: true,
       headerText: 'Are you sure?',
       bodyText: 'Removing tracks here will not delete them from your computer.',
@@ -271,18 +260,20 @@ const TrackTable = () => {
         selectedCount > 1 ? 's' : ''
       }`,
       onConfirm: async () => {
-        setModalState.openState(false)
+        uiState.modal.openState = false
+
         for (const id of selected) await audioEvents.ejectTrack(Number(id))
         await removeTracks([...selected].map(Number))
-        setAppState.selected(new Set())
+        uiState.selected = new Set()
       },
       onCancel: async () => {
-        setModalState.openState(false)
+        uiState.modal.openState = false
       }
-    })
+    }
+  }
 
-  const showAnalyzeDirtyModal = () =>
-    setModalState({
+  const showAnalyzeDirtyModal = () => {
+    uiState.modal = {
       openState: true,
       headerText: 'Are you sure?',
       bodyText: `This will analyze ${dirtyTracks.length} track${
@@ -291,13 +282,14 @@ const TrackTable = () => {
       confirmColor: 'success',
       confirmText: `Analyze track${dirtyTracks.length > 1 ? 's' : ''}`,
       onConfirm: async () => {
-        setModalState.openState(false)
+        uiState.modal.openState = false
         analyzeTracks(dirtyTracks)
       },
       onCancel: async () => {
-        setModalState.openState(false)
+        uiState.modal.openState = false
       }
-    })
+    }
+  }
 
   const currentPageTracks = (): Set<Key> => {
     const startIndex = (page - 1) * Number(rowsPerPage)
@@ -321,13 +313,15 @@ const TrackTable = () => {
             startContent={<SearchIcon className="text-default-500 text-xl" />}
             value={String(search)}
             variant="bordered"
-            onClear={() => setAppState.search('')}
+            onClear={() => {
+              uiState.search = ''
+            }}
             onValueChange={value => {
               if (value) {
-                setAppState.search(value)
-                setAppState.page(1)
+                uiState.search = value
+                uiState.page = 1
               } else {
-                setAppState.search('')
+                uiState.search = ''
               }
             }}
           />
@@ -350,13 +344,15 @@ const TrackTable = () => {
               disallowEmptySelection
               aria-label="Table columns"
               closeOnSelect={false}
-              selectedKeys={visibleColumns.size > 2 ? visibleColumns : 'all'}
-              selectionMode="multiple"
-              onSelectionChange={keys =>
-                setPrefs('user', {
-                  visibleColumns: new Set(['name', 'action', ...keys])
-                })
+              selectedKeys={
+                visibleColumns.size > 2
+                  ? Array.from(visibleColumns).join(',')
+                  : 'all'
               }
+              selectionMode="multiple"
+              onSelectionChange={keys => {
+                userState.visibleColumns = new Set(['name', 'action', ...keys])
+              }}
             >
               {columns
                 .filter(
@@ -398,7 +394,7 @@ const TrackTable = () => {
               className="ml-1 text-sm cursor-pointer"
             >
               (
-              {analyzingTracks.size
+              {analyzing.size
                 ? `${dirtyTracks.length} to analyze`
                 : `click to analyze ${dirtyTracks.length} track${
                     dirtyTracks.length > 1 ? 's' : ''
@@ -414,8 +410,8 @@ const TrackTable = () => {
           placeholder="10"
           size="sm"
           onChange={e => {
-            setAppState.rowsPerPage(Number(e.target.value))
-            setAppState.page(1)
+            uiState.rowsPerPage = Number(e.target.value)
+            uiState.page = 1
           }}
           classNames={{
             base: 'w-min',
@@ -463,12 +459,13 @@ const TrackTable = () => {
       selectedKeys={selected}
       selectionMode="multiple"
       sortDescriptor={{ column: sortColumn, direction: sortDirection }}
-      onSelectionChange={keys =>
-        setAppState.selected(keys === 'all' ? currentPageTracks() : keys)
-      }
-      onSortChange={({ column, direction }) =>
-        setPrefs('user', { sortDirection: direction, sortColumn: column })
-      }
+      onSelectionChange={keys => {
+        uiState.selected = keys === 'all' ? currentPageTracks() : keys
+      }}
+      onSortChange={({ column, direction }) => {
+        userState.sortColumn = column
+        userState.sortDirection = direction
+      }}
       onDrop={e => {
         e.preventDefault()
         itemsDropped(e.dataTransfer.items)
@@ -537,7 +534,9 @@ const TrackTable = () => {
         page={page}
         total={pages}
         variant="light"
-        onChange={pageNum => setAppState.page(pageNum)}
+        onChange={pageNum => {
+          uiState.page = pageNum
+        }}
       />
       <span className="text-small text-default-500">
         {selectedCount === tracks.length

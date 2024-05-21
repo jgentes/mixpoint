@@ -1,0 +1,79 @@
+// This file handles application state that may be persisted to local storage.
+import { proxy, snapshot } from 'valtio'
+import { devtools, proxySet, watch } from 'valtio/utils'
+import { db } from '~/api/handlers/dbHandlers'
+import type {
+  AudioState,
+  MixState,
+  Track,
+  UiState,
+  UserState
+} from '~/api/models/appModels'
+import { Env } from '~/utils/env'
+
+// AudioState captures ephemeral state of a mix, while persistent state is stored in IndexedDB
+const audioState = proxy<{
+  [trackId: Track['id']]: AudioState
+}>({})
+
+const uiState = proxy<UiState>({
+  search: '',
+  selected: proxySet(),
+  rowsPerPage: 10,
+  page: 1,
+  showButton: null,
+  openDrawer: false,
+  dropZoneLoader: false,
+  processing: false,
+  analyzing: proxySet(),
+  stemsAnalyzing: proxySet(),
+  syncTimer: undefined,
+  userEmail: '',
+  modal: { openState: false }
+})
+
+// Pull latest persistent state from Dexie and populate Valtio store
+let seeded = false
+const initialMixState = (await db.appState.get('mixState')) as MixState
+const mixState = proxy<MixState>(
+  initialMixState || { tracks: [], trackState: {} }
+)
+
+watch(async get => {
+  get(mixState)
+  //@ts-ignore dexie typescript failure
+  if (seeded) db.appState.put(snapshot(mixState), 'mixState')
+})
+
+const initialUserState = (await db.appState.get('userState')) as UserState
+const userState = proxy<UserState>(initialUserState || {})
+
+watch(async get => {
+  get(userState)
+  //@ts-ignore dexie typescript failure
+  if (seeded) db.appState.put(snapshot(userState), 'userState')
+})
+
+seeded = true
+
+if (Env === 'development') {
+  devtools(uiState, { name: 'uiState', enable: true })
+  devtools(mixState, { name: 'mixState', enable: true })
+  devtools(userState, { name: 'userState', enable: true })
+  // audioState waveforms cause memory issues in devtools
+}
+
+const initAudioState = async () => {
+  // Start audioState init (if we have a mix in localstorage (valtio))
+  const tracks = mixState.tracks
+
+  if (tracks?.length) {
+    for (const trackId of tracks) {
+      audioState[Number(trackId)] = {}
+    }
+  }
+}
+
+initAudioState()
+
+export { uiState, audioState, mixState, userState }

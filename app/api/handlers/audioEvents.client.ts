@@ -1,14 +1,14 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform aroun'
 import type WaveSurfer from 'wavesurfer.js'
 import RegionsPlugin, {
-  type Region
+  type Region,
 } from 'wavesurfer.js/dist/plugins/regions.js'
 import { calcMarkers } from '~/api/audioHandlers.client'
 import {
   getAppState,
   getAudioState,
   setAppState,
-  setAudioState
+  setAudioState,
 } from '~/api/db/appState.client'
 import {
   Stem,
@@ -19,7 +19,7 @@ import {
   getPrefs,
   getTrackPrefs,
   setTrackPrefs,
-  updateTrack
+  updateTrack,
 } from '~/api/db/dbHandlers'
 import { initWaveform } from '~/api/renderWaveform.client'
 import { convertToSecs } from '~/utils/tableOps'
@@ -43,8 +43,12 @@ const audioEvents = {
   initAudioContext: ({
     trackId,
     stem,
-    media
-  }: { trackId: Track['id']; stem?: Stem; media: HTMLAudioElement }) => {
+    media,
+  }: {
+    trackId: Track['id']
+    stem?: Stem
+    media: HTMLAudioElement
+  }) => {
     // audioContext cannot be initialized without user intervention, so this function is called when the audio is played for the first time per track or stem
 
     // Ensure this function is not called twice for the same track or stem
@@ -248,8 +252,8 @@ const audioEvents = {
               volumes.push(vol)
               setAudioState[trackId].stems[stem as Stem].volumeMeter(vol)
             }
-            waveform = stems[stem].waveform
           }
+          waveform = stems.drums.waveform
         } else {
           volumes.push(getVolume(analyserNode))
           waveform = getAudioState[trackId].waveform()
@@ -271,7 +275,7 @@ const audioEvents = {
 
       audioEvents.initAudioContext({
         trackId,
-        media: waveform.getMediaElement()
+        media: waveform.getMediaElement(),
       })
 
       waveform.play()
@@ -287,7 +291,7 @@ const audioEvents = {
             audioEvents.initAudioContext({
               trackId,
               stem: stem as Stem,
-              media: stemWaveform.getMediaElement()
+              media: stemWaveform.getMediaElement(),
             })
             stemWaveform.play()
           }
@@ -425,7 +429,7 @@ const audioEvents = {
     // [left, right] @ 0% = [1, 0] 50% = [1, 1] 100% = [0, 1]
     const volumes = [
       Math.min(1, 1 + Math.cos(sliderPercent * Math.PI)),
-      Math.min(1, 1 + Math.cos((1 - sliderPercent) * Math.PI))
+      Math.min(1, 1 + Math.cos((1 - sliderPercent) * Math.PI)),
     ]
 
     if (tracks) {
@@ -615,7 +619,7 @@ const audioEvents = {
     await initWaveform({ trackId, file })
 
     await setTrackPrefs(trackId, {
-      stemZoom: stem === 'all' ? undefined : stem
+      stemZoom: stem === 'all' ? undefined : stem,
     })
 
     const [{ waveform, time, playing }] = getAudioState[trackId]()
@@ -648,7 +652,7 @@ const audioEvents = {
       prev.delete(trackId)
       return prev
     })
-  }
+  },
 }
 
 export { audioEvents }

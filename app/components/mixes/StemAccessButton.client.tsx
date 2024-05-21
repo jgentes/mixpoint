@@ -1,10 +1,15 @@
 import { CircularProgress } from '@nextui-org/react'
-import { ReactElement } from 'react'
+import type { ReactElement } from 'react'
 import { useCountUp } from 'use-count-up'
-import { StemState, audioState } from '~/api/db/appState.client'
-import { Track } from '~/api/db/dbHandlers'
-import { getStemsDirHandle, validateTrackStemAccess } from '~/api/fileHandlers'
-import { stemAudio } from '~/api/stemHandler'
+import { useSnapshot } from 'valtio'
+import type { Track } from '~/api/handlers/dbHandlers'
+import {
+  getStemsDirHandle,
+  validateTrackStemAccess
+} from '~/api/handlers/fileHandlers'
+import { stemAudio } from '~/api/handlers/stemHandler'
+import type { StemState } from '~/api/models/appModels'
+import { audioState } from '~/api/models/appState.client'
 import {
   OfflineDownloadIcon,
   RuleFolderIcon,
@@ -14,10 +19,9 @@ import {
 import { errorHandler } from '~/utils/notifications'
 
 const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
-  if (!trackId) return null
+  if (!trackId || !audioState[trackId]) return null
 
-  const [stemState = 'selectStemDir'] = audioState[trackId].stemState()
-  const [stemTimer = 45] = audioState[trackId].stemTimer()
+  const { stemState, stemTimer = 45 } = useSnapshot(audioState[trackId])
 
   const getStemsDir = async () => {
     try {
@@ -106,7 +110,7 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
     }
   }
 
-  return (
+  return !stemState || stemState === 'ready' ? null : (
     <div
       className="
 				border-2 border-dashed p-5 text-center cursor-pointer rounded border-default-500 bg-default-50 hover:bg-warning-500 hover:bg-opacity-10 hover:border-warning-500 active:border-warning-500 active:bg-warning-500m mb-3 h-32"

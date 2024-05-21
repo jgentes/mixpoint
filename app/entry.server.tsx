@@ -1,5 +1,5 @@
 import { HandleError } from '@highlight-run/remix/server'
-import { type EntryContext } from '@vercel/remix'
+import type { EntryContext } from '@vercel/remix'
 import { renderHeadToString } from 'remix-island'
 import { Head } from './root'
 
@@ -47,6 +47,7 @@ function handleBotRequest(
 ) {
   return new Promise((resolve, reject) => {
     let shellRendered = false
+
     const { pipe, abort } = renderToPipeableStream(
       <RemixServer
         context={remixContext}
@@ -103,6 +104,7 @@ function handleBrowserRequest(
 ) {
   return new Promise((resolve, reject) => {
     let shellRendered = false
+
     const { pipe, abort } = renderToPipeableStream(
       <RemixServer
         context={remixContext}

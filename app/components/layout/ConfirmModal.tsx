@@ -6,14 +6,14 @@ import {
   ModalContent,
   ModalHeader
 } from '@nextui-org/react'
-import { modalState } from '~/api/db/appState.client'
+import { useSnapshot } from 'valtio'
+import { uiState } from '~/api/models/appState.client'
 import { WarningIcon } from '~/components/icons'
 
 const ConfirmModal = () => {
-  const [confirmModal] = modalState()
-  const [openState, setOpenState] = modalState.openState()
-
-  const closeModal = () => setOpenState(false)
+  const closeModal = () => {
+    uiState.modal.openState = false
+  }
 
   const {
     headerText = 'Are you sure?',
@@ -21,8 +21,9 @@ const ConfirmModal = () => {
     confirmColor = 'danger',
     confirmText = 'Confirm',
     onConfirm = () => closeModal(),
-    onCancel = () => closeModal()
-  } = confirmModal
+    onCancel = () => closeModal(),
+    openState
+  } = useSnapshot(uiState).modal
 
   return (
     <Modal

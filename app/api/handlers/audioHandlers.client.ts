@@ -1,19 +1,14 @@
 import { H } from '@highlight-run/remix/client'
 import type RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 import { guess as detectBPM } from 'web-audio-beat-detector'
+import { type Track, db, putTracks } from '~/api/handlers/dbHandlers'
+import { getPermission } from '~/api/handlers/fileHandlers'
 import {
-  getAudioState,
-  setAppState,
-  setModalState
-} from '~/api/db/appState.client'
-import {
-  Track,
-  db,
-  getTrackPrefs,
-  putTracks,
-  setPrefs
-} from '~/api/db/dbHandlers'
-import { getPermission } from '~/api/fileHandlers'
+  audioState,
+  mixState,
+  uiState,
+  userState
+} from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 
 // This is the main track processing workflow when files are added to the app
@@ -38,10 +33,8 @@ async function getTracksRecursively(
   const trackArray: partialTrack[] = []
 
   // Change sort order to lastModified so new tracks are visible at the top
-  await setPrefs('user', {
-    sortColumn: 'lastModified',
-    sortDirection: 'descending'
-  })
+  userState.sortColumn = 'lastModified'
+  userState.sortDirection = 'descending'
 
   const filesToTracks = async (
     fileOrDirectoryHandle: FileSystemFileHandle | FileSystemDirectoryHandle,
@@ -75,7 +68,7 @@ async function getTracksRecursively(
   const addTracksToDb = async () => {
     // Ensure we have id's for our tracks, add them to the DB with updated lastModified dates
     const updatedTracks = await putTracks(trackArray)
-    setAppState.processing(false)
+    uiState.processing = true
     H.track('Track Added', { trackQuantity: updatedTracks.length })
     return updatedTracks
   }
@@ -83,9 +76,9 @@ async function getTracksRecursively(
   // Warn user if large number of tracks are added, this is due to memory leak in web audio api
   if (trackArray.length > 100) {
     // Show indicator inside empty table
-    setAppState.processing(true)
+    uiState.processing = true
 
-    setModalState({
+    uiState.modal = {
       openState: true,
       headerText: 'More than 100 tracks added',
       bodyText:
@@ -93,15 +86,15 @@ async function getTracksRecursively(
       confirmText: 'Continue',
       confirmColor: 'success',
       onConfirm: async () => {
-        setModalState.openState(false)
+        uiState.modal.openState = false
         const updatedTracks = await addTracksToDb()
         await analyzeTracks(updatedTracks)
       },
       onCancel: () => {
-        setModalState.openState(false)
-        setAppState.processing(false)
+        uiState.modal.openState = false
+        uiState.processing = false
       }
-    })
+    }
     return []
   }
 
@@ -110,27 +103,26 @@ async function getTracksRecursively(
 
 const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
   // Set analyzing state now to avoid tracks appearing with 'analyze' button
-  setAppState.analyzing(
-    prev => new Set([...prev, ...tracks.map(track => track.id)])
-  )
+  uiState.analyzing = new Set([
+    ...uiState.analyzing,
+    ...tracks.map(track => track.id)
+  ])
 
   // Return array of updated tracks
   const updatedTracks: Track[] = []
 
-  let sorted
+  let sorted = false
   for (const track of tracks) {
     if (!sorted) {
       // Change sort order to lastModified so new tracks are visible at the top
-      await setPrefs('user', {
-        sortColumn: 'lastModified',
-        sortDirection: 'descending'
-      })
-      setAppState.page(1)
+      userState.sortColumn = 'lastModified'
+      userState.sortDirection = 'descending'
+      uiState.page = 1
       sorted = true
     }
 
     const { name, size, type, offset, bpm, duration, sampleRate, ...rest } =
-      await getAudioDetails(track)
+      await getAudioDetails(track.id)
 
     // adjust for miscalc tempo > 160bpm
     const normalizedBpm = bpm > 160 ? bpm / 2 : bpm
@@ -150,16 +142,13 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
     updatedTracks.push(trackWithId)
 
     // Remove from analyzing state
-    setAppState.analyzing(prev => {
-      prev.delete(track.id)
-      return prev
-    })
+    uiState.analyzing.delete(track.id)
   }
   return updatedTracks
 }
 
 const getAudioDetails = async (
-  track: Track
+  trackId: Track['id']
 ): Promise<{
   name: string
   size: number
@@ -169,9 +158,9 @@ const getAudioDetails = async (
   duration: number
   sampleRate: number
 }> => {
-  const file = await getPermission(track)
+  const file = await getPermission(trackId)
   if (!file) {
-    setAppState.analyzing(new Set())
+    uiState.analyzing = new Set()
     throw errorHandler('Permission to the file or folder was denied.')
   }
 
@@ -211,7 +200,7 @@ const getAudioDetails = async (
 const calcMarkers = async (trackId: Track['id']): Promise<void> => {
   if (!trackId) return
 
-  const [waveform] = getAudioState[trackId].waveform()
+  const waveform = audioState[trackId]?.waveform
   if (!waveform) return
 
   const regionsPlugin = waveform.getActivePlugins()[0] as RegionsPlugin
@@ -234,7 +223,7 @@ const calcMarkers = async (trackId: Track['id']): Promise<void> => {
 
   if (!duration) return errorHandler(`Please try adding ${name} again.`)
 
-  const { beatResolution = '1:4' } = await getTrackPrefs(trackId)
+  const { beatResolution = '1:4' } = mixState.trackState[trackId] || {}
 
   const beatInterval = 60 / (bpm || 1)
   const skipLength = beatInterval * Number(beatResolution.split(':')[1])

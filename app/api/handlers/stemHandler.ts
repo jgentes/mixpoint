@@ -1,7 +1,13 @@
 import { H } from '@highlight-run/remix/client'
-import { setAudioState } from '~/api/db/appState.client'
-import { STEMS, Stem, Track, db, storeTrackCache } from '~/api/db/dbHandlers'
-import { getStemsDirHandle } from '~/api/fileHandlers'
+import {
+  STEMS,
+  type Stem,
+  type Track,
+  db,
+  storeTrackCache
+} from '~/api/handlers/dbHandlers'
+import { getStemsDirHandle } from '~/api/handlers/fileHandlers'
+import { audioState } from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 
 const STEMPROXY = 'https://stems.mixpoint.dev'
@@ -30,11 +36,11 @@ const stemAudio = async (trackId: Track['id']) => {
 
   H.track('Track Stemmed')
 
-  setAudioState[trackId].stemState('uploadingFile')
-  setAudioState[trackId].stemTimer(100)
+  audioState[trackId].stemState = 'uploadingFile'
+  audioState[trackId].stemTimer = 100
 
   const handleErr = (msg?: string) => {
-    setAudioState[trackId].stemState('error')
+    audioState[trackId].stemState = 'error'
     throw errorHandler(`Error generating stems: ${msg}`)
   }
 
@@ -54,7 +60,7 @@ const stemAudio = async (trackId: Track['id']) => {
     // set timer for processing stems
     const { size } = (await db.tracks.get(trackId)) || {}
     // 0.03 seconds per MB
-    setAudioState[trackId].stemTimer(((size || 1) / 1000) * 0.02)
+    audioState[trackId].stemTimer = ((size || 1) / 1000) * 0.02
 
     return // started
   }
@@ -101,15 +107,15 @@ const stemAudio = async (trackId: Track['id']) => {
   // send file to stemproxy and wait for stems
   await sendFile()
 
-  setAudioState[trackId].stemState('processingStems')
+  audioState[trackId].stemState = 'processingStems'
 
   // wait for stems to be generated
   const stems: StemsArray = await checkForStems()
 
-  setAudioState[trackId].stemState('downloadingStems')
+  audioState[trackId].stemState = 'downloadingStems'
 
   // create a new dir with name of audio file
-  let stemsDirHandle
+  let stemsDirHandle: FileSystemDirectoryHandle
   try {
     stemsDirHandle = await dirHandle.getDirectoryHandle(`${FILENAME} - stems`, {
       create: true
@@ -138,7 +144,7 @@ const stemAudio = async (trackId: Track['id']) => {
     })
   }
   // give a couple of seconds before trying to render the stem waveform
-  setAudioState[trackId].stemState('ready')
+  audioState[trackId].stemState = 'ready'
 }
 
 export { stemAudio }

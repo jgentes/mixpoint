@@ -1,8 +1,11 @@
 import { useState } from 'react'
-import { processTracks } from '~/api/audioHandlers.client'
-import { addToMix } from '~/api/db/dbHandlers'
-import { browseFile } from '~/api/fileHandlers'
+import { useSnapshot } from 'valtio'
+import { processTracks } from '~/api/handlers/audioHandlers.client'
+import { addToMix } from '~/api/handlers/dbHandlers'
+import { browseFile } from '~/api/handlers/fileHandlers'
+import { uiState } from '~/api/models/appState.client'
 import { UploadFolderIcon } from '~/components/icons'
+import { ProgressBar } from '~/components/layout/Loader'
 
 const itemsDropped = async (items: DataTransferItemList, trackSlot?: 0 | 1) => {
   const handleArray: (FileSystemFileHandle | FileSystemDirectoryHandle)[] = []
@@ -28,16 +31,21 @@ const itemsDropped = async (items: DataTransferItemList, trackSlot?: 0 | 1) => {
   // https://stackoverflow.com/q/55658851/1058302
   await Promise.all(itemQueue)
   const tracks = await processTracks(handleArray)
-  if (tracks[0]) addToMix(tracks[0], trackSlot)
+  if (tracks[0]) addToMix(tracks[0].id, trackSlot)
 }
 
 const Dropzone = ({
   className,
   trackSlot
 }: { className?: string; trackSlot?: 0 | 1 }) => {
+  const { dropZoneLoader } = useSnapshot(uiState)
   const [dragOver, setDragOver] = useState(false)
 
-  return (
+  return dropZoneLoader ? (
+    <div className="relative w-1/2 top-1/2 -mt-0.5 m-auto">
+      <ProgressBar />
+    </div>
+  ) : (
     <div
       id="dropzone"
       className={`border-2 border-dashed cursor-pointer border-default-500 p-2 text-center rounded flex justify-center items-center duration-0 ${

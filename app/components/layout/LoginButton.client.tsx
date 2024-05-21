@@ -11,16 +11,17 @@ import {
 } from '@nextui-org/react'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
+import { useSnapshot } from 'valtio'
 import { Appwrite } from '~/AppwriteService'
-import { appState, setAppState } from '~/api/db/appState.client'
+import { uiState } from '~/api/models/appState.client'
 import { GithubIcon, GoogleIcon } from '~/components/icons'
 import { errorHandler } from '~/utils/notifications'
 
 const LoginButton = () => {
+  const { userEmail } = useSnapshot(uiState)
   const [email, setEmail] = useState('')
   const [modalState, setModalState] = useState(false)
 
-  const [userEmail] = appState.userEmail()
   const buttonText = userEmail ? 'Log Out' : 'Log In'
 
   const useOAuth = (provider: 'google' | 'github') => {
@@ -44,7 +45,7 @@ const LoginButton = () => {
   const deleteSession = async () => {
     try {
       await Appwrite.signOut()
-      setAppState.userEmail('')
+      uiState.userEmail = ''
     } catch (err) {
       errorHandler('Logout failed')
     }

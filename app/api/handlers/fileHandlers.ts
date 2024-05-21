@@ -1,20 +1,18 @@
 import {
-  StemState,
-  getAppState,
-  getAudioState,
-  setAppState,
-  setAudioState
-} from '~/api/db/appState.client'
-import {
-  Stem,
-  Track,
-  TrackCache,
+  type Stem,
+  type Track,
+  type TrackCache,
   addToMix,
   db,
-  getPrefs,
-  setPrefs,
   storeTrackCache
-} from '~/api/db/dbHandlers'
+} from '~/api/handlers/dbHandlers'
+import type { StemState } from '~/api/models/appModels'
+import {
+  audioState,
+  mixState,
+  uiState,
+  userState
+} from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 import { processTracks } from './audioHandlers.client'
 
@@ -45,11 +43,11 @@ function showOpenFilePickerPolyfill(options: OpenFilePickerOptions) {
   })
 }
 
-const _getFile = async (track: Track): Promise<File | null> => {
+const _getFile = async (track: Track): Promise<File | undefined> => {
   let handle = track.dirHandle || track.fileHandle
-  if (!handle) return null
+  if (!handle) return
 
-  let file = null
+  let file = undefined
   const perms = await handle.queryPermission()
 
   if (perms === 'granted' && track.name) {
@@ -63,7 +61,7 @@ const _getFile = async (track: Track): Promise<File | null> => {
   // Cache the file
   if (file) await storeTrackCache({ id: track.id, file })
 
-  // In the case perms aren't granted, return null - we need to request permission
+  // In the case perms aren't granted, return undefined - we need to request permission
   return file
 }
 
@@ -72,10 +70,21 @@ const _getFile = async (track: Track): Promise<File | null> => {
  * (user must have interacted with the page first!)
  *  otherwise returns null
  */
-const getPermission = async (track: Track): Promise<File | null> => {
+const getPermission = async (
+  trackId: Track['id'],
+  stem?: Stem
+): Promise<File | undefined> => {
   // First see if we have the file in the cache
-  const cache = await db.trackCache.get(track.id)
+  const cache = await db.trackCache.get(trackId)
+  if (stem) {
+    if (cache?.stems?.[stem]) return cache?.stems[stem]?.file
+    return // if we have no file for the stem, stop here
+  }
+
   if (cache?.file) return cache.file
+
+  const track = await db.tracks.get(trackId)
+  if (!track) throw errorHandler('Could not retrieve track from database.')
 
   // Check perms, directory handle is preferred over file handle
   const file = await _getFile(track)
@@ -96,11 +105,12 @@ const getPermission = async (track: Track): Promise<File | null> => {
 
 const browseFile = async (trackSlot?: 0 | 1): Promise<void> => {
   // if the track drawer isn't open and we're in mix view, open it, otherwise show file picker
-  const { tracks } = (await getPrefs('mix', 'tracks')) || {}
-  const mixViewVisible = !!tracks?.filter(t => t).length
+  const mixViewVisible = !!mixState.tracks?.filter(t => t).length
 
-  const [openDrawer] = getAppState.openDrawer()
-  if (!openDrawer && mixViewVisible) return setAppState.openDrawer(true)
+  if (!uiState.openDrawer && mixViewVisible) {
+    uiState.openDrawer = true
+    return
+  }
 
   if (typeof window.showOpenFilePicker !== 'function') {
     window.showOpenFilePicker = showOpenFilePickerPolyfill as (
@@ -115,15 +125,17 @@ const browseFile = async (trackSlot?: 0 | 1): Promise<void> => {
     })
 
   if (files?.length) {
+    uiState.dropZoneLoader = true
     const tracks = (await processTracks(files)) || []
-    if (tracks.length === 1) addToMix(tracks[0], trackSlot)
+    uiState.dropZoneLoader = false
+    if (tracks.length === 1) addToMix(tracks[0].id, trackSlot)
   }
 }
 
 const getStemsDirHandle = async (): Promise<
   FileSystemDirectoryHandle | undefined
 > => {
-  const { stemsDirHandle } = await getPrefs('user')
+  const { stemsDirHandle } = userState
 
   if (stemsDirHandle) {
     // check if we have permission
@@ -154,7 +166,7 @@ const getStemsDirHandle = async (): Promise<
     (await newStemsDirHandle.queryPermission({ mode: 'readwrite' })) ===
     'granted'
   ) {
-    await setPrefs('user', { stemsDirHandle: newStemsDirHandle })
+    userState.stemsDirHandle = newStemsDirHandle
     return newStemsDirHandle
   }
 }
@@ -164,7 +176,7 @@ const validateTrackStemAccess = async (
 ): Promise<StemState> => {
   if (!trackId) throw errorHandler('No Track id provided for stems')
 
-  const [stemState] = getAudioState[trackId].stemState()
+  const { stemState } = audioState[trackId] || {}
 
   const checkAccess = async () => {
     // See if we have stems in cache
@@ -172,7 +184,7 @@ const validateTrackStemAccess = async (
     if (stems) return 'ready'
 
     // do we have a stem dir defined?
-    const { stemsDirHandle } = await getPrefs('user')
+    const { stemsDirHandle } = userState
     if (!stemsDirHandle) return 'selectStemDir'
 
     // do we have access to the stem dir?
@@ -194,7 +206,7 @@ const validateTrackStemAccess = async (
     const FILENAME = name.substring(0, name.lastIndexOf('.'))
 
     // does the stem dir for this track exist?
-    let trackStemDirHandle
+    let trackStemDirHandle: FileSystemDirectoryHandle
     try {
       trackStemDirHandle = await stemsDirHandle.getDirectoryHandle(
         `${FILENAME} - stems`
@@ -226,18 +238,12 @@ const validateTrackStemAccess = async (
     return 'ready'
   }
 
-  const state = await checkAccess()
-  if (state === 'ready') {
-    // remove analyzing
-    setAppState.stemsAnalyzing(prev => {
-      prev.delete(trackId)
-      return prev
-    })
-  }
+  const accessState = await checkAccess()
 
-  if (stemState !== state) setAudioState[trackId].stemState(state)
+  if (stemState !== accessState && audioState[trackId])
+    audioState[trackId].stemState = accessState
 
-  return state
+  return accessState
 }
 
 export { browseFile, getPermission, getStemsDirHandle, validateTrackStemAccess }
