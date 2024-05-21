@@ -6,14 +6,15 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
   build: {
-    sourcemap: true
+    sourcemap: true,
+    target: 'esnext',
   },
   server: {
-    port: 3000
+    port: 3000,
   },
   plugins: [
     remixDevTools(),
     remix({ presets: [vercelPreset()] }),
-    tsconfigPaths()
-  ]
+    tsconfigPaths(),
+  ],
 })
