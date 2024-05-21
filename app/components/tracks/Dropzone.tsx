@@ -3,7 +3,7 @@ import { useSnapshot } from 'valtio'
 import { processTracks } from '~/api/handlers/audioHandlers.client'
 import { addToMix } from '~/api/handlers/dbHandlers'
 import { browseFile } from '~/api/handlers/fileHandlers'
-import { appState } from '~/api/models/appState.client'
+import { uiState } from '~/api/models/appState.client'
 import { UploadFolderIcon } from '~/components/icons'
 import { ProgressBar } from '~/components/layout/Loader'
 
@@ -38,7 +38,7 @@ const Dropzone = ({
   className,
   trackSlot
 }: { className?: string; trackSlot?: 0 | 1 }) => {
-  const { dropZoneLoader } = useSnapshot(appState)
+  const { dropZoneLoader } = useSnapshot(uiState)
   const [dragOver, setDragOver] = useState(false)
 
   return dropZoneLoader ? (

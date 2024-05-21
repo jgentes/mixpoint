@@ -25,7 +25,7 @@ import { useEffect, useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { createHead } from 'remix-island'
 import { Appwrite, account } from '~/AppwriteService'
-import { appState } from '~/api/models/appState.client'
+import { uiState } from '~/api/models/appState.client'
 import ConfirmModal from '~/components/layout/ConfirmModal'
 import { InitialLoader } from '~/components/layout/Loader'
 import globalStyles from '~/global.css?url'
@@ -125,10 +125,10 @@ const ThemeLoader = () => {
 
         if (user?.email) {
           H.identify(user.email, { id: user.$id })
-          appState.userEmail = user.email
+          uiState.userEmail = user.email
         }
       } catch (err) {
-        appState.userEmail = ''
+        uiState.userEmail = ''
       }
     }
 

@@ -28,7 +28,7 @@ graph LR
 
 <br/>
 
-## `Stems`<swm-token data-swm-token=":app/api/db/appState.ts:30:2:2:`type Stems = {`"/>
+## `Stems`<swm-token data-swm-token=":app/api/db/uiState.ts:30:2:2:`type Stems = {`"/>
 
 A **stem** is a distinct type of sound within a track. Mixpoint can extract 4 types of stems from audio - drums, bass, vocals, and "other", which is mostly melody such as piano, synths, strings, etc.
 

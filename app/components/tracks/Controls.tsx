@@ -24,9 +24,9 @@ import { useSnapshot } from 'valtio'
 import {
   type MixState,
   type TrackState,
-  appState,
   audioState,
-  mixState
+  mixState,
+  uiState
 } from '~/api/models/appState.client'
 import { Waveform } from '~/api/renderWaveform.client'
 import {
@@ -496,7 +496,7 @@ const StemControl = ({
     'p-0 border-1 border-divider rounded bg-default-50 overflow-hidden h-5'
 
   const AnalyzingOverlay = () => {
-    const { stemsAnalyzing } = useSnapshot(appState)
+    const { stemsAnalyzing } = useSnapshot(uiState)
     const isAnalyzing = stemsAnalyzing.has(trackId)
 
     return !isAnalyzing ? null : (

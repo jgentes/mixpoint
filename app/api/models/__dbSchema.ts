@@ -1,6 +1,7 @@
 // This file initializes Dexie (indexDB), defines the schema and creates tables
 // Be sure to create MIGRATIONS for any changes to SCHEMA!
 import Dexie from 'dexie'
+import type { Key } from 'react'
 
 // from https://dexie.org/docs/Typescript
 
@@ -10,15 +11,17 @@ class MixpointDb extends Dexie {
   mixes: Dexie.Table<Mix, number>
   sets: Dexie.Table<MixSet, number>
   trackCache: Dexie.Table<TrackCache>
+  appState: Dexie.Table<AppState>
 
   constructor() {
     super('MixpointDb')
-    this.version(3).stores({
+    this.version(4).stores({
       tracks: '++id, name, bpm, [name+size]',
       mixpoints: '++id',
       mixes: '++id, tracks',
       sets: '++id, mixes',
       trackCache: 'id',
+      appState: '',
     })
     // example migration:
     //
@@ -38,6 +41,7 @@ class MixpointDb extends Dexie {
     this.mixes = this.table('mixes')
     this.sets = this.table('sets')
     this.trackCache = this.table('trackCache')
+    this.appState = this.table('appState')
   }
 }
 
@@ -84,7 +88,7 @@ type Mix = {
   id: number
   from: Track['id']
   to: Track['id']
-  status: string // Todo: define good | bad | unknown?
+  status: string // TODO: define good | bad | unknown?
   effects: {
     timestamp: number
     duration: number
@@ -113,6 +117,33 @@ type TrackCache = {
   }>
 }
 
+// AppState provides persistence for Valtio state, which has much simpler get/set than Dexie
+type AppState = Partial<{
+  userState: UserState
+  mixState: MixState
+}>
+
+type TrackState = Partial<{
+  adjustedBpm: Track['bpm']
+  beatResolution: '1:1' | '1:2' | '1:4'
+  stemZoom: Stem
+  mixpointTime: number // seconds
+}>
+
+type MixState = {
+  tracks: Track['id'][]
+  trackState: {
+    [trackId: Track['id']]: TrackState
+  }
+}
+
+type UserState = Partial<{
+  sortDirection: 'ascending' | 'descending'
+  sortColumn: Key
+  visibleColumns: Set<Key> // track table visible columns
+  stemsDirHandle: FileSystemDirectoryHandle // local folder on file system to store stems
+}>
+
 // Avoid having two files export same type names
 export type {
   Track as __Track,
@@ -122,5 +153,9 @@ export type {
   MixSet as __MixSet,
   TrackCache as __TrackCache,
   Stem as __Stem,
+  AppState,
+  UserState,
+  MixState,
+  TrackState,
 }
 export { db as __db, STEMS as __STEMS, EFFECTS as __EFFECTS }

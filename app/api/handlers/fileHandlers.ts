@@ -8,9 +8,9 @@ import {
 } from '~/api/handlers/dbHandlers'
 import {
   type StemState,
-  appState,
   audioState,
   mixState,
+  uiState,
   userState,
 } from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
@@ -107,8 +107,8 @@ const browseFile = async (trackSlot?: 0 | 1): Promise<void> => {
   // if the track drawer isn't open and we're in mix view, open it, otherwise show file picker
   const mixViewVisible = !!mixState.tracks?.filter(t => t).length
 
-  if (!appState.openDrawer && mixViewVisible) {
-    appState.openDrawer = true
+  if (!uiState.openDrawer && mixViewVisible) {
+    uiState.openDrawer = true
     return
   }
 
@@ -125,9 +125,9 @@ const browseFile = async (trackSlot?: 0 | 1): Promise<void> => {
     })
 
   if (files?.length) {
-    appState.dropZoneLoader = true
+    uiState.dropZoneLoader = true
     const tracks = (await processTracks(files)) || []
-    appState.dropZoneLoader = false
+    uiState.dropZoneLoader = false
     if (tracks.length === 1) addToMix(tracks[0].id, trackSlot)
   }
 }

@@ -4,9 +4,9 @@ import { guess as detectBPM } from 'web-audio-beat-detector'
 import { type Track, db, putTracks } from '~/api/handlers/dbHandlers'
 import { getPermission } from '~/api/handlers/fileHandlers'
 import {
-  appState,
   audioState,
   mixState,
+  uiState,
   userState,
 } from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
@@ -68,7 +68,7 @@ async function getTracksRecursively(
   const addTracksToDb = async () => {
     // Ensure we have id's for our tracks, add them to the DB with updated lastModified dates
     const updatedTracks = await putTracks(trackArray)
-    appState.processing = true
+    uiState.processing = true
     H.track('Track Added', { trackQuantity: updatedTracks.length })
     return updatedTracks
   }
@@ -76,9 +76,9 @@ async function getTracksRecursively(
   // Warn user if large number of tracks are added, this is due to memory leak in web audio api
   if (trackArray.length > 100) {
     // Show indicator inside empty table
-    appState.processing = true
+    uiState.processing = true
 
-    appState.modal = {
+    uiState.modal = {
       openState: true,
       headerText: 'More than 100 tracks added',
       bodyText:
@@ -86,13 +86,13 @@ async function getTracksRecursively(
       confirmText: 'Continue',
       confirmColor: 'success',
       onConfirm: async () => {
-        appState.modal.openState = false
+        uiState.modal.openState = false
         const updatedTracks = await addTracksToDb()
         await analyzeTracks(updatedTracks)
       },
       onCancel: () => {
-        appState.modal.openState = false
-        appState.processing = false
+        uiState.modal.openState = false
+        uiState.processing = false
       },
     }
     return []
@@ -103,8 +103,8 @@ async function getTracksRecursively(
 
 const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
   // Set analyzing state now to avoid tracks appearing with 'analyze' button
-  appState.analyzing = new Set([
-    ...appState.analyzing,
+  uiState.analyzing = new Set([
+    ...uiState.analyzing,
     ...tracks.map(track => track.id),
   ])
 
@@ -117,7 +117,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
       // Change sort order to lastModified so new tracks are visible at the top
       userState.sortColumn = 'lastModified'
       userState.sortDirection = 'descending'
-      appState.page = 1
+      uiState.page = 1
       sorted = true
     }
 
@@ -142,7 +142,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
     updatedTracks.push(trackWithId)
 
     // Remove from analyzing state
-    appState.analyzing.delete(track.id)
+    uiState.analyzing.delete(track.id)
   }
   return updatedTracks
 }
@@ -160,7 +160,7 @@ const getAudioDetails = async (
 }> => {
   const file = await getPermission(trackId)
   if (!file) {
-    appState.analyzing = new Set()
+    uiState.analyzing = new Set()
     throw errorHandler('Permission to the file or folder was denied.')
   }
 

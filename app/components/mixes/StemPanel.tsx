@@ -1,7 +1,7 @@
 import { useSnapshot } from 'valtio'
 import { STEMS, type Stem, type Track } from '~/api/handlers/dbHandlers'
 import { validateTrackStemAccess } from '~/api/handlers/fileHandlers'
-import { appState, audioState } from '~/api/models/appState.client'
+import { audioState, uiState } from '~/api/models/appState.client'
 import StemAccessButton from '~/components/mixes/StemAccessButton.client'
 import { StemControl } from '~/components/tracks/Controls'
 import { errorHandler } from '~/utils/notifications'
@@ -10,7 +10,7 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) throw errorHandler('No track ID provided to StemPanel')
 
   // add to analyzing state
-  appState.stemsAnalyzing.add(trackId)
+  uiState.stemsAnalyzing.add(trackId)
 
   validateTrackStemAccess(trackId)
 

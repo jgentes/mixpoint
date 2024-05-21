@@ -12,9 +12,9 @@ import {
 } from '~/api/handlers/dbHandlers'
 import {
   type TrackState,
-  appState,
   audioState,
   mixState,
+  uiState,
 } from '~/api/models/appState.client'
 import { convertToSecs } from '~/utils/tableOps'
 
@@ -50,10 +50,10 @@ const audioEvents = {
 
     if (gainExists) return
 
-    let audioContext = appState.audioContext
+    let audioContext = uiState.audioContext
     if (!audioContext) {
       audioContext = new AudioContext()
-      appState.audioContext = ref(audioContext)
+      uiState.audioContext = ref(audioContext)
     }
 
     // gainNode is used to control volume of all stems at once
@@ -89,7 +89,7 @@ const audioEvents = {
     // Save waveform in audioState
     if (stem) {
       // Remove from stemsAnalyzing
-      appState.stemsAnalyzing.delete(trackId)
+      uiState.stemsAnalyzing.delete(trackId)
 
       const stemState = audioState?.[trackId]?.stems?.[stem as Stem]
 
@@ -108,7 +108,7 @@ const audioEvents = {
       )
 
       // Remove analyzing overlay
-      appState.analyzing.delete(trackId)
+      uiState.analyzing.delete(trackId)
 
       // Style scrollbar (this is a workaround for https://github.com/katspaugh/wavesurfer.js/issues/2933)
       const style = document.createElement('style')
@@ -204,7 +204,7 @@ const audioEvents = {
 
   playSync: async (trackIds: Track['id'][]) => {
     // Sync all waveforms to the same position
-    let syncTimer = appState.syncTimer
+    let syncTimer = uiState.syncTimer
     if (syncTimer) cancelAnimationFrame(syncTimer)
 
     const dataArray = new Uint8Array(2048) // fftSize
@@ -217,7 +217,7 @@ const audioEvents = {
     // setup sync loop
     const syncLoop = () => {
       syncTimer = requestAnimationFrame(syncLoop)
-      appState.syncTimer = syncTimer
+      uiState.syncTimer = syncTimer
 
       // for volume meters
       for (const trackId of trackIds) {
@@ -288,7 +288,7 @@ const audioEvents = {
     let waveforms = []
     let trackIds = []
 
-    if (appState.syncTimer) cancelAnimationFrame(appState.syncTimer)
+    if (uiState.syncTimer) cancelAnimationFrame(uiState.syncTimer)
 
     if (trackId) {
       const waveform = audioState[trackId]?.waveform
@@ -603,7 +603,7 @@ const audioEvents = {
     }
 
     // Remove from stemsAnalyzing
-    appState.stemsAnalyzing.delete(trackId)
+    uiState.stemsAnalyzing.delete(trackId)
   },
 }
 

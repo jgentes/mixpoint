@@ -7,7 +7,7 @@ import {
   Tooltip
 } from '@nextui-org/react'
 import type { Key } from 'react'
-import { appState } from '~/api/models/appState.client'
+import { uiState } from '~/api/models/appState.client'
 import { SettingsIcon } from '~/components/icons'
 
 const buttonAction = (key: Key) => {
@@ -23,7 +23,7 @@ const buttonAction = (key: Key) => {
       clearLocalStorage()
       break
     case 'indexeddb':
-      appState.modal = {
+      uiState.modal = {
         openState: true,
         headerText: 'Are you sure?',
         bodyText:
@@ -31,13 +31,13 @@ const buttonAction = (key: Key) => {
         confirmColor: 'danger',
         confirmText: 'Remove everything',
         onConfirm: async () => {
-          appState.modal.openState = false
+          uiState.modal.openState = false
 
           indexedDB.deleteDatabase('MixpointDb')
           clearLocalStorage()
         },
         onCancel: async () => {
-          appState.modal.openState = false
+          uiState.modal.openState = false
         }
       }
       break

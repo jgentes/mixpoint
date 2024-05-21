@@ -31,7 +31,7 @@ import {
   useLiveQuery
 } from '~/api/handlers/dbHandlers'
 import { browseFile } from '~/api/handlers/fileHandlers'
-import { appState, mixState, userState } from '~/api/models/appState.client'
+import { mixState, uiState, userState } from '~/api/models/appState.client'
 import {
   AddIcon,
   AnalyzeIcon,
@@ -46,7 +46,7 @@ import { formatMinutes, getComparator } from '~/utils/tableOps'
 const TrackTable = () => {
   // Re-render when page or selection changes
   const { page, rowsPerPage, selected, analyzing, search, processing } =
-    useSnapshot(appState)
+    useSnapshot(uiState)
   const selectedCount = selected.size
 
   // Allow drag & drop files / folders into the table
@@ -111,12 +111,12 @@ const TrackTable = () => {
     await addToMix(trackId)
 
     // if this is the first track in the mix, leave the drawer open
-    if (!mixState.tracks?.filter(t => t).length) appState.openDrawer = true
+    if (!mixState.tracks?.filter(t => t).length) uiState.openDrawer = true
   }
 
   const AddToMixButton = useCallback(
     ({ trackId }: { trackId: Track['id'] }) => {
-      const tracks = mixState.tracks
+      const { tracks } = useSnapshot(mixState)
       const isInMix = tracks.includes(trackId)
 
       // Prevent user from adding a new track before previous added track finishes analyzing
@@ -251,7 +251,7 @@ const TrackTable = () => {
   }, [visibleColumns, columns])
 
   const showRemoveTracksModal = () => {
-    appState.modal = {
+    uiState.modal = {
       openState: true,
       headerText: 'Are you sure?',
       bodyText: 'Removing tracks here will not delete them from your computer.',
@@ -260,20 +260,20 @@ const TrackTable = () => {
         selectedCount > 1 ? 's' : ''
       }`,
       onConfirm: async () => {
-        appState.modal.openState = false
+        uiState.modal.openState = false
 
         for (const id of selected) await audioEvents.ejectTrack(Number(id))
         await removeTracks([...selected].map(Number))
-        appState.selected = new Set()
+        uiState.selected = new Set()
       },
       onCancel: async () => {
-        appState.modal.openState = false
+        uiState.modal.openState = false
       }
     }
   }
 
   const showAnalyzeDirtyModal = () => {
-    appState.modal = {
+    uiState.modal = {
       openState: true,
       headerText: 'Are you sure?',
       bodyText: `This will analyze ${dirtyTracks.length} track${
@@ -282,11 +282,11 @@ const TrackTable = () => {
       confirmColor: 'success',
       confirmText: `Analyze track${dirtyTracks.length > 1 ? 's' : ''}`,
       onConfirm: async () => {
-        appState.modal.openState = false
+        uiState.modal.openState = false
         analyzeTracks(dirtyTracks)
       },
       onCancel: async () => {
-        appState.modal.openState = false
+        uiState.modal.openState = false
       }
     }
   }
@@ -314,14 +314,14 @@ const TrackTable = () => {
             value={String(search)}
             variant="bordered"
             onClear={() => {
-              appState.search = ''
+              uiState.search = ''
             }}
             onValueChange={value => {
               if (value) {
-                appState.search = value
-                appState.page = 1
+                uiState.search = value
+                uiState.page = 1
               } else {
-                appState.search = ''
+                uiState.search = ''
               }
             }}
           />
@@ -410,8 +410,8 @@ const TrackTable = () => {
           placeholder="10"
           size="sm"
           onChange={e => {
-            appState.rowsPerPage = Number(e.target.value)
-            appState.page = 1
+            uiState.rowsPerPage = Number(e.target.value)
+            uiState.page = 1
           }}
           classNames={{
             base: 'w-min',
@@ -460,7 +460,7 @@ const TrackTable = () => {
       selectionMode="multiple"
       sortDescriptor={{ column: sortColumn, direction: sortDirection }}
       onSelectionChange={keys => {
-        appState.selected = keys === 'all' ? currentPageTracks() : keys
+        uiState.selected = keys === 'all' ? currentPageTracks() : keys
       }}
       onSortChange={({ column, direction }) => {
         userState.sortColumn = column
@@ -535,7 +535,7 @@ const TrackTable = () => {
         total={pages}
         variant="light"
         onChange={pageNum => {
-          appState.page = pageNum
+          uiState.page = pageNum
         }}
       />
       <span className="text-small text-default-500">

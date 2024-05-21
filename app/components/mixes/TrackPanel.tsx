@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { useSnapshot } from 'valtio'
 import { audioEvents } from '~/api/handlers/audioEvents.client'
 import { type Track, db, useLiveQuery } from '~/api/handlers/dbHandlers'
-import { appState, audioState, mixState } from '~/api/models/appState.client'
+import { audioState, mixState, uiState } from '~/api/models/appState.client'
 import { Waveform } from '~/api/renderWaveform.client'
 import { ProgressBar } from '~/components/layout/Loader'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
@@ -48,7 +48,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
   }
 
   const MixCardOverview = () => {
-    const { analyzing } = useSnapshot(appState)
+    const { analyzing } = useSnapshot(uiState)
     const isAnalyzing = analyzing.has(trackId)
 
     const loaderClassNames =
@@ -83,7 +83,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
   )
 
   const AnalyzingOverlay = () => {
-    const { analyzing } = useSnapshot(appState)
+    const { analyzing } = useSnapshot(uiState)
     const isAnalyzing = analyzing.has(trackId)
 
     return !isAnalyzing ? null : (
@@ -102,7 +102,7 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
     useSnapshot(mixState.trackState[trackId]).stemZoom
 
     // add to analyzing state
-    appState.analyzing.add(trackId)
+    uiState.analyzing.add(trackId)
 
     return <Waveform trackId={trackId} overviewRef={overviewContainer} />
   }

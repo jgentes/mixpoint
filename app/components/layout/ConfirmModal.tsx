@@ -7,12 +7,12 @@ import {
   ModalHeader
 } from '@nextui-org/react'
 import { useSnapshot } from 'valtio'
-import { appState } from '~/api/models/appState.client'
+import { uiState } from '~/api/models/appState.client'
 import { WarningIcon } from '~/components/icons'
 
 const ConfirmModal = () => {
   const closeModal = () => {
-    appState.modal.openState = false
+    uiState.modal.openState = false
   }
 
   const {
@@ -23,7 +23,7 @@ const ConfirmModal = () => {
     onConfirm = () => closeModal(),
     onCancel = () => closeModal(),
     openState
-  } = useSnapshot(appState).modal
+  } = useSnapshot(uiState).modal
 
   return (
     <Modal

@@ -1,10 +1,11 @@
 // This file handles application state that may be persisted to local storage.
 import type { ButtonProps } from '@nextui-org/react'
 import type { Key } from 'react'
-import { proxy, subscribe } from 'valtio'
-import { devtools, proxySet } from 'valtio/utils'
+import { proxy, snapshot } from 'valtio'
+import { devtools, proxySet, watch } from 'valtio/utils'
 import type WaveSurfer from 'wavesurfer.js'
-import type { Stem, Track } from '~/api/handlers/dbHandlers'
+import { type Stem, type Track, db } from '~/api/handlers/dbHandlers'
+import type { MixState, UserState } from '~/api/models/__dbSchema'
 import { Env } from '~/utils/env'
 
 // AudioState captures ephemeral state of a mix, while persistent state is stored in IndexedDB
@@ -58,7 +59,7 @@ type ModalState = Partial<{
 }>
 
 // App captures the state of various parts of the app, mostly the table, such as search value, which which rows are selected and track drawer open/closed state
-const appState = proxy<{
+const uiState = proxy<{
   search: string | number
   selected: Set<Key> // NextUI table uses string keys
   rowsPerPage: number
@@ -89,37 +90,32 @@ const appState = proxy<{
   modal: { openState: false },
 })
 
-type TrackState = Partial<{
-  adjustedBpm: Track['bpm']
-  beatResolution: '1:1' | '1:2' | '1:4'
-  stemZoom: Stem
-  mixpointTime: number // seconds
-}>
-
-type MixState = {
-  tracks: Track['id'][]
-  trackState: {
-    [trackId: Track['id']]: TrackState
-  }
-}
-
-type UserState = Partial<{
-  sortDirection: 'ascending' | 'descending'
-  sortColumn: Key
-  visibleColumns: Set<Key> // track table visible columns
-  stemsDirHandle: FileSystemDirectoryHandle // local folder on file system to store stems
-}>
-
-// TODO: add a way to clear mixState via button on catchboundary
-const mixState = proxyWithLocalStorage<MixState>(
-  'mixState',
-  proxy({ tracks: [], trackState: {} })
+// Pull latest persistent state from Dexie and populate Valtio store
+let seeded = false
+const initialMixState = (await db.appState.get('mixState')) as MixState
+const mixState = proxy<MixState>(
+  initialMixState || { tracks: [], trackState: {} }
 )
 
-const userState = proxyWithLocalStorage<UserState>('userState', proxy({}))
+watch(async get => {
+  get(mixState)
+  //@ts-ignore dexie typescript failure
+  if (seeded) db.appState.put(snapshot(mixState), 'mixState')
+})
+
+const initialUserState = (await db.appState.get('userState')) as UserState
+const userState = proxy<UserState>(initialUserState || {})
+
+watch(async get => {
+  get(userState)
+  //@ts-ignore dexie typescript failure
+  if (seeded) db.appState.put(snapshot(userState), 'userState')
+})
+
+seeded = true
 
 if (Env === 'development') {
-  devtools(appState, { name: 'appState', enable: true })
+  devtools(uiState, { name: 'uiState', enable: true })
   devtools(mixState, { name: 'mixState', enable: true })
   devtools(userState, { name: 'userState', enable: true })
   // audioState waveforms cause memory issues in devtools
@@ -138,18 +134,5 @@ const initAudioState = async () => {
 
 initAudioState()
 
-function proxyWithLocalStorage<T extends object>(key: string, initialValue: T) {
-  if (typeof window === 'undefined') return proxy(initialValue)
-  const storageItem = localStorage.getItem(key)
-
-  const state = proxy(
-    storageItem !== null ? (JSON.parse(storageItem) as T) : initialValue
-  )
-
-  subscribe(state, () => localStorage.setItem(key, JSON.stringify(state)))
-
-  return state
-}
-
-export { appState, audioState, mixState, userState }
-export type { AudioState, StemState, Stems, TrackState, MixState, UserState }
+export { uiState, audioState, mixState, userState }
+export type { AudioState, StemState, Stems, MixState }
