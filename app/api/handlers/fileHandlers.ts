@@ -4,14 +4,14 @@ import {
   type TrackCache,
   addToMix,
   db,
-  storeTrackCache,
+  storeTrackCache
 } from '~/api/handlers/dbHandlers'
+import type { StemState } from '~/api/models/appModels'
 import {
-  type StemState,
   audioState,
   mixState,
   uiState,
-  userState,
+  userState
 } from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 import { processTracks } from './audioHandlers.client'
@@ -33,7 +33,7 @@ function showOpenFilePickerPolyfill(options: OpenFilePickerOptions) {
             getFile: async () =>
               new Promise(resolve => {
                 resolve(file)
-              }),
+              })
           }
         })
       )
@@ -159,7 +159,7 @@ const getStemsDirHandle = async (): Promise<
   const newStemsDirHandle = await window.showDirectoryPicker({
     startIn: stemsDirHandle,
     id: 'stemsDir',
-    mode: 'readwrite',
+    mode: 'readwrite'
   })
 
   if (
@@ -190,7 +190,7 @@ const validateTrackStemAccess = async (
     // do we have access to the stem dir?
     try {
       const stemDirAccess = await stemsDirHandle.queryPermission({
-        mode: 'readwrite',
+        mode: 'readwrite'
       })
       if (stemDirAccess !== 'granted') return 'grantStemDirAccess'
     } catch (e) {

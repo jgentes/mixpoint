@@ -8,13 +8,13 @@ import {
   type Stem,
   type Track,
   db,
-  updateTrack,
+  updateTrack
 } from '~/api/handlers/dbHandlers'
 import {
   type TrackState,
   audioState,
   mixState,
-  uiState,
+  uiState
 } from '~/api/models/appState.client'
 import { convertToSecs } from '~/utils/tableOps'
 
@@ -35,7 +35,7 @@ const audioEvents = {
   initAudioContext: ({
     trackId,
     stem,
-    media,
+    media
   }: {
     trackId: Track['id']
     stem?: Stem
@@ -258,7 +258,7 @@ const audioEvents = {
 
       audioEvents.initAudioContext({
         trackId,
-        media: waveform.getMediaElement(),
+        media: waveform.getMediaElement()
       })
 
       waveform.play()
@@ -274,7 +274,7 @@ const audioEvents = {
             audioEvents.initAudioContext({
               trackId,
               stem: stem as Stem,
-              media: stemWaveform.getMediaElement(),
+              media: stemWaveform.getMediaElement()
             })
             stemWaveform.play()
           }
@@ -412,7 +412,7 @@ const audioEvents = {
     // [left, right] @ 0% = [1, 0] 50% = [1, 1] 100% = [0, 1]
     const volumes = [
       Math.min(1, 1 + Math.cos(sliderPercent * Math.PI)),
-      Math.min(1, 1 + Math.cos((1 - sliderPercent) * Math.PI)),
+      Math.min(1, 1 + Math.cos((1 - sliderPercent) * Math.PI))
     ]
 
     if (mixState.tracks.length) {
@@ -427,7 +427,7 @@ const audioEvents = {
       volume: trackVol = 1,
       stems,
       gainNode,
-      stemState,
+      stemState
     } = audioState[trackId]
 
     // if we have a stemType, this is a stem crossfader
@@ -604,7 +604,7 @@ const audioEvents = {
 
     // Remove from stemsAnalyzing
     uiState.stemsAnalyzing.delete(trackId)
-  },
+  }
 }
 
 export { audioEvents }

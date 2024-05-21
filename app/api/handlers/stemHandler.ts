@@ -4,7 +4,7 @@ import {
   type Stem,
   type Track,
   db,
-  storeTrackCache,
+  storeTrackCache
 } from '~/api/handlers/dbHandlers'
 import { getStemsDirHandle } from '~/api/handlers/fileHandlers'
 import { audioState } from '~/api/models/appState.client'
@@ -51,7 +51,7 @@ const stemAudio = async (trackId: Track['id']) => {
     try {
       await fetch(ENDPOINT_URL, {
         method: 'PUT',
-        body: formData,
+        body: formData
       })
     } catch (e) {
       return handleErr('Error uploading file for stem processing')
@@ -69,7 +69,7 @@ const stemAudio = async (trackId: Track['id']) => {
     return new Promise((resolve, reject) => {
       const waitForStems = async (): Promise<void> => {
         const res = await fetch(ENDPOINT_URL, {
-          method: 'HEAD',
+          method: 'HEAD'
         })
 
         if (res.status === 202) {
@@ -87,7 +87,7 @@ const stemAudio = async (trackId: Track['id']) => {
                   return {
                     name: `${FILENAME} - ${stem}.mp3`,
                     type: stem,
-                    file: await res.blob(),
+                    file: await res.blob()
                   }
                 throw new Error(await res?.text())
               })
@@ -118,7 +118,7 @@ const stemAudio = async (trackId: Track['id']) => {
   let stemsDirHandle: FileSystemDirectoryHandle
   try {
     stemsDirHandle = await dirHandle.getDirectoryHandle(`${FILENAME} - stems`, {
-      create: true,
+      create: true
     })
   } catch (e) {
     throw errorHandler('Error creating directory for stems.')
@@ -126,7 +126,7 @@ const stemAudio = async (trackId: Track['id']) => {
 
   for (const { name, type, file } of stems) {
     const stemFile = await stemsDirHandle.getFileHandle(name, {
-      create: true,
+      create: true
     })
 
     const writable = await stemFile.createWritable()
@@ -140,7 +140,7 @@ const stemAudio = async (trackId: Track['id']) => {
     // store stem in cache
     await storeTrackCache({
       id: trackId,
-      stems: { [type]: { file } },
+      stems: { [type]: { file } }
     })
   }
   // give a couple of seconds before trying to render the stem waveform

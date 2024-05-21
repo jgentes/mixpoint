@@ -1,7 +1,9 @@
 // This file initializes Dexie (indexDB), defines the schema and creates tables
 // Be sure to create MIGRATIONS for any changes to SCHEMA!
+import type { ButtonProps } from '@nextui-org/react'
 import Dexie from 'dexie'
 import type { Key } from 'react'
+import type WaveSurfer from 'wavesurfer.js'
 
 // from https://dexie.org/docs/Typescript
 
@@ -21,7 +23,7 @@ class MixpointDb extends Dexie {
       mixes: '++id, tracks',
       sets: '++id, mixes',
       trackCache: 'id',
-      appState: '',
+      appState: ''
     })
     // example migration:
     //
@@ -109,6 +111,7 @@ type MixSet = {
 const STEMS = ['drums', 'bass', 'vocals', 'other'] as const
 type Stem = (typeof STEMS)[number]
 
+// TrackCache is a cache for track files, including stems
 type TrackCache = {
   id: Track['id']
   file?: File
@@ -144,18 +147,85 @@ type UserState = Partial<{
   stemsDirHandle: FileSystemDirectoryHandle // local folder on file system to store stems
 }>
 
+// AudioState is the working state of the mix, limited to the # of tracks in use, thereby not storing waveforms for all tracks
+type AudioState = Partial<{
+  waveform: WaveSurfer // must be a valtio ref()
+  playing: boolean
+  time: number
+  gainNode?: GainNode // gain controls actual loudness of track, must be a ref()
+  analyserNode?: AnalyserNode // analyzerNode is used for volumeMeter, must be a ref()
+  volume: number // volume is the crossfader value
+  volumeMeter?: number // value between 0 and 1
+  stems: Stems
+  stemState: StemState
+  stemTimer: number
+}>
+
+type Stems = {
+  [key in Stem]: Partial<{
+    waveform: WaveSurfer // must be a valtio ref()
+    gainNode?: GainNode // gain controls actual loudness of stem, must be a ref()
+    analyserNode?: AnalyserNode // analyzerNode is used for volumeMeter, must be a ref()
+    volume: number // volume is the crossfader value
+    volumeMeter: number
+    mute: boolean
+  }>
+}
+
+type StemState =
+  | 'selectStemDir'
+  | 'grantStemDirAccess'
+  | 'getStems'
+  | 'uploadingFile'
+  | 'processingStems'
+  | 'downloadingStems'
+  | 'ready'
+  | 'error'
+
+// ModalState is a generic handler for various modals, usually when doing something significant like deleting tracks
+type ModalState = Partial<{
+  openState: boolean
+  headerText: string
+  bodyText: string
+  confirmColor: ButtonProps['color']
+  confirmText: string
+  onConfirm: () => void
+  onCancel: () => void
+}>
+
+// UiState captures the state of various parts of the app, mostly the table, such as search value, which which rows are selected and track drawer open/closed state
+type UiState = {
+  search: string | number
+  selected: Set<Key> // NextUI table uses string keys
+  rowsPerPage: number
+  page: number
+  showButton: number | null
+  openDrawer: boolean
+  dropZoneLoader: boolean
+  processing: boolean
+  analyzing: Set<Track['id']>
+  stemsAnalyzing: Set<Track['id']>
+  syncTimer: ReturnType<typeof requestAnimationFrame> | undefined
+  audioContext?: AudioContext
+  userEmail: string // email address
+  modal: ModalState
+}
+
 // Avoid having two files export same type names
 export type {
-  Track as __Track,
-  Mix as __Mix,
-  Mixpoint as __Mixpoint,
-  Effect as __Effect,
-  MixSet as __MixSet,
-  TrackCache as __TrackCache,
-  Stem as __Stem,
+  Track,
+  Mix,
+  Mixpoint,
+  Effect,
+  MixSet,
+  TrackCache,
+  Stem,
+  StemState,
   AppState,
   UserState,
   MixState,
   TrackState,
+  AudioState,
+  UiState
 }
-export { db as __db, STEMS as __STEMS, EFFECTS as __EFFECTS }
+export { db, STEMS, EFFECTS }

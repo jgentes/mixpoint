@@ -8,7 +8,8 @@ import {
   validateTrackStemAccess
 } from '~/api/handlers/fileHandlers'
 import { stemAudio } from '~/api/handlers/stemHandler'
-import { type StemState, audioState } from '~/api/models/appState.client'
+import type { StemState } from '~/api/models/appModels'
+import { audioState } from '~/api/models/appState.client'
 import {
   OfflineDownloadIcon,
   RuleFolderIcon,

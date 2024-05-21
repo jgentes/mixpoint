@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     // latest features
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ESNext"
-    ],
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "target": "ESNext",
     "module": "ESNext",
     "moduleDetection": "force",
@@ -26,9 +22,7 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": [
-        "./app/*"
-      ]
+      "~/*": ["./app/*"]
     },
     // other checks
     "forceConsistentCasingInFileNames": true,
@@ -36,9 +30,5 @@
     "strictNullChecks": true,
     "esModuleInterop": true
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "env.d.ts"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", "env.d.ts"]
 }

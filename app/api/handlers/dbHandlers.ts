@@ -3,17 +3,17 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { audioEvents } from '~/api/handlers/audioEvents.client'
 import { getPermission } from '~/api/handlers/fileHandlers'
 import {
-  __EFFECTS as EFFECTS,
-  type __Effect as Effect,
-  type __Mix as Mix,
-  type __MixSet as MixSet,
-  type __Mixpoint as Mixpoint,
-  __STEMS as STEMS,
-  type __Stem as Stem,
-  type __Track as Track,
-  type __TrackCache as TrackCache,
-  __db as db,
-} from '~/api/models/__dbSchema'
+  EFFECTS,
+  type Effect,
+  type Mix,
+  type MixSet,
+  type Mixpoint,
+  STEMS,
+  type Stem,
+  type Track,
+  type TrackCache,
+  db
+} from '~/api/models/appModels'
 import { audioState, mixState } from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 
@@ -22,7 +22,7 @@ const CACHE_LIMIT = 25
 const storeTrackCache = async ({
   id,
   file,
-  stems,
+  stems
 }: {
   id: TrackCache['id']
   file?: TrackCache['file']
@@ -83,7 +83,7 @@ const putTracks = async (tracks: TrackIdOptional[]): Promise<Track[]> => {
   }
 
   const updatedTracks = await db.tracks.bulkPut(bulkTracks as Track[], {
-    allKeys: true,
+    allKeys: true
   })
   return (await db.tracks.bulkGet(updatedTracks)) as Track[]
 }
@@ -137,7 +137,7 @@ const putMixpoint = async (
 
     return await db.mixpoints.put({
       name,
-      effects,
+      effects
     })
   }
 
@@ -148,7 +148,7 @@ const putMixpoint = async (
 
   const newMixpoint = {
     ...currentMixpoint,
-    ...{ name: name || currentMixpoint.name, effects: newEffects },
+    ...{ name: name || currentMixpoint.name, effects: newEffects }
   }
 
   await db.mixpoints.put(newMixpoint, mixpointId)
@@ -195,5 +195,5 @@ export {
   removeMix,
   addToMix,
   getTrackName,
-  storeTrackCache,
+  storeTrackCache
 }

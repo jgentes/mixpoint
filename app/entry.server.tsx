@@ -1,5 +1,5 @@
 import { HandleError } from '@highlight-run/remix/server'
-import { type EntryContext } from '@vercel/remix'
+import type { EntryContext } from '@vercel/remix'
 import { renderHeadToString } from 'remix-island'
 import { Head } from './root'
 
