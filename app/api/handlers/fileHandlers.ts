@@ -1,17 +1,18 @@
+import { ref } from 'valtio'
 import {
   type Stem,
   type Track,
   type TrackCache,
   addToMix,
   db,
-  storeTrackCache
+  storeTrackCache,
 } from '~/api/handlers/dbHandlers'
 import type { StemState } from '~/api/models/appModels'
 import {
   audioState,
   mixState,
   uiState,
-  userState
+  userState,
 } from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 import { processTracks } from './audioHandlers.client'
@@ -33,7 +34,7 @@ function showOpenFilePickerPolyfill(options: OpenFilePickerOptions) {
             getFile: async () =>
               new Promise(resolve => {
                 resolve(file)
-              })
+              }),
           }
         })
       )
@@ -159,14 +160,14 @@ const getStemsDirHandle = async (): Promise<
   const newStemsDirHandle = await window.showDirectoryPicker({
     startIn: stemsDirHandle,
     id: 'stemsDir',
-    mode: 'readwrite'
+    mode: 'readwrite',
   })
 
   if (
     (await newStemsDirHandle.queryPermission({ mode: 'readwrite' })) ===
     'granted'
   ) {
-    userState.stemsDirHandle = newStemsDirHandle
+    userState.stemsDirHandle = ref(newStemsDirHandle)
     return newStemsDirHandle
   }
 }
@@ -190,7 +191,7 @@ const validateTrackStemAccess = async (
     // do we have access to the stem dir?
     try {
       const stemDirAccess = await stemsDirHandle.queryPermission({
-        mode: 'readwrite'
+        mode: 'readwrite',
       })
       if (stemDirAccess !== 'granted') return 'grantStemDirAccess'
     } catch (e) {

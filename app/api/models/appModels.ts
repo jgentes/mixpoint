@@ -23,7 +23,7 @@ class MixpointDb extends Dexie {
       mixes: '++id, tracks',
       sets: '++id, mixes',
       trackCache: 'id',
-      appState: ''
+      appState: '',
     })
     // example migration:
     //
@@ -120,12 +120,6 @@ type TrackCache = {
   }>
 }
 
-// AppState provides persistence for Valtio state, which has much simpler get/set than Dexie
-type AppState = Partial<{
-  userState: UserState
-  mixState: MixState
-}>
-
 type TrackState = Partial<{
   adjustedBpm: Track['bpm']
   beatResolution: '1:1' | '1:2' | '1:4'
@@ -133,27 +127,13 @@ type TrackState = Partial<{
   mixpointTime: number // seconds
 }>
 
-type MixState = {
-  tracks: Track['id'][]
-  trackState: {
-    [trackId: Track['id']]: TrackState
-  }
-}
-
-type UserState = Partial<{
-  sortDirection: 'ascending' | 'descending'
-  sortColumn: Key
-  visibleColumns: Set<Key> // track table visible columns
-  stemsDirHandle: FileSystemDirectoryHandle // local folder on file system to store stems
-}>
-
-// AudioState is the working state of the mix, limited to the # of tracks in use, thereby not storing waveforms for all tracks
+// AudioState is the working state of the mix, should not be persisted due to time/volumeMeter!
 type AudioState = Partial<{
-  waveform: WaveSurfer // must be a valtio ref()
+  waveform: WaveSurfer // ref()
   playing: boolean
   time: number
-  gainNode?: GainNode // gain controls actual loudness of track, must be a ref()
-  analyserNode?: AnalyserNode // analyzerNode is used for volumeMeter, must be a ref()
+  gainNode?: GainNode // ref() gain controls actual loudness of track
+  analyserNode?: AnalyserNode // ref() analyzerNode is used for volumeMeter
   volume: number // volume is the crossfader value
   volumeMeter?: number // value between 0 and 1
   stems: Stems
@@ -163,9 +143,9 @@ type AudioState = Partial<{
 
 type Stems = {
   [key in Stem]: Partial<{
-    waveform: WaveSurfer // must be a valtio ref()
-    gainNode?: GainNode // gain controls actual loudness of stem, must be a ref()
-    analyserNode?: AnalyserNode // analyzerNode is used for volumeMeter, must be a ref()
+    waveform: WaveSurfer // ref()
+    gainNode?: GainNode // ref() gain controls actual loudness of stem
+    analyserNode?: AnalyserNode // ref() analyzerNode is used for volumeMeter
     volume: number // volume is the crossfader value
     volumeMeter: number
     mute: boolean
@@ -211,6 +191,26 @@ type UiState = {
   modal: ModalState
 }
 
+// AppState provides persistence for Valtio state, which has much simpler get/set than Dexie
+type AppState = Partial<{
+  userState: UserState
+  mixState: MixState
+}>
+
+type MixState = {
+  tracks: Track['id'][]
+  trackState: {
+    [trackId: Track['id']]: TrackState
+  }
+}
+
+type UserState = {
+  sortDirection: 'ascending' | 'descending'
+  sortColumn: Key
+  visibleColumns: Set<Key> // track table visible columns
+  stemsDirHandle: FileSystemDirectoryHandle // ref() local folder on file system to store stems
+}
+
 // Avoid having two files export same type names
 export type {
   Track,
@@ -226,6 +226,6 @@ export type {
   MixState,
   TrackState,
   AudioState,
-  UiState
+  UiState,
 }
 export { db, STEMS, EFFECTS }

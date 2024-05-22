@@ -1,5 +1,5 @@
 // This file handles application state that may be persisted to local storage.
-import { proxy, snapshot } from 'valtio'
+import { proxy, ref, snapshot } from 'valtio'
 import { devtools, proxySet, watch } from 'valtio/utils'
 import { db } from '~/api/handlers/dbHandlers'
 import type {
@@ -7,7 +7,7 @@ import type {
   MixState,
   Track,
   UiState,
-  UserState
+  UserState,
 } from '~/api/models/appModels'
 import { Env } from '~/utils/env'
 
@@ -29,15 +29,13 @@ const uiState = proxy<UiState>({
   stemsAnalyzing: proxySet(),
   syncTimer: undefined,
   userEmail: '',
-  modal: { openState: false }
+  modal: { openState: false },
 })
 
 // Pull latest persistent state from Dexie and populate Valtio store
 let seeded = false
 const initialMixState = (await db.appState.get('mixState')) as MixState
-const mixState = proxy<MixState>(
-  initialMixState || { tracks: [], trackState: {} }
-)
+const mixState = proxy<MixState>(initialMixState)
 
 watch(async get => {
   get(mixState)
@@ -45,8 +43,14 @@ watch(async get => {
   if (seeded) db.appState.put(snapshot(mixState), 'mixState')
 })
 
-const initialUserState = (await db.appState.get('userState')) as UserState
-const userState = proxy<UserState>(initialUserState || {})
+let initialUserState = (await db.appState.get('userState')) as UserState
+// ensure that we ref the stemsDirHandle
+if (initialUserState?.stemsDirHandle)
+  initialUserState = {
+    ...initialUserState,
+    stemsDirHandle: ref(initialUserState.stemsDirHandle),
+  }
+const userState = proxy<UserState>(initialUserState)
 
 watch(async get => {
   get(userState)
