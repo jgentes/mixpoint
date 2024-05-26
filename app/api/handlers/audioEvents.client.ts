@@ -84,13 +84,14 @@ const audioEvents = {
   onReady: async (waveform: WaveSurfer, trackId: Track['id'], stem?: Stem) => {
     // Save waveform in audioState
     if (stem) {
+      const stemState = audioState?.[trackId]?.stems?.[stem as Stem]
+      if (stemState) stemState.waveform = ref(waveform) // this should happen right away
+
       // Remove from stemsAnalyzing
       uiState.stemsAnalyzing.delete(trackId)
-
-      const stemState = audioState?.[trackId]?.stems?.[stem as Stem]
-
-      if (stemState) stemState.waveform = ref(waveform)
     } else {
+      audioState[trackId].waveform = ref(waveform) // this should happen right away
+
       // Generate beat markers (regions) and apply them to waveform
       await calcMarkers(trackId)
       const plugins = waveform.getActivePlugins()
@@ -135,8 +136,6 @@ const audioEvents = {
 
       // account for resize of browser window
       waveform.on('redraw', () => audioEvents.seek(trackId))
-
-      audioState[trackId].waveform = ref(waveform)
 
       if (audioState[trackId].playing) audioEvents.play(trackId)
     }

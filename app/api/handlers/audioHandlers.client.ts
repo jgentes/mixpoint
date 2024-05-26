@@ -7,7 +7,7 @@ import {
   audioState,
   mixState,
   uiState,
-  userState
+  userState,
 } from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 
@@ -52,7 +52,7 @@ async function getTracksRecursively(
           size,
           type,
           fileHandle: fileOrDirectoryHandle,
-          dirHandle
+          dirHandle,
         })
     } else if (fileOrDirectoryHandle.kind === 'directory') {
       for await (const handle of fileOrDirectoryHandle.values()) {
@@ -93,7 +93,7 @@ async function getTracksRecursively(
       onCancel: () => {
         uiState.modal.openState = false
         uiState.processing = false
-      }
+      },
     }
     return []
   }
@@ -105,7 +105,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
   // Set analyzing state now to avoid tracks appearing with 'analyze' button
   uiState.analyzing = new Set([
     ...uiState.analyzing,
-    ...tracks.map(track => track.id)
+    ...tracks.map(track => track.id),
   ])
 
   // Return array of updated tracks
@@ -135,7 +135,7 @@ const analyzeTracks = async (tracks: Track[]): Promise<Track[]> => {
       bpm: normalizedBpm,
       offset,
       sampleRate,
-      ...rest
+      ...rest,
     }
 
     const [trackWithId] = await putTracks([updatedTrack])
@@ -192,7 +192,7 @@ const getAudioDetails = async (
     offset,
     bpm,
     duration,
-    sampleRate
+    sampleRate,
   }
 }
 
@@ -239,7 +239,7 @@ const calcMarkers = async (trackId: Track['id']): Promise<void> => {
       start: time,
       end: time,
       color: 'rgba(4, 146, 247, 0.757)',
-      drag: false
+      drag: false,
     })
   }
 }

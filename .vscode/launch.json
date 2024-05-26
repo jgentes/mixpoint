@@ -9,8 +9,8 @@
 			"port": 9222,
 			"webRoot": "${workspaceFolder}/app",
 			"skipFiles": [
-				"<node_internals>/**/*.js",
-				"${workspaceFolder}/node_modules/**/*.js"
+				"<node_internals>/**",
+				"**/node_modules/**"
 			]
 		}
 	]
