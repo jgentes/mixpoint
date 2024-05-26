@@ -5154,13 +5154,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wavesurfer/react@npm:^1.0.5":
-  version: 1.0.5
-  resolution: "@wavesurfer/react@npm:1.0.5"
+"@wavesurfer/react@npm:^1.0.6":
+  version: 1.0.6
+  resolution: "@wavesurfer/react@npm:1.0.6"
   peerDependencies:
     react: ^18.2.0
-    wavesurfer.js: ^7.6.3
-  checksum: 10c0/4c84a438af08151554742f5910e166621743b62f175847269f1908354f1589a118d2290f888d3c809e9488db2a473347f64ab82c2b4a718dfc38773ca734f8c2
+    wavesurfer.js: ">=7.7.14"
+  checksum: 10c0/2ae4bcf5ac4bc6bfb8f82a9243f90f55452e25f1ca6bd9d3c4581cf7fdb67995b25dc39251366da3a0b24a4aa30378a8b0c37fb80245e0baa853fffe2bfa5ea1
   languageName: node
   linkType: hard
 
@@ -9181,7 +9181,7 @@ __metadata:
     "@types/wicg-file-system-access": "npm:~2020.9.8"
     "@vercel/analytics": "npm:^1.1.2"
     "@vercel/remix": "npm:^2.8.0"
-    "@wavesurfer/react": "npm:^1.0.5"
+    "@wavesurfer/react": "npm:^1.0.6"
     appwrite: "npm:^13.0.1"
     dexie: "npm:~3.2.2"
     dexie-react-hooks: "npm:~1.1.1"
@@ -9201,7 +9201,7 @@ __metadata:
     valtio: "npm:^1.13.2"
     vite: "npm:^5.1.5"
     vite-tsconfig-paths: "npm:^4.3.1"
-    wavesurfer.js: "npm:^7.7.9"
+    wavesurfer.js: "npm:^7.7.15"
     web-audio-beat-detector: "npm:~8.1.37"
     zod: "npm:^3.22.3"
   languageName: unknown
@@ -11896,10 +11896,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"wavesurfer.js@npm:^7.7.9":
-  version: 7.7.13
-  resolution: "wavesurfer.js@npm:7.7.13"
-  checksum: 10c0/a2ab556ee1ba6cdbf8828ed9fcd08eeae4a0241466218d7ecb449f452eafd1737cd731f132ea64469522fc3166eafa1f535534dda97a3254ce3b8d8ccb5d6bd8
+"wavesurfer.js@npm:^7.7.15":
+  version: 7.7.15
+  resolution: "wavesurfer.js@npm:7.7.15"
+  checksum: 10c0/20e7830c3288cf4e966851008e1c568109b2a363bf025f73ee6745085ca741986cf17dd36b825646c714c505fe2360d7505cf0faabbab13947cc750debb2fc40
   languageName: node
   linkType: hard
 

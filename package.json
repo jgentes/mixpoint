@@ -15,7 +15,7 @@
     "@nextui-org/react": "^2.3.6",
     "@remix-run/react": "^2.8.1",
     "@vercel/analytics": "^1.1.2",
-    "@wavesurfer/react": "^1.0.5",
+    "@wavesurfer/react": "^1.0.6",
     "appwrite": "^13.0.1",
     "dexie": "~3.2.2",
     "dexie-react-hooks": "~1.1.1",
@@ -30,7 +30,7 @@
     "remix-island": "^0.1.2",
     "use-count-up": "^3.0.1",
     "valtio": "^1.13.2",
-    "wavesurfer.js": "^7.7.9",
+    "wavesurfer.js": "^7.7.15",
     "web-audio-beat-detector": "~8.1.37"
   },
   "devDependencies": {
