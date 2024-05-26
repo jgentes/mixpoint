@@ -32,42 +32,50 @@ const uiState = proxy<UiState>({
   modal: { openState: false },
 })
 
-// Pull latest persistent state from Dexie and populate Valtio store
-let seeded = false
-const initialMixState = (await db.appState.get('mixState')) as MixState
-const mixState = proxy<MixState>(initialMixState)
+let mixState = proxy<MixState>()
+let userState = proxy<UserState>()
 
-watch(async get => {
-  get(mixState)
-  //@ts-ignore dexie typescript failure
-  if (seeded) db.appState.put(snapshot(mixState), 'mixState')
-})
-
-let initialUserState = (await db.appState.get('userState')) as UserState
-// ensure that we ref the stemsDirHandle
-if (initialUserState?.stemsDirHandle)
-  initialUserState = {
-    ...initialUserState,
-    stemsDirHandle: ref(initialUserState.stemsDirHandle),
-  }
-const userState = proxy<UserState>(initialUserState)
-
-watch(async get => {
-  get(userState)
-  //@ts-ignore dexie typescript failure
-  if (seeded) db.appState.put(snapshot(userState), 'userState')
-})
-
-seeded = true
-
-if (Env === 'development') {
-  devtools(uiState, { name: 'uiState', enable: true })
-  devtools(mixState, { name: 'mixState', enable: true })
-  devtools(userState, { name: 'userState', enable: true })
-  // audioState waveforms cause memory issues in devtools
-}
+const clearAppState = async () => await db.appState.clear()
 
 const initAudioState = async () => {
+  // Pull latest persistent state from Dexie and populate Valtio store
+  let seeded = false
+  const initialMixState = ((await db.appState.get('mixState')) as MixState) || {
+    tracks: [],
+    trackState: {},
+  }
+  mixState = proxy(initialMixState)
+
+  watch(async get => {
+    get(mixState)
+    //@ts-ignore dexie typescript failure
+    if (seeded) db.appState.put(snapshot(mixState), 'mixState')
+  })
+
+  let initialUserState = (await db.appState.get('userState')) as UserState
+  // ensure that we ref the stemsDirHandle
+  if (initialUserState?.stemsDirHandle)
+    initialUserState = {
+      ...initialUserState,
+      stemsDirHandle: ref(initialUserState.stemsDirHandle),
+    }
+  userState = proxy(initialUserState)
+
+  watch(async get => {
+    get(userState)
+    //@ts-ignore dexie typescript failure
+    if (seeded) db.appState.put(snapshot(userState), 'userState')
+  })
+
+  seeded = true
+
+  if (Env === 'development') {
+    devtools(uiState, { name: 'uiState', enable: true })
+    devtools(mixState, { name: 'mixState', enable: true })
+    devtools(userState, { name: 'userState', enable: true })
+    // audioState waveforms cause memory issues in devtools
+  }
+
   // Start audioState init (if we have a mix in localstorage (valtio))
   const tracks = mixState.tracks
 
@@ -80,4 +88,4 @@ const initAudioState = async () => {
 
 initAudioState()
 
-export { uiState, audioState, mixState, userState }
+export { clearAppState, uiState, audioState, mixState, userState }

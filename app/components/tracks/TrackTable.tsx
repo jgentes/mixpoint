@@ -53,7 +53,6 @@ const TrackTable = () => {
   const [dragOver, setDragOver] = useState(false)
 
   // Retrieve sort state from database
-
   const {
     sortDirection = 'descending',
     sortColumn = 'lastModified',
