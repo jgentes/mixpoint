@@ -127,7 +127,7 @@ const audioEvents = {
 
       // Update time
       let time = audioState[trackId]?.time
-      if (!time) {
+      if (!time || !Number.isFinite(time)) {
         time = mixpointTime || regionsPlugin.getRegions()[0]?.start || 0
         audioState[trackId].time = time
       }
