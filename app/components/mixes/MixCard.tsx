@@ -27,14 +27,11 @@ const MixCard = ({ trackSlot }: { trackSlot: 0 | 1 }) => {
     )
   }
 
-  const MixCardFooter = () => (
-    <div className="text-center mt-2">
-      <TrackNavControl trackId={trackId} />
-    </div>
-  )
-
   return (
-    <div className="p-3 w-5/12 rounded border-1 border-divider bg-primary-50">
+    <div
+      style={{ width: 'calc(50% - .5rem)' }} // tailwind doesn't handle calc well
+      className="p-3 rounded border-1 border-divider bg-primary-50"
+    >
       {!trackId ? (
         <Dropzone className="h-full" trackSlot={trackSlot} />
       ) : (
@@ -44,12 +41,6 @@ const MixCard = ({ trackSlot }: { trackSlot: 0 | 1 }) => {
           <div className="mt-2">
             <StemPanel trackId={trackId} />
           </div>
-
-          <div className="p-2 mt-2 rounded border-1 border-divider bg-background">
-            <TrackPanel trackId={trackId} />
-          </div>
-
-          <MixCardFooter />
         </>
       )}
     </div>

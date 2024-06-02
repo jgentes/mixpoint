@@ -191,7 +191,7 @@ const App = () => (
 export const ErrorBoundary = (error: Error) => {
   const routeError = (useRouteError() as Error) || error
 
-  errorHandler(routeError)
+  errorHandler(routeError, true)
 
   const message = isRouteErrorResponse(routeError)
     ? routeError.data.message || routeError.data || routeError

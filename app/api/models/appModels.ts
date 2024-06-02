@@ -122,7 +122,7 @@ type TrackCache = {
 
 type TrackState = Partial<{
   adjustedBpm: Track['bpm']
-  beatResolution: '1:1' | '1:2' | '1:4'
+  beatResolution: '1:1' | '1:4' | '1:16'
   stemZoom: Stem
   mixpointTime: number // seconds
 }>

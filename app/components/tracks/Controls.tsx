@@ -19,15 +19,8 @@ import {
   Tabs,
   Tooltip
 } from '@nextui-org/react'
-import { mix } from 'framer-motion'
 import { useSnapshot } from 'valtio'
-import {
-  type MixState,
-  type TrackState,
-  audioState,
-  mixState,
-  uiState
-} from '~/api/models/appState.client'
+import { audioState, mixState, uiState } from '~/api/models/appState.client'
 import { Waveform } from '~/api/renderWaveform.client'
 import {
   EjectIcon,
@@ -46,6 +39,7 @@ import {
 import { ProgressBar } from '~/components/layout/Loader'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
+import type { TrackState } from '~/api/models/appModels'
 
 const InputText = ({
   text,
@@ -269,7 +263,7 @@ const BeatResolutionControl = ({
 }) => {
   if (!trackId || !mixState.trackState?.[trackId]) return null
 
-  const { beatResolution = '1:4' } =
+  const { beatResolution = '1:16' } =
     useSnapshot(mixState.trackState[trackId]) || {}
 
   return (
@@ -293,7 +287,7 @@ const BeatResolutionControl = ({
           )
         }
       >
-        {['1:1', '1:2', '1:4'].map(item => (
+        {['1:1', '1:4', '1:16'].map(item => (
           <Tab key={item} title={item} />
         ))}
       </Tabs>

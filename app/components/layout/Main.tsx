@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react'
-import { subscribe } from 'valtio'
+import { snapshot } from 'valtio'
 import { mixState } from '~/api/models/appState.client'
 import Heart from '~/components/layout/HeartIcon'
 import LeftNav from '~/components/layout/LeftNav'
@@ -8,20 +7,9 @@ import TrackDrawer from '~/components/tracks/TrackDrawer'
 import TrackTable from '~/components/tracks/TrackTable'
 
 const Main: React.FunctionComponent = () => {
-  const mixVisible = mixState.tracks?.filter(t => t).length > 0
-  const [mixView, setMixView] = useState(mixVisible)
+  const mixVisible = snapshot(mixState).tracks?.filter(t => t).length > 0
 
-  useEffect(
-    () =>
-      subscribe(mixState.tracks, () => {
-        // this is needed otherwise changes in mixState.tracks will force a refresh of Main
-        const mixVisible = mixState.tracks?.filter(t => t).length > 0
-        setMixView(mixVisible)
-      }),
-    []
-  )
-
-  return mixView ? (
+  return mixVisible ? (
     <>
       <MixView />
       <TrackDrawer />

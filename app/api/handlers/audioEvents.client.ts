@@ -472,11 +472,11 @@ const audioEvents = {
 
     // Adjust zoom
     switch (beatResolution) {
+      case '1:16':
+        waveform.zoom(10)
+        break
       case '1:4':
         waveform.zoom(20)
-        break
-      case '1:2':
-        waveform.zoom(40)
         break
       case '1:1':
         waveform.zoom(80)
