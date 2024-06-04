@@ -46,7 +46,7 @@ const initAudioState = async () => {
   }
   mixState = proxy(initialMixState)
 
-  watch(async get => {
+  watch(get => {
     get(mixState)
     //@ts-ignore dexie typescript failure
     if (seeded) db.appState.put(snapshot(mixState), 'mixState')
@@ -61,7 +61,7 @@ const initAudioState = async () => {
     }
   userState = proxy(initialUserState)
 
-  watch(async get => {
+  watch(get => {
     get(userState)
     //@ts-ignore dexie typescript failure
     if (seeded) db.appState.put(snapshot(userState), 'userState')
@@ -77,8 +77,8 @@ const initAudioState = async () => {
   }
 
   // Start audioState init (if we have a mix in localstorage (valtio))
-  const tracks = mixState.tracks
-
+  const tracks = snapshot(mixState.tracks)
+  console.log('audioStateinit:', tracks)
   if (tracks?.length) {
     for (const trackId of tracks) {
       audioState[Number(trackId)] = {}

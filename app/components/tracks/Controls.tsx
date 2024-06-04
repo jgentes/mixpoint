@@ -20,6 +20,7 @@ import {
   Tooltip
 } from '@nextui-org/react'
 import { useSnapshot } from 'valtio'
+import type { TrackState } from '~/api/models/appModels'
 import { audioState, mixState, uiState } from '~/api/models/appState.client'
 import { Waveform } from '~/api/renderWaveform.client'
 import {
@@ -39,7 +40,6 @@ import {
 import { ProgressBar } from '~/components/layout/Loader'
 import VolumeMeter from '~/components/mixes/VolumeMeter'
 import { convertToSecs, timeFormat } from '~/utils/tableOps'
-import type { TrackState } from '~/api/models/appModels'
 
 const InputText = ({
   text,
@@ -273,7 +273,7 @@ const BeatResolutionControl = ({
         aria-label="Beat Resolution"
         variant="solid"
         classNames={{
-          base: 'border-1 border-default-300 rounded',
+          base: 'border-1 border-default-300 rounded h-6 min-h-0',
           tabList: 'rounded h-6 bg-default-50 px-0 gap-.5',
           tab: 'rounded px-2 text-xs h-auto',
           tabContent: 'group-data-[selected=true]:text-default-600',

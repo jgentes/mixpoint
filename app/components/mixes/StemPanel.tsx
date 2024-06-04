@@ -8,19 +8,18 @@ import { errorHandler } from '~/utils/notifications'
 
 const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
   if (!trackId) throw errorHandler('No track ID provided to StemPanel')
+  if (!audioState[trackId]) return null
 
   // add to analyzing state
   uiState.stemsAnalyzing.add(trackId)
 
   validateTrackStemAccess(trackId)
 
+  const { stemState } = useSnapshot(audioState[trackId])
+
   const StemControls = () => {
-    if (!audioState[trackId]) return null
-
-    const { stemState } = useSnapshot(audioState[trackId])
-
-    return stemState !== 'ready' ? null : (
-      <div className="flex flex-col gap-1 p-2 mb-3 rounded border-1 border-divider bg-background">
+    return (
+      <div className="flex flex-col gap-1 p-4 mb-3 h-32 rounded border-1 border-divider bg-background">
         {STEMS.map(stem => (
           <StemControl key={stem} trackId={trackId} stemType={stem as Stem} />
         ))}
@@ -28,11 +27,10 @@ const StemPanel = ({ trackId }: { trackId: Track['id'] }) => {
     )
   }
 
-  return (
-    <>
-      <StemAccessButton trackId={trackId} />
-      <StemControls />
-    </>
+  return stemState && stemState === 'ready' ? (
+    <StemControls />
+  ) : (
+    <StemAccessButton trackId={trackId} />
   )
 }
 

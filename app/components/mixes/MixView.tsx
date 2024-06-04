@@ -1,25 +1,18 @@
 import MixCard from '~/components/mixes/MixCard'
-import TrackPanel from '~/components/mixes/TrackPanel'
-import { TrackNavControl } from '~/components/tracks/Controls'
-const MixCardFooter = () => (
-  <div className="text-center mt-2">
-    <TrackNavControl trackId={trackId} />
-  </div>
-)
+import MixCardOverview from '~/components/mixes/MixOverview'
+import TrackOverview from '~/components/mixes/TrackOverview'
+
 const MixView = () => (
-  <>
-    <div className="flex gap-4 m-4">
+  <div className="flex flex-col m-2">
+    <div className="flex m-2 gap-4">
       <MixCard trackSlot={0} />
       <MixCard trackSlot={1} />
     </div>
-    <div className="flex gap-4 m-4">
-      <div className="p-2 mt-2 rounded border-1 border-divider bg-background">
-        <TrackPanel trackId={trackId} />
-      </div>
-
-      <MixCardFooter />
+    <div className="p-3 m-2 rounded border-1 border-divider bg-primary-50 overflow-auto">
+      <TrackOverview trackSlot={0} />
+      <TrackOverview trackSlot={1} />
     </div>
-  </>
+  </div>
 )
 
 export { MixView as default }

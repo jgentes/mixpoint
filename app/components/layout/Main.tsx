@@ -1,4 +1,4 @@
-import { snapshot } from 'valtio'
+import { snapshot, useSnapshot } from 'valtio'
 import { mixState } from '~/api/models/appState.client'
 import Heart from '~/components/layout/HeartIcon'
 import LeftNav from '~/components/layout/LeftNav'
@@ -7,7 +7,7 @@ import TrackDrawer from '~/components/tracks/TrackDrawer'
 import TrackTable from '~/components/tracks/TrackTable'
 
 const Main: React.FunctionComponent = () => {
-  const mixVisible = snapshot(mixState).tracks?.filter(t => t).length > 0
+  const mixVisible = useSnapshot(mixState).tracks?.filter(t => t).length > 0
 
   return mixVisible ? (
     <>

@@ -1,7 +1,6 @@
 import WavesurferPlayer from '@wavesurfer/react'
 import { useEffect, useState } from 'react'
 import type WaveSurfer from 'wavesurfer.js'
-import Minimap from 'wavesurfer.js/dist/plugins/minimap.js'
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 import { audioEvents } from '~/api/handlers/audioEvents.client'
 import type { Stem, Track } from '~/api/handlers/dbHandlers'
@@ -10,12 +9,10 @@ import { mixState } from '~/api/models/appState.client'
 
 const Waveform = ({
   trackId,
-  stem,
-  overviewRef
+  stem
 }: {
   trackId: Track['id']
   stem?: Stem
-  overviewRef?: React.RefObject<HTMLDivElement>
 }) => {
   // an Audio object is required for Wavesurfer to use Web Audio
   const [file, setFile] = useState<File | undefined>()
@@ -60,19 +57,7 @@ const Waveform = ({
           ? []
           : [
               // Do not change the order of plugins! They are referenced by index :(
-              RegionsPlugin.create(),
-              Minimap.create({
-                container: overviewRef?.current || undefined,
-                height: 22,
-                waveColor: [
-                  'rgba(117, 116, 116, 0.5)',
-                  'rgba(145, 145, 145, 0.8)',
-                  'rgba(145, 145, 145, 0.8)',
-                  'rgba(145, 145, 145, 0.8)'
-                ],
-                progressColor: 'rgba(125, 125, 125, 0.25)',
-                hideScrollbar: true
-              })
+              RegionsPlugin.create()
             ]
       }
     />

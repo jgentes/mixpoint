@@ -1,6 +1,7 @@
 // This file allows events to be received which need access to the waveform, rather than passing waveform aroun'
 import { ref } from 'valtio'
 import type WaveSurfer from 'wavesurfer.js'
+import MinimapPlugin from 'wavesurfer.js/dist/plugins/minimap.js'
 import type RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js'
 import type { Region } from 'wavesurfer.js/dist/plugins/regions.js'
 import { calcMarkers } from '~/api/handlers/audioHandlers.client'
@@ -85,12 +86,29 @@ const audioEvents = {
     // Save waveform in audioState
     if (stem) {
       const stemState = audioState?.[trackId]?.stems?.[stem as Stem]
-      if (stemState) stemState.waveform = ref(waveform) // this should happen right away
+      if (stemState) stemState.waveform = ref(waveform) // do this before other operations
 
       // Remove from stemsAnalyzing
       uiState.stemsAnalyzing.delete(trackId)
     } else {
-      audioState[trackId].waveform = ref(waveform) // this should happen right away
+      audioState[trackId].waveform = ref(waveform) // do this before other operations
+
+      const overviewContainer = audioState[trackId].overviewRef
+      waveform.registerPlugin(
+        MinimapPlugin.create({
+          container: overviewContainer?.current || undefined,
+          height: 22,
+          waveColor: [
+            'rgb(200, 165, 49)',
+            'rgb(211, 194, 138)',
+            'rgb(189, 60, 0)',
+            'rgb(189, 60, 0)',
+            'rgb(189, 60, 0)',
+          ],
+          progressColor: 'rgba(125, 125, 125, 0.25)',
+          hideScrollbar: true,
+        })
+      )
 
       // Generate beat markers (regions) and apply them to waveform
       await calcMarkers(trackId)
@@ -101,7 +119,7 @@ const audioEvents = {
 
       // Adjust zoom based on previous mixState
       waveform.zoom(
-        beatResolution === '1:1' ? 80 : beatResolution === '1:2' ? 40 : 20
+        beatResolution === '1:1' ? 80 : beatResolution === '1:4' ? 20 : 10
       )
 
       // Remove analyzing overlay

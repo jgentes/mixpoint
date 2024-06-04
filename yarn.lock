@@ -10243,6 +10243,7 @@ __metadata:
     valtio: "npm:^1.13.2"
     vite: "npm:^5.1.5"
     vite-tsconfig-paths: "npm:^4.3.1"
+    wavesurfer-multitrack: "npm:^0.4.11"
     wavesurfer.js: "npm:^7.7.15"
     web-audio-beat-detector: "npm:~8.1.37"
     zod: "npm:^3.22.3"
@@ -12938,7 +12939,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"wavesurfer.js@npm:^7.7.15":
+"wavesurfer-multitrack@npm:^0.4.11":
+  version: 0.4.11
+  resolution: "wavesurfer-multitrack@npm:0.4.11"
+  dependencies:
+    wavesurfer.js: "npm:^7.6.3"
+  checksum: 10c0/182a29a243be63300ad35ebca2fd66bac5fbbe5d957998915a7db81b0ee619044d69af03380c06eb0040faedfb5f0b6872e71a3657399ebc3a25c76a3eb0a405
+  languageName: node
+  linkType: hard
+
+"wavesurfer.js@npm:^7.6.3, wavesurfer.js@npm:^7.7.15":
   version: 7.7.15
   resolution: "wavesurfer.js@npm:7.7.15"
   checksum: 10c0/20e7830c3288cf4e966851008e1c568109b2a363bf025f73ee6745085ca741986cf17dd36b825646c714c505fe2360d7505cf0faabbab13947cc750debb2fc40

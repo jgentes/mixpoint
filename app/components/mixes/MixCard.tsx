@@ -1,7 +1,10 @@
+import { useEffect, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import { getTrackName, useLiveQuery } from '~/api/handlers/dbHandlers'
+import { getPermission } from '~/api/handlers/fileHandlers'
 import { mixState } from '~/api/models/appState.client'
 import StemPanel from '~/components/mixes/StemPanel'
+import StemTracks from '~/components/mixes/StemPanel copy'
 import TrackPanel from '~/components/mixes/TrackPanel'
 import {
   BpmControl,
@@ -27,6 +30,23 @@ const MixCard = ({ trackSlot }: { trackSlot: 0 | 1 }) => {
     )
   }
 
+  const MixCardFooter = () => (
+    <div className="text-center mt-2">
+      <TrackNavControl trackId={trackId} />
+    </div>
+  )
+
+  const StemFiles = () => {
+    const [file, setFile] = useState<File>()
+
+    useEffect(() => {
+      const getFile = async () => setFile(await getPermission(trackId, 'bass'))
+      getFile()
+    }, [])
+
+    return <StemTracks trackId={trackId} file={file} />
+  }
+
   return (
     <div
       style={{ width: 'calc(50% - .5rem)' }} // tailwind doesn't handle calc well
@@ -39,8 +59,14 @@ const MixCard = ({ trackSlot }: { trackSlot: 0 | 1 }) => {
           <MixCardHeader />
 
           <div className="mt-2">
-            <StemPanel trackId={trackId} />
+            <StemFiles />
           </div>
+
+          {/* <div className="p-2 mt-2 rounded border-1 border-divider bg-background">
+            <TrackPanel trackId={trackId} />
+          </div> */}
+
+          <MixCardFooter />
         </>
       )}
     </div>

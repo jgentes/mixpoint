@@ -110,19 +110,19 @@ const StemAccessButton = ({ trackId }: { trackId: Track['id'] }) => {
     }
   }
 
-  return !stemState || stemState === 'ready' ? null : (
+  return (
     <div
       className="
-				border-2 border-dashed p-5 text-center cursor-pointer rounded border-default-500 bg-default-50 hover:bg-warning-500 hover:bg-opacity-10 hover:border-warning-500 active:border-warning-500 active:bg-warning-500m mb-3 h-32"
-      aria-label={stemStates[stemState as keyof typeof stemStates].primaryText}
+    border-2 border-dashed p-4 text-center cursor-pointer rounded border-default-500 bg-default-50 hover:bg-warning-500 hover:bg-opacity-10 hover:border-warning-500 active:border-warning-500 active:bg-warning-500m mb-3 h-32"
+      aria-label={stemStates[stemState as keyof typeof stemStates]?.primaryText}
       onClick={stemHandler}
     >
-      {stemStates[stemState as keyof typeof stemStates].icon}
+      {stemStates[stemState as keyof typeof stemStates]?.icon}
       <div className="text-default-600 text-md font-semibold">
-        {stemStates[stemState as keyof typeof stemStates].primaryText}
+        {stemStates[stemState as keyof typeof stemStates]?.primaryText}
       </div>
       <div className="text-default-600 text-sm">
-        {stemStates[stemState as keyof typeof stemStates].secondaryText}
+        {stemStates[stemState as keyof typeof stemStates]?.secondaryText}
       </div>
     </div>
   )

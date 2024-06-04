@@ -14,21 +14,23 @@ import {
 } from '~/components/tracks/Controls'
 import { timeFormat } from '~/utils/tableOps'
 
-const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
+const TrackOverview = ({ trackSlot }: { trackSlot: 0 | 1 }) => {
+  const trackId = useSnapshot(mixState).tracks[trackSlot]
+  console.log('trackoverview:', trackSlot, trackId, mixState, audioState)
   if (!trackId || !audioState[trackId]) return null
+
+  const { stemState } = useSnapshot(audioState[trackId])
+
+  const { duration = 0 } =
+    useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
 
   const containerClass =
     'p-0 border-1 border-divider rounded bg-default-50 overflow-hidden h-20'
 
   const TrackHeader = () => {
-    const { stemState } = useSnapshot(audioState[trackId])
-
-    const { duration = 0 } =
-      useLiveQuery(() => db.tracks.get(trackId), [trackId]) || {}
-
     return (
       <div className="flex justify-between mb-2 items-center">
-        <div className="flex w-36">
+        {/* <div className="flex w-36">
           <TrackTime
             className="px-1 text-xs text-default-600"
             trackId={trackId}
@@ -36,18 +38,18 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
           <div className="text-xs text-default-600 whitespace-nowrap">
             / {timeFormat(duration)}
           </div>
-        </div>
+        </div> */}
 
         {stemState !== 'ready' ? null : <ZoomSelectControl trackId={trackId} />}
 
-        <BeatResolutionControl trackId={trackId} />
+        {/* <BeatResolutionControl trackId={trackId} /> */}
       </div>
     )
   }
 
   const TrackFooter = () => (
     <div className="flex gap-1 mt-1 items-center justify-between">
-      <MixpointControl trackId={trackId} />
+      {/* <MixpointControl trackId={trackId} /> */}
       <OffsetControl trackId={trackId} className="ml-auto w-36" />
     </div>
   )
@@ -81,25 +83,42 @@ const TrackPanel = ({ trackId }: { trackId: Track['id'] }) => {
     <>
       <TrackHeader />
 
-      <div
-        className={`${containerClass} relative z-1`}
-        onClick={e => {
-          const parent = e.currentTarget.querySelectorAll('div')[1]
-          audioEvents.clickToSeek(trackId, e, parent)
-        }}
-        onWheel={e =>
-          audioEvents.seek(trackId, 0, e.deltaY > 0 ? 'next' : 'previous')
-        }
-      >
-        <AnalyzingOverlay />
-        <TrackOrStem />
+      <div className="flex">
+        <div className="flex flex-col w-36 justify-between">
+          <TrackTime
+            className="px-1 text-xs text-default-600"
+            trackId={trackId}
+          />
+          <div className="text-xs text-default-600 whitespace-nowrap">
+            / {timeFormat(duration)}
+          </div>
+          <MixpointControl trackId={trackId} />
+        </div>
+
+        <div
+          className={`${containerClass} relative z-1`}
+          onClick={e => {
+            const parent = e.currentTarget.querySelectorAll('div')[1]
+            audioEvents.clickToSeek(trackId, e, parent)
+          }}
+          onWheel={e =>
+            audioEvents.seek(trackId, 0, e.deltaY > 0 ? 'next' : 'previous')
+          }
+        >
+          <AnalyzingOverlay />
+          <TrackOrStem />
+        </div>
+
+        <VolumeMeter trackId={trackId} />
+        <div className="flex flex-col w-36 justify-between">
+          <BeatResolutionControl trackId={trackId} />
+          <OffsetControl trackId={trackId} className="ml-auto w-36" />
+        </div>
       </div>
 
-      <VolumeMeter trackId={trackId} />
-
-      <TrackFooter />
+      {/* <TrackFooter /> */}
     </>
   )
 }
 
-export { TrackPanel as default }
+export { TrackOverview as default }

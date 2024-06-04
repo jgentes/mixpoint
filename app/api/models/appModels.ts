@@ -129,7 +129,8 @@ type TrackState = Partial<{
 
 // AudioState is the working state of the mix, should not be persisted due to time/volumeMeter!
 type AudioState = Partial<{
-  waveform: WaveSurfer // ref()
+  waveform: WaveSurfer // valtio ref()
+  overviewRef: React.MutableRefObject<HTMLDivElement | null> // react useRef() for minimap, also a valtioRef
   playing: boolean
   time: number
   gainNode?: GainNode // ref() gain controls actual loudness of track
