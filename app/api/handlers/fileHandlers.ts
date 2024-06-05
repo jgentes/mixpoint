@@ -6,6 +6,7 @@ import {
   addToMix,
   db,
   storeTrackCache,
+  STEMS,
 } from '~/api/handlers/dbHandlers'
 import type { StemState } from '~/api/models/appModels'
 import {
@@ -64,6 +65,17 @@ const _getFile = async (track: Track): Promise<File | undefined> => {
 
   // In the case perms aren't granted, return undefined - we need to request permission
   return file
+}
+
+const getStemFiles = async (
+  trackId: Track['id']
+): Promise<Partial<Record<Stem, File>>> => {
+  const stemFiles: Partial<Record<Stem, File>> = {}
+  for (const stem of STEMS) {
+    const file = await getPermission(trackId, stem)
+    if (file) stemFiles[stem] = file
+  }
+  return stemFiles
 }
 
 /** Returns the file if permission has been granted to a file.
@@ -247,4 +259,10 @@ const validateTrackStemAccess = async (
   return accessState
 }
 
-export { browseFile, getPermission, getStemsDirHandle, validateTrackStemAccess }
+export {
+  browseFile,
+  getPermission,
+  getStemsDirHandle,
+  getStemFiles,
+  validateTrackStemAccess,
+}

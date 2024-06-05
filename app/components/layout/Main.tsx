@@ -7,7 +7,9 @@ import TrackDrawer from '~/components/tracks/TrackDrawer'
 import TrackTable from '~/components/tracks/TrackTable'
 
 const Main: React.FunctionComponent = () => {
-  const mixVisible = useSnapshot(mixState).tracks?.filter(t => t).length > 0
+  const mix = useSnapshot(mixState)
+  console.log('mixstate:', mix)
+  const mixVisible = mix.tracks?.filter(t => t).length > 0
 
   return mixVisible ? (
     <>

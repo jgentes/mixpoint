@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useSnapshot } from 'valtio'
-import { getTrackName, useLiveQuery } from '~/api/handlers/dbHandlers'
-import { getPermission } from '~/api/handlers/fileHandlers'
+import {
+  type Stem,
+  getTrackName,
+  useLiveQuery
+} from '~/api/handlers/dbHandlers'
+import { getPermission, getStemFiles } from '~/api/handlers/fileHandlers'
 import { mixState } from '~/api/models/appState.client'
 import StemPanel from '~/components/mixes/StemPanel'
 import StemTracks from '~/components/mixes/StemPanel copy'
@@ -36,15 +40,15 @@ const MixCard = ({ trackSlot }: { trackSlot: 0 | 1 }) => {
     </div>
   )
 
-  const StemFiles = () => {
-    const [file, setFile] = useState<File>()
+  const StemMultiTrack = () => {
+    const [files, setFiles] = useState<Partial<Record<Stem, File>>>()
 
     useEffect(() => {
-      const getFile = async () => setFile(await getPermission(trackId, 'bass'))
+      const getFile = async () => setFiles(await getStemFiles(trackId))
       getFile()
     }, [])
 
-    return <StemTracks trackId={trackId} file={file} />
+    return files ? <StemTracks trackId={trackId} files={files} /> : null
   }
 
   return (
@@ -59,7 +63,7 @@ const MixCard = ({ trackSlot }: { trackSlot: 0 | 1 }) => {
           <MixCardHeader />
 
           <div className="mt-2">
-            <StemFiles />
+            <StemMultiTrack />
           </div>
 
           {/* <div className="p-2 mt-2 rounded border-1 border-divider bg-background">
