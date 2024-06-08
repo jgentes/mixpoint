@@ -75,6 +75,7 @@ const LoginButton = () => {
           <ModalBody>
             <div className="flex justify-between items-center">
               <Button
+                id="google-oauth"
                 className="flex-1 mr-6 border-1 border-primary-300"
                 radius="sm"
                 variant="ghost"
@@ -86,6 +87,7 @@ const LoginButton = () => {
                 Log in with Google
               </Button>
               <Button
+                id="github-oauth"
                 className="flex-1 ml-6 border-1 border-primary-300"
                 radius="sm"
                 variant="ghost"
@@ -103,6 +105,7 @@ const LoginButton = () => {
               <Divider className="flex-1" />
             </div>
             <Input
+              id="email"
               autoFocus
               label="Email"
               placeholder="Enter your email to receive a link to log in"
@@ -143,6 +146,7 @@ const LoginButton = () => {
               Close
             </Button>
             <Button
+              id="send-magic-link"
               size="sm"
               radius="sm"
               variant="flat"
