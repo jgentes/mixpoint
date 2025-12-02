@@ -3,7 +3,7 @@ import { Env } from '~/utils/env'
 
 const APPWRITE_ENDPOINT = `https://${
   Env === 'preview' || Env === 'production'
-    ? 'appwrite.mixpoint.dev'
+    ? 'appwrite.mixpoint-james-gentes-projects.vercel.app'
     : 'cloud.appwrite.io'
 }/v1`
 

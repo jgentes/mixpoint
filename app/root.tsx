@@ -147,8 +147,8 @@ const ThemeLoader = () => {
         enableCanvasRecording={Env === 'production'}
         serviceName="Mixpoint"
         tracingOrigins={[
-          // match mixpoint.dev and any subdomain except appwrite.mixpoint.dev
-          /^(?!appwrite.)([a-zA-Z0-9-]*.)?mixpoint.dev$/
+          // match mixpoint-james-gentes-projects.vercel.app and any subdomain except appwrite.mixpoint-james-gentes-projects.vercel.app
+          /^(?!appwrite.)([a-zA-Z0-9-]*.)?mixpoint-james-gentes-projects\.vercel\.app$/
         ]}
         networkRecording={{
           enabled: true,

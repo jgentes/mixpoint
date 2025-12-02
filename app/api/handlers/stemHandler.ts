@@ -10,7 +10,7 @@ import { getStemsDirHandle } from '~/api/handlers/fileHandlers'
 import { audioState } from '~/api/models/appState.client'
 import { errorHandler } from '~/utils/notifications'
 
-const STEMPROXY = 'https://stems.mixpoint.dev'
+const STEMPROXY = 'https://stems.mixpoint-james-gentes-projects.vercel.app'
 
 type StemsArray = {
   name: string

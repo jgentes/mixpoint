@@ -1,12 +1,25 @@
 <h1 align="center">Mixpoint</h1>
 
+<p align="center">⚠️ <strong>This repository is archived.</strong> ⚠️</p>
+
 <p align="center">Mixpoint is multi-track audio mixing app for the browser</p>
+
+## 🎯 Recommended Alternative
+
+**This project is archived. For a fantastic alternative that does everything Mixpoint intended to do (and more), check out [DJ.Studio](https://dj.studio/).**
+
+DJ.Studio is a powerful DAW for DJs that provides:
+- Timeline-based mixing with precision transitions
+- Automatic playlist harmonization and beatmatching
+- Stem separation and creative effects
+- Seamless integration with popular DJ software
+- Export to various formats including Mixcloud and YouTube
 
 ## Links
 
 - [Mixpoint Repo](https://github.com/jgentes/mixpoint)
 
-- [Live Site](https://mixpoint.dev)
+- [Live Site](https://mixpoint-james-gentes-projects.vercel.app/)
 
 - [Issues Page](https://github.com/jgentes/mixpoint/issues)
 
